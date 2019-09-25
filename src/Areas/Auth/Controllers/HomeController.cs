@@ -20,6 +20,7 @@ namespace NetDream.Areas.Auth.Controllers
 
         public IActionResult Index()
         {
+            Console.WriteLine();
             return View();
         }
 
