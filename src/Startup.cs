@@ -76,6 +76,12 @@ namespace NetDream
             }
 
             app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "../../PHP-ZoDream/html/assets")),
+                RequestPath = "/assets"
+            });
             app.UseCookiePolicy();
             app.UseAuthorization();
             app.UseMvc(routes =>

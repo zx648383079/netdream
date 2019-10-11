@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <title>@ViewData["Title"] - ZoDream</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link type="text/css" href="~/assets/css/font-awesome.min.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/zodream.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/dialog.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/login.css" rel="stylesheet" media="all">
+</head>
+<body class="login-page">
+    
+    @RenderBody()
+
+    <div class="footer">
+        <a href="http://www.miitbeian.gov.cn/" target="_blank">湘ICP备16003508号</a>
+    </div>
+    <script src="~/assets/js/jquery.min.js"></script>
+
+    <script src="~/assets/js/jquery.dialog.min.js"></script>
+
+    <script src="~/assets/js/main.min.js"></script>
+
+    <script src="~/assets/js/login.min.js"></script>
+
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>
