@@ -11,6 +11,7 @@ namespace NetDream.Areas.Blog.Controllers
     {
         public IActionResult Index()
         {
+
             return View();
         }
     }

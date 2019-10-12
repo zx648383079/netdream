@@ -1,4 +1,6 @@
-﻿using NPoco;
+﻿using Microsoft.AspNetCore.Identity;
+using NetDream.Areas.Auth.Models;
+using NPoco;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +15,20 @@ namespace NetDream.Areas.Auth.Repositories
         public UserRepository(IDatabase db)
         {
             _db = db;
+        }
+
+        public UserModel Login(string email, string password)
+        {
+            var user = _db.Single<UserModel>("where email=@0", email);
+            if (user == null)
+            {
+                return null;
+            }
+            if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
+            {
+                return null;
+            }
+            return user;
         }
     }
 }
