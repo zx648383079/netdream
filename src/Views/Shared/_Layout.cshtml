@@ -1,61 +1,51 @@
-﻿<!DOCTYPE html>
-<html>
+﻿
+<!DOCTYPE html>
+<html lang="zh-cn">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=no,width=device-width, initial-scale=1">
     <title>@ViewData["Title"] - ZoDream</title>
+    <meta name="Keywords" content="zodream,个人博客,开源博客,开发博客,ts,vue,php,uwp,angular,编程博客" />
+    <meta name="Description" content="从一而始，至一而终，简单的个人博客" />
+    <meta name="author" content="zodream" />
+    <link rel="icon" href="~/assets/images/favicon.png">
+    <link type="text/css" href="~/assets/css/font-awesome.min.css" rel="stylesheet" media="all">
 
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
-              crossorigin="anonymous"
-              integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" />
-    </environment>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link type="text/css" href="~/assets/css/zodream.css" rel="stylesheet" media="all">
+
+    <link type="text/css" href="~/assets/css/animate.min.css" rel="stylesheet" media="all">
+
+    <link type="text/css" href="~/assets/css/home.css" rel="stylesheet" media="all">
+    @RenderSection("Styles", required: false)
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ZoDream</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <partial name="_CookieConsentPartial" />
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        
         <div class="container">
-            &copy; 2019 - ZoDream - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="nav-bar">
+                <span class="nav-bar-toggle"></span>
+                <ul>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Index">首页</a></li>
+                    <li><a asp-area="Blog">博客</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="FriendLink">友情链接</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="About">关于</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    @RenderBody()
+    <footer>
+        <div class="container">
+            <friend-link></friend-link>
+            <div class="copyright">
+                <a href="http://www.miitbeian.gov.cn/" target="_blank">湘ICP备16003508号</a>
+            </div>
         </div>
     </footer>
 
+    <partial name="_CookieConsentPartial" />
     <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+        <script src="~/assets/js/jquery.min.js"></script>
     </environment>
     <environment exclude="Development">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
@@ -64,15 +54,33 @@
                 crossorigin="anonymous"
                 integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
         </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.bundle.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"
-                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
-                crossorigin="anonymous"
-                integrity="sha256-E/V4cWE4qvAeO5MOhjtGtqDzPndRO1LBk8lJ/PR7CA4=">
-        </script>
     </environment>
-    <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <script src="~/assets/js/jquery.cookie.js"></script>
+
+    <script src="~/assets/js/jquery.lazyload.min.js"></script>
+
+    <script src="~/assets/js/debugger.min.js"></script>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            $('.nav-bar .nav-bar-toggle').click(function () {
+                $(this).closest('.nav-bar').toggleClass('open');
+            });
+            var footer = $('footer'),
+                diff = $(window).height() - footer.offset().top - footer.height();
+            if (diff > 0) {
+                footer.css('margin-top', diff + 'px');
+            }
+            if (!$.cookie('c_t')) {
+                $('.dialog-cookie-tip').show();
+            }
+            $('.dialog-cookie-tip .btn').click(function () {
+                $.cookie('c_t', 1);
+                $(this).closest('.dialog-cookie-tip').hide();
+            });
+        });</script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>
+

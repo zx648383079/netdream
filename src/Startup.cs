@@ -14,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using NetDream.Areas.Auth.Repositories;
+using NetDream.Areas.Blog.Repositories;
+using NetDream.Areas.Gzo.Repositories;
 using NPoco;
 
 namespace NetDream
@@ -115,6 +117,8 @@ namespace NetDream
         private void registerAuthRepositories(IServiceCollection services)
         {
             services.AddScoped(typeof(UserRepository));
+            services.AddScoped(typeof(BlogRepository));
+            services.AddScoped(typeof(GzoRepository));
         }
     }
 }

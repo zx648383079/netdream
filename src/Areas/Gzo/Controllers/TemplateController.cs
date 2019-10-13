@@ -9,10 +9,10 @@ using NetDream.Base.Helpers;
 namespace NetDream.Areas.Gzo.Controllers
 {
     [Area("Gzo")]
-    public class HomeController : Controller
+    public class TemplateController : Controller
     {
         private GzoRepository _repository;
-        public HomeController(GzoRepository repository)
+        public TemplateController(GzoRepository repository)
         {
             _repository = repository;
         }
@@ -22,15 +22,16 @@ namespace NetDream.Areas.Gzo.Controllers
             return View();
         }
 
-        public IActionResult Model()
+        public IActionResult Model(string table, bool preview = false)
         {
-            return View();
-        }
-
-        public IActionResult Table()
-        {
-            var data = _repository.AllTableNames();
-            return Json(JsonResponse.Success(data));
+            if (preview)
+            {
+                return Json(JsonResponse.Success(new
+                {
+                    code = _repository.Generate(table)
+                }));
+            }
+            return Json(JsonResponse.Failure("未实现"));
         }
     }
 }

@@ -1,10 +1,87 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "首页";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<div class="container">
+    <div class="metro-grid">
+        <a asp-area="Blog">
+            博客
+        </a>
+        <a asp-area="Document">
+            文档
+        </a>
+        <a asp-area="Tool">
+            工具
+        </a>
+        <a asp-area="Forum">
+            圈子(DEMO)
+        </a>
+        <a asp-area="Shop">
+            <div class="name">商城(DEMO)</div>
+            <p class="desc">商品来源于淘宝联盟</p>
+        </a>
+        <a class="unknow" asp-area="Cms">
+            <img src="~/assets/images/zd_seo.jpg" alt="">
+            CMS(DEMO)
+        </a>
+    </div>
 
-<friend-link>111</friend-link>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="panel">
+                <div class="panel-header">
+                    <a asp-area="Blog">最新博客</a>
+                </div>
+                <div class="panel-body">
+                    <div class="list-item"><a class="name" href="http://zodream.localhost/blog?id=22">那些可以一用的浏览器api</a><div class="time">2018-12-19</div></div><div class="list-item"><a class="name" href="http://zodream.localhost/blog?id=21">Angular CORS 跨域请求解决方法</a><div class="time">2018-12-06</div></div><div class="list-item"><a class="name" href="http://zodream.localhost/blog?id=20">.NetCore 使用 Mysql</a><div class="time">2018-12-06</div></div><div class="list-item"><a class="name" href="http://zodream.localhost/blog?id=19">windows server 2016 安装 IIS 、PHP 7.2、Mysql 8.0</a><div class="time">2018-10-21</div></div><div class="list-item"><a class="name" href="http://zodream.localhost/blog?id=18">GO Methods 中指针和引用</a><div class="time">2018-09-21</div></div><div class="list-item"><a class="name" href="http://zodream.localhost/blog?id=17">架构、框架、模式、模块、组件、插件、控件、中间件</a><div class="time">2018-07-03</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="panel">
+                <div class="panel-header">
+                    <a asp-area="Note">便签</a>
+                </div>
+                <div class="panel-body scoll-box">
+                    <div class="note-item">
+                        <p><p>hgggggggggggghghvhgjubjhhbjhbhjbjhbjhbjhbjhbhjbhjhbhjbbbhjjkjjkb</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div><div class="note-item">
+                        <p><p>Dialog.tip('请输入内容');</p>
+                        </p><div class="item-time">2018-12-17</div>
+                    </div>                    <a asp-area="Note" class="more">查看更多</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
