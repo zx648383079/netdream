@@ -7,12 +7,14 @@ namespace NetDream.Base.TagHelpers
     [HtmlTargetElement("friend-link")]
     public class FriendLinkTagHelper : TagHelper
     {
-        
+        public string Title = "友情链接";
+
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             output.TagName = "div";
             output.Attributes.Add("class", "friend-link");
-            var html = new StringBuilder("<div>友情链接</div><div>");
+            var html = new StringBuilder();
+            html.AppendFormat("<div>{0}</div><div>", Title);
             var items = FriendLinkModel.All();
             foreach (var item in items)
             {

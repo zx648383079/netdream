@@ -26,7 +26,7 @@
                 <span class="nav-bar-toggle"></span>
                 <ul>
                     <li><a asp-area="" asp-controller="Home" asp-action="Index">首页</a></li>
-                    <li><a asp-area="Blog">博客</a></li>
+                    <li><a asp-area="Blog" asp-controller="Home" asp-action="Index">博客</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="FriendLink">友情链接</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="About">关于</a></li>
                 </ul>
@@ -36,7 +36,7 @@
     @RenderBody()
     <footer>
         <div class="container">
-            <friend-link></friend-link>
+            <friend-link title="友情链接">111</friend-link>
             <div class="copyright">
                 <a href="http://www.miitbeian.gov.cn/" target="_blank">湘ICP备16003508号</a>
             </div>
