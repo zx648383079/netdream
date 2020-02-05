@@ -18,9 +18,9 @@ namespace NetDream.Areas.Blog.Repositories
         }
 
 
-        public List<BlogModel> GetNewBlogs()
+        public List<BlogModel> GetNewBlogs(int count = 8)
         {
-            return _db.Fetch<BlogModel>("select id, title, description, created_at from blog created_at desc limit 8");
+            return _db.Fetch<BlogModel>("select id, title, description, created_at from blog order by created_at desc limit @0", count);
         }
     }
 }
