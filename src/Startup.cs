@@ -16,6 +16,8 @@ using Microsoft.Extensions.Hosting;
 using NetDream.Areas.Auth.Repositories;
 using NetDream.Areas.Blog.Repositories;
 using NetDream.Areas.Gzo.Repositories;
+using NetDream.Areas.SEO.Repositories;
+using NetDream.Base.Middlewares;
 using NPoco;
 
 namespace NetDream
@@ -104,6 +106,17 @@ namespace NetDream
             app.UseCookiePolicy();
             app.UseSession();
             app.UseAuthorization();
+            #region Websocket
+            var webSocketOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(120),
+                ReceiveBufferSize = 4 * 1024
+            };
+            app.UseWebSockets(webSocketOptions);
+            app.UseMiddleware<ChatWebSocketMiddleware>();
+            #endregion
+
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -120,6 +133,7 @@ namespace NetDream
             services.AddScoped(typeof(UserRepository));
             services.AddScoped(typeof(BlogRepository));
             services.AddScoped(typeof(GzoRepository));
+            // services.AddSingleton(typeof(OptionRepository));
         }
     }
 }

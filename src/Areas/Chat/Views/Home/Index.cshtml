@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "聊天室";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <link type="text/css" href="~/assets/css/chat.css" rel="stylesheet" media="all">
+}
+<h1>Chat Index</h1>
+
+
+@section Scripts {
+    <script src="~/assets/js/chat.min.js"></script>
+    <script>
+        var BASE_URI = '/Chat/';
+        $(function () {
+            registerWsChat(BASE_URI + 'Home/Ws');
+        });
+    </script>
+}

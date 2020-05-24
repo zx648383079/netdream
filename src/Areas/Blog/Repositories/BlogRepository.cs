@@ -18,6 +18,11 @@ namespace NetDream.Areas.Blog.Repositories
         }
 
 
+        public Page<BlogModel> GetPage(int page)
+        {
+            return _db.Page<BlogModel>(page, 20, "SELECT * FROM blog");
+        }
+
         public List<BlogModel> GetNewBlogs(int count = 8)
         {
             return _db.Fetch<BlogModel>("select id, title, description, created_at from blog order by created_at desc limit @0", count);

@@ -16,6 +16,9 @@
     <link type="text/css" href="~/assets/css/dialog.css" rel="stylesheet" media="all">
     <link type="text/css" href="~/assets/css/gzo.css" rel="stylesheet" media="all">
     @RenderSection("Styles", required: false)
+    <script>
+        var BASE_URI = '/Gzo/';
+    </script>
 </head>
 <body>
     <header>
@@ -80,7 +83,6 @@
         </div>
         <div id="page-content" class="main-container">
             @RenderBody()
-
         </div>
     </div>
     <script src="~/assets/js/jquery.min.js"></script>

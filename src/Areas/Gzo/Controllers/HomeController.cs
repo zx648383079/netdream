@@ -26,11 +26,5 @@ namespace NetDream.Areas.Gzo.Controllers
         {
             return View();
         }
-
-        public IActionResult Table()
-        {
-            var data = _repository.AllTableNames();
-            return Json(JsonResponse.Success(data));
-        }
     }
 }
