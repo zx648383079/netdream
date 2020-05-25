@@ -18,6 +18,11 @@ namespace NetDream.Base.Middlewares
 
         private readonly RequestDelegate _next;
 
+        /// <summary>
+        /// 缓冲区大小
+        /// </summary>
+        private const int bufferSize = 1024 * 4;
+
         public ChatWebSocketMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -25,12 +30,11 @@ namespace NetDream.Base.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
-            if (!context.WebSockets.IsWebSocketRequest)
+            if (!IsWebSocket(context))
             {
                 await _next.Invoke(context);
                 return;
             }
-            System.Net.WebSockets.WebSocket dummy;
 
             CancellationToken ct = context.RequestAborted;
             var currentSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -59,7 +63,6 @@ namespace NetDream.Base.Middlewares
                     {
                         break;
                     }
-
                     continue;
                 }
 
@@ -82,6 +85,12 @@ namespace NetDream.Base.Middlewares
             currentSocket.Dispose();
         }
 
+        private bool IsWebSocket(HttpContext context)
+        {
+            return context.WebSockets.IsWebSocketRequest &&
+                context.Request.Path == "/Chat/Home/Ws";
+        }
+
         private static Task SendStringAsync(WebSocket socket, string data, CancellationToken ct = default)
         {
             var buffer = Encoding.UTF8.GetBytes(data);
@@ -91,26 +100,17 @@ namespace NetDream.Base.Middlewares
 
         private static async Task<string> ReceiveStringAsync(WebSocket socket, CancellationToken ct = default)
         {
-            var buffer = new ArraySegment<byte>(new byte[8192]);
-            using var ms = new MemoryStream();
-            WebSocketReceiveResult result;
-            do
+            var buffer = new ArraySegment<byte>(new byte[bufferSize]);
+            var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
+            while (!result.EndOfMessage)
             {
-                ct.ThrowIfCancellationRequested();
-
                 result = await socket.ReceiveAsync(buffer, ct);
-                ms.Write(buffer.Array, buffer.Offset, result.Count);
             }
-            while (!result.EndOfMessage);
-
-            ms.Seek(0, SeekOrigin.Begin);
-            if (result.MessageType != WebSocketMessageType.Text)
-            {
-                return null;
-            }
-
-            using var reader = new StreamReader(ms, Encoding.UTF8);
-            return await reader.ReadToEndAsync();
+            //if (result.MessageType != WebSocketMessageType.Text)
+            //{
+            //    return null;
+            //}
+            return Encoding.UTF8.GetString(buffer.Array);
         }
     }
 }
