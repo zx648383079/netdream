@@ -16,9 +16,11 @@ namespace NetDream.Areas.Blog.Controllers
             _repository = repository;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int page = 1)
         {
-
+            ViewData["categories"] = _repository.Categories();
+            ViewData["items"] = _repository.GetPage(page);
+            ViewData["newItems"] = _repository.GetNewBlogs(4);
             return View();
         }
     }

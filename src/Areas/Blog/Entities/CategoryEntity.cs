@@ -11,6 +11,7 @@ namespace NetDream.Areas.Blog.Entities
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        [Column("parent_id")]
         public int ParentId { get; set; }
         public string Keywords { get; set; }
         public string Description { get; set; }

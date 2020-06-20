@@ -27,5 +27,11 @@ namespace NetDream.Areas.Blog.Repositories
         {
             return _db.Fetch<BlogModel>("select id, title, description, created_at from blog order by created_at desc limit @0", count);
         }
+
+
+        public List<CategoryModel> Categories()
+        {
+            return _db.Fetch<CategoryModel>();
+        }
     }
 }

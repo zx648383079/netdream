@@ -15,6 +15,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using NetDream.Areas.Auth.Repositories;
 using NetDream.Areas.Blog.Repositories;
+using NetDream.Areas.Contact.Repositories;
 using NetDream.Areas.Gzo.Repositories;
 using NetDream.Areas.SEO.Repositories;
 using NetDream.Base.Middlewares;
@@ -133,6 +134,7 @@ namespace NetDream
             services.AddScoped(typeof(UserRepository));
             services.AddScoped(typeof(BlogRepository));
             services.AddScoped(typeof(GzoRepository));
+            services.AddScoped(typeof(ContactRepository));
             // services.AddSingleton(typeof(OptionRepository));
         }
     }

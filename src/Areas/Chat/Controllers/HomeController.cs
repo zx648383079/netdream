@@ -14,9 +14,5 @@ namespace NetDream.Areas.Chat.Controllers
             return View();
         }
 
-        public void Ws( context)
-        {
-
-        }
     }
 }
