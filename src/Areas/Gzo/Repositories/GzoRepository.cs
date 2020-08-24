@@ -50,9 +50,13 @@ namespace NetDream.Areas.Gzo.Repositories
             str.Append("\")]");
             str.Append("\npublic class ");
             str.Append(Str.Studly(table));
-            str.Append("\n{");
+            str.Append("Entity\n{");
             foreach (var item in columns)
             {
+                if (item.Name.IndexOf('_') > 0)
+                {
+                    str.Append($"\n    [Column(\"{item.Name}\")]");
+                }
                 str.Append("\n    public ");
                 str.Append(item.ToType());
                 str.Append(" ");

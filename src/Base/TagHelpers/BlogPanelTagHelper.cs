@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
 using NetDream.Areas.Blog.Repositories;
+using NetDream.Base.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace NetDream.Base.TagHelpers
             var html = new StringBuilder();
             foreach (var item in items)
             {
-                html.AppendFormat("<div class=\"list-item\"><a class=\"name\" href=\"{0}\">{1}</a><div class=\"time\">{2}</div></div>", item.Id, item.Title, item.CreatedAt);
+                html.AppendFormat("<div class=\"list-item\"><a class=\"name\" href=\"/Blog/{0}\">{1}</a><div class=\"time\">{2}</div></div>", item.Id, item.Title, Time.FormatAgo(item.CreatedAt));
             }
             output.Content.SetHtmlContent(html.ToString());
         }

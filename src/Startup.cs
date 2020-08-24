@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,8 +14,10 @@ using NetDream.Areas.Auth.Repositories;
 using NetDream.Areas.Blog.Repositories;
 using NetDream.Areas.Contact.Repositories;
 using NetDream.Areas.Gzo.Repositories;
-using NetDream.Areas.SEO.Repositories;
+using NetDream.Areas.Open.Repositories;
 using NetDream.Base.Middlewares;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NPoco;
 
 namespace NetDream
@@ -77,11 +76,23 @@ namespace NetDream
                 });
             registerAuthRepositories(services);
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-            //services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
+                .AddNewtonsoftJson(options =>
+                {
+                    // 循环引用
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
+                    // 不使用驼峰
+                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                    // 设置时间格式
+                    options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
+                    // 如字段为null值，该字段不会返回到前端
+                    // options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                });
             services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
             services.AddSingleton(Configuration);
             services.AddLogging();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -115,6 +126,7 @@ namespace NetDream
             };
             app.UseWebSockets(webSocketOptions);
             app.UseMiddleware<ChatWebSocketMiddleware>();
+            app.UseMiddleware<ResponseMiddleware>();
             #endregion
 
 
@@ -135,6 +147,7 @@ namespace NetDream
             services.AddScoped(typeof(BlogRepository));
             services.AddScoped(typeof(GzoRepository));
             services.AddScoped(typeof(ContactRepository));
+            services.AddScoped(typeof(OpenRepository));
             // services.AddSingleton(typeof(OptionRepository));
         }
     }

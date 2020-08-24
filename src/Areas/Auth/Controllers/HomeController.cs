@@ -5,18 +5,20 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Areas.Auth.Repositories;
 using NetDream.Base.Helpers;
+using NetDream.Base.Http;
 
 namespace NetDream.Areas.Auth.Controllers
 {
     [Area("Auth")]
-    public class HomeController : Controller
+    public class HomeController : JsonController
     {
         private UserRepository _userRepository;
 
-        public HomeController(UserRepository userRepository)
+        public HomeController(UserRepository userRepository, IHttpContextAccessor accessor): base(accessor)
         {
             _userRepository = userRepository;
         }
@@ -33,7 +35,7 @@ namespace NetDream.Areas.Auth.Controllers
             var user = _userRepository.Login(email, password);
             if (user == null)
             {
-                return Json(JsonResponse.Failure("邮箱或密码不正确"));
+                return Json(JsonResponse.RenderFailure("邮箱或密码不正确"));
             }
             if (string.IsNullOrWhiteSpace(redirect_uri))
             {
@@ -52,7 +54,7 @@ namespace NetDream.Areas.Auth.Controllers
                 IsPersistent = false,
                 AllowRefresh = false
             });
-            return Json(JsonResponse.Success(new { 
+            return Json(JsonResponse.RenderData(new { 
                 url = redirect_uri,
             }, "登录成功！"));
         }
@@ -66,7 +68,7 @@ namespace NetDream.Areas.Auth.Controllers
                 var userId = auth.Principal.Identity.Name;
             }
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Json(JsonResponse.Success(null, "退出成功"));
+            return Json(JsonResponse.RenderData(null, "退出成功"));
         }
     }
 }

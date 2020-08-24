@@ -8,5 +8,6 @@ namespace NetDream.Areas.Blog.Models
 {
     public class BlogModel: BlogEntity
     {
+
     }
 }
