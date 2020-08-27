@@ -22,6 +22,8 @@ namespace NetDream.Areas.Gzo.Models
                 case "varchar":
                 case "text":
                     return "string";
+                case "date":
+                    return "string";
                 default:
                     return Type;
             }

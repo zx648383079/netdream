@@ -7,7 +7,7 @@ namespace NetDream.Areas.Auth.Controllers.Api
     [Area("Auth/Api")]
     public class HomeController : JsonController
     {
-        public HomeController(IHttpContextAccessor accessor): base(accessor)
+        public HomeController(IHttpContextAccessor accessor)
         {
         }
 

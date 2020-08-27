@@ -14,7 +14,7 @@ namespace NetDream.Areas.Gzo.Controllers
     public class TemplateController : JsonController
     {
         private GzoRepository _repository;
-        public TemplateController(GzoRepository repository, IHttpContextAccessor accessor) : base(accessor)
+        public TemplateController(GzoRepository repository)
         {
             _repository = repository;
         }

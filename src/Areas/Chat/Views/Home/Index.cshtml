@@ -1,17 +1,21 @@
 ﻿@{
     ViewData["Title"] = "聊天室";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "../Shared/_Layout.cshtml";
 }
 @section Styles {
     <link type="text/css" href="~/assets/css/chat.css" rel="stylesheet" media="all">
 }
-<h1>Chat Index</h1>
+<button id="toggle-btn">切换悬浮/固定</button>
+
+<div class="dialog-chat dialog-chat-page">
+
+</div>
 
 
 @section Scripts {
     <script src="~/assets/js/chat.min.js"></script>
     <script>
-        var BASE_URI = '/Chat/';
+        var BASE_URI = location.host + '/Chat/';
         $(function () {
             registerWsChat(BASE_URI + 'Home/Ws');
         });

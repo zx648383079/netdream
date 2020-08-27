@@ -18,7 +18,7 @@ namespace NetDream.Areas.Auth.Controllers
     {
         private UserRepository _userRepository;
 
-        public HomeController(UserRepository userRepository, IHttpContextAccessor accessor): base(accessor)
+        public HomeController(UserRepository userRepository)
         {
             _userRepository = userRepository;
         }

@@ -14,7 +14,7 @@ namespace NetDream.Areas.Gzo.Controllers
     public class SqlController : JsonController
     {
         private GzoRepository _repository;
-        public SqlController(GzoRepository repository, IHttpContextAccessor accessor) : base(accessor)
+        public SqlController(GzoRepository repository)
         {
             _repository = repository;
         }

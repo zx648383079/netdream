@@ -10,19 +10,12 @@ namespace NetDream.Base.Http
 {
     public abstract class JsonController : Controller
     {
-        protected IHttpContextAccessor contextAccessor;
-
-        public JsonController(IHttpContextAccessor accessor)
-        {
-            contextAccessor = accessor;
-        }
 
         public IJsonResponse JsonResponse
         {
             get
             {
-                return contextAccessor == null || 
-                    !contextAccessor.HttpContext.Items.ContainsKey(ResponseMiddleware.RESPONSE_KEY) ? new JsonResponse() : contextAccessor.HttpContext.Items[ResponseMiddleware.RESPONSE_KEY] as IJsonResponse;
+                return HttpContext.Items.ContainsKey(ResponseMiddleware.RESPONSE_KEY) ? new JsonResponse() : HttpContext.Items[ResponseMiddleware.RESPONSE_KEY] as IJsonResponse;
             }
         }
     }

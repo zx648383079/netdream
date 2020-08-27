@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -40,6 +42,11 @@ namespace NetDream.Base.Middlewares
             var currentSocket = await context.WebSockets.AcceptWebSocketAsync();
             //string socketId = Guid.NewGuid().ToString();
             string socketId = context.Request.Query["sid"].ToString();
+            var auth = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            if (auth.Succeeded)
+            {
+                var userId = auth.Principal.Identity.Name;
+            }
             if (!_sockets.ContainsKey(socketId))
             {
                 _sockets.TryAdd(socketId, currentSocket);

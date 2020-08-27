@@ -28,6 +28,8 @@ namespace NetDream.Base.Http
         {
             return Render(new
             {
+                code = 200,
+                status = "success",
                 data,
                 message
             });

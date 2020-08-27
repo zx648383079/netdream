@@ -92,7 +92,7 @@ namespace NetDream
             services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
             services.AddSingleton(Configuration);
             services.AddLogging();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            //services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
