@@ -12,6 +12,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using NetDream.Areas.Auth.Repositories;
 using NetDream.Areas.Blog.Repositories;
+using NetDream.Areas.Chat.WebSockets;
 using NetDream.Areas.Contact.Repositories;
 using NetDream.Areas.Gzo.Repositories;
 using NetDream.Areas.Open.Repositories;
@@ -92,11 +93,12 @@ namespace NetDream
             services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
             services.AddSingleton(Configuration);
             services.AddLogging();
+            services.AddWebSocketManager();
             //services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -118,6 +120,7 @@ namespace NetDream
             app.UseCookiePolicy();
             app.UseSession();
             app.UseAuthorization();
+            app.UseMiddleware<ResponseMiddleware>();
             #region Websocket
             var webSocketOptions = new WebSocketOptions()
             {
@@ -125,8 +128,7 @@ namespace NetDream
                 ReceiveBufferSize = 4 * 1024
             };
             app.UseWebSockets(webSocketOptions);
-            app.UseMiddleware<ChatWebSocketMiddleware>();
-            app.UseMiddleware<ResponseMiddleware>();
+            app.MapWebSocketManager("/Chat/Ws", serviceProvider.GetService<ChatRoomHandler>());
             #endregion
 
 
