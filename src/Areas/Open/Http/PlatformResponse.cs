@@ -22,7 +22,8 @@ namespace NetDream.Areas.Open.Http
         {
             return Render(new
             {
-                data
+                data,
+                appid = Platform.Appid
             });
         }
 

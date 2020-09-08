@@ -4,17 +4,16 @@ using NetDream.Base.Http;
 
 namespace NetDream.Areas.Auth.Controllers.Api
 {
-    [Area("Auth/Api")]
     public class HomeController : JsonController
     {
-        public HomeController(IHttpContextAccessor accessor)
+        public HomeController()
         {
         }
 
+        [Route("open/auth")]
         public IActionResult Index()
         {
-
-            return View();
+            return Json(JsonResponse.RenderData(true));
         }
     }
 }
