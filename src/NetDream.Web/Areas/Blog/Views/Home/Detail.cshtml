@@ -1,0 +1,97 @@
+﻿@using NetDream.Web.Areas.Blog.Models;
+@using NPoco;
+@using NetDream.Core.Helpers;
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, NetDream.Web
+@addTagHelper *, Westwind.AspNetCore.Markdown
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var data = ViewData["data"] as BlogModel;
+}
+
+@section Styles {
+    <link type="text/css" href="~/assets/css/blog.css" rel="stylesheet" media="all">
+}
+<div id="book-page" class="book-skin">
+    <div class="book-title">
+        <ul class="book-nav">
+            <li class="book-navicon">
+                <i class="fa fa-bars"></i>
+            </li>
+            <li class="active">
+                <a>@data.Title</a>
+            </li>
+        </ul>
+    </div>
+
+
+    <div class="book-sidebar">
+        <div class="book-chapter">
+            <ul>
+                @foreach (var item in ViewData["categories"] as List<CategoryModel>)
+                {
+                    <li>
+                        <i class="fa fa-bookmark"></i>
+                        <a href="" title="@item.Name">@item.Name</a>
+                        @if (item.BlogCount > 99)
+                        {
+                            <span class="count">
+                                +99
+                            </span>
+                        }
+                        else if (item.BlogCount > 0)
+                        {
+                            <span class="count">
+                                @item.BlogCount
+                            </span>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="book-body open">
+        <a class="book-fork" href="https://github.com/zx648383079/PHP-ZoDream">
+            <img src="~/assets/images/forkme.png" alt="Fork Me On Github">
+        </a>
+        <div class="info">
+            @if (!string.IsNullOrEmpty(data.ProgrammingLanguage))
+            {
+                <a class="language" title="@data.ProgrammingLanguage"><i class="fa fa-code"></i><b>@data.ProgrammingLanguage</b></a>
+
+            }
+            <span class="time" title="发布时间"><i class="fa fa-calendar-check"></i><b>@Time.FormatAgo(data.CreatedAt)</b></span>
+            @if (data.Type == 1)
+            {
+                <span class="type">
+                    <a title="转载">
+                        <i class="fa fa-link"></i><b>转载</b>
+                    </a>
+                </span>
+            }
+        </div>
+        <article id="content" class="content style-type-@data.EditType">
+            <markdown>@data.Content</markdown>
+                <p class="book-copyright">
+                    Reprint please keep the original link:
+                    <a title="@data.Title">@ViewData["fullUrl"]</a>
+                </p>
+        </article>
+        <div class="tools">
+            <span class="comment"><i class="fa fa-comments"></i><b>@data.CommentCount</b></span>
+            <span class="click"><i class="fa fa-eye"></i><b>@data.ClickCount</b></span>
+            <span class="agree recommend-blog"><i class="fas fa-thumbs-up"></i><b>@data.RecommendCount</b></span>
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script src="~/assets/js/blog.min.js"></script>
+    <script>
+        var BASE_URI = '/Blog/';
+    </script>
+}

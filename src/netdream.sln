@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31129.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDream.Core", "NetDream.Core\NetDream.Core.csproj", "{C153B9BA-2F3F-4639-BF05-126D709A446C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Core", "NetDream.Core\NetDream.Core.csproj", "{C153B9BA-2F3F-4639-BF05-126D709A446C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDream.Api", "NetDream.Api\NetDream.Api.csproj", "{5BE8F4C0-AE5F-4E96-9B8C-C42A4B43017E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Api", "NetDream.Api\NetDream.Api.csproj", "{5BE8F4C0-AE5F-4E96-9B8C-C42A4B43017E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDream.Razor", "NetDream.Razor\NetDream.Razor.csproj", "{AAEF2624-6900-4BD5-A4BC-62E22E41D802}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Razor", "NetDream.Razor\NetDream.Razor.csproj", "{AAEF2624-6900-4BD5-A4BC-62E22E41D802}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDream.Web", "NetDream.Web\NetDream.Web.csproj", "{6F0A3C0F-D6B2-4186-A63C-7B2791DD7902}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Web", "NetDream.Web\NetDream.Web.csproj", "{6F0A3C0F-D6B2-4186-A63C-7B2791DD7902}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

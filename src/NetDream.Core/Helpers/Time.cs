@@ -19,6 +19,11 @@ namespace NetDream.Core.Helpers
             return date.ToString(format);
         }
 
+        public static string Format(int timestamp, string format)
+        {
+            return Format(TimestampTo(timestamp), format);
+        }
+
         /// <summary>
         /// 格式化时间
         /// </summary>

@@ -12,6 +12,7 @@ namespace NetDream.Web.Areas.Blog.Entities
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        [Column("blog_count")]
         public int BlogCount { get; set; }
     }
 }

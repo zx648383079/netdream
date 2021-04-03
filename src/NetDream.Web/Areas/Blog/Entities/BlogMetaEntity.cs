@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace NetDream.Web.Areas.Blog.Entities
 {
-    [TableName("blog_tag_relationship")]
-    public class TagRelationshipEntity
+    [TableName("blog_meta")]
+    public class BlogMetaEntity
     {
-        [Column("tag_id")]
-        public int TagId { get; set; }
+        public int Id { get; set; }
         [Column("blog_id")]
         public int BlogId { get; set; }
-        public int Position { get; set; }
+        public string Name { get; set; }
+        public string Content { get; set; }
     }
 }

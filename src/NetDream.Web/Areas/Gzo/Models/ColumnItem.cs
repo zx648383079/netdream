@@ -21,6 +21,7 @@ namespace NetDream.Web.Areas.Gzo.Models
                 case "char":
                 case "varchar":
                 case "text":
+                case "enum":
                     return "string";
                 case "date":
                     return "string";

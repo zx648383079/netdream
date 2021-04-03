@@ -1,0 +1,45 @@
+﻿@using NetDream.Web.Areas.Blog.Models;
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Tag";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link type="text/css" href="~/assets/css/blog.css" rel="stylesheet" media="all">
+}
+<div id="book-page" class="book-skin">
+    <div class="book-title">
+        <ul class="book-nav">
+            <li class="book-navicon">
+                <i class="fa fa-bars"></i>
+            </li>
+            <li class="active">
+                <a>标签</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="book-body">
+        <div class="book-sort">
+            <a asp-area="Blog" asp-controller="Category" asp-action="Index">分类</a>
+            <a class="active">标签</a>
+            <a asp-area="Blog" asp-controller="Archives" asp-action="Index">归档</a>
+        </div>
+        @foreach (var item in ViewData["items"] as List<TagModel>)
+        {
+            <a class="tag-item" href="" style="font-size: @item.FontSize">@item.Name</a>
+        }
+    </div>
+
+
+</div>
+
+
+@section Scripts {
+    <script src="~/assets/js/blog.min.js"></script>
+    <script>
+        var BASE_URI = '/Blog/';
+    </script>
+}
+

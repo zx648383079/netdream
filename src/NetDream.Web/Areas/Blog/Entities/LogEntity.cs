@@ -11,9 +11,12 @@ namespace NetDream.Web.Areas.Blog.Entities
     {
         public int Id { get; set; }
         public int Type { get; set; }
+        [Column("id_value")]
         public int IdValue { get; set; }
+        [Column("user_id")]
         public int UserId { get; set; }
         public int Action { get; set; }
+        [Column("created_at")]
         public int CreatedAt { get; set; }
     }
 }

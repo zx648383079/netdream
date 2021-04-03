@@ -1,9 +1,13 @@
 ﻿@using NetDream.Web.Areas.Blog.Models;
 @using NPoco;
 @using NetDream.Core.Helpers;
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, NetDream.Web
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var items = ViewData["items"] as Page<BlogModel>;
+    var pageIndex = (int)ViewData["pageIndex"];
 }
 
 @section Styles {
@@ -61,30 +65,33 @@
 
     <div class="book-body">
         <div class="book-sort">
-            <a href="">标签</a>
-            <a href="">归档</a>
+            <a asp-area="Blog" asp-controller="Tag" asp-action="Index">标签</a>
+            <a asp-area="Blog" asp-controller="Archives" asp-action="Index">归档</a>
             <a href="">推荐</a>
             <a href="">最新</a>
             <a href="">最热</a>
         </div>
-        @foreach (var item in (ViewData["items"] as Page<BlogModel>).Items)
+        @foreach (var item in items.Items)
         {
             <dl class="book-item">
                 <dt>
-                    <a href="" title="@item.Title">@item.Title</a>
+                    <a href="@Url.Action("Detail", new { id= item.Id })" title="@item.Title">@item.Title</a>
                     <span class="book-time">@Time.FormatAgo(item.CreatedAt)</span>
                 </dt>
                 <dd>
                     <p>@item.Description</p>
                     <a class="author" href=""><i class="fa fa-edit"></i><b></b></a>
                     <span class="comment"><i class="fa fa-comments"></i><b>@item.CommentCount</b></span>
-                    <span class="agree"><i class="fas fa-thumbs-up"></i><b>@item.Recommend</b></span>
+                    <span class="agree"><i class="fas fa-thumbs-up"></i><b>@item.RecommendCount</b></span>
                     <span class="click"><i class="fa fa-eye"></i><b>@item.ClickCount</b></span>
                 </dd>
             </dl>
         }
     </div>
-
+    <div class="book-footer">
+        <pagination url="@ViewData["fullUrl"]" total="@items.TotalItems" page="@pageIndex"></pagination>
+        <div class="book-clear"></div>
+    </div>
 
 </div>
 
