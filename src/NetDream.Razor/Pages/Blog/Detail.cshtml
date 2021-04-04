@@ -1,0 +1,82 @@
+﻿@page
+@using NetDream.Core.Helpers
+@addTagHelper *, Westwind.AspNetCore.Markdown
+@model NetDream.Razor.Pages.Blog.DetailModel
+@{
+}
+
+<div id="book-page" class="book-skin">
+    <div class="book-title">
+        <ul class="book-nav">
+            <li class="book-navicon">
+                <i class="fa fa-bars"></i>
+            </li>
+            <li class="active">
+                <a>@Model.Data.Title</a>
+            </li>
+        </ul>
+    </div>
+
+
+    <div class="book-sidebar">
+        <div class="book-chapter">
+            <ul>
+                @foreach (var item in Model.Categories)
+                {
+                    <li>
+                        <i class="fa fa-bookmark"></i>
+                        <a href="" title="@item.Name">@item.Name</a>
+                        @if (item.BlogCount > 99)
+                        {
+                            <span class="count">
+                                +99
+                            </span>
+                        }
+                        else if (item.BlogCount > 0)
+                        {
+                            <span class="count">
+                                @item.BlogCount
+                            </span>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="book-body open">
+        <a class="book-fork" href="https://github.com/zx648383079/PHP-ZoDream">
+            <img src="~/assets/images/forkme.png" alt="Fork Me On Github">
+        </a>
+        <div class="info">
+            @if (!string.IsNullOrEmpty(Model.Data.ProgrammingLanguage))
+            {
+                <a class="language" title="@Model.Data.ProgrammingLanguage"><i class="fa fa-code"></i><b>@Model.Data.ProgrammingLanguage</b></a>
+
+            }
+            <span class="time" title="发布时间"><i class="fa fa-calendar-check"></i><b>@Time.FormatAgo(Model.Data.CreatedAt)</b></span>
+            @if (Model.Data.Type == 1)
+            {
+                <span class="type">
+                    <a title="转载">
+                        <i class="fa fa-link"></i><b>转载</b>
+                    </a>
+                </span>
+            }
+        </div>
+        <article id="content" class="content style-type-@Model.Data.EditType">
+            <markdown>@Model.Data.Content</markdown>
+            <p class="book-copyright">
+                Reprint please keep the original link:
+                <a title="@Model.Data.Title">@Model.FullUrl</a>
+            </p>
+        </article>
+        <div class="tools">
+            <span class="comment"><i class="fa fa-comments"></i><b>@Model.Data.CommentCount</b></span>
+            <span class="click"><i class="fa fa-eye"></i><b>@Model.Data.ClickCount</b></span>
+            <span class="agree recommend-blog"><i class="fas fa-thumbs-up"></i><b>@Model.Data.RecommendCount</b></span>
+        </div>
+    </div>
+
+</div>
+

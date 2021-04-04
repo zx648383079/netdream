@@ -1,0 +1,129 @@
+﻿@using System.Text.RegularExpressions;
+
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        @if (DirectionLinks && CanPrevious)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@(Url+(Page-1))" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                    <span class="sr-only">上一页</span>
+                </a>
+            </li>
+        }
+
+        @foreach (var item in Items)
+        {
+            @if (item < 1)
+            {
+                <li class="page-item disabled">
+                    <a class="page-link">...</a>
+                </li>
+            }
+            else if (Page == item)
+            {
+                <li class="page-item active">
+                    <a class="page-link">@item</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item" >
+                    <a class="page-link" href="@(Url+item)">@item</a>
+                </li>
+            }
+        }
+        @if (DirectionLinks && CanNext)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@(Url+(Page+1))" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                    <span class="sr-only">下一页</span>
+                </a>
+            </li>
+        }
+
+    </ul>
+</nav>
+
+@code {
+    [Parameter]
+    public long Total { get; set; } = 0;
+    [Parameter]
+    public int PerPage { get; set; } = 20;
+    [Parameter]
+    public int Page { get; set; } = 1;
+    [Parameter]
+    public int PageLength { get; set; } = 7;
+
+    private string url;
+    [Parameter]
+    public string Url
+    {
+        get { return url; }
+        set
+        {
+            if (value.IndexOf('?') < 0)
+            {
+                url = value + "?page=";
+                return;
+            }
+            url = Regex.Replace(value, @"([\?\&])page=\d+\&*", "$1") + "&page=";
+        }
+    }
+
+    [Parameter]
+    public bool DirectionLinks { get; set; } = false;
+
+    public bool CanPrevious { get; set; } = false;
+    public bool CanNext { get; set; } = false;
+    public List<int> Items;
+
+    protected override void OnInitialized()
+    {
+        Items = initLinks(out bool canPrevious, out bool canNext);
+        CanNext = canNext;
+        CanPrevious = canPrevious;
+    }
+
+    private List<int> initLinks(out bool canPrevious, out bool canNext)
+    {
+        var total = (int)Math.Ceiling((double)Total / PerPage);
+        canPrevious = Page > 1;
+        canNext = Page < total;
+        var items = new List<int>();
+        if (total < 2)
+        {
+            return items;
+        }
+        items.Add(1);
+        var lastList = (int)Math.Floor((double)PageLength / 2);
+        var i = Page - lastList;
+        var length = Page + lastList;
+        if (i < 2)
+        {
+            i = 2;
+            length = i + PageLength;
+        }
+        if (length > total - 1)
+        {
+            length = total - 1;
+            i = Math.Max(2, length - PageLength);
+        }
+
+        if (i > 2)
+        {
+            items.Add(0);
+        }
+        for (; i <= length; i++)
+        {
+            items.Add(i);
+        }
+        if (length < total - 1)
+        {
+            items.Add(0);
+        }
+        items.Add(total);
+        return items;
+    }
+}

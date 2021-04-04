@@ -1,0 +1,32 @@
+﻿@page
+@model NetDream.Razor.Pages.Blog.TagModel
+@{
+    ViewData["Title"] = "标签";
+}
+
+<div id="book-page" class="book-skin">
+    <div class="book-title">
+        <ul class="book-nav">
+            <li class="book-navicon">
+                <i class="fa fa-bars"></i>
+            </li>
+            <li class="active">
+                <a>标签</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="book-body">
+        <div class="book-sort">
+            <a asp-area="" asp-page="Category">分类</a>
+            <a class="active">标签</a>
+            <a asp-area="" asp-page="Archives">归档</a>
+        </div>
+        @foreach (var item in Model.Items)
+        {
+            <a class="tag-item" href="" style="font-size: @item.FontSize">@item.Name</a>
+        }
+    </div>
+
+
+</div>

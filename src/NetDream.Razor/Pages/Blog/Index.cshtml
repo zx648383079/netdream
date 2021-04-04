@@ -1,0 +1,89 @@
+﻿@page
+@using NetDream.Core.Helpers
+@addTagHelper *,NetDream.Razor.Components
+@model NetDream.Razor.Pages.Blog.IndexModel
+@{
+    ViewData["Title"] = "博客";
+}
+
+<div id="book-page" class="book-skin">
+    <div class="book-title">
+        <ul class="book-nav">
+            <li class="book-navicon">
+                <i class="fa fa-bars"></i>
+            </li>
+            <li class="active">
+                <a>博客</a>
+            </li>
+        </ul>
+    </div>
+
+
+    <div class="book-sidebar">
+        <div class="book-chapter">
+            <ul>
+                @foreach (var item in Model.Categories)
+                {
+                    <li>
+                        <i class="fa fa-bookmark"></i>
+                        <a href="" title="@item.Name">@item.Name</a>
+                        @if (item.BlogCount > 99)
+                        {
+                            <span class="count">
+                                +99
+                            </span>
+                        }
+                        else if (item.BlogCount > 0)
+                        {
+                            <span class="count">
+                                @item.BlogCount
+                            </span>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+        <div class="book-new">
+            <h3>最新博客</h3>
+            <ul>
+                @foreach (var item in Model.NewItems)
+                {
+                    <li>
+                        <i class="fa fa-bookmark"></i><a href="">@item.Title</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="book-body">
+        <div class="book-sort">
+            <a asp-area="" asp-page="Tag">标签</a>
+            <a asp-area="" asp-page="Archives">归档</a>
+            <a href="">推荐</a>
+            <a href="">最新</a>
+            <a href="">最热</a>
+        </div>
+        @foreach (var item in Model.Items.Items)
+        {
+            <dl class="book-item">
+                <dt>
+                    <a asp-area="" asp-page="Detail" asp-route-id="@item.Id" title="@item.Title">@item.Title</a>
+                    <span class="book-time">@Time.FormatAgo(item.CreatedAt)</span>
+                </dt>
+                <dd>
+                    <p>@item.Description</p>
+                    <a class="author" href=""><i class="fa fa-edit"></i><b></b></a>
+                    <span class="comment"><i class="fa fa-comments"></i><b>@item.CommentCount</b></span>
+                    <span class="agree"><i class="fas fa-thumbs-up"></i><b>@item.RecommendCount</b></span>
+                    <span class="click"><i class="fa fa-eye"></i><b>@item.ClickCount</b></span>
+                </dd>
+            </dl>
+        }
+    </div>
+    <div class="book-footer">
+        <vc:pagination url="@Model.FullUrl" total="@Model.Items.TotalItems" page="@Model.PageIndex"></vc:pagination>
+        <div class="book-clear"></div>
+    </div>
+
+</div>

@@ -1,0 +1,34 @@
+﻿@page
+@model NetDream.Razor.Pages.Blog.CategoryModel
+@{
+}
+
+<div id="book-page" class="book-skin">
+    <div class="book-title">
+        <ul class="book-nav">
+            <li class="book-navicon">
+                <i class="fa fa-bars"></i>
+            </li>
+            <li class="active">
+                <a>分类</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="book-body">
+        <div class="book-sort">
+            <a class="active">分类</a>
+            <a asp-area="" asp-page="Tag">标签</a>
+            <a asp-area="" asp-page="Archives">归档</a>
+        </div>
+        @foreach (var item in Model.Items)
+        {
+            <div class="cat-item">
+                <a>@item.Name</a>
+                <span class="count">(@item.BlogCount)</span>
+            </div>
+        }
+    </div>
+
+
+</div>

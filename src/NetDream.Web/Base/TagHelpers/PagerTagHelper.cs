@@ -30,7 +30,7 @@ namespace NetDream.Web.Base.TagHelpers
                     url = value + "?page=";
                     return;
                 }
-                url = Regex.Replace(value, @"([\?\&])page=\d+\$", "$1") + "&page=";
+                url = Regex.Replace(value, @"([\?\&])page=\d+\&*", "$1") + "&page=";
             }
         }
 
