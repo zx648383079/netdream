@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NetDream.Web.Areas.Auth.Repositories;
-using NetDream.Web.Base.Helpers;
+using NetDream.Modules.Auth.Repositories;
 using NetDream.Web.Base.Http;
 
 namespace NetDream.Web.Areas.Auth.Controllers
@@ -47,7 +45,7 @@ namespace NetDream.Web.Areas.Auth.Controllers
 
             //init the identity instances 
             var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Customer"));
-            //signin 
+            // sign in 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, userPrincipal, new AuthenticationProperties
             {
                 ExpiresUtc = DateTime.UtcNow.AddMinutes(20),

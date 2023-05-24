@@ -1,18 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
-    <PackageReference Include="MySql.Data" Version="8.0.26" />
-    <PackageReference Include="NPoco" Version="5.3.1" />
-    <PackageReference Include="Westwind.AspNetCore.Markdown" Version="3.6.0" />
+    <PackageReference Include="MySql.Data" Version="8.0.33" />
+    <PackageReference Include="NPoco" Version="5.7.1" />
+    <PackageReference Include="Westwind.AspNetCore.Markdown" Version="3.11.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NetDream.Core\NetDream.Core.csproj" />
+    <ProjectReference Include="..\NetDream.Modules.Blog\NetDream.Modules.Blog.csproj" />
   </ItemGroup>
 
 </Project>

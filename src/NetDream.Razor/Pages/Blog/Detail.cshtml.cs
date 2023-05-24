@@ -4,27 +4,28 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NetDream.Razor.Entities;
+using NetDream.Modules.Blog.Entities;
+using NetDream.Modules.Blog.Repositories;
 using NPoco;
 
 namespace NetDream.Razor.Pages.Blog
 {
     public class DetailModel : PageModel
     {
-        private readonly IDatabase _db;
-        public DetailModel(IDatabase db)
+        private readonly BlogRepository _repository;
+        public DetailModel(BlogRepository repository)
         {
-            _db = db;
+            _repository = repository;
         }
 
         public BlogEntity Data;
-        public List<CategoryEntity> Categories;
+        public List<NetDream.Modules.Blog.Models.CategoryModel> Categories;
         public string FullUrl;
 
         public void OnGet(int id)
         {
-            Data = _db.SingleById<BlogEntity>(id);
-            Categories = _db.Fetch<CategoryEntity>();
+            Data = _repository.GetBlog(id);
+            Categories = _repository.Categories();
             FullUrl = $"{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
         }
     }

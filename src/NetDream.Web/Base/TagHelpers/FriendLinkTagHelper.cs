@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using NetDream.Web.Areas.Contact.Repositories;
+using NetDream.Modules.Contact.Repositories;
 using NetDream.Web.Models;
 using System.Text;
 

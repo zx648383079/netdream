@@ -10,11 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NetDream.Api.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Api
 {
@@ -54,7 +50,7 @@ namespace NetDream.Api
             //添加身份验证
             services.AddAuthentication(options =>
             {
-                //认证middleware配置
+                //认证 middleware配置
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
@@ -69,14 +65,14 @@ namespace NetDream.Api
                     ValidIssuer = jwtSettings.Issuer,
                     //颁发给谁
                     ValidAudience = jwtSettings.Audience,
-                    //这里的key要进行加密
+                    //这里的 key要进行加密
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
 
                     /***********************************TokenValidationParameters的参数默认值***********************************/
                     // RequireSignedTokens = true,
                     // SaveSigninToken = false,
                     // ValidateActor = false,
-                    // 将下面两个参数设置为false，可以不验证Issuer和Audience，但是不建议这样做。
+                    // 将下面两个参数设置为 false，可以不验证Issuer和Audience，但是不建议这样做。
                     // ValidateAudience = true,
                     // ValidateIssuer = true, 
                     // ValidateIssuerSigningKey = false,

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using NetDream.Web.Areas.Blog.Repositories;
-using NetDream.Web.Base.Helpers;
 using NetDream.Core.Helpers;
+using NetDream.Modules.Blog.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

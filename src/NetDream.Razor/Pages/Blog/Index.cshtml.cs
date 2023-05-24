@@ -1,25 +1,21 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NetDream.Razor.Entities;
-using NPoco;
+using NetDream.Modules.Blog.Models;
+using NetDream.Modules.Blog.Repositories;
 
 namespace NetDream.Razor.Pages.Blog
 {
     public class IndexModel : PageModel
     {
-        private readonly IDatabase _db;
-        public IndexModel(IDatabase db)
+        private readonly BlogRepository _repository;
+        public IndexModel(BlogRepository repository)
         {
-            _db = db;
+            _repository = repository;
         }
 
-        public NPoco.Page<BlogEntity> Items;
-        public List<CategoryEntity> Categories;
-        public List<BlogEntity> NewItems;
+        public NPoco.Page<BlogModel> Items;
+        public List<NetDream.Modules.Blog.Models.CategoryModel> Categories;
+        public List<BlogModel> NewItems;
         public string FullUrl;
         public int PageIndex;
 
@@ -27,9 +23,9 @@ namespace NetDream.Razor.Pages.Blog
         {
             PageIndex = page;
             FullUrl = $"{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
-            Items = _db.Page<BlogEntity>(page, 20, "SELECT * FROM blog");
-            Categories = _db.Fetch<CategoryEntity>();
-            NewItems = _db.Fetch<BlogEntity>("select id, title, description, created_at from blog order by created_at desc limit @0", 5);
+            Items = _repository.GetPage(page);
+            Categories = _repository.Categories();
+            NewItems = _repository.GetNewBlogs(5);
         }
     }
 }

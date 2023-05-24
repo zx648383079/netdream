@@ -8,20 +8,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using NetDream.Web.Areas.Auth.Repositories;
-using NetDream.Web.Areas.Blog.Repositories;
-using NetDream.Web.Areas.Contact.Repositories;
-using NetDream.Web.Areas.Gzo.Repositories;
-using NetDream.Web.Areas.Open.Repositories;
+using NetDream.Modules.Auth.Repositories;
+using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Contact.Repositories;
+using NetDream.Modules.Gzo.Repositories;
+using NetDream.Modules.OpenPlatform.Repositories;
 using NetDream.Web.Base.Middlewares;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NPoco;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace NetDream.Web
 {
@@ -68,7 +65,6 @@ namespace NetDream.Web
             RegisterAuthRepositories(services);
 
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
                 .AddNewtonsoftJson(options =>
                 {
                     // 循环引用
@@ -77,7 +73,7 @@ namespace NetDream.Web
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                     // 设置时间格式
                     options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
-                    // 如字段为null值，该字段不会返回到前端
+                    // 如字段为 null值，该字段不会返回到前端
                     // options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 });
             services.AddTransient<IActionContextAccessor, ActionContextAccessor>();

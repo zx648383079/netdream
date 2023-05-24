@@ -18,7 +18,7 @@ namespace NetDream.Api.Models
         public string Audience { get; set; }
 
         /// <summary>
-        /// 加密的key（SecretKey必须大于16个,是大于，不是大于等于）
+        /// 加密的 key（SecretKey必须大于16个,是大于，不是大于等于）
         /// </summary>
         public string SecretKey { get; set; }
     }

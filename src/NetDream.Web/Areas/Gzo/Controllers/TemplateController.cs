@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NetDream.Web.Areas.Gzo.Repositories;
+using NetDream.Modules.Gzo.Repositories;
 using NetDream.Web.Base.Helpers;
 using NetDream.Web.Base.Http;
 

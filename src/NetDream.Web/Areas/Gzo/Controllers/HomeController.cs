@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using NetDream.Web.Areas.Gzo.Repositories;
+using NetDream.Modules.Gzo.Repositories;
 using NetDream.Web.Base.Helpers;
 
 namespace NetDream.Web.Areas.Gzo.Controllers

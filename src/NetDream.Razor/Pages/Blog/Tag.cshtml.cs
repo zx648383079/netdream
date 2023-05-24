@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NetDream.Razor.Entities;
+using NetDream.Modules.Blog.Repositories;
 using NPoco;
 
 namespace NetDream.Razor.Pages.Blog
@@ -12,17 +12,17 @@ namespace NetDream.Razor.Pages.Blog
     public class TagModel : PageModel
     {
 
-        private readonly IDatabase _db;
-        public TagModel(IDatabase db)
+        private readonly BlogRepository _repository;
+        public TagModel(BlogRepository repository)
         {
-            _db = db;
+            _repository = repository;
         }
 
-        public List<TagEntity> Items;
+        public List<NetDream.Modules.Blog.Models.TagModel> Items;
 
         public void OnGet()
         {
-            Items = _db.Fetch<TagEntity>();
+            Items = _repository.GetTags();
         }
     }
 }
