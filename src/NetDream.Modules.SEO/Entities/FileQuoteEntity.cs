@@ -1,15 +1,10 @@
-﻿using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using NPoco;
 namespace NetDream.Modules.SEO.Entities
 {
-    [TableName("base_file_quote")]
+    [TableName(ND_TABLE_NAME)]
     public class FileQuoteEntity
     {
+        internal const string ND_TABLE_NAME = "base_file_quote";
         public int Id { get; set; }
         [Column("file_id")]
         public int FileId { get; set; }

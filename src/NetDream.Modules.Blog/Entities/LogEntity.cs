@@ -1,18 +1,15 @@
-﻿using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+using NPoco;
 namespace NetDream.Modules.Blog.Entities
 {
-    [TableName("blog_log")]
+    [TableName(ND_TABLE_NAME)]
     public class LogEntity
     {
+        internal const string ND_TABLE_NAME = "blog_log";
         public int Id { get; set; }
-        public int Type { get; set; }
-        [Column("id_value")]
-        public int IdValue { get; set; }
+        [Column("item_type")]
+        public int ItemType { get; set; }
+        [Column("item_id")]
+        public int ItemId { get; set; }
         [Column("user_id")]
         public int UserId { get; set; }
         public int Action { get; set; }

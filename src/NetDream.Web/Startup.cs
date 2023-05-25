@@ -8,11 +8,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using NetDream.Core.Interfaces;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.Blog.Repositories;
 using NetDream.Modules.Contact.Repositories;
 using NetDream.Modules.Gzo.Repositories;
 using NetDream.Modules.OpenPlatform.Repositories;
+using NetDream.Modules.SEO.Repositories;
 using NetDream.Web.Base.Middlewares;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -62,6 +64,10 @@ namespace NetDream.Web
                     o.AccessDeniedPath = new PathString("/Home/Error");     //禁止访问路径：当用户试图访问资源时，但未通过该资源的任何授权策略，请求将被重定向到这个相对路径。
                     o.SlidingExpiration = true; //Cookie可以分为永久性的和临时性的。 临时性的是指只在当前浏览器进程里有效，浏览器一旦关闭就失效（被浏览器删除）。 永久性的是指Cookie指定了一个过期时间，在这个时间到达之前，此cookie一直有效（浏览器一直记录着此cookie的存在）。 slidingExpriation的作用是，指示浏览器把cookie作为永久性cookie存储，但是会自动更改过期时间，以使用户不会在登录后并一直活动，但是一段时间后却自动注销。也就是说，你10点登录了，服务器端设置的TimeOut为30分钟，如果slidingExpriation为false,那么10: 30以后，你就必须重新登录。如果为true的话，你10: 16分时打开了一个新页面，服务器就会通知浏览器，把过期时间修改为10: 46。
                 });
+            using (var db = new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance))
+            {
+                RegisterGlobeRepositories(db, services);
+            } 
             RegisterAuthRepositories(services);
 
             services.AddMvc()
@@ -78,6 +84,7 @@ namespace NetDream.Web
                 });
             services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
             services.AddSingleton(Configuration);
+            services.AddMemoryCache();
             services.AddLogging();
             //services.AddWebSocketManager();
         }
@@ -127,6 +134,11 @@ namespace NetDream.Web
             });
         }
 
+        private static void RegisterGlobeRepositories(IDatabase db, IServiceCollection services)
+        {
+            var option = new OptionRepository(db);
+            services.AddSingleton(typeof(IGlobeOption), option.LoadOption());
+        }
         private static void RegisterAuthRepositories(IServiceCollection services)
         {
             services.AddScoped(typeof(UserRepository));

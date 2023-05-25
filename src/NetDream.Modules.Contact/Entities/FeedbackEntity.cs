@@ -1,22 +1,23 @@
-﻿using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using NPoco;
 namespace NetDream.Modules.Contact.Entities
 {
-    [TableName("cif_feedback")]
+    [TableName(ND_TABLE_NAME)]
     public class FeedbackEntity
     {
+        internal const string ND_TABLE_NAME = "cif_feedback";
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
-        public string Content { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
         public int Status { get; set; }
-        public int CreatedAt { get; set; }
+        [Column("open_status")]
+        public int OpenStatus { get; set; }
+        [Column("user_id")]
+        public int UserId { get; set; }
+        [Column("updated_at")]
         public int UpdatedAt { get; set; }
+        [Column("created_at")]
+        public int CreatedAt { get; set; }
     }
 }

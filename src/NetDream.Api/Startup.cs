@@ -2,11 +2,9 @@ using IdentityModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NetDream.Api.Models;
@@ -27,10 +25,10 @@ namespace NetDream.Api
         public void ConfigureServices(IServiceCollection services)
         {
             #region 跨域
-            var urls = Configuration["AllowedHosts"].Split(',');
+            var hosts = Configuration["AllowedHosts"].Split(',');
             services.AddCors(options =>
                 options.AddPolicy("AllowSameDomain",
-                builder => builder.WithOrigins(urls)
+                builder => builder.WithOrigins(hosts)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowAnyOrigin()
@@ -39,7 +37,7 @@ namespace NetDream.Api
             #endregion
 
             #region Jwt配置
-            //将appsettings.json中的JwtSettings部分文件读取到JwtSettings中，这是给其他地方用的
+            //将 appsettings.json中的JwtSettings部分文件读取到JwtSettings中，这是给其他地方用的
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
 
             //由于初始化的时候我们就需要用，所以使用Bind的方式读取配置
@@ -87,6 +85,7 @@ namespace NetDream.Api
 
             #endregion
             services.AddControllers();
+            services.AddMemoryCache();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "NetDream.Api", Version = "v1" });

@@ -18,9 +18,9 @@ namespace NetDream.Modules.OpenPlatform.Repositories
             _db = db;
         }
 
-        public PlatformModel GetByAppId(string appid)
+        public PlatformModel GetByAppId(string appId)
         {
-            return _db.Single<PlatformModel>("where appid=@0", appid);
+            return _db.Single<PlatformModel>("where appid=@0", appId);
         }
     }
 }

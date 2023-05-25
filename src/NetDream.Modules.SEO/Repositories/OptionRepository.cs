@@ -1,25 +1,28 @@
 ﻿using NetDream.Modules.SEO.Entities;
+using NetDream.Modules.SEO.Models;
 using NPoco;
 
 namespace NetDream.Modules.SEO.Repositories
 {
     public class OptionRepository
     {
-        private readonly Dictionary<string, object> data = new();
-
-        private readonly bool booted = false;
+        private readonly IDatabase _db;
 
         public OptionRepository(IDatabase db)
         {
-            if (booted)
-            {
-                return;
-            }
-            booted = true;
-            data = new Dictionary<string, object>();
-            var items = db.Fetch<OptionEntity>();
+            _db = db;
+        }
+
+        public GlobeOption LoadOption()
+        {
+            var data = new GlobeOption();
+            var items = _db.Fetch<OptionEntity>();
             foreach (var item in items)
             {
+                if (string.IsNullOrWhiteSpace(item.Code))
+                {
+                    continue;
+                }
                 var val = FormatOptionValue(item);
                 if (val is null)
                 {
@@ -27,11 +30,7 @@ namespace NetDream.Modules.SEO.Repositories
                 }
                 data.Add(item.Code, val);
             }
-        }
-
-        public T? Get<T>(string key)
-        {
-            return data.ContainsKey(key) ? (T)data[key] : default;
+            return data;
         }
 
         public static object? FormatOptionValue(OptionEntity option)

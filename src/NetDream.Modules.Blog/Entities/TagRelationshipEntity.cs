@@ -1,14 +1,10 @@
-﻿using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+using NPoco;
 namespace NetDream.Modules.Blog.Entities
 {
-    [TableName("blog_tag_relationship")]
+    [TableName(ND_TABLE_NAME)]
     public class TagRelationshipEntity
     {
+        internal const string ND_TABLE_NAME = "blog_tag_relationship";
         [Column("tag_id")]
         public int TagId { get; set; }
         [Column("blog_id")]

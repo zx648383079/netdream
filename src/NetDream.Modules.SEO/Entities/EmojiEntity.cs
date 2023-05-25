@@ -1,20 +1,15 @@
-﻿using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using NPoco;
 namespace NetDream.Modules.SEO.Entities
 {
-    [TableName("seo_emoji")]
+    [TableName(ND_TABLE_NAME)]
     public class EmojiEntity
     {
+        internal const string ND_TABLE_NAME = "seo_emoji";
         public int Id { get; set; }
         [Column("cat_id")]
         public int CatId { get; set; }
-        public string? Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public int Type { get; set; }
-        public string? Content { get; set; }
+        public string Content { get; set; } = string.Empty;
     }
 }

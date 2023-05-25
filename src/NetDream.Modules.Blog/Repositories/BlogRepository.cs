@@ -1,4 +1,5 @@
 ﻿using NetDream.Core.Helpers;
+using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Models;
 using NPoco;
 using System;
@@ -21,12 +22,12 @@ namespace NetDream.Modules.Blog.Repositories
 
         public Page<BlogModel> GetPage(int page)
         {
-            return _db.Page<BlogModel>(page, 20, "SELECT * FROM blog");
+            return _db.Page<BlogModel>(page, 20, $"SELECT * FROM {BlogEntity.ND_TABLE_NAME}");
         }
 
         public List<BlogModel> GetNewBlogs(int count = 8)
         {
-            return _db.Fetch<BlogModel>("select id, title, description, created_at from blog order by created_at desc limit @0", count);
+            return _db.Fetch<BlogModel>($"select id, title, description, created_at from {BlogEntity.ND_TABLE_NAME} order by created_at desc limit @0", count);
         }
 
         public List<TagModel> GetTags()
@@ -46,7 +47,7 @@ namespace NetDream.Modules.Blog.Repositories
 
         public List<BlogArchives> GetArchives()
         {
-            var data = _db.Fetch<BlogModel>("select id, title, created_at from blog order by created_at desc");
+            var data = _db.Fetch<BlogModel>($"select id, title, created_at from {BlogEntity.ND_TABLE_NAME} order by created_at desc");
             var items = new List<BlogArchives>();
             BlogArchives? last = null;
             foreach (var item in data)

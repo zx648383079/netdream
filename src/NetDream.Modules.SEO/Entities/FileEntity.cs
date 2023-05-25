@@ -1,21 +1,16 @@
-﻿using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using NPoco;
 namespace NetDream.Modules.SEO.Entities
 {
-    [TableName("base_file")]
+    [TableName(ND_TABLE_NAME)]
     public class FileEntity
     {
+        internal const string ND_TABLE_NAME = "base_file";
         public int Id { get; set; }
-        public string? Name { get; set; }
-        public string? Extension { get; set; }
-        public string? Md5 { get; set; }
-        public string? Path { get; set; }
-        public string? Size { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Extension { get; set; } = string.Empty;
+        public string Md5 { get; set; } = string.Empty;
+        public string Path { get; set; } = string.Empty;
+        public string Size { get; set; } = string.Empty;
         public int Folder { get; set; }
         [Column("updated_at")]
         public int UpdatedAt { get; set; }

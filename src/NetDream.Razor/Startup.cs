@@ -29,6 +29,7 @@ namespace NetDream.Razor
                 return new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance);
             });
             RegisterRepositories(services);
+            services.AddMemoryCache();
             services.AddRazorPages();
         }
 
