@@ -7,7 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NetDream.Api.Base.Http;
+using NetDream.Api.Base.Middleware;
 using NetDream.Api.Models;
+using NetDream.Core.Interfaces;
+using NetDream.Modules.Auth.Repositories;
+using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Contact.Repositories;
+using NetDream.Modules.Gzo.Repositories;
+using NetDream.Modules.OpenPlatform.Repositories;
+using NetDream.Modules.SEO.Repositories;
+using NPoco;
 using System.Text;
 
 namespace NetDream.Api
@@ -84,8 +94,17 @@ namespace NetDream.Api
             });
 
             #endregion
+            services.AddScoped<IDatabase>(x => {
+                return new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance);
+            });
+            using (var db = new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance))
+            {
+                RegisterGlobeRepositories(db, services);
+            }
+            RegisterAuthRepositories(services);
             services.AddControllers();
             services.AddMemoryCache();
+            services.AddHttpContextAccessor();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "NetDream.Api", Version = "v1" });
@@ -103,13 +122,29 @@ namespace NetDream.Api
             }
 
             app.UseRouting();
-
+            app.UseMiddleware<ResponseMiddleware>();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private static void RegisterGlobeRepositories(IDatabase db, IServiceCollection services)
+        {
+            var option = new OptionRepository(db);
+            services.AddSingleton(typeof(IGlobeOption), option.LoadOption());
+        }
+        private static void RegisterAuthRepositories(IServiceCollection services)
+        {
+            services.AddScoped(typeof(ClientEnvironment), typeof(IClientEnvironment));
+            services.AddScoped(typeof(UserRepository));
+            services.AddScoped(typeof(BlogRepository));
+            services.AddScoped(typeof(GzoRepository));
+            services.AddScoped(typeof(ContactRepository));
+            services.AddScoped(typeof(OpenRepository));
+            // services.AddSingleton(typeof(OptionRepository));
         }
     }
 }

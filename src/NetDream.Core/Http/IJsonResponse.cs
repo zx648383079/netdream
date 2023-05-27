@@ -6,9 +6,9 @@ namespace NetDream.Core.Http
     {
         public object Render(object data);
 
-        public object RenderData(object data);
+        public object RenderData<T>(T data);
 
-        public object RenderData(object data, string message);
+        public object RenderData<T>(T data, string message);
 
         public object RenderPage<T>(Page<T> page);
 

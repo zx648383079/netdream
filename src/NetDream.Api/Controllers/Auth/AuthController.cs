@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NetDream.Api.Models;
 using NetDream.Modules.Auth.Models;
+using NetDream.Modules.OpenPlatform.Models;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -26,16 +27,18 @@ namespace NetDream.Api.Controllers.Auth
         [Authorize]
         [Route("get_user_info")]
         [HttpPost]
+        [ProducesResponseType(typeof(UserModel), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult GetUserInfo()
         {
-            //获取当前请求用户的信息，包含token信息
+            //获取当前请求用户的信息，包含 token信息
             var user = HttpContext.User;
             // user.Identity.Name;
             return Ok(user.Identity);
         }
 
         /// <summary>
-        /// 获取token
+        /// 获取 token
         /// </summary>
         /// <param name="user"></param>
         private object Token(UserModel user)

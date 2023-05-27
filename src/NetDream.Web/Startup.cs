@@ -15,7 +15,7 @@ using NetDream.Modules.Contact.Repositories;
 using NetDream.Modules.Gzo.Repositories;
 using NetDream.Modules.OpenPlatform.Repositories;
 using NetDream.Modules.SEO.Repositories;
-using NetDream.Web.Base.Middlewares;
+using NetDream.Web.Base.Middleware;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NPoco;

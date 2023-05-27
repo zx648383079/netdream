@@ -8,13 +8,13 @@ namespace NetDream.Modules.Auth.Entities
         public int Id { get; set; }
         [Column("user_id")]
         public int UserId { get; set; }
-        public int Type { get; set; }
+        public byte Type { get; set; }
         [Column("item_id")]
         public int ItemId { get; set; }
         public int Money { get; set; }
         [Column("total_money")]
         public int TotalMoney { get; set; }
-        public int Status { get; set; }
+        public byte Status { get; set; }
         public string Remark { get; set; } = string.Empty;
         [Column("updated_at")]
         public int UpdatedAt { get; set; }

@@ -19,7 +19,8 @@ namespace NetDream.Modules.Contact.Repositories
 
         public List<FriendLinkEntity> FriendLinks()
         {
-            return _db.Fetch<FriendLinkEntity>("SELECT * FROM `cif_friend_link` WHERE status = 1");
+            return _db.Fetch<FriendLinkEntity>(
+                $"SELECT * FROM `{FriendLinkEntity.ND_TABLE_NAME}` WHERE status = 1");
         }
     }
 }

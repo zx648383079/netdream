@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NetDream.Core.Http;
 using NPoco;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace NetDream.Web.Base.Http
             return data;
         }
 
-        public object RenderData(object data)
+        public object RenderData<T>(T data)
         {
             return Render(new
             {
@@ -24,7 +25,7 @@ namespace NetDream.Web.Base.Http
             });
         }
 
-        public object RenderData(object data, string message)
+        public object RenderData<T>(T data, string message)
         {
             return Render(new
             {

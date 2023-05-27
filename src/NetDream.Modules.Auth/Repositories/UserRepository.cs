@@ -1,11 +1,6 @@
 ﻿using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Models;
 using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Auth.Repositories
 {
@@ -34,5 +29,9 @@ namespace NetDream.Modules.Auth.Repositories
                 Id = user.Id,
             };
         }
+
+        
+
+        
     }
 }

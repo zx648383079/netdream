@@ -140,7 +140,8 @@ namespace NetDream.Modules.Gzo.Repositories
         {
             return data.Type switch
             {
-                "tinyint" or "smallint" => "int",
+                "tinyint" => "byte",
+                "smallint" => "int",
                 "char" or "varchar" or "text" or "mediumtext" or "longtext" or "enum" => "string",
                 "date" => "string",
                 "time" => "TimeSpan",

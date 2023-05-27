@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NetDream.Web.Base.Middlewares;
+using NetDream.Core.Http;
+using NetDream.Web.Base.Middleware;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -73,6 +73,11 @@ namespace NetDream.Core.Helpers
             return Convert.ToInt32((time.Ticks - dateTimeStart.Ticks) / 10000000);
         }
 
+        public static int TimestampNow()
+        {
+            return TimestampFrom(DateTime.Now);
+        }
+
         /// <summary>
         /// 格式化多久之前
         /// </summary>

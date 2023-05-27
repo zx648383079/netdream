@@ -6,10 +6,9 @@ using NetDream.Web.Base.Http;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace NetDream.Web.Base.Middlewares
+namespace NetDream.Web.Base.Middleware
 {
     public class ResponseMiddleware
     {

@@ -1,5 +1,6 @@
 ﻿using NetDream.Core.Http;
 using NetDream.Modules.OpenPlatform.Entities;
+using NetDream.Modules.OpenPlatform.Models;
 using NPoco;
 
 namespace NetDream.Modules.OpenPlatform.Http
@@ -14,28 +15,26 @@ namespace NetDream.Modules.OpenPlatform.Http
             return data;
         }
 
-        public object RenderData(object data)
+        public object RenderData<T>(T data)
         {
-            return Render(new {
-                data,
-                appid = Platform?.Appid
+            return Render(new DataOneResponse<T>(data)
+            {
+                Appid = Platform?.Appid,
             });
         }
 
-        public object RenderData(object data, string message)
+        public object RenderData<T>(T data, string message)
         {
-            return Render(new {
-                data,
-                message
+            return Render(new DataOneResponse<T>(data)
+            {
+                Appid = Platform?.Appid,
+                Message = message
             });
         }
 
         public object RenderFailure(string message, int code)
         {
-            return new {
-                code,
-                message
-            };
+            return new FailureResponse(code, message);
         }
 
         public object RenderFailure(string message)
@@ -46,15 +45,7 @@ namespace NetDream.Modules.OpenPlatform.Http
         public object RenderPage<T>(Page<T> page)
         {
 
-            return Render(new {
-                data = page.Items,
-                paging = new {
-                    limit = page.ItemsPerPage,
-                    offset = page.CurrentPage,
-                    total = page.TotalItems,
-                    more = page.CurrentPage < page.TotalPages
-                }
-            });
+            return Render(new PageResponse<T>(page));
         }
     }
 }
