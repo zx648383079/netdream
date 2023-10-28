@@ -21,7 +21,7 @@ namespace NetDream.Web.Areas.Gzo.Controllers
 
         public IActionResult Index()
         {
-            return Json(JsonResponse.RenderData(null));
+            return Json(JsonResponse.RenderData<object>(null));
         }
 
         public IActionResult Table()

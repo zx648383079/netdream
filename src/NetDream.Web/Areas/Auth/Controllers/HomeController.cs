@@ -66,7 +66,7 @@ namespace NetDream.Web.Areas.Auth.Controllers
                 var userId = auth.Principal.Identity.Name;
             }
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Json(JsonResponse.RenderData(null, "退出成功"));
+            return Json(JsonResponse.RenderData<object>(null, "退出成功"));
         }
     }
 }

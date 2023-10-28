@@ -1,3 +1,5 @@
+using NetDream.Core.Helpers;
+
 namespace NetDream.Tests
 {
     [TestClass]
@@ -6,6 +8,7 @@ namespace NetDream.Tests
         [TestMethod]
         public void TestMethod1()
         {
+            
         }
     }
 }

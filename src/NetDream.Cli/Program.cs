@@ -9,23 +9,50 @@ namespace NetDream.Cli
     {
         static void Main(string[] args)
         {
-            if (args.Length == 0)
+            if (args.Length > 0)
             {
-                Console.WriteLine("-g Generate Database Entities");
+                RunWidthArgs(args);
                 return;
             }
+            // Console.WriteLine("-g Generate Database Entities");
+            Console.WriteLine("Please select mode:");
+            Console.WriteLine("1. Generate Database Entities");
+            Console.Write("input number:");
+            var line = Console.ReadLine();
+            if (!int.TryParse(line, out var mode) || mode != 1)
+            {
+                Console.WriteLine("Input error");
+                Console.ReadKey();
+                return;
+            }
+            Console.Write("Please select save folder:");
+            var workspace = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(workspace))
+            {
+                Console.WriteLine("Input error");
+                Console.ReadKey();
+                return;
+            }
+            Console.Write("Please input table prefix:");
+            var prefix = Console.ReadLine();
+            GenerateEntity(prefix is null ? string.Empty : prefix, workspace);
+            Console.WriteLine("Generate finished!");
+            Console.ReadKey();
+        }
+
+        static void RunWidthArgs(string[] args)
+        {
             switch (args[0])
             {
                 case "-g":
-                    GenerateEntity(args);
+                    GenerateEntity(args.Length > 1 ? args[1] : string.Empty, Environment.CurrentDirectory);
                     break;
             }
         }
 
-        static void GenerateEntity(string[] args)
+        static void GenerateEntity(string dbPrefix, string workspace)
         {
             var binFolder = AppDomain.CurrentDomain.BaseDirectory;
-            var workspace = Environment.CurrentDirectory;
             var configFile = Path.GetFullPath(Path.Combine(binFolder, "../../../../NetDream.Web/appsettings.json"));
             var config = JsonSerializer.Deserialize<Configuration>(File.ReadAllText(configFile));
             if (string.IsNullOrEmpty(config?.ConnectionStrings.Default))
@@ -37,7 +64,7 @@ namespace NetDream.Cli
             using var db = new Database(connectString, DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance);
 
             //Console.WriteLine("bin folder: " + binFolder);
-            //Console.WriteLine("workspace: " + workspace);
+            Console.WriteLine("workspace: " + workspace);
             //Console.WriteLine("config: " + configFile);
             Console.WriteLine("config: " + config.ConnectionStrings?.Default);
             Console.WriteLine("Generate Model ...");
@@ -46,7 +73,7 @@ namespace NetDream.Cli
                 Schema = connectString
             };
             Console.WriteLine($"schema: {repository.Schema}");
-            repository.BatchGenerateModel(args.Length > 1 ? args[1] : string.Empty, workspace);
+            repository.BatchGenerateModel(dbPrefix, workspace);
             Console.WriteLine("Generate Model Finished");
         }
     }
