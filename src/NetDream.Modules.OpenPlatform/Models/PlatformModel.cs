@@ -8,6 +8,17 @@ namespace NetDream.Modules.OpenPlatform.Models
 {
     public class PlatformModel : PlatformEntity
     {
+
+        public int RequestTime()
+        {
+
+        }
+
+        public int ResponseTime()
+        {
+            return Time.TimestampFrom(DateTime.Now);
+        }
+
         /// <summary>
         /// 根据路径判断是否允许访问此路径
         /// </summary>

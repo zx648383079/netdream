@@ -9,23 +9,15 @@ using System.Threading.Tasks;
 
 namespace NetDream.Api.Base.Middleware
 {
-    public class ResponseMiddleware
+    public class ResponseMiddleware(RequestDelegate next)
     {
         public const string RESPONSE_KEY = "json";
-
-        private readonly RequestDelegate _next;
-
-        public ResponseMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
 
         public Task InvokeAsync(HttpContext context, OpenRepository repository)
         {
             var res = new PlatformResponse();
             if (!context.Request.Query.ContainsKey("appid"))
             {
-
                 return JsonAsync(context, res.RenderFailure("APP ID error"), 404);
             }
             var appId = context.Request.Query["appid"];
@@ -48,7 +40,7 @@ namespace NetDream.Api.Base.Middleware
             }
             res.Platform = model;
             context.Items.Add(RESPONSE_KEY, res);
-            return _next.Invoke(context);
+            return next.Invoke(context);
         }
 
         public Task JsonAsync(HttpContext context, object data, int code)

@@ -10,11 +10,14 @@ using Microsoft.OpenApi.Models;
 using NetDream.Api.Base.Http;
 using NetDream.Api.Base.Middleware;
 using NetDream.Api.Models;
+using NetDream.Core.Http;
 using NetDream.Core.Interfaces;
+using NetDream.Core.Securities;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.Blog.Repositories;
 using NetDream.Modules.Contact.Repositories;
 using NetDream.Modules.Gzo.Repositories;
+using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Modules.OpenPlatform.Repositories;
 using NetDream.Modules.SEO.Repositories;
 using NPoco;
@@ -102,6 +105,8 @@ namespace NetDream.Api
                 RegisterGlobeRepositories(db, services);
             }
             RegisterAuthRepositories(services);
+            services.AddTransient<ISecurity, Encryptor>();
+            services.AddTransient<IJsonResponse, PlatformResponse>();
             services.AddControllers();
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
