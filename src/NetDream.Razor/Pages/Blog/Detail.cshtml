@@ -54,7 +54,7 @@
                 <a class="language" title="@Model.Data.ProgrammingLanguage"><i class="fa fa-code"></i><b>@Model.Data.ProgrammingLanguage</b></a>
 
             }
-            <span class="time" title="发布时间"><i class="fa fa-calendar-check"></i><b>@Time.FormatAgo(Model.Data.CreatedAt)</b></span>
+            <span class="time" title="发布时间"><i class="fa fa-calendar-check"></i><b>@TimeHelper.FormatAgo(Model.Data.CreatedAt)</b></span>
             @if (Model.Data.Type == 1)
             {
                 <span class="type">

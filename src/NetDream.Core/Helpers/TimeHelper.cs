@@ -2,7 +2,7 @@
 
 namespace NetDream.Core.Helpers
 {
-    public static class Time
+    public static class TimeHelper
     {
         /// <summary>
         /// 格式化时间

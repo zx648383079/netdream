@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public partial class AuthRepository
+    public partial class AuthRepository(IDatabase db, IGlobeOption option, IClientEnvironment client)
     {
         const byte ACCOUNT_TYPE_NAME = 1;
         const byte ACCOUNT_TYPE_EMAIL = 2;
@@ -31,25 +31,14 @@ namespace NetDream.Modules.Auth.Repositories
         const string UNSET_PASSWORD = "no_password";
         const string OPTION_REGISTER_CODE = "auth_register";
 
-        private readonly IDatabase _db;
-        private readonly IGlobeOption _option;
-        private readonly IClientEnvironment _client;
-
-        public AuthRepository(IDatabase db, IGlobeOption option, IClientEnvironment client)
-        {
-            _db = db;
-            _option = option;
-            _client = client;
-        }
-
         public AuthRegisterType RegisterType {
             get {
-                var val = _option.Get<int>(OPTION_REGISTER_CODE);
+                var val = option.Get<int>(OPTION_REGISTER_CODE);
                 return (AuthRegisterType)val;
             }
         }
 
-        public string EmptyEmail => $"zreno_{_client.Now}@zodream.cn";
+        public string EmptyEmail => $"zreno_{client.Now}@zodream.cn";
 
         public static bool IsEmptyEmail(string? email)
         {
@@ -65,8 +54,8 @@ namespace NetDream.Modules.Auth.Repositories
         /// <returns></returns>
         public bool LoginPreCheck(string ip, string account, string? captcha = null)
         {
-            var today = Time.TimestampFrom(DateTime.Today);
-            var count = _db.ExecuteScalar<int>($"select COUNT(id) as count from {LoginLogEntity.ND_TABLE_NAME} where ip=@0 and status=0 and created_at>=@1", ip, today);
+            var today = TimeHelper.TimestampFrom(DateTime.Today);
+            var count = db.ExecuteScalar<int>($"select COUNT(id) as count from {LoginLogEntity.ND_TABLE_NAME} where ip=@0 and status=0 and created_at>=@1", ip, today);
             if (count > 20)
             {
                 return false;
@@ -75,7 +64,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return true;
             }
-            count = _db.ExecuteScalar<int>($"select COUNT(id) as count from {LoginLogEntity.ND_TABLE_NAME} where user=@0 and status=0 and created_at>=@1", account, today);
+            count = db.ExecuteScalar<int>($"select COUNT(id) as count from {LoginLogEntity.ND_TABLE_NAME} where user=@0 and status=0 and created_at>=@1", account, today);
             if (count > 10)
             {
                 return false;
@@ -114,7 +103,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public UserModel LoginEmail(string email, string password)
         {
-            var user = _db.Single<UserEntity>("where email=@0", email);
+            var user = db.Single<UserEntity>("where email=@0", email);
             if (user == null)
             {
                 LogLogin(email);
@@ -134,7 +123,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public UserModel LoginMobile(string mobile, string password)
         {
-            var user = _db.Single<UserEntity>("where mobile=@0", mobile);
+            var user = db.Single<UserEntity>("where mobile=@0", mobile);
             if (user == null)
             {
                 LogLogin(mobile);
@@ -154,7 +143,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public UserModel LoginMobileCode(string mobile, string code)
         {
-            var user = _db.Single<UserEntity>("where mobile=@0", mobile);
+            var user = db.Single<UserEntity>("where mobile=@0", mobile);
             if (user == null)
             {
                 LogLogin(mobile);
@@ -209,9 +198,9 @@ namespace NetDream.Modules.Auth.Repositories
                     ParentId = parentId,
                     Password = string.IsNullOrWhiteSpace(data.Password) ? UNSET_PASSWORD 
                     : BCrypt.Net.BCrypt.HashPassword(data.Password),
-                    CreatedAt = _client.Now
+                    CreatedAt = client.Now
                 };
-                _db.Insert(model);
+                db.Insert(model);
                 return model;
             });
             return new UserModel();
@@ -223,7 +212,7 @@ namespace NetDream.Modules.Auth.Repositories
             InviteCodeEntity? log = null;
             if (!string.IsNullOrWhiteSpace(code))
             {
-                log = _db.Single<InviteCodeEntity>("where code=@0 and (expired_at>@1 or expired_at=0)", code, _client.Now);
+                log = db.Single<InviteCodeEntity>("where code=@0 and (expired_at>@1 or expired_at=0)", code, client.Now);
             }
             if (log is null)
             {
@@ -237,22 +226,22 @@ namespace NetDream.Modules.Auth.Repositories
             log.InviteCount++;
             if (log.Amount > 0 && log.InviteCount == log.Amount)
             {
-                log.ExpiredAt = _client.Now - 1;
+                log.ExpiredAt = client.Now - 1;
             }
-            _db.Update(log, new string[] {"invite_count", "expired_at"});
-            _db.Insert(new InviteLogEntity
+            db.Update(log, new string[] {"invite_count", "expired_at"});
+            db.Insert(new InviteLogEntity
             {
                 Code = code,
                 UserId = user.Id,
                 ParentId = log.UserId,
-                CreatedAt = _client.Now,
+                CreatedAt = client.Now,
             });
             return user;
         }
 
         public bool IsExist(string value, string name = "email")
         {
-            var count = _db.ExecuteScalar<int>($"select COUNT(id) as count from {UserEntity.ND_TABLE_NAME} where {name}=@0", value);
+            var count = db.ExecuteScalar<int>($"select COUNT(id) as count from {UserEntity.ND_TABLE_NAME} where {name}=@0", value);
             return count > 0;
         }
 
@@ -263,14 +252,14 @@ namespace NetDream.Modules.Auth.Repositories
 
         public void LogLogin(string account, int userId = 0, bool status = false)
         {
-            _db.Insert(new LoginLogEntity
+            db.Insert(new LoginLogEntity
             {
-                Ip = _client.Ip,
+                Ip = client.Ip,
                 UserId = userId,
-                Mode = _client.ClientName,
+                Mode = client.ClientName,
                 Status = status ? 1 : 0,
                 User = account,
-                CreatedAt = _client.Now
+                CreatedAt = client.Now
             });
         }
 

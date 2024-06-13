@@ -52,7 +52,7 @@ namespace NetDream.Modules.Auth.Repositories
                 _db.Update(entity);
                 return entity;
             }
-            entity.UpdatedAt = entity.CreatedAt = Time.TimestampNow();
+            entity.UpdatedAt = entity.CreatedAt = TimeHelper.TimestampNow();
             _db.Insert(entity);
             return entity;
         }

@@ -11,7 +11,7 @@
 }
 
 @section Styles {
-    <link type="text/css" href="~/assets/css/blog.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/blog.min.css" rel="stylesheet" media="all">
 }
 <div id="book-page" class="book-skin">
     <div class="book-title">
@@ -76,7 +76,7 @@
             <dl class="book-item">
                 <dt>
                     <a href="@Url.Action("Detail", new { id= item.Id })" title="@item.Title">@item.Title</a>
-                    <span class="book-time">@Time.FormatAgo(item.CreatedAt)</span>
+                    <span class="book-time">@TimeHelper.FormatAgo(item.CreatedAt)</span>
                 </dt>
                 <dd>
                     <p>@item.Description</p>

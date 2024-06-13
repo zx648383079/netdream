@@ -13,7 +13,7 @@ namespace NetDream.Api.Base.Http
         public ClientEnvironment(IHttpContextAccessor contextAccessor)
         {
             _contextAccessor = contextAccessor;
-            Now = Time.TimestampNow();
+            Now = TimeHelper.TimestampNow();
             var val = _contextAccessor.HttpContext.User.Identity.Name;
             if (!string.IsNullOrWhiteSpace(val) && int.TryParse(val, out var userId))
             {

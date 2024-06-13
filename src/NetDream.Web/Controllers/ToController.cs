@@ -16,7 +16,7 @@ namespace NetDream.Web.Controllers
         {
             if (!string.IsNullOrWhiteSpace(url))
             {
-                url = Str.Base64Decode(url + "=");
+                url = StrHelper.Base64Decode(url + "=");
             }
             if (string.IsNullOrEmpty(url))
             {

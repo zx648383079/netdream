@@ -11,7 +11,7 @@
 }
 
 @section Styles {
-    <link type="text/css" href="~/assets/css/blog.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/blog.min.css" rel="stylesheet" media="all">
 }
 <div id="book-page" class="book-skin">
     <div class="book-title">
@@ -62,7 +62,7 @@
                 <a class="language" title="@data.ProgrammingLanguage"><i class="fa fa-code"></i><b>@data.ProgrammingLanguage</b></a>
 
             }
-            <span class="time" title="发布时间"><i class="fa fa-calendar-check"></i><b>@Time.FormatAgo(data.CreatedAt)</b></span>
+            <span class="time" title="发布时间"><i class="fa fa-calendar-check"></i><b>@TimeHelper.FormatAgo(data.CreatedAt)</b></span>
             @if (data.Type == 1)
             {
                 <span class="type">

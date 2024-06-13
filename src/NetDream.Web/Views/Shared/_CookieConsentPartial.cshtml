@@ -8,12 +8,22 @@
 
 @if (showBanner)
 {
-    <div id="cookieConsent" class="dialog-cookie-tip">
-        <div class="dialog-body">
-            访问本站，表示您已同意使用Cookies，本站不会主动泄露您的隐私信息。                <a asp-area="" asp-controller="Home" asp-action="Privacy">了解更多</a>
-        </div>
-        <div class="dialog-footer">
-            <button type="button" class="btn" data-cookie-string="@cookieString">Accept</button>
+    <div id="cookieConsent" class="dialog-cookie-bar">
+        <div class="dialog-cookie-body">
+            <div class="dialog-body">
+                访问本站，表示您已同意使用Cookies，本站不会主动泄露您的隐私信息。                <a asp-area="" asp-controller="Home" asp-action="Privacy">了解更多</a>
+            </div>
+            <div class="dialog-footer">
+                <div class="cookie-simple">
+                    <div class="btn-group">
+                        <button class="btn btn-secondary more-btn">Cookie Settings</button>
+                        <button class="btn btn-primary accept-btn" data-cookie-string="@cookieString">Accept</button>
+                    </div>
+                </div>
+                <div class="cookie-detail">
+                    <button type="button" class="btn btn-primary accept-btn" data-cookie-string="@cookieString">Accept</button>
+                </div>
+            </div>
         </div>
     </div>
     <script>

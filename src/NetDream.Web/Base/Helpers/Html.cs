@@ -10,7 +10,7 @@ namespace NetDream.Web.Base.Helpers
             {
                 return uri;
             }
-            return "/To?url=" + Str.Base64Encode(uri).Trim('=');
+            return "/To?url=" + StrHelper.Base64Encode(uri).Trim('=');
         }
     }
 }

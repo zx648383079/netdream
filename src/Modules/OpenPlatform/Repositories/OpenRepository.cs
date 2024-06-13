@@ -9,18 +9,11 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.OpenPlatform.Repositories
 {
-    public class OpenRepository
+    public class OpenRepository(IDatabase db)
     {
-        private readonly IDatabase _db;
-
-        public OpenRepository(IDatabase db)
-        {
-            _db = db;
-        }
-
         public PlatformModel GetByAppId(string appId)
         {
-            return _db.Single<PlatformModel>("where appid=@0", appId);
+            return db.Single<PlatformModel>("where appid=@0", appId);
         }
     }
 }

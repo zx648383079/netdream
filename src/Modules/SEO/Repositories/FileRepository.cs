@@ -7,13 +7,7 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.SEO.Repositories
 {
-    public class FileRepository
+    public class FileRepository(IDatabase db)
     {
-        private readonly IDatabase _db;
-
-        public FileRepository(IDatabase db)
-        {
-            _db = db;
-        }
     }
 }

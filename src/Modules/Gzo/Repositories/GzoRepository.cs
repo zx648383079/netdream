@@ -77,7 +77,7 @@ namespace NetDream.Modules.Gzo.Repositories
                 {
                     str.Append($"    [Column(\"{item.Name}\")]\n");
                 }
-                str.AppendLine($"    public {FormatType(item)} {Str.Studly(item.Name)} {{ get; set; }}{FormatDefaultValue(item)}\n");
+                str.AppendLine($"    public {FormatType(item)} {StrHelper.Studly(item.Name)} {{ get; set; }}{FormatDefaultValue(item)}\n");
             }
             str.Append("}");
             return str.ToString();
@@ -86,13 +86,13 @@ namespace NetDream.Modules.Gzo.Repositories
         public static bool GenerateFile(string folder, string table, List<ColumnEntity> columns)
         {
             var index = table.IndexOf('_');
-            var name = Str.Studly(index >= 0 ? table[(index + 1)..] : table);
+            var name = StrHelper.Studly(index >= 0 ? table[(index + 1)..] : table);
             var fileName = Path.Combine(folder, name + "Entity.cs");
             if (File.Exists(fileName))
             {
                 return false;
             }
-            var moduleName = index >= 0 ? Str.Studly(table[..index]) : name;
+            var moduleName = index >= 0 ? StrHelper.Studly(table[..index]) : name;
             var str = new StringBuilder();
             str.AppendLine("using NPoco;");
             str.AppendLine($"namespace {FormatNamespace(folder, moduleName)}");
@@ -107,7 +107,7 @@ namespace NetDream.Modules.Gzo.Repositories
                 {
                     str.AppendLine($"        [Column(\"{item.Name}\")]");
                 }
-                str.AppendLine($"        public {FormatType(item)} {Str.Studly(item.Name)} {{ get; set; }}{FormatDefaultValue(item)}");
+                str.AppendLine($"        public {FormatType(item)} {StrHelper.Studly(item.Name)} {{ get; set; }}{FormatDefaultValue(item)}");
             }
             str.AppendLine("    }");
             str.AppendLine("}");
@@ -133,7 +133,7 @@ namespace NetDream.Modules.Gzo.Repositories
         public static string FormatTableName(string table)
         {
             var i = table.IndexOf('_');
-            return i >= 0 ? Str.Studly(table[(i + 1)..]) : Str.Studly(table);
+            return i >= 0 ? StrHelper.Studly(table[(i + 1)..]) : StrHelper.Studly(table);
         }
 
         public static string FormatType(ColumnEntity data)

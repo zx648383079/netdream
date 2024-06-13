@@ -10,49 +10,41 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class BlogRepository
+    public class BlogRepository(IDatabase db)
     {
-        private readonly IDatabase _db;
-
-        public BlogRepository(IDatabase db)
-        {
-            _db = db;
-        }
-
-
         public Page<BlogModel> GetPage(int page)
         {
-            return _db.Page<BlogModel>(page, 20, $"SELECT * FROM {BlogEntity.ND_TABLE_NAME}");
+            return db.Page<BlogModel>(page, 20, $"SELECT * FROM {BlogEntity.ND_TABLE_NAME}");
         }
 
         public List<BlogModel> GetNewBlogs(int count = 8)
         {
-            return _db.Fetch<BlogModel>($"select id, title, description, created_at from {BlogEntity.ND_TABLE_NAME} order by created_at desc limit @0", count);
+            return db.Fetch<BlogModel>($"select id, title, description, created_at from {BlogEntity.ND_TABLE_NAME} order by created_at desc limit @0", count);
         }
 
         public List<TagModel> GetTags()
         {
-            return _db.Fetch<TagModel>();
+            return db.Fetch<TagModel>();
         }
 
         public List<CategoryModel> Categories()
         {
-            return _db.Fetch<CategoryModel>();
+            return db.Fetch<CategoryModel>();
         }
 
         public BlogModel GetBlog(int id)
         {
-            return _db.SingleById<BlogModel>(id);
+            return db.SingleById<BlogModel>(id);
         }
 
         public List<BlogArchives> GetArchives()
         {
-            var data = _db.Fetch<BlogModel>($"select id, title, created_at from {BlogEntity.ND_TABLE_NAME} order by created_at desc");
+            var data = db.Fetch<BlogModel>($"select id, title, created_at from {BlogEntity.ND_TABLE_NAME} order by created_at desc");
             var items = new List<BlogArchives>();
             BlogArchives? last = null;
             foreach (var item in data)
             {
-                var date = Time.TimestampTo(item.CreatedAt);
+                var date = TimeHelper.TimestampTo(item.CreatedAt);
                 if (last != null && last.Year == date.Year)
                 {
                     last.Items.Add(item);

@@ -8,7 +8,7 @@
 }
 
 @section Styles {
-    <link type="text/css" href="~/assets/css/blog.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/blog.min.css" rel="stylesheet" media="all">
 }
 <div id="book-page" class="book-skin">
     <div class="book-title">
@@ -39,7 +39,7 @@
                     {
                         <a class="time-item" href="@Url.Action("Detail", "Home", new { id=item.Id})">
                             <div class="title">@item.Title</div>
-                            <div class="time">@Time.Format(item.CreatedAt, "MM-dd")</div>
+                            <div class="time">@TimeHelper.Format(item.CreatedAt, "MM-dd")</div>
                         </a>
                     }
                 </div>

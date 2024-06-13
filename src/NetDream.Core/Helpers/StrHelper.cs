@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NetDream.Core.Helpers
 {
-    public static class Str
+    public static class StrHelper
     {
 
         public static string Studly(string val)

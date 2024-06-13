@@ -59,7 +59,7 @@ namespace NetDream.Core.Securities
 
         private int[] CreateKeys(DateTime date)
         {
-            return CreateKeys(Time.TimestampFrom(date));
+            return CreateKeys(TimeHelper.TimestampFrom(date));
         }
 
         private int[] CreateKeys(int timestamp)

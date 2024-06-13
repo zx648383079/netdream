@@ -30,7 +30,7 @@ namespace NetDream.Web.Base.TagHelpers
             var html = new StringBuilder();
             foreach (var item in items)
             {
-                html.AppendFormat("<div class=\"list-item\"><a class=\"name\" href=\"/Blog/Home/Detail/{0}\">{1}</a><div class=\"time\">{2}</div></div>", item.Id, item.Title, Time.FormatAgo(item.CreatedAt));
+                html.AppendFormat("<div class=\"list-item\"><a class=\"name\" href=\"/Blog/Home/Detail/{0}\">{1}</a><div class=\"time\">{2}</div></div>", item.Id, item.Title, TimeHelper.FormatAgo(item.CreatedAt));
             }
             output.Content.SetHtmlContent(html.ToString());
         }

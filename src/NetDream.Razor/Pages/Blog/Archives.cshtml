@@ -32,7 +32,7 @@
                     {
                         <a class="time-item" asp-area="" asp-page="Detail" asp-route-id="@item.Id">
                             <div class="title">@item.Title</div>
-                            <div class="time">@Time.Format(item.CreatedAt, "MM-dd")</div>
+                            <div class="time">@TimeHelper.Format(item.CreatedAt, "MM-dd")</div>
                         </a>
                     }
                 </div>

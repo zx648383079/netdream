@@ -16,7 +16,7 @@ namespace NetDream.Modules.OpenPlatform.Models
 
         public int ResponseTime()
         {
-            return Time.TimestampFrom(DateTime.Now);
+            return TimeHelper.TimestampFrom(DateTime.Now);
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace NetDream.Modules.OpenPlatform.Models
             var content = GetSignContent(data);
             if (SignType == 1)
             {
-                return Str.MD5Encode(content);
+                return StrHelper.MD5Encode(content);
             }
             return "";
         }

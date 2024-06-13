@@ -8,13 +8,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using NetDream.Core.Interfaces;
-using NetDream.Modules.Auth.Repositories;
-using NetDream.Modules.Blog.Repositories;
-using NetDream.Modules.Contact.Repositories;
-using NetDream.Modules.Gzo.Repositories;
-using NetDream.Modules.OpenPlatform.Repositories;
-using NetDream.Modules.SEO.Repositories;
+using NetDream.Modules.Auth;
+using NetDream.Modules.Blog;
+using NetDream.Modules.Contact;
+using NetDream.Modules.Gzo;
+using NetDream.Modules.OpenPlatform;
+using NetDream.Modules.SEO;
 using NetDream.Web.Base.Middleware;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -24,14 +23,9 @@ using System.IO;
 
 namespace NetDream.Web
 {
-    public class Startup
+    public class Startup(IConfiguration configuration)
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
-        public IConfiguration Configuration { get; }
+        public IConfiguration Configuration { get; } = configuration;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -68,7 +62,7 @@ namespace NetDream.Web
             {
                 RegisterGlobeRepositories(db, services);
             } 
-            RegisterAuthRepositories(services);
+            RegisterRepositories(services);
 
             services.AddMvc()
                 .AddNewtonsoftJson(options =>
@@ -136,17 +130,16 @@ namespace NetDream.Web
 
         private static void RegisterGlobeRepositories(IDatabase db, IServiceCollection services)
         {
-            var option = new OptionRepository(db);
-            services.AddSingleton(typeof(IGlobeOption), option.LoadOption());
+            services.ProvideSEORepositories(db);
         }
-        private static void RegisterAuthRepositories(IServiceCollection services)
+        private static void RegisterRepositories(IServiceCollection services)
         {
-            services.AddScoped(typeof(UserRepository));
-            services.AddScoped(typeof(BlogRepository));
-            services.AddScoped(typeof(GzoRepository));
-            services.AddScoped(typeof(ContactRepository));
-            services.AddScoped(typeof(OpenRepository));
-            // services.AddSingleton(typeof(OptionRepository));
+            services.ProvideAuthRepositories();
+            services.ProvideOpenRepositories();
+            services.ProvideBlogRepositories();
+            services.ProvideGzoRepositories();
+            services.ProvideContactRepositories();
+            services.ProvideOpenRepositories();
         }
     }
 }
