@@ -11,7 +11,7 @@ namespace NetDream.Modules.OpenPlatform.Models
 
         public int RequestTime()
         {
-
+            return 0;
         }
 
         public int ResponseTime()

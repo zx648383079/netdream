@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+	  <Nullable>enable</Nullable>
+	  <LangVersion>12</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,24 +18,25 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="MySql.Data" Version="8.4.0" />
     <PackageReference Include="NPoco" Version="5.7.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NetDream.Core\NetDream.Core.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.Auth\NetDream.Modules.Auth.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.Blog\NetDream.Modules.Blog.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.Book\NetDream.Modules.Book.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.Chat\NetDream.Modules.Chat.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.Contact\NetDream.Modules.Contact.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.Document\NetDream.Modules.Document.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.Gzo\NetDream.Modules.Gzo.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.OpenPlatform\NetDream.Modules.OpenPlatform.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.SEO\NetDream.Modules.SEO.csproj" />
-    <ProjectReference Include="..\NetDream.Modules.Shop\NetDream.Modules.Shop.csproj" />
+	  <ProjectReference Include="..\Modules\Auth\Auth.csproj" />
+	  <ProjectReference Include="..\Modules\Blog\Blog.csproj" />
+	  <ProjectReference Include="..\Modules\Book\Book.csproj" />
+	  <ProjectReference Include="..\Modules\Chat\Chat.csproj" />
+	  <ProjectReference Include="..\Modules\Contact\Contact.csproj" />
+	  <ProjectReference Include="..\Modules\Document\Document.csproj" />
+	  <ProjectReference Include="..\Modules\Gzo\Gzo.csproj" />
+	  <ProjectReference Include="..\Modules\OpenPlatform\OpenPlatform.csproj" />
+	  <ProjectReference Include="..\Modules\SEO\SEO.csproj" />
+	  <ProjectReference Include="..\Modules\Shop\Shop.csproj" />
   </ItemGroup>
 
   <ItemGroup>

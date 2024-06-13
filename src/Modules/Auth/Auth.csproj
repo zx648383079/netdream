@@ -4,7 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	  <LangVersion>11</LangVersion>
+	  <LangVersion>12</LangVersion>
+	  <AssemblyName>NetDream.Modules.$(MSBuildProjectName)</AssemblyName>
+	  <RootNamespace>NetDream.Modules.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetDream.Core\NetDream.Core.csproj" />
+    <ProjectReference Include="..\..\NetDream.Core\NetDream.Core.csproj" />
   </ItemGroup>
 
 </Project>

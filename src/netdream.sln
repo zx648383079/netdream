@@ -13,31 +13,35 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Web", "NetDream.We
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{03BF2D69-82E2-4D8A-9C22-F6DEF345541C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.Auth", "NetDream.Modules.Auth\NetDream.Modules.Auth.csproj", "{14576DE7-06A1-4279-8CD9-6415FB270353}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth", "Modules\Auth\Auth.csproj", "{14576DE7-06A1-4279-8CD9-6415FB270353}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.Blog", "NetDream.Modules.Blog\NetDream.Modules.Blog.csproj", "{EA4FFD00-A12F-4D0E-9E7C-89B55C47F1F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blog", "Modules\Blog\Blog.csproj", "{EA4FFD00-A12F-4D0E-9E7C-89B55C47F1F5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.Chat", "NetDream.Modules.Chat\NetDream.Modules.Chat.csproj", "{FC9B187C-C925-4F84-9004-3D76D60D626D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chat", "Modules\Chat\Chat.csproj", "{FC9B187C-C925-4F84-9004-3D76D60D626D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.Contact", "NetDream.Modules.Contact\NetDream.Modules.Contact.csproj", "{16BAB608-A035-4B32-BFA0-160468D4D1D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contact", "Modules\Contact\Contact.csproj", "{16BAB608-A035-4B32-BFA0-160468D4D1D2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.Gzo", "NetDream.Modules.Gzo\NetDream.Modules.Gzo.csproj", "{020824FF-A787-4946-BA25-B163B2CF6474}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gzo", "Modules\Gzo\Gzo.csproj", "{020824FF-A787-4946-BA25-B163B2CF6474}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.OpenPlatform", "NetDream.Modules.OpenPlatform\NetDream.Modules.OpenPlatform.csproj", "{10F7FC1E-C66D-4EB5-A49E-9932983ED534}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenPlatform", "Modules\OpenPlatform\OpenPlatform.csproj", "{10F7FC1E-C66D-4EB5-A49E-9932983ED534}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.Shop", "NetDream.Modules.Shop\NetDream.Modules.Shop.csproj", "{B8EF4810-3D0B-4DE3-A523-D51B33F6B240}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shop", "Modules\Shop\Shop.csproj", "{B8EF4810-3D0B-4DE3-A523-D51B33F6B240}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.SEO", "NetDream.Modules.SEO\NetDream.Modules.SEO.csproj", "{AEB14FBE-D04D-4CFA-B4D2-45B9531303FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SEO", "Modules\SEO\SEO.csproj", "{AEB14FBE-D04D-4CFA-B4D2-45B9531303FB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.Document", "NetDream.Modules.Document\NetDream.Modules.Document.csproj", "{076E10FA-6A3A-4B4F-B464-F283C4FF53F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Document", "Modules\Document\Document.csproj", "{076E10FA-6A3A-4B4F-B464-F283C4FF53F2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Modules.Book", "NetDream.Modules.Book\NetDream.Modules.Book.csproj", "{4D45D8A2-C26E-4934-8750-63CD8EA0C093}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Book", "Modules\Book\Book.csproj", "{4D45D8A2-C26E-4934-8750-63CD8EA0C093}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Cli", "NetDream.Cli\NetDream.Cli.csproj", "{2A7FFB95-2064-4AF1-9AF3-4029FF81B58F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Tests", "NetDream.Tests\NetDream.Tests.csproj", "{69940E57-9372-4A19-B03D-FEEF6BE85545}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDream.Modules.CMS", "NetDream.Modules.CMS\NetDream.Modules.CMS.csproj", "{5F38BDA8-A0B8-4BF3-8AAF-B92B166DC547}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CMS", "Modules\CMS\CMS.csproj", "{5F38BDA8-A0B8-4BF3-8AAF-B92B166DC547}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Live", "Modules\Live\Live.csproj", "{56E5D6AB-1289-45DD-A12F-60472635E865}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdSense", "Modules\AdSense\AdSense.csproj", "{DA6156FD-806E-49FE-A74E-7684280EE7E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -113,6 +117,14 @@ Global
 		{5F38BDA8-A0B8-4BF3-8AAF-B92B166DC547}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F38BDA8-A0B8-4BF3-8AAF-B92B166DC547}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F38BDA8-A0B8-4BF3-8AAF-B92B166DC547}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56E5D6AB-1289-45DD-A12F-60472635E865}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56E5D6AB-1289-45DD-A12F-60472635E865}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56E5D6AB-1289-45DD-A12F-60472635E865}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56E5D6AB-1289-45DD-A12F-60472635E865}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA6156FD-806E-49FE-A74E-7684280EE7E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA6156FD-806E-49FE-A74E-7684280EE7E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA6156FD-806E-49FE-A74E-7684280EE7E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA6156FD-806E-49FE-A74E-7684280EE7E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -129,6 +141,8 @@ Global
 		{076E10FA-6A3A-4B4F-B464-F283C4FF53F2} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 		{4D45D8A2-C26E-4934-8750-63CD8EA0C093} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 		{5F38BDA8-A0B8-4BF3-8AAF-B92B166DC547} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
+		{56E5D6AB-1289-45DD-A12F-60472635E865} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
+		{DA6156FD-806E-49FE-A74E-7684280EE7E6} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {137970B0-B381-4D3F-AD18-F22A2B0365E6}
