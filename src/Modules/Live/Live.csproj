@@ -15,4 +15,8 @@
     <PackageReference Include="NPoco" Version="5.7.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Entities\" />
+  </ItemGroup>
+
 </Project>
