@@ -53,6 +53,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Forum", "Modules\Forum\Foru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Navigation", "Modules\Navigation\Navigation.csproj", "{AF912994-5637-4142-A131-73025735895F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdSense", "Modules\AdSense\AdSense.csproj", "{67FCBC1A-6AFF-4090-8A06-3A6603F6A506}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,10 @@ Global
 		{AF912994-5637-4142-A131-73025735895F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF912994-5637-4142-A131-73025735895F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF912994-5637-4142-A131-73025735895F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67FCBC1A-6AFF-4090-8A06-3A6603F6A506}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67FCBC1A-6AFF-4090-8A06-3A6603F6A506}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67FCBC1A-6AFF-4090-8A06-3A6603F6A506}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67FCBC1A-6AFF-4090-8A06-3A6603F6A506}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,6 +184,7 @@ Global
 		{39B39BB3-4CFE-4890-9B90-85360C42D1C7} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 		{D57DBE1F-FF26-4B72-AB2E-7A9FB10F6771} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 		{AF912994-5637-4142-A131-73025735895F} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
+		{67FCBC1A-6AFF-4090-8A06-3A6603F6A506} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {137970B0-B381-4D3F-AD18-F22A2B0365E6}

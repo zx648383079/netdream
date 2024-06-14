@@ -1,5 +1,8 @@
-﻿using NetDream.Core.Helpers;
+﻿using NetDream.Core.Extensions;
+using NetDream.Core.Helpers;
 using NetDream.Core.Interfaces;
+using NetDream.Core.Interfaces.Entities;
+using NetDream.Core.Interfaces.Forms;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Models;
 using NPoco;
@@ -55,7 +58,7 @@ namespace NetDream.Modules.Auth.Repositories
         public bool LoginPreCheck(string ip, string account, string? captcha = null)
         {
             var today = TimeHelper.TimestampFrom(DateTime.Today);
-            var count = db.ExecuteScalar<int>($"select COUNT(id) as count from {LoginLogEntity.ND_TABLE_NAME} where ip=@0 and status=0 and created_at>=@1", ip, today);
+            var count = db.FindCount<int, LoginLogEntity>("id", "ip=@0 and status=0 and created_at>=@1", ip, today);
             if (count > 20)
             {
                 return false;
@@ -64,7 +67,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return true;
             }
-            count = db.ExecuteScalar<int>($"select COUNT(id) as count from {LoginLogEntity.ND_TABLE_NAME} where user=@0 and status=0 and created_at>=@1", account, today);
+            count = db.FindCount<int, LoginLogEntity>("id", "user=@0 and status=0 and created_at>=@1", account, today);
             if (count > 10)
             {
                 return false;
@@ -81,80 +84,14 @@ namespace NetDream.Modules.Auth.Repositories
         }
 
 
-        public UserModel Login(LoginForm data)
+        public IOperationResult<IUser> Login(ISignInForm data)
         {
-            if (!string.IsNullOrWhiteSpace(data.Email) && !string.IsNullOrWhiteSpace(data.Password))
+            var res = data.Verify(db);
+            if (!string.IsNullOrWhiteSpace(data.Account) || res.IsSuccess)
             {
-                return LoginEmail(data.Email, data.Password);
+                LogLogin(data.Account, res.Result?.Id ?? 0, res.IsSuccess);
             }
-            if (!string.IsNullOrWhiteSpace(data.Mobile))
-            {
-                if (!string.IsNullOrWhiteSpace(data.Password))
-                {
-                    return LoginMobile(data.Mobile, data.Password);
-                }
-                if (!string.IsNullOrWhiteSpace(data.Code))
-                {
-                    return LoginMobileCode(data.Mobile, data.Code);
-                }
-            }
-            throw new ArgumentException("form error");
-        }
-
-        public UserModel LoginEmail(string email, string password)
-        {
-            var user = db.Single<UserEntity>("where email=@0", email);
-            if (user == null)
-            {
-                LogLogin(email);
-                throw new ArgumentException("email is not sign in");
-            }
-            if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
-            {
-                LogLogin(email, user.Id);
-                throw new ArgumentException("password is error");
-            }
-            LogLogin(email, user.Id, true);
-            return new UserModel()
-            {
-                Id = user.Id,
-            };
-        }
-
-        public UserModel LoginMobile(string mobile, string password)
-        {
-            var user = db.Single<UserEntity>("where mobile=@0", mobile);
-            if (user == null)
-            {
-                LogLogin(mobile);
-                throw new ArgumentException("mobile is not sign in");
-            }
-            if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
-            {
-                LogLogin(mobile, user.Id);
-                throw new ArgumentException("password is error");
-            }
-            LogLogin(mobile, user.Id, true);
-            return new UserModel()
-            {
-                Id = user.Id,
-            };
-        }
-
-        public UserModel LoginMobileCode(string mobile, string code)
-        {
-            var user = db.Single<UserEntity>("where mobile=@0", mobile);
-            if (user == null)
-            {
-                LogLogin(mobile);
-                throw new ArgumentException("mobile is not sign in");
-            }
-            // TODO 验证
-            LogLogin(mobile, user.Id, true);
-            return new UserModel()
-            {
-                Id = user.Id,
-            };
+            return res;
         }
 
         public UserModel Register(RegisterForm data)
@@ -241,7 +178,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public bool IsExist(string value, string name = "email")
         {
-            var count = db.ExecuteScalar<int>($"select COUNT(id) as count from {UserEntity.ND_TABLE_NAME} where {name}=@0", value);
+            var count = db.FindCount<int, UserEntity>("id", $"where {db.DatabaseType.EscapeSqlIdentifier(name)}=@0", value);
             return count > 0;
         }
 

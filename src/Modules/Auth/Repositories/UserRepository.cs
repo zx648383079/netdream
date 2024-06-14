@@ -4,18 +4,11 @@ using NPoco;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class UserRepository
+    public class UserRepository(IDatabase db)
     {
-        private readonly IDatabase _db;
-
-        public UserRepository(IDatabase db)
-        {
-            _db = db;
-        }
-
         public UserModel? Login(string email, string password)
         {
-            var user = _db.Single<UserEntity>("where email=@0", email);
+            var user = db.Single<UserEntity>("where email=@0", email);
             if (user == null)
             {
                 return null;

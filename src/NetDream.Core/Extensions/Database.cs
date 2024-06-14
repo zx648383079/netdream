@@ -50,6 +50,48 @@ namespace NetDream.Core.Extensions
             return data;
         }
 
+        public static T? FindFirst<T>(this IDatabase db, string select, string where, params object[] args)
+            where T : class
+        {
+            return db.Single<T>(string.Format("SELECT {0} FROM {1} WHERE {2}", 
+                    select,
+                    db.DatabaseType.EscapeTableName(ModelHelper.TableName<T>()),
+                    where
+                ), args);
+        }
+
+        public static R FindScalar<R, T>(this IDatabase db, string select, string where, params object[] args)
+            where T : class
+            where R : notnull
+        {
+            return db.ExecuteScalar<R>(string.Format("SELECT {0} FROM {1} WHERE {2}",
+                    select,
+                    db.DatabaseType.EscapeTableName(ModelHelper.TableName<T>()),
+                    where
+                ), args);
+        }
+
+        public static R FindCount<R, T>(this IDatabase db, string column, string where, params object[] args)
+            where T : class
+            where R : notnull
+        {
+            if (string.IsNullOrWhiteSpace(column))
+            {
+                column = "*";
+            } else if (column != "*" && !column.Contains(' '))
+            {
+                column = db.DatabaseType.EscapeSqlIdentifier(column);
+            }
+            return db.FindScalar<R, T>($"COUNT({column}) as count", where, args);
+        }
+
+        public static R FindCount<R, T>(this IDatabase db, string where, params object[] args)
+            where T : class
+            where R : notnull
+        {
+            return db.FindCount<R, T>("*", where, args);
+        }
+
         public static IDictionary<T, K> Pluck<T, K>(this IDatabase db, Sql sql, string key, string valueKey, bool autoSelect = true)
             where T : notnull
         {

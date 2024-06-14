@@ -18,15 +18,27 @@ namespace NetDream.Cli
             Console.WriteLine("Please select mode:");
             Console.WriteLine("1. Generate Database Entities");
             Console.Write("input number:");
-            var line = Console.ReadLine();
-            if (!int.TryParse(line, out var mode) || mode != 1)
+            var index = ReadInt();
+            if (index != 1)
             {
                 Console.WriteLine("Input error");
                 Console.ReadKey();
                 return;
             }
-            Console.Write("Please select save folder:");
+            label:
+            Console.WriteLine("Please select save folder:");
+            var i = 0;
+            var items = LoadModuleFolder();
+            foreach (var item in items)
+            {
+                Console.WriteLine(string.Format("{0}. {1}/Entities", ++ i, Path.GetFileName(item)));
+            }
+            Console.Write("input number or folder:");
             var workspace = Console.ReadLine();
+            if (int.TryParse(workspace, out index) && index > 0 && index <= items.Count)
+            {
+                workspace = Path.Combine(items[index - 1], "Entities");
+            }
             if (string.IsNullOrWhiteSpace(workspace))
             {
                 Console.WriteLine("Input error");
@@ -37,7 +49,22 @@ namespace NetDream.Cli
             var prefix = Console.ReadLine();
             GenerateEntity(prefix is null ? string.Empty : prefix, workspace);
             Console.WriteLine("Generate finished!");
-            Console.ReadKey();
+            Console.Write("Continue Generate other: Y/N");
+            if (Console.ReadKey().Key == ConsoleKey.Y)
+            {
+                goto label;
+            }
+
+        }
+
+        static int ReadInt()
+        {
+            var line = Console.ReadLine();
+            if (!int.TryParse(line, out var index))
+            {
+                return 0;
+            }
+            return index;
         }
 
         static void RunWidthArgs(string[] args)
@@ -50,10 +77,19 @@ namespace NetDream.Cli
             }
         }
 
+        static IList<string> LoadModuleFolder()
+        {
+            return Directory.GetDirectories(
+                Path.Combine(ProjectRootFolder, "Modules")
+            );
+        }
+
+        static string ProjectRootFolder => Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../"));
+        static string ModuleRootFolder => Path.Combine(ProjectRootFolder, "Modules");
+
         static void GenerateEntity(string dbPrefix, string workspace)
         {
-            var binFolder = AppDomain.CurrentDomain.BaseDirectory;
-            var configFile = Path.GetFullPath(Path.Combine(binFolder, "../../../../NetDream.Web/appsettings.json"));
+            var configFile = Path.Combine(ProjectRootFolder, "NetDream.Web/appsettings.json");
             var config = JsonSerializer.Deserialize<Configuration>(File.ReadAllText(configFile));
             if (string.IsNullOrEmpty(config?.ConnectionStrings.Default))
             {

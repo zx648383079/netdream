@@ -1,8 +1,9 @@
+using NetDream.Core.Interfaces.Entities;
 using NPoco;
 namespace NetDream.Modules.Auth.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class UserEntity
+    public class UserEntity: IUser
     {
         internal const string ND_TABLE_NAME = "user";
         public int Id { get; set; }

@@ -6,41 +6,35 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Web.Base.Http;
 
 namespace NetDream.Web.Areas.Auth.Controllers
 {
     [Area("Auth")]
-    public class HomeController : JsonController
+    public class HomeController(AuthRepository repository) : JsonController
     {
-        private readonly UserRepository _userRepository;
-
-        public HomeController(UserRepository userRepository)
-        {
-            _userRepository = userRepository;
-        }
-
         public IActionResult Index()
         {
-            Console.WriteLine();
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoginAsync(string email, string password, string redirect_uri = "/")
+        public async Task<IActionResult> LoginAsync([Bind("email", "password")] EmailSignInForm form, string redirect_uri = "/")
         {
-            var user = _userRepository.Login(email, password);
-            if (user == null)
+            var res = repository.Login(form);
+            if (!res.IsSuccess)
             {
-                return Json(JsonResponse.RenderFailure("邮箱或密码不正确"));
+                return Json(JsonResponse.RenderFailure(res.Message));
             }
+            var user = res.Result!;
             if (string.IsNullOrWhiteSpace(redirect_uri))
             {
                 redirect_uri = "/";
             }
             var claims = new List<Claim>(){
-                new Claim(ClaimTypes.Name, user.Id.ToString()),
+                new(ClaimTypes.Name, user.Id.ToString()),
             };
 
             //init the identity instances 
@@ -63,10 +57,10 @@ namespace NetDream.Web.Areas.Auth.Controllers
             var auth = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             if (auth.Succeeded)
             {
-                var userId = auth.Principal.Identity.Name;
+                var userId = auth.Principal.Identity?.Name;
             }
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Json(JsonResponse.RenderData<object>(null, "退出成功"));
+            return Json(JsonResponse.RenderData(true, "退出成功"));
         }
     }
 }
