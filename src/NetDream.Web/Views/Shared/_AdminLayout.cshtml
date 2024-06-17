@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="Description" content="" />
+    <meta name="keywords" content="" />
+    <title>@ViewData["Title"]- ZoDream</title>
+    <link type="text/css" href="~/assets/css/font-awesome.min.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/zodream.min.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/zodream-admin.min.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/dialog.min.css" rel="stylesheet" media="all">
+    @RenderSection("LayoutStyles", required: false)
+</head>
+<body>
+    <div class="app-wrapper">
+        <div class="app-mask"></div>
+        <div class="sidebar-container">
+            <span class="sidebar-container-toggle"></span>
+            @RenderSection("Navbar")
+            
+        </div>
+        <div class="main-container">
+            <div class="app-header-container">
+                <div class="header-icon">
+                    <span class="sidebar-container-toggle"></span>
+                </div>
+                <div class="header-body">
+                    @ViewData["Title"]
+                </div>
+                <div class="header-action">
+                </div>
+            </div>
+            <div id="page-content" class="app-main">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+    <script src="~/assets/js/js.cookie.min.js"></script>
+    <script src="~/assets/js/jquery.min.js"></script>
+    <script src="~/assets/js/jquery.pjax.min.js"></script>
+    <script src="~/assets/js/jquery.dialog.min.js"></script>
+    <script src="~/assets/js/jquery.upload.min.js"></script>
+    <script src="~/assets/js/main.min.js"></script>
+    <script src="~/assets/js/admin.min.js"></script>
+    <script type="text/javascript">function parseAjaxUri(uri) { $.pjax({ url: uri, container: '#page-content' }); }</script>
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            $(document).pjax('a:not(.no-jax)', '#page-content').on('pjax:complete', function () { $('.app-header-container .header-body').text(document.title); });
+        });</script>
+    @RenderSection("LayoutScripts", required: false)
+</body>
+</html>

@@ -19,4 +19,12 @@
     <ProjectReference Include="..\..\NetDream.Core\NetDream.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\NetDream.Core\NetDream.Core.csproj" />
+	</ItemGroup>
+
 </Project>

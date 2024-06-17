@@ -2,7 +2,7 @@ using NPoco;
 namespace NetDream.Modules.Book.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class HistoryEntity
+    public class BookHistoryEntity
     {
         internal const string ND_TABLE_NAME = "book_history";
         public int Id { get; set; }

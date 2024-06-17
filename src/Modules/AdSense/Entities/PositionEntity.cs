@@ -20,5 +20,16 @@ namespace Modules.AdSense.Entities
         public int UpdatedAt { get; set; }
         [Column("created_at")]
         public int CreatedAt { get; set; }
+
+        public PositionEntity()
+        {
+            
+        }
+
+        public PositionEntity(string code, string name)
+        {
+            Code = code;
+            Name = name;
+        }
     }
 }

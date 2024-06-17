@@ -15,14 +15,10 @@ namespace NetDream.Api.Controllers.Auth
 {
     [ApiController]
     [Route("open/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(IOptions<JwtSettings> _jwtSettingsAccesser) : ControllerBase
     {
         //获取JwtSettings对象信息
-        private readonly JwtSettings _jwtSettings;
-        public AuthController(IOptions<JwtSettings> _jwtSettingsAccesser)
-        {
-            _jwtSettings = _jwtSettingsAccesser.Value;
-        }
+        private readonly JwtSettings _jwtSettings = _jwtSettingsAccesser.Value;
 
         [Authorize]
         [Route("get_user_info")]
@@ -49,11 +45,11 @@ namespace NetDream.Api.Controllers.Auth
             var expiresAt = authTime.AddDays(30);//过期时间
             var tokenDescripor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new Claim[] {
-                    new Claim(JwtClaimTypes.Audience,_jwtSettings.Audience),
-                    new Claim(JwtClaimTypes.Issuer,_jwtSettings.Issuer),
-                    new Claim(JwtClaimTypes.Name, user.Id.ToString()),
-                }),
+                Subject = new ClaimsIdentity([
+                    new(JwtClaimTypes.Audience,_jwtSettings.Audience),
+                    new(JwtClaimTypes.Issuer,_jwtSettings.Issuer),
+                    new(JwtClaimTypes.Name, user.Id.ToString()),
+                ]),
                 Expires = expiresAt,
                 //对称秘钥SymmetricSecurityKey
                 //签名证书(秘钥，加密算法)SecurityAlgorithms

@@ -2,7 +2,7 @@ using NPoco;
 namespace NetDream.Modules.Auth.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class EquityCardEntity
+    public class UserEquityCardEntity
     {
         internal const string ND_TABLE_NAME = "user_equity_card";
         public int Id { get; set; }

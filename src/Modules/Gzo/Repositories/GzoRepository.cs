@@ -3,7 +3,6 @@ using NetDream.Modules.Gzo.Entities;
 using NPoco;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace NetDream.Modules.Gzo.Repositories
 {
@@ -79,7 +78,7 @@ namespace NetDream.Modules.Gzo.Repositories
                 }
                 str.AppendLine($"    public {FormatType(item)} {StrHelper.Studly(item.Name)} {{ get; set; }}{FormatDefaultValue(item)}\n");
             }
-            str.Append("}");
+            str.Append('}');
             return str.ToString();
         }
 

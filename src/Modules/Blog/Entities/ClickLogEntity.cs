@@ -2,7 +2,7 @@ using NPoco;
 namespace NetDream.Modules.Blog.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class ClickLogEntity
+    public class BlogClickLogEntity
     {
         internal const string ND_TABLE_NAME = "blog_click_log";
         public int Id { get; set; }

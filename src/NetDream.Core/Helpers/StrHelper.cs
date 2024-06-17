@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Core.Helpers
 {
@@ -16,7 +13,11 @@ namespace NetDream.Core.Helpers
             var res = new StringBuilder();
             foreach (var item in data)
             {
-                res.Append(item.Substring(0, 1).ToUpper());
+                if (string.IsNullOrEmpty(item))
+                {
+                    continue;
+                }
+                res.Append(item[..1].ToUpper());
                 res.Append(item[1..].ToLower());
             }
             return res.ToString();

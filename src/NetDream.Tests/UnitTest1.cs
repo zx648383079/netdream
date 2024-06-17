@@ -8,7 +8,8 @@ namespace NetDream.Tests
         [TestMethod]
         public void TestMethod1()
         {
-            
+            var content = "PUBLISH_STATUS_DRAFT";
+            Assert.IsTrue(content.ToUpper().Equals(content, StringComparison.Ordinal));
         }
     }
 }

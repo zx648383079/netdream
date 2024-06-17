@@ -10,13 +10,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LiveStreamingServerNet" Version="0.12.0" />
+    <PackageReference Include="LiveStreamingServerNet" Version="0.13.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
     <PackageReference Include="NPoco" Version="5.7.1" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Entities\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\NetDream.Core\NetDream.Core.csproj" />
+	</ItemGroup>
 
 </Project>

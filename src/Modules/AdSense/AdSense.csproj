@@ -18,4 +18,8 @@
     <Folder Include="Entities\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\NetDream.Core\NetDream.Core.csproj" />
+  </ItemGroup>
+
 </Project>

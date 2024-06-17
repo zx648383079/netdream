@@ -8,6 +8,7 @@ namespace NetDream.Modules.Gzo
         public static void ProvideGzoRepositories(this IServiceCollection service)
         {
             service.AddScoped<GzoRepository>();
+            service.AddScoped<CodeRepository>();
         }
     }
 }

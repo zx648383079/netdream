@@ -1,24 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NetDream.Modules.Gzo.Repositories;
-using NetDream.Web.Base.Helpers;
 using NetDream.Web.Base.Http;
 
 namespace NetDream.Web.Areas.Gzo.Controllers
 {
     [Area("Gzo")]
-    public class TemplateController : JsonController
+    public class TemplateController(GzoRepository repository, CodeRepository code) : JsonController
     {
-        private readonly GzoRepository _repository;
-        public TemplateController(GzoRepository repository)
-        {
-            _repository = repository;
-        }
-
         public IActionResult Index()
         {
             return View();
@@ -28,12 +16,17 @@ namespace NetDream.Web.Areas.Gzo.Controllers
         {
             if (preview)
             {
-                return Json(JsonResponse.RenderData(new
+                return RenderData(new
                 {
-                    code = _repository.Generate(table)
-                }));
+                    code = repository.Generate(table)
+                });
             }
-            return Json(JsonResponse.RenderFailure("未实现"));
+            return RenderFailure("未实现");
+        }
+
+        public IActionResult Exchange(string content, string source = "", string target = "")
+        {
+            return RenderData(code.Exchange(content, source, target));
         }
     }
 }

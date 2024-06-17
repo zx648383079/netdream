@@ -1,19 +1,28 @@
-﻿using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using NetDream.Core.Providers;
+using NPoco;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class BookRepository
+    public class BookRepository(IDatabase db)
     {
-        private readonly IDatabase _db;
+        const string BASE_KEY = "book";
+        public const int CHAPTER_TYPE_FREE_CHAPTER = 0;
+        public const int CHAPTER_TYPE_VIP_CHAPTER = 1;
+        public const int CHAPTER_TYPE_GROUP = 9; // 卷
 
-        public BookRepository(IDatabase db)
+        public ActionLogProvider Log()  
         {
-            _db = db;
+            return new ActionLogProvider(db, BASE_KEY);
+        }
+
+        public TagProvider Tag() 
+        {
+            return new TagProvider(db, BASE_KEY);
+        }
+
+        public DayLogProvider ClickLog() 
+        {
+            return new DayLogProvider(db, BASE_KEY);
         }
     }
 }

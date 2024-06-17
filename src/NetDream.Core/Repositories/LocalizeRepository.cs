@@ -1,14 +1,11 @@
 ﻿using NetDream.Core.Helpers;
-using NPoco;
-using System;
+using NetDream.Core.Interfaces.Database;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Core.Repositories
 {
-    public class LocalizeRepository(IDatabase db)
+    public class LocalizeRepository
     {
         const string LANGUAGE_COLUMN_KEY = "language";
         const string BROWSER_DEFAULT_LANGUAGE = "en";
@@ -88,6 +85,11 @@ namespace NetDream.Core.Repositories
 
         public bool BrowserLanguageIsDefault => BrowserLanguage() == BROWSER_DEFAULT_LANGUAGE;
 
-
+        public void AddTableColumn(ITable table)
+        {
+            table.Enum(LANGUAGE_COLUMN_KEY, LANGUAGE_MAP.Keys)
+                .Default(FirstLanguage())
+                .Comment("多语言配置");
+        }
     }
 }

@@ -1,10 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NetDream.Core.Http;
+﻿using NetDream.Core.Http;
 using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace NetDream.Web.Base.Http
 {

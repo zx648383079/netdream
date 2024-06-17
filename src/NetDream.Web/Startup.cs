@@ -8,12 +8,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using NetDream.Core.Interfaces;
 using NetDream.Modules.Auth;
 using NetDream.Modules.Blog;
 using NetDream.Modules.Contact;
 using NetDream.Modules.Gzo;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.SEO;
+using NetDream.Web.Base.Http;
 using NetDream.Web.Base.Middleware;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -131,6 +133,8 @@ namespace NetDream.Web
         private static void RegisterGlobeRepositories(IDatabase db, IServiceCollection services)
         {
             services.ProvideSEORepositories(db);
+            services.AddHttpContextAccessor();
+            services.AddScoped<IClientEnvironment, ClientEnvironment>();
         }
         private static void RegisterRepositories(IServiceCollection services)
         {

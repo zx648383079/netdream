@@ -2,7 +2,7 @@ using NPoco;
 namespace NetDream.Modules.Auth.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class RelationshipEntity
+    public class UserRelationshipEntity
     {
         internal const string ND_TABLE_NAME = "user_relationship";
         [Column("user_id")]

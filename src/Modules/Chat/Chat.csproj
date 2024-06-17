@@ -20,4 +20,8 @@
     <PackageReference Include="NPoco" Version="5.7.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\NetDream.Core\NetDream.Core.csproj" />
+  </ItemGroup>
+
 </Project>

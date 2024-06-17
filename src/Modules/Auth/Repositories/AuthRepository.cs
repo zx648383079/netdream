@@ -26,13 +26,23 @@ namespace NetDream.Modules.Auth.Repositories
         const byte ACCOUNT_TYPE_ID_CARD = 98;
         const byte ACCOUNT_TYPE_IP = 99;
 
-        const string LOGIN_MODE_WEB = "web";
-        const string LOGIN_MODE_APP = "app";     // APP登陆
-        const string LOGIN_MODE_QR = "qr";     // 扫描登陆
-        const string LOGIN_MODE_OAUTH = "oauth";  //第三方登陆
+        public const string OAUTH_TYPE_QQ = "qq";
+        public const string OAUTH_TYPE_WX = "wx";
+        public const string OAUTH_TYPE_WX_MINI = "wx_mini"; // 微信小程序
+        public const string OAUTH_TYPE_WEIBO = "weibo";
+        public const string OAUTH_TYPE_TAOBAO = "taobao";
+        public const string OAUTH_TYPE_ALIPAY = "alipay";
+        public const string OAUTH_TYPE_WEBAUTHN = "web_authn";
+        public const string OAUTH_TYPE_2FA = "2fa";
+
+        public const string LOGIN_MODE_WEB = "web";
+        public const string LOGIN_MODE_APP = "app";     // APP登陆
+        public const string LOGIN_MODE_QR = "qr";     // 扫描登陆
+        public const string LOGIN_MODE_OAUTH = "oauth";  //第三方登陆
 
         const string UNSET_PASSWORD = "no_password";
-        const string OPTION_REGISTER_CODE = "auth_register";
+        public const string OPTION_REGISTER_CODE = "auth_register";
+        public const string OPTION_OAUTH_CODE = "auth_oauth";
 
         public AuthRegisterType RegisterType {
             get {

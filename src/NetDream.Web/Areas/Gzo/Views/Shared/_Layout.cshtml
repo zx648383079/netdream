@@ -1,112 +1,81 @@
-﻿
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="Description" content="" />
-    <meta name="keywords" content="" />
-    <meta name="csrf-token" content="">
-    <title>@ViewData["Title"] - ZoDream</title>
-    <link type="text/css" href="~/assets/css/font-awesome.min.css" rel="stylesheet" media="all">
-    <link type="text/css" href="~/assets/css/zodream.css" rel="stylesheet" media="all">
-    <link type="text/css" href="~/assets/css/jquery.autocompleter.css" rel="stylesheet" media="all">
-    <link type="text/css" href="~/assets/css/prism.css" rel="stylesheet" media="all">
-    <link type="text/css" href="~/assets/css/zodream-admin.css" rel="stylesheet" media="all">
-    <link type="text/css" href="~/assets/css/dialog.css" rel="stylesheet" media="all">
-    <link type="text/css" href="~/assets/css/gzo.css" rel="stylesheet" media="all">
-    @RenderSection("Styles", required: false)
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+@section LayoutStyles {
+    <link type="text/css" href="~/assets/css/prism.min.css" rel="stylesheet" media="all">
+    <link type="text/css" href="~/assets/css/gzo.min.css" rel="stylesheet" media="all">
     <script>
         var BASE_URI = '/Gzo/';
     </script>
-</head>
-<body>
-    <header>
-        <div class="container">
-            ZoDream Generator
-        </div>
-    </header>
-    <div class="app-wrapper container">
-        <div class="sidebar-container navbar">
-            <span class="sidebar-container-toggle"></span>
-            <ul>
-                <li class="">
-                    <a asp-area="Gzo"><i class="fa fa-home"></i><span>首页</span></a>
+}
+
+@section Navbar {
+    <ul>
+        <li class="menu-item">
+            <a asp-area="Gzo" asp-controller="Home" asp-action="Index"><i class="fa fa-home menu-icon"></i><span class="menu-name">首页</span></a>
+        </li>
+        <li class="expand menu-item">
+            <a href="javascript:;"><i class="fa fa-file-alt menu-icon"></i><span class="menu-name">模板管理</span><i class="menu-icon-arrow"></i></a>
+            <ul class="menu-children">
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Controller"><i class="fa fa-cogs menu-icon"></i><span class="menu-name">生成控制器</span></a>
                 </li>
-                <li class="expand">
-                    <a href="javascript:;"><i class="fa fa-file-alt"></i><span>模板管理</span></a>
-                    <ul>
-                        <li class="">
-                            <a asp-action="Controller"><i class="fa fa-cogs"></i><span>生成控制器</span></a>
-                        </li>
-                        <li class="">
-                            <a asp-action="Model"><i class="fa fa-cubes"></i><span>生成数据模型</span></a>
-                        </li>
-                        <li class="">
-                            <a asp-action="Migration"><i class="fa fa-cubes"></i><span>生成生成器</span></a>
-                        </li>
-                        <li class="">
-                            <a asp-action="Crud"><i class="fa fa-drum"></i><span>生成CRUD</span></a>
-                        </li>
-                    </ul>
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Model"><i class="fa fa-cubes menu-icon"></i><span class="menu-name">生成数据模型</span></a>
                 </li>
-                <li class="expand">
-                    <a href="javascript:;"><i class="fa fa-briefcase"></i><span>模块管理</span></a>
-                    <ul>
-                        <li class="">
-                            <a asp-action="Module"><i class="fa fa-link"></i><span>安装模块</span></a>
-                        </li>
-                        <li class="">
-                            <a asp-action="Module" asp-route-status="1"><i class="fa fa-unlink"></i><span>卸载模块</span></a>
-                        </li>
-                        <li class="">
-                            <a asp-action="Module" asp-route-status="2"><i class="fa fa-terminal"></i><span>生成模块</span></a>
-                        </li>
-                    </ul>
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Migration"><i class="fa fa-cubes menu-icon"></i><span class="menu-name">生成生成器</span></a>
                 </li>
-                <li class="">
-                    <a href="javascript:;"><i class="fa fa-database"></i><span>数据库管理</span></a>
-                    <ul>
-                        <li class="">
-                            <a asp-action="Sql"><i class="fa fa-search"></i><span>数据库查询</span></a>
-                        </li>
-                        <li class="">
-                            <a asp-action="Export"><i class="fa fa-cloud-download-alt"></i><span>导出数据</span></a>
-                        </li>
-                        <li class="">
-                            <a asp-action="Import"><i class="fa fa-cloud-upload-alt"></i><span>导入数据</span></a>
-                        </li>
-                    </ul>
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Crud"><i class="fa fa-drum menu-icon"></i><span class="menu-name">生成CRUD</span></a>
                 </li>
             </ul>
+        </li>
+        <li class="expand menu-item">
+            <a href="javascript:;"><i class="fa fa-briefcase menu-icon"></i><span class="menu-name">模块管理</span><i class="menu-icon-arrow"></i></a>
+            <ul class="menu-children">
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Module"><i class="fa fa-link menu-icon"></i><span class="menu-name">安装模块</span></a>
+                </li>
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Module?status=1"><i class="fa fa-unlink menu-icon"></i><span class="menu-name">卸载模块</span></a>
+                </li>
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Module?status=2"><i class="fa fa-terminal menu-icon"></i><span class="menu-name">生成模块</span></a>
+                </li>
+            </ul>
+        </li>
+        <li class="menu-item">
+            <a href="javascript:;"><i class="fa fa-database menu-icon"></i><span class="menu-name">数据库管理</span><i class="menu-icon-arrow"></i></a>
+            <ul class="menu-children">
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Sql"><i class="fa fa-search menu-icon"></i><span class="menu-name">数据库查询</span></a>
+                </li>
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Export"><i class="fa fa-cloud-download-alt menu-icon"></i><span class="menu-name">导出数据</span></a>
+                </li>
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Import"><i class="fa fa-cloud-upload-alt menu-icon"></i><span class="menu-name">导入数据</span></a>
+                </li>
+                <li class="menu-item">
+                    <a asp-area="Gzo" asp-controller="Home" asp-action="Copy"><i class="fa fa-copy menu-icon"></i><span class="menu-name">数据复制</span></a>
+                </li>
+            </ul>
+        </li>
+        <li class="menu-item">
+            <a asp-area="Gzo" asp-controller="Home" asp-action="Exchange">
+                <i class="fa fa-code menu-icon"></i>
+                <span class="menu-name">代码转换</span>
+            </a>
+        </li>
+    </ul>
 
-        </div>
-        <div id="page-content" class="main-container">
-            @RenderBody()
-        </div>
-    </div>
-    <script src="~/assets/js/jquery.min.js"></script>
+}
 
-    <script src="~/assets/js/jquery.pjax.min.js"></script>
+@RenderBody()
 
-    <script src="~/assets/js/prism.js"></script>
-
-    <script src="~/assets/js/jquery.autocompleter.min.js"></script>
-
-    <script src="~/assets/js/jquery.dialog.min.js"></script>
-
-    <script src="~/assets/js/jquery.upload.min.js"></script>
-
-    <script src="~/assets/js/main.min.js"></script>
-
+@section LayoutScripts {
+    <script src="~/assets/js/prism.min.js"></script>
     <script src="~/assets/js/gzo.min.js"></script>
-
-    <script type="text/javascript">function parseAjaxUri(uri) { $.pjax({ url: uri, container: '#page-content' }); }</script>
-
-    <script type="text/javascript">
-        jQuery(document).ready(function () {
-            $(document).pjax('a', '#page-content');
-        });</script>
     @RenderSection("Scripts", required: false)
-</body>
-</html>
+}

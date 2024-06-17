@@ -2,7 +2,7 @@ using NPoco;
 namespace NetDream.Modules.Auth.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class MetaEntity
+    public class UserMetaEntity
     {
         internal const string ND_TABLE_NAME = "user_meta";
         public int Id { get; set; }
