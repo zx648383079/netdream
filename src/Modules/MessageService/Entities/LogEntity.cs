@@ -1,5 +1,5 @@
 using NPoco;
-namespace Modules.MessageService.Entities
+namespace NetDream.Modules.MessageService.Entities
 {
     [TableName(ND_TABLE_NAME)]
     public class LogEntity

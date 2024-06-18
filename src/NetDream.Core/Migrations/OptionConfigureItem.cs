@@ -25,5 +25,18 @@ namespace NetDream.Core.Migrations
         {
             Visibility = visibility;
         }
+
+        public OptionConfigureItem(string code, string name, int visibility)
+            : this(code, name)
+        {
+            Visibility = visibility;
+        }
+
+        public OptionConfigureItem(string code, string name, string type, int visibility)
+            : this(code, name)
+        {
+            Type = Type;
+            Visibility = visibility;
+        }
     }
 }

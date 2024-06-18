@@ -164,6 +164,7 @@ namespace NetDream.Modules.Gzo.Repositories
 
         public void BatchGenerateModel(string prefix, string folder)
         {
+            
             if (string.IsNullOrWhiteSpace(prefix))
             {
                 BatchGenerateModel(folder);
@@ -174,6 +175,10 @@ namespace NetDream.Modules.Gzo.Repositories
 
         public void BatchGenerateModel(IEnumerable<string> tables, string folder)
         {
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
             foreach (var item in tables)
             {
                 GenerateFile(folder, item, GetColumns(item));

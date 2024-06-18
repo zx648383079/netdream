@@ -25,5 +25,6 @@ namespace NetDream.Core.Interfaces
         /// <param name="name"></param>
         /// <param name="label"></param>
         public void AddRole(string name, string label);
+        public void AddRole(string name, string label, IDictionary<string, string> permissionItems);
     }
 }

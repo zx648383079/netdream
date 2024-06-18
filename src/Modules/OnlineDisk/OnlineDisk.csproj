@@ -14,12 +14,6 @@
 	  <PackageReference Include="NPoco" Version="5.7.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Entities\" />
-    <Folder Include="Repositories\" />
-    <Folder Include="Migrations\" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<ProjectReference Include="..\..\NetDream.Core\NetDream.Core.csproj" />
 	</ItemGroup>

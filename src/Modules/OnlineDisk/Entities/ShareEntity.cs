@@ -1,5 +1,5 @@
 using NPoco;
-namespace Modules.OnlineDisk.Entities
+namespace NetDream.Modules.OnlineDisk.Entities
 {
     [TableName(ND_TABLE_NAME)]
     public class ShareEntity

@@ -2,7 +2,7 @@ using NPoco;
 namespace Modules.MicroBlog.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class BlogEntity
+    public class MicroBlogEntity
     {
         internal const string ND_TABLE_NAME = "micro_blog";
         public int Id { get; set; }

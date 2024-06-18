@@ -23,7 +23,30 @@ namespace NetDream.Core.Migrations
             return new MigrationColumn();
         }
 
+        public ITableColumn Time(string column)
+        {
+            return new MigrationColumn();
+        }
+
         public ITableColumn Uint(string column, int length = 10)
+        {
+            return new MigrationColumn();
+        }
+
+        public ITableColumn Decimal(string column, int length = 16, int d = 10)
+        {
+            return new MigrationColumn();
+        }
+        public ITableColumn Float(string column, int length = 16, int d = 10)
+        {
+            return new MigrationColumn();
+        }
+        public ITableColumn Double(string column, int length = 16, int d = 10)
+        {
+            return new MigrationColumn();
+        }
+
+        public ITableColumn Char(string column, int length = 20)
         {
             return new MigrationColumn();
         }
@@ -39,6 +62,11 @@ namespace NetDream.Core.Migrations
         }
 
         public ITableColumn Text(string column)
+        {
+            return new MigrationColumn();
+        }
+
+        public ITableColumn MediumText(string column)
         {
             return new MigrationColumn();
         }

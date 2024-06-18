@@ -40,23 +40,74 @@ namespace NetDream.Modules.Gzo.Repositories
                 {
                     returnType = match.Groups[3].Value.Replace(":", string.Empty).Trim();
                 }
-                return $"{returnType} {Studly(match.Groups[1].Value)}({paramerters}) {{";
+                var func = Studly(match.Groups[1].Value);
+                if (returnType == "void" && (func == "Up" || func == "Seed"))
+                {
+                    // Migration 实现继承
+                    returnType = "override " + returnType;
+                }
+                return $"{returnType} {func}({paramerters}) {{";
             });
             content = Regex.Replace(content, @"(->|::)([^\(\)\s]+)", 
                 match => "." + Studly(match.Groups[2].Value));
             content = content.Replace("$this.", string.Empty)
                 .Replace('\'', '"').Replace("$", string.Empty)
                 .Replace("\"\"", "string.Empty")
-                .Replace(" extends ", " : ")
                 .Replace("RoleRepository.NewPermission", "privilege.AddPermission")
                 .Replace("RoleRepository.NewRole", "privilege.AddRole")
                 .Replace("Option.Group", "option.AddGroup")
-                .Replace("Model.CreatedAt", "MigrationTable.COLUMN_CREATED_AT")
+                .Replace("Model.CREATED_AT", "MigrationTable.COLUMN_CREATED_AT")
                 .Replace("\"created_at\"", "MigrationTable.COLUMN_CREATED_AT")
                 .Replace("\"updated_at\"", "MigrationTable.COLUMN_UPDATED_AT");
+
+            content = Regex.Replace(content, @"class\s+(\w+)([^\{]*)", match => {
+                var name = Studly(match.Groups[1].Value);
+                var impl = match.Groups[2].Value.Trim();
+                if (string.IsNullOrEmpty(impl))
+                {
+                    return "class " + name;
+                }
+                var isFirst = true;
+                if (impl.Contains("extends"))
+                {
+                    isFirst = false;
+                    impl.Replace("extends", ":");
+                }
+                if (impl.Contains("implements"))
+                {
+                    impl.Replace("implements", isFirst ? ":" : ",");
+                }
+                if (impl.Contains("Migration"))
+                {
+                    var service = "IDatabase db";
+                    if (content.Contains("privilege."))
+                    {
+                        service += ", IPrivilegeManager privilege";
+                    }
+                    if (content.Contains("option."))
+                    {
+                        service += ", IGlobeOption option";
+                    }
+                    return $"class {name}({service}) : Migration(db)";
+                }
+                return $"class {name} {impl}";
+            });
+
             content = Regex.Replace(content, @"Append\((\w+)\.TableName\(\),.+?\{", match => {
-                var entity = match.Groups[1].Value.Replace("Model", "Entity");
+                var entity = match.Groups[1].Value;
+                if (entity.EndsWith("Model"))
+                {
+                    entity = entity[0..^5] + "Entity";
+                }
                 return $"Append<{entity}>(table => {{";
+            });
+
+            content = Regex.Replace(content, @"const\s+([^;]+);", match => {
+                if (match.Groups[1].Value.Contains('"'))
+                {
+                    return $"public const string {match.Groups[1].Value};";
+                }
+                return $"public const int {match.Groups[1].Value};";
             });
 
             return content;

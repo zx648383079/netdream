@@ -2,7 +2,7 @@ using NPoco;
 namespace Modules.Forum.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class LogEntity
+    public class ForumLogEntity
     {
         internal const string ND_TABLE_NAME = "bbs_log";
         public int Id { get; set; }
