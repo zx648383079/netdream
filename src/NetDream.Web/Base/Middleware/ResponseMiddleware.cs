@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using NetDream.Core.Http;
 using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Modules.OpenPlatform.Repositories;
@@ -10,17 +11,8 @@ using System.Threading.Tasks;
 
 namespace NetDream.Web.Base.Middleware
 {
-    public class ResponseMiddleware
+    public class ResponseMiddleware(RequestDelegate next)
     {
-        public const string RESPONSE_KEY = "json";
-
-        private readonly RequestDelegate _next;
-
-        public ResponseMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-
         public Task InvokeAsync(HttpContext context, OpenRepository repository)
         {
             if (context.Request.Path.Value.StartsWith("/open/"))
@@ -50,12 +42,13 @@ namespace NetDream.Web.Base.Middleware
                     return JsonAsync(context, res.RenderFailure("sign or encrypt error"), 404);
                 }
                 res.Platform = model;
-                context.Items.Add(RESPONSE_KEY, res);
-            } else
+                context.Features.Set<IJsonResponse>(res);
+            } 
+            else
             {
-                context.Items.Add(RESPONSE_KEY, new JsonResponse());
+                context.Features.Set<IJsonResponse>(new JsonResponse());
             }
-            return _next.Invoke(context);
+            return next.Invoke(context);
         }
 
         public Task JsonAsync(HttpContext context, object data, int code)

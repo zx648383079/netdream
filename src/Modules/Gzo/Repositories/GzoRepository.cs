@@ -1,4 +1,5 @@
 ﻿using NetDream.Core.Helpers;
+using NetDream.Core.Migrations;
 using NetDream.Modules.Gzo.Entities;
 using NPoco;
 using System.Text;
@@ -67,7 +68,7 @@ namespace NetDream.Modules.Gzo.Repositories
         {
             var str = new StringBuilder();
             str.Append("[TableName(ND_TABLE_NAME)]\n");
-            str.Append($"public class {FormatTableName(table)}Entity\n");
+            str.Append($"public class {FormatTableName(table)}Entity{FormatImplement(columns)}\n");
             str.Append("{\n");
             str.Append($"    internal const string ND_TABLE_NAME = \"{table}\";\n");
             foreach (var item in columns)
@@ -80,6 +81,42 @@ namespace NetDream.Modules.Gzo.Repositories
             }
             str.Append('}');
             return str.ToString();
+        }
+
+        private static string FormatImplement(List<ColumnEntity> items)
+        {
+            var hasId = false;
+            var hasCreated = false;
+            var hasUpdated = false;
+            foreach (var item in items)
+            {
+                if (item.Name.Equals("id", StringComparison.OrdinalIgnoreCase))
+                {
+                    hasId = true;
+                } 
+                else if (item.Name.Equals(MigrationTable.COLUMN_CREATED_AT, StringComparison.OrdinalIgnoreCase))
+                {
+                    hasCreated = true;
+                }
+                else if (item.Name.Equals(MigrationTable.COLUMN_UPDATED_AT, StringComparison.OrdinalIgnoreCase))
+                {
+                    hasUpdated = true;
+                }
+            }
+            var res = new List<string>();
+            if (hasId)
+            {
+                res.Add("IIdEntity");
+            }
+            if (hasCreated)
+            {
+                res.Add(hasUpdated ? "ITimestampEntity" : "ICreatedEntity");
+            }
+            if (res.Count == 0)
+            {
+                return string.Empty;
+            }
+            return " : " + string.Join(", ", res);
         }
 
         public static bool GenerateFile(string folder, string table, List<ColumnEntity> columns)

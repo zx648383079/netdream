@@ -8,6 +8,11 @@ namespace NetDream.Core.Extensions
 {
     public static class Database
     {
+        public static Sql From<T>(this Sql sql, IDatabase db)
+            where T : class
+        {
+            return sql.From(db.DatabaseType.EscapeTableName(ModelHelper.TableName<T>()));
+        }
         public static Sql WhereIn(this Sql sql, string key, params int[] args)
         {
             if (args.Length == 0)
@@ -32,6 +37,16 @@ namespace NetDream.Core.Extensions
                 rawValues.Add(item);
             }
             return sql.Where($"{key} IN ({string.Join(',', keys)})", [.. rawValues]);
+        }
+
+        public static Sql Limit(this Sql sql, long count)
+        {
+            return sql.Append("LIMIT " + count);
+        }
+
+        public static Sql Limit(this Sql sql, long offset, long count)
+        {
+            return sql.Append($"LIMIT {offset},{count}");
         }
 
         public static IList<T> Pluck<T>(this IDatabase db, Sql sql, string key)

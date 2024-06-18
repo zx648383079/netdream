@@ -1,8 +1,9 @@
+using NetDream.Core.Interfaces.Entities;
 using NPoco;
 namespace Modules.AdSense.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class AdEntity
+    public class AdEntity: IIdEntity, ITimestampEntity
     {
         internal const string ND_TABLE_NAME = "ad";
         public int Id { get; set; }

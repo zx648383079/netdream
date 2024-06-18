@@ -1,11 +1,12 @@
 ﻿using Modules.AdSense.Entities;
 using NetDream.Core.Extensions;
 using NetDream.Core.Helpers;
+using NetDream.Core.Interfaces;
 using NPoco;
 
 namespace NetDream.Modules.AdSense.Repositories
 {
-    public class StatisticsRepository(IDatabase db)
+    public class StatisticsRepository(IDatabase db): IStatisticsRepository
     {
 
         public IDictionary<string, int> Subtotal()

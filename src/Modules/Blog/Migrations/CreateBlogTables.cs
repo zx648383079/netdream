@@ -10,12 +10,12 @@ namespace NetDream.Modules.Blog.Migrations
     public class CreateBlogTables(
         IPrivilegeManager privilege,
         IGlobeOption option,
+        LocalizeRepository localize, 
         IDatabase db) : Migration(db)
     {
     
         public override void Up()
         {
-            var localize = new LocalizeRepository();
             Append<BlogEntity>(table => {
                 table.Id();
                 table.String("title", 200);

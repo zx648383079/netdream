@@ -3,11 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using NetDream.Core.Http;
 using NetDream.Web.Base.Middleware;
 using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Web.Base.Http
 {
@@ -18,7 +13,7 @@ namespace NetDream.Web.Base.Http
         {
             get
             {
-                return HttpContext.Items.ContainsKey(ResponseMiddleware.RESPONSE_KEY) ? new JsonResponse() : HttpContext.Items[ResponseMiddleware.RESPONSE_KEY] as IJsonResponse;
+                return HttpContext.Features.Get<IJsonResponse>() ?? new JsonResponse();
             }
         }
 

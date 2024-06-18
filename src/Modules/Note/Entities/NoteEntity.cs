@@ -1,8 +1,9 @@
+using NetDream.Core.Interfaces.Entities;
 using NPoco;
 namespace Modules.Note.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class NoteEntity
+    public class NoteEntity: IIdEntity, ICreatedEntity
     {
         internal const string ND_TABLE_NAME = "note";
         public int Id { get; set; }

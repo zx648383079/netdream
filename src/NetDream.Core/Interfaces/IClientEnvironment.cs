@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetDream.Core.Interfaces
+﻿namespace NetDream.Core.Interfaces
 {
     public interface IClientEnvironment
     {
         public string Ip { get; }
         public string UserAgent { get; }
+
+        public string Language { get; }
 
         public int PlatformId { get; }
 

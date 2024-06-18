@@ -1,56 +1,65 @@
 ﻿using Microsoft.AspNetCore.Http;
-using NetDream.Api.Base.Middleware;
+using Microsoft.AspNetCore.Localization;
 using NetDream.Core.Helpers;
+using NetDream.Core.Http;
 using NetDream.Core.Interfaces;
 using NetDream.Modules.OpenPlatform.Http;
 
 namespace NetDream.Api.Base.Http
 {
-    public class ClientEnvironment : IClientEnvironment
+    public class ClientEnvironment(IHttpContextAccessor contextAccessor) : IClientEnvironment
     {
-        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly HttpContext? _context = contextAccessor.HttpContext;
 
-        public ClientEnvironment(IHttpContextAccessor contextAccessor)
-        {
-            _contextAccessor = contextAccessor;
-            Now = TimeHelper.TimestampNow();
-            var val = _contextAccessor.HttpContext.User.Identity.Name;
-            if (!string.IsNullOrWhiteSpace(val) && int.TryParse(val, out var userId))
-            {
-                UserId = userId;
-            }
-            if (_contextAccessor.HttpContext.Request.Headers.ContainsKey("X-Real-IP"))
-            {
-                Ip = _contextAccessor.HttpContext.Request.Headers["X-Real-IP"];
-            } else if (_contextAccessor.HttpContext.Request.Headers.ContainsKey("X-Forwarded-For"))
-            {
-                Ip = _contextAccessor.HttpContext.Request.Headers["X-Forwarded-For"];
-            } else
-            {
-                Ip = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+        public string Ip {
+            get {
+                if (_context is null)
+                {
+                    return string.Empty;
+                }
+                if (_context.Request.Headers.TryGetValue("X-Real-IP", out var value))
+                {
+                    return value.ToString() ?? string.Empty;
+                }
+                else if (_context.Request.Headers.TryGetValue("X-Forwarded-For", out var value1))
+                {
+                    return value1.ToString() ?? string.Empty;
+                }
+                else
+                {
+                    return _context.Connection?.RemoteIpAddress?.ToString() ?? string.Empty;
+                }
             }
         }
 
-        public string Ip { get; private set; }
+        public string Language => _context?.Features.Get<IRequestCultureFeature>()?.RequestCulture.Culture.Name ?? string.Empty;
 
-        public string UserAgent => _contextAccessor.HttpContext.Request.Headers.UserAgent;
+        public string UserAgent => _context?.Request.Headers.UserAgent.ToString() ?? string.Empty;
 
         public int PlatformId {
             get {
-                if (_contextAccessor.HttpContext.Items.TryGetValue(ResponseMiddleware.RESPONSE_KEY, out var json))
+                var res = _context?.Features.Get<IJsonResponse>();
+                if (res is PlatformResponse o)
                 {
-                    if (json is PlatformResponse o && o.Platform is not null)
-                    {
-                        return o.Platform.Id;
-                    }
+                    return o.Platform?.Id ?? 0;
                 }
                 return 0;
             }
         }
-        public int UserId { get; private set; }
+
+        public int UserId {
+            get {
+                var val = _context?.User.Identity?.Name;
+                if (!string.IsNullOrWhiteSpace(val) && int.TryParse(val, out var userId))
+                {
+                    return userId;
+                }
+                return 0;
+            }
+        }
 
         public string ClientName { get; private set; } = "web";
 
-        public int Now { get; private set; }
+        public int Now { get; private set; } = TimeHelper.TimestampNow();
     }
 }

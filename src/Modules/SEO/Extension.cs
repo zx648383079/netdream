@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NetDream.Core.Interfaces;
+using NetDream.Core.Repositories;
 using NetDream.Modules.SEO.Repositories;
 using NPoco;
 
@@ -11,6 +12,7 @@ namespace NetDream.Modules.SEO
         {
             var option = new OptionRepository(db);
             service.AddSingleton(typeof(IGlobeOption), option.LoadOption());
+            service.AddScoped<LocalizeRepository>();
         }
     }
 }

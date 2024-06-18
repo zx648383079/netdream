@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using NetDream.Core.Interfaces;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Web.Base.Http;
@@ -13,10 +16,12 @@ using NetDream.Web.Base.Http;
 namespace NetDream.Web.Areas.Auth.Controllers
 {
     [Area("Auth")]
-    public class HomeController(AuthRepository repository) : JsonController
+    public class HomeController(AuthRepository repository, 
+        IStringLocalizer<HomeController> localizer, IClientEnvironment environment) : JsonController
     {
         public IActionResult Index()
         {
+            //environment.ToString();
             return View();
         }
 
@@ -48,7 +53,7 @@ namespace NetDream.Web.Areas.Auth.Controllers
             });
             return Json(JsonResponse.RenderData(new { 
                 url = redirect_uri,
-            }, "登录成功！"));
+            }, localizer["登录成功！"]));
         }
 
 

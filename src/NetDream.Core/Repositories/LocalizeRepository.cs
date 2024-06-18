@@ -1,11 +1,12 @@
 ﻿using NetDream.Core.Helpers;
+using NetDream.Core.Interfaces;
 using NetDream.Core.Interfaces.Database;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Core.Repositories
 {
-    public class LocalizeRepository
+    public class LocalizeRepository(IClientEnvironment environment)
     {
         const string LANGUAGE_COLUMN_KEY = "language";
         const string BROWSER_DEFAULT_LANGUAGE = "en";
@@ -15,8 +16,8 @@ namespace NetDream.Core.Repositories
             {"en", "EN"},
         };
 
-        private static string _firstLang = "";
-        private static string _browserLang = "";
+        private string _firstLang = "";
+        private string _browserLang = "";
 
         public string BrowserLanguage()
         {
@@ -24,7 +25,25 @@ namespace NetDream.Core.Repositories
             {
                 return _browserLang; 
             }
-            return BROWSER_DEFAULT_LANGUAGE;
+            var lang = environment.Language;
+            var hasEn = false;
+            var enLang = BROWSER_DEFAULT_LANGUAGE;
+            var firstLang = string.Empty;
+            foreach (var item in LANGUAGE_MAP) {
+                if (lang.Contains(item.Key, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return _browserLang = item.Key;
+                }
+                if (string.IsNullOrEmpty(firstLang))
+                {
+                    firstLang = item.Key;
+                }
+                if (item.Key == enLang)
+                {
+                    hasEn = true;
+                }
+            }
+            return _browserLang = hasEn ? enLang : firstLang;
         }
 
         public string FirstLanguage()

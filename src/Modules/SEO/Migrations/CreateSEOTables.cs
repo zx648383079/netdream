@@ -9,7 +9,7 @@ using NPoco;
 
 namespace NetDream.Modules.SEO.Migrations
 {
-    public class CreateSEOTables(IDatabase db, IGlobeOption option) : Migration(db)
+    public class CreateSEOTables(IDatabase db, IGlobeOption option, LocalizeRepository localize) : Migration(db)
     {
 
         public override void Up()
@@ -48,7 +48,7 @@ namespace NetDream.Modules.SEO.Migrations
                 table.Id();
                 table.String("name", 50);
                 table.String("title", 100);
-                new LocalizeRepository().AddTableColumn(table);
+                localize.AddTableColumn(table);
                 table.String("description", 500).Default(string.Empty);
                 table.MediumText("content");
                 table.Uint("status", 1).Default(0);

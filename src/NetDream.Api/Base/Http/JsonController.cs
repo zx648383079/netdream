@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Middleware;
 using NetDream.Core.Http;
+using NetDream.Modules.OpenPlatform.Http;
 using NPoco;
 
 namespace NetDream.Web.Base.Http
@@ -11,9 +12,8 @@ namespace NetDream.Web.Base.Http
 
         public IJsonResponse JsonResponse
         {
-            get
-            {
-                return HttpContext.Items.ContainsKey(ResponseMiddleware.RESPONSE_KEY) ? new JsonResponse() : HttpContext.Items[ResponseMiddleware.RESPONSE_KEY] as IJsonResponse;
+            get {
+                return HttpContext.Features.Get<IJsonResponse>() ?? new PlatformResponse();
             }
         }
 

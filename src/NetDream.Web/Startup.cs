@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -65,8 +66,18 @@ namespace NetDream.Web
                 RegisterGlobeRepositories(db, services);
             } 
             RegisterRepositories(services);
-
+            // 本地化
+            services.Configure<RequestLocalizationOptions>(options => {
+                var supportedCultures = new[] { "en-US", "zh-CN" };
+                options.SetDefaultCulture(supportedCultures[0])
+                    .AddSupportedCultures(supportedCultures)
+                    .AddSupportedUICultures(supportedCultures)
+                    .AddInitialRequestCultureProvider(new AcceptLanguageHeaderRequestCultureProvider());
+            });
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
+            
             services.AddMvc()
+                .AddViewLocalization()
                 .AddNewtonsoftJson(options =>
                 {
                     // 循环引用
@@ -107,7 +118,8 @@ namespace NetDream.Web
             app.UseSession();
             app.UseAuthorization();
             app.UseMiddleware<ResponseMiddleware>();
-
+            // 方便获取当前语言
+            app.UseRequestLocalization();
             app.UseAuthorization();
 
             #region Websocket
