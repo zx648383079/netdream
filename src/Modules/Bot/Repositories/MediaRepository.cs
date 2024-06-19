@@ -19,7 +19,7 @@ namespace NetDream.Modules.Bot.Repositories
         /**
          * 图片素材
          */
-        const TYPE_IMAGE = "image";
+        public const string TYPE_IMAGE = "image";
         /**
          * 音频素材
          */

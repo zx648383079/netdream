@@ -1,0 +1,48 @@
+﻿@using NPoco
+@using NetDream.Modules.Note.Models
+@{
+    ViewData["Title"] = "便签";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var isGuest = (bool)ViewData["isGuest"];
+    var items = ViewData["items"] as Page<NoteModel>;
+}
+@section Styles {
+    <link type="text/css" href="~/assets/css/note.min.css" rel="stylesheet" media="all">
+}
+<div class="flex-box">
+    @if (!isGuest)
+    {
+        <div class="item new-item">
+            <div class="item-content">
+                <textarea placeholder="请输入内容" max-length="255"></textarea>
+            </div>
+            <div class="item-action">
+                <span class="length-box">0/255</span>
+                <div class="pull-right">
+                    <i class="visbile-toggle fa fa-eye"></i>
+                    <i class="fa fa-check"></i>
+                </div>
+            </div>
+        </div>
+    }
+    <partial name="../Page.cshtml" view-data="ViewData"/>
+</div>
+@if (items.CurrentPage < items.TotalPages)
+{
+    <div class="more-load" data-page="@items.CurrentPage" data-target=".flex-box" data-url="@Url.Action("page")">
+        加载中。。。
+    </div>
+}
+
+@section Scripts {
+    <script src="~/assets/js/main.min.js"></script>
+    <script src="~/assets/js/note.min.js"></script>
+    @if (!isGuest)
+    {
+        <script>
+            $(function () {
+                bindNewNote('@Url.Action("Save")');
+            })
+        </script>
+    }
+}

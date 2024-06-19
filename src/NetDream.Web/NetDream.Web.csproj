@@ -26,6 +26,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Bot\Bot.csproj" />
+    <ProjectReference Include="..\Modules\CMS\CMS.csproj" />
+    <ProjectReference Include="..\Modules\Counter\Counter.csproj" />
+    <ProjectReference Include="..\Modules\Forum\Forum.csproj" />
+    <ProjectReference Include="..\Modules\Live\Live.csproj" />
+    <ProjectReference Include="..\Modules\MessageService\MessageService.csproj" />
+    <ProjectReference Include="..\Modules\MicroBlog\MicroBlog.csproj" />
+    <ProjectReference Include="..\Modules\Navigation\Navigation.csproj" />
+    <ProjectReference Include="..\Modules\Note\Note.csproj" />
+    <ProjectReference Include="..\Modules\OnlineDisk\OnlineDisk.csproj" />
+    <ProjectReference Include="..\Modules\OnlineService\OnlineService.csproj" />
     <ProjectReference Include="..\NetDream.Core\NetDream.Core.csproj" />
 	  <ProjectReference Include="..\Modules\Auth\Auth.csproj" />
 	  <ProjectReference Include="..\Modules\Blog\Blog.csproj" />

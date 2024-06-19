@@ -15,5 +15,6 @@ namespace NetDream.Core.Http
         public object RenderFailure(string message, int code);
 
         public object RenderFailure(string message);
+        public object RenderFailure(object message);
     }
 }

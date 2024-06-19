@@ -7,6 +7,7 @@ namespace NetDream.Core.Helpers
 {
     public static partial class Validator
     {
+
         public static bool IsNotEmpty(string? value) 
         {
             return !string.IsNullOrWhiteSpace(value);

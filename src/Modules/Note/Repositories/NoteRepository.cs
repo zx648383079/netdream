@@ -3,6 +3,7 @@ using NetDream.Core.Extensions;
 using NetDream.Core.Helpers;
 using NetDream.Core.Interfaces;
 using NetDream.Core.Repositories;
+using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Models;
 using NPoco;
 
@@ -99,26 +100,28 @@ namespace NetDream.Modules.Note.Repositories
             return model;
         }
 
-        public NoteEntity Save(NoteEntity data, int userId = 0)
+        public NoteEntity Save(NoteForm data, int userId = 0)
         {
-            var model = data.Id > 0 ? db.SingleById<NoteEntity>(data.Id) : data;
+            var model = data.Id > 0 ? db.SingleById<NoteEntity>(data.Id) : 
+                new NoteEntity();
             if (data.Id > 0 && userId > 0 && model.UserId != userId)
             {
                 throw new Exception("note error");
             }
-            if (userId > 0 || data.UserId == 0)
+            model.Content = data.Content;
+            if (userId > 0 || model.UserId == 0)
             {
-                data.UserId = model.UserId > 0 ? model.Id : userId;
+                model.UserId = userId;
             }
-            if (data.Id == 0)
+            if (model.CreatedAt == 0)
             {
-                data.CreatedAt = environment.Now;
+                model.CreatedAt = environment.Now;
             }
-            db.Save(data);
-            return data;
+            db.Save(model);
+            return model;
         }
 
-        public NoteEntity SaveSelf(NoteEntity data)
+        public NoteEntity SaveSelf(NoteForm data)
         {
             return Save(data, environment.UserId);
         }

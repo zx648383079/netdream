@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace NetDream.Web.Base.TagHelpers
 {
@@ -19,18 +17,18 @@ namespace NetDream.Web.Base.TagHelpers
 
         public int PageLength { get; set; } = 7;
 
-        private string url;
+        private string _url = string.Empty;
 
         public string Url
         {
-            get { return url; }
+            get { return _url; }
             set {
                 if (value.IndexOf('?') < 0)
                 {
-                    url = value + "?page=";
+                    _url = value + "?page=";
                     return;
                 }
-                url = Regex.Replace(value, @"([\?\&])page=\d+\&*", "$1") + "&page=";
+                _url = Regex.Replace(value, @"([\?\&])page=\d+\&*", "$1") + "&page=";
             }
         }
 
@@ -41,7 +39,7 @@ namespace NetDream.Web.Base.TagHelpers
         {
             output.TagName = "div";
             var html = new StringBuilder();
-            var items = initLinks(out bool canPrevious, out bool canNext);
+            var items = InitLinks(out bool canPrevious, out bool canNext);
             html.Append("<ul class=\"pagination\">");
             if (DirectionLinks && canPrevious)
             {
@@ -74,7 +72,7 @@ namespace NetDream.Web.Base.TagHelpers
             output.Content.SetHtmlContent(html.ToString());
         }
 
-        private List<int> initLinks(out bool canPrevious, out bool canNext)
+        private List<int> InitLinks(out bool canPrevious, out bool canNext)
         {
             var total = (int)Math.Ceiling((double)Total / PerPage);
             canPrevious = Page > 1;

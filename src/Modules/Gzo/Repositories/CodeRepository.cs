@@ -18,10 +18,10 @@ namespace NetDream.Modules.Gzo.Repositories
         private string PhpToCSharp(string content) 
         {
             content = Regex.Replace(content, @"function([^\(]*)\(([^\)]*)\)([^\{]*)\{", match => {
-                var paramerters = string.Empty;
+                var parameters = string.Empty;
                 if (!string.IsNullOrWhiteSpace(match.Groups[2].Value))
                 {
-                    paramerters = string.Join(',', 
+                    parameters = string.Join(',', 
                         match.Groups[2].Value.Split(',').Select(item => {
                             var key = item.Trim();
                             if (key[0] == '$')
@@ -33,7 +33,7 @@ namespace NetDream.Modules.Gzo.Repositories
                 }
                 if (string.IsNullOrWhiteSpace(match.Groups[1].Value))
                 {
-                    return $"({paramerters}) => {{";
+                    return $"({parameters}) => {{";
                 }
                 var returnType = "void";
                 if (!string.IsNullOrWhiteSpace(match.Groups[3].Value))
@@ -46,7 +46,7 @@ namespace NetDream.Modules.Gzo.Repositories
                     // Migration 实现继承
                     returnType = "override " + returnType;
                 }
-                return $"{returnType} {func}({paramerters}) {{";
+                return $"{returnType} {func}({parameters}) {{";
             });
             content = Regex.Replace(content, @"(->|::)([^\(\)\s]+)", 
                 match => "." + Studly(match.Groups[2].Value));

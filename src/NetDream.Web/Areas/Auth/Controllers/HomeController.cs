@@ -17,11 +17,10 @@ namespace NetDream.Web.Areas.Auth.Controllers
 {
     [Area("Auth")]
     public class HomeController(AuthRepository repository, 
-        IStringLocalizer<HomeController> localizer, IClientEnvironment environment) : JsonController
+        IStringLocalizer<HomeController> localizer) : JsonController
     {
         public IActionResult Index()
         {
-            //environment.ToString();
             return View();
         }
 

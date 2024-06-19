@@ -46,6 +46,15 @@ namespace NetDream.Web.Base.Http
             return RenderFailure(message, 404);
         }
 
+        public object RenderFailure(object message)
+        {
+            return new {
+                code = 404,
+                status = "failure",
+                message
+            };
+        }
+
         public object RenderPage<T>(Page<T> page)
         {
 

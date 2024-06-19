@@ -14,7 +14,7 @@ namespace NetDream.Core.Helpers
         }
         public static string TableName(Type t)
         {
-            var a = t.GetType().GetCustomAttributes(typeof(TableNameAttribute), true).ToArray();
+            var a = t.GetCustomAttributes(typeof(TableNameAttribute), true).ToArray();
             return a.Length == 0 ? t.Name : (a[0] as TableNameAttribute)!.Value;
         }
         /// <summary>

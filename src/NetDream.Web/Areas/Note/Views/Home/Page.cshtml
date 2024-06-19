@@ -1,0 +1,25 @@
+﻿@using NPoco
+@using NetDream.Core.Helpers
+@using NetDream.Modules.Note.Models
+@{
+    var isGuest = (bool)ViewData["isGuest"];
+    var items = ViewData["items"] as Page<NoteModel>;
+}
+@foreach(var item in items.Items)
+{
+    <div class="item">
+        <div class="item-content">
+            @item.Content
+        </div>
+        <div class="item-time">
+            <span>
+                @item.User?.Name
+            </span>
+            <span>@TimeHelper.FormatAgo(item.CreatedAt)</span>
+        </div>
+        @if (isGuest)
+        {
+            <a href="@Url.Action("delete")" class="fa fa-times"></a>
+        }
+    </div>
+}

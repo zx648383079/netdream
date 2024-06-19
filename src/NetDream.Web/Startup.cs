@@ -16,6 +16,7 @@ using NetDream.Modules.Contact;
 using NetDream.Modules.Gzo;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.SEO;
+using NetDream.Modules.Note;
 using NetDream.Web.Base.Http;
 using NetDream.Web.Base.Middleware;
 using Newtonsoft.Json;
@@ -156,6 +157,7 @@ namespace NetDream.Web
             services.ProvideGzoRepositories();
             services.ProvideContactRepositories();
             services.ProvideOpenRepositories();
+            services.ProvideNoteRepositories();
         }
     }
 }
