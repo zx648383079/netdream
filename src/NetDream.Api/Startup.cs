@@ -10,9 +10,9 @@ using Microsoft.OpenApi.Models;
 using NetDream.Api.Base.Http;
 using NetDream.Api.Base.Middleware;
 using NetDream.Api.Models;
-using NetDream.Core.Http;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Securities;
+using NetDream.Shared.Http;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Securities;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.Blog.Repositories;
 using NetDream.Modules.Contact.Repositories;
@@ -32,7 +32,7 @@ namespace NetDream.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            #region ¿çÓò
+            #region ï¿½ï¿½ï¿½ï¿½
             var hosts = Configuration["AllowedHosts"].Split(',');
             services.AddCors(options =>
                 options.AddPolicy("AllowSameDomain",
@@ -44,49 +44,49 @@ namespace NetDream.Api
             );
             #endregion
 
-            #region JwtÅäÖÃ
-            //½« appsettings.jsonÖÐµÄJwtSettings²¿·ÖÎÄ¼þ¶ÁÈ¡µ½JwtSettingsÖÐ£¬ÕâÊÇ¸øÆäËûµØ·½ÓÃµÄ
+            #region Jwtï¿½ï¿½ï¿½ï¿½
+            //ï¿½ï¿½ appsettings.jsonï¿½Ðµï¿½JwtSettingsï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½È¡ï¿½ï¿½JwtSettingsï¿½Ð£ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø·ï¿½ï¿½Ãµï¿½
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
 
-            //ÓÉÓÚ³õÊ¼»¯µÄÊ±ºòÎÒÃÇ¾ÍÐèÒªÓÃ£¬ËùÒÔÊ¹ÓÃBindµÄ·½Ê½¶ÁÈ¡ÅäÖÃ
-            //½«ÅäÖÃ°ó¶¨µ½JwtSettingsÊµÀýÖÐ
+            //ï¿½ï¿½ï¿½Ú³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½Òªï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½Bindï¿½Ä·ï¿½Ê½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
+            //ï¿½ï¿½ï¿½ï¿½ï¿½Ã°ó¶¨µï¿½JwtSettingsÊµï¿½ï¿½ï¿½ï¿½
             var jwtSettings = new JwtSettings();
             Configuration.Bind("JwtSettings", jwtSettings);
 
-            //Ìí¼ÓÉí·ÝÑéÖ¤
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤
             services.AddAuthentication(options =>
             {
-                //ÈÏÖ¤ middlewareÅäÖÃ
+                //ï¿½ï¿½Ö¤ middlewareï¿½ï¿½ï¿½ï¿½
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(o =>
             {
-                //jwt token²ÎÊýÉèÖÃ
+                //jwt tokenï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = JwtClaimTypes.Name,
                     RoleClaimType = JwtClaimTypes.Role,
-                    //Token°ä·¢»ú¹¹
+                    //Tokenï¿½ä·¢ï¿½ï¿½ï¿½ï¿½
                     ValidIssuer = jwtSettings.Issuer,
-                    //°ä·¢¸øË­
+                    //ï¿½ä·¢ï¿½ï¿½Ë­
                     ValidAudience = jwtSettings.Audience,
-                    //ÕâÀïµÄ keyÒª½øÐÐ¼ÓÃÜ
+                    //ï¿½ï¿½ï¿½ï¿½ï¿½ keyÒªï¿½ï¿½ï¿½Ð¼ï¿½ï¿½ï¿½
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
 
-                    /***********************************TokenValidationParametersµÄ²ÎÊýÄ¬ÈÏÖµ***********************************/
+                    /***********************************TokenValidationParametersï¿½Ä²ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½Öµ***********************************/
                     // RequireSignedTokens = true,
                     // SaveSigninToken = false,
                     // ValidateActor = false,
-                    // ½«ÏÂÃæÁ½¸ö²ÎÊýÉèÖÃÎª false£¬¿ÉÒÔ²»ÑéÖ¤IssuerºÍAudience£¬µ«ÊÇ²»½¨ÒéÕâÑù×ö¡£
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª falseï¿½ï¿½ï¿½ï¿½ï¿½Ô²ï¿½ï¿½ï¿½Ö¤Issuerï¿½ï¿½Audienceï¿½ï¿½ï¿½ï¿½ï¿½Ç²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     // ValidateAudience = true,
                     // ValidateIssuer = true, 
                     // ValidateIssuerSigningKey = false,
-                    // ÊÇ·ñÒªÇóTokenµÄClaimsÖÐ±ØÐë°üº¬Expires
+                    // ï¿½Ç·ï¿½Òªï¿½ï¿½Tokenï¿½ï¿½Claimsï¿½Ð±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Expires
                     // RequireExpirationTime = true,
-                    // ÔÊÐíµÄ·þÎñÆ÷Ê±¼äÆ«ÒÆÁ¿
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Æ«ï¿½ï¿½ï¿½ï¿½
                     // ClockSkew = TimeSpan.FromSeconds(300),
-                    // ÊÇ·ñÑéÖ¤TokenÓÐÐ§ÆÚ£¬Ê¹ÓÃµ±Ç°Ê±¼äÓëTokenµÄClaimsÖÐµÄNotBeforeºÍExpires¶Ô±È
+                    // ï¿½Ç·ï¿½ï¿½ï¿½Ö¤Tokenï¿½ï¿½Ð§ï¿½Ú£ï¿½Ê¹ï¿½Ãµï¿½Ç°Ê±ï¿½ï¿½ï¿½ï¿½Tokenï¿½ï¿½Claimsï¿½Ðµï¿½NotBeforeï¿½ï¿½Expiresï¿½Ô±ï¿½
                     // ValidateLifetime = true
                 };
             });

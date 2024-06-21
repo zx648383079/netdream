@@ -1,5 +1,5 @@
-﻿using NetDream.Core.Interfaces;
-using NetDream.Core.Migrations;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Migrations;
 using NetDream.Modules.Navigation.Repositories;
 using NPoco;
 using Modules.Navigation.Entities;

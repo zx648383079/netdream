@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetDream.Core\NetDream.Core.csproj" />
+    <ProjectReference Include="..\NetDream.Shared\NetDream.Shared.csproj" />
     <ProjectReference Include="..\Modules\Auth\Auth.csproj" />
     <ProjectReference Include="..\Modules\Blog\Blog.csproj" />
     <ProjectReference Include="..\Modules\Book\Book.csproj" />

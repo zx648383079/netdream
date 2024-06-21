@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
 using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Repositories;
 using NetDream.Web.Base.Extensions;

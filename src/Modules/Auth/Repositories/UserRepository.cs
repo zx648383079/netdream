@@ -1,6 +1,6 @@
-﻿using NetDream.Core.Extensions;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Interfaces.Entities;
+﻿using NetDream.Shared.Extensions;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
 using NetDream.Modules.Auth.Models;
 using NPoco;
 

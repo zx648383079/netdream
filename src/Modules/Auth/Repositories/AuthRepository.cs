@@ -1,8 +1,8 @@
-﻿using NetDream.Core.Extensions;
-using NetDream.Core.Helpers;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Interfaces.Entities;
-using NetDream.Core.Interfaces.Forms;
+﻿using NetDream.Shared.Extensions;
+using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces.Forms;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Models;
 using NPoco;
@@ -97,9 +97,9 @@ namespace NetDream.Modules.Auth.Repositories
         public IOperationResult<IUser> Login(ISignInForm data)
         {
             var res = data.Verify(db);
-            if (!string.IsNullOrWhiteSpace(data.Account) || res.IsSuccess)
+            if (!string.IsNullOrWhiteSpace(data.Account) || res.Succeeded)
             {
-                LogLogin(data.Account, res.Result?.Id ?? 0, res.IsSuccess);
+                LogLogin(data.Account, res.Result?.Id ?? 0, res.Succeeded);
             }
             return res;
         }

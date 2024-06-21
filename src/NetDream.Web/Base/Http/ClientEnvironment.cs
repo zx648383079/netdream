@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
-using NetDream.Core.Helpers;
-using NetDream.Core.Http;
-using NetDream.Core.Interfaces;
+using NetDream.Shared.Helpers;
+using NetDream.Shared.Http;
+using NetDream.Shared.Interfaces;
 using NetDream.Modules.OpenPlatform.Http;
 
 namespace NetDream.Web.Base.Http

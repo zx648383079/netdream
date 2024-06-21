@@ -19,7 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\NetDream.Core\NetDream.Core.csproj" />
+		<ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
 	</ItemGroup>
 
 </Project>

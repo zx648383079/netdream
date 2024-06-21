@@ -1,18 +1,19 @@
-﻿using NetDream.Core.Extensions;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Migrations;
+﻿using NetDream.Shared.Extensions;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Migrations;
 using NetDream.Modules.Book.Entities;
 using NetDream.Modules.Book.Repositories;
 using NPoco;
 
 namespace NetDream.Modules.Book.Migrations
 {
-    internal class CreateBookTables(IPrivilegeManager privilege, IDatabase db) : Migration(db)
+    internal class CreateBookTables(IPrivilegeManager privilege,
+        BookRepository repository,
+        IDatabase db) : Migration(db)
     {
 
         public override void Up()
         {
-            var repository = new BookRepository(db);
             repository.Tag().Migration(this);
             repository.Log().Migration(this);
             repository.ClickLog().Migration(this);

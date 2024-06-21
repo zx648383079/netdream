@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Modules.SEO.Entities;
 using NPoco;
 using System;

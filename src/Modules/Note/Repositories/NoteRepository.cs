@@ -1,8 +1,8 @@
 ﻿using Modules.Note.Entities;
-using NetDream.Core.Extensions;
-using NetDream.Core.Helpers;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Repositories;
+using NetDream.Shared.Extensions;
+using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Repositories;
 using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Models;
 using NPoco;
@@ -155,50 +155,9 @@ namespace NetDream.Modules.Note.Repositories
             return items;
         }
 
-        public NoteEntity Change(int id, IDictionary<string, string> data)
+        public NoteEntity? Change(int id, IDictionary<string, string> data)
         {
-            var model = db.SingleById<NoteEntity>(id);
-            var maps = new string[] { "is_notice" };
-            var isUpdated = false;
-            foreach (var item in data)
-            {
-                if (Validator.IsInt(item.Key))
-                {
-                    if (string.IsNullOrEmpty(item.Value) || !maps.Contains(item.Value))
-                    {
-                        continue;
-                    }
-                    var field = model.GetType().GetField(StrHelper.Studly(item.Value));
-                    if (field is null)
-                    {
-                        continue;
-                    }
-                    if (field.FieldType == typeof(bool))
-                    {
-                        field.SetValue(model, !(bool)field.GetValue(model));
-                    } else
-                    {
-                        field.SetValue(model, Convert.ChangeType(
-                            (byte)field.GetValue(model) > 0 ? 0 : 1, field.FieldType));
-                    }
-                    isUpdated = true;
-                }
-                else if(string.IsNullOrEmpty(item.Key) || !maps.Contains(item.Key))
-                {
-                    var field = model.GetType().GetField(StrHelper.Studly(item.Key));
-                    if (field is null)
-                    {
-                        continue;
-                    }
-                    field.SetValue(model, Convert.ChangeType(item.Value, field.FieldType));
-                    isUpdated = true;
-                }
-            }
-            if (isUpdated)
-            {
-                db.Update(model);
-            }
-            return model;
+            return ModelHelper.BatchToggle<NoteEntity>(db, id, data, ["is_notice"]);
         }
     }
 }

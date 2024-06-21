@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Helpers;
+﻿using NetDream.Shared.Helpers;
 
 namespace NetDream.Web.Base.Helpers
 {

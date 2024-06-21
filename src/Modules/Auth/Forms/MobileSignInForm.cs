@@ -1,6 +1,6 @@
-﻿using NetDream.Core.Interfaces.Entities;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Interfaces.Forms;
+﻿using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Forms;
 using NetDream.Modules.Auth.Entities;
 using NPoco;
 using System;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NetDream.Core.Models;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Auth.Forms
 {

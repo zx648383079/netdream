@@ -1,6 +1,6 @@
-﻿using NetDream.Core.Extensions;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Migrations;
+﻿using NetDream.Shared.Extensions;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Migrations;
 using NetDream.Modules.CMS.Entities;
 using NetDream.Modules.CMS.Repositories;
 using NPoco;

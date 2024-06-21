@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using NetDream.Core.Helpers;
+using NetDream.Shared.Helpers;
 using NetDream.Modules.Blog.Repositories;
 using System.Text;
 

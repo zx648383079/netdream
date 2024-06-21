@@ -11,6 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="NPoco" Version="5.7.1" />
 	</ItemGroup>
 
@@ -19,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\NetDream.Core\NetDream.Core.csproj" />
+		<ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
 	</ItemGroup>
 
 </Project>

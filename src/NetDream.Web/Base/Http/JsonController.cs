@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using NetDream.Core.Http;
+using NetDream.Shared.Http;
 using NetDream.Web.Base.Middleware;
 using NPoco;
 using System.Collections.Generic;

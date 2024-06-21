@@ -37,7 +37,7 @@
     <ProjectReference Include="..\Modules\Note\Note.csproj" />
     <ProjectReference Include="..\Modules\OnlineDisk\OnlineDisk.csproj" />
     <ProjectReference Include="..\Modules\OnlineService\OnlineService.csproj" />
-    <ProjectReference Include="..\NetDream.Core\NetDream.Core.csproj" />
+    <ProjectReference Include="..\NetDream.Shared\NetDream.Shared.csproj" />
 	  <ProjectReference Include="..\Modules\Auth\Auth.csproj" />
 	  <ProjectReference Include="..\Modules\Blog\Blog.csproj" />
 	  <ProjectReference Include="..\Modules\Book\Book.csproj" />

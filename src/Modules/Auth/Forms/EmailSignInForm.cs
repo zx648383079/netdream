@@ -1,8 +1,8 @@
-﻿using NetDream.Core.Helpers;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Interfaces.Entities;
-using NetDream.Core.Interfaces.Forms;
-using NetDream.Core.Models;
+﻿using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces.Forms;
+using NetDream.Shared.Models;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Models;
 using NPoco;

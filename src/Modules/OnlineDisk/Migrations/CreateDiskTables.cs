@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.OnlineDisk.Entities;
-using NetDream.Core.Migrations;
+using NetDream.Shared.Migrations;
 using NetDream.Modules.OnlineDisk.Repositories;
 using NPoco;
 using System;

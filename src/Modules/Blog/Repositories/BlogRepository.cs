@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Models;
 using NPoco;

@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Migrations;
+﻿using NetDream.Shared.Migrations;
 using NetDream.Modules.Contact.Entities;
 using NPoco;
 using System;

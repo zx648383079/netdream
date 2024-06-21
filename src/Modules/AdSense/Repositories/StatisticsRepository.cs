@@ -1,7 +1,7 @@
 ﻿using Modules.AdSense.Entities;
-using NetDream.Core.Extensions;
-using NetDream.Core.Helpers;
-using NetDream.Core.Interfaces;
+using NetDream.Shared.Extensions;
+using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
 using NPoco;
 
 namespace NetDream.Modules.AdSense.Repositories

@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Interfaces.Entities;
+﻿using NetDream.Shared.Interfaces.Entities;
 using NPoco;
 
 namespace NetDream.Modules.CMS.Entities

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using NetDream.Core.Http;
+using NetDream.Shared.Http;
 using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Modules.OpenPlatform.Repositories;

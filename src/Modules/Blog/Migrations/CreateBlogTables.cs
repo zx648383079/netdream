@@ -1,6 +1,6 @@
-﻿using NetDream.Core.Interfaces;
-using NetDream.Core.Migrations;
-using NetDream.Core.Repositories;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Migrations;
+using NetDream.Shared.Repositories;
 using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Repositories;
 using NPoco;

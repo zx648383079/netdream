@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.33711.374
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Core", "NetDream.Core\NetDream.Core.csproj", "{C153B9BA-2F3F-4639-BF05-126D709A446C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Shared", "NetDream.Shared\NetDream.Shared.csproj", "{C153B9BA-2F3F-4639-BF05-126D709A446C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Api", "NetDream.Api\NetDream.Api.csproj", "{5BE8F4C0-AE5F-4E96-9B8C-C42A4B43017E}"
 EndProject
@@ -57,9 +57,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdSense", "Modules\AdSense\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Counter", "Modules\Counter\Counter.csproj", "{892D86C7-41FE-473F-B19E-D4983CC8FA6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Note", "Modules\Note\Note.csproj", "{0949AA65-B294-4EA4-B94A-5A6D90C5BC2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Note", "Modules\Note\Note.csproj", "{0949AA65-B294-4EA4-B94A-5A6D90C5BC2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot", "Modules\Bot\Bot.csproj", "{A1058992-E4FA-46F0-A391-E92B011E4584}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bot", "Modules\Bot\Bot.csproj", "{A1058992-E4FA-46F0-A391-E92B011E4584}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Providers", "Shared\Providers\Providers.csproj", "{2771E6B8-CEBB-4AA6-90E4-8FFDED19EAD2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repositories", "Shared\Repositories\Repositories.csproj", "{8D93A4E9-32CB-4E5B-9828-D998971EE0E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -179,6 +185,14 @@ Global
 		{A1058992-E4FA-46F0-A391-E92B011E4584}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1058992-E4FA-46F0-A391-E92B011E4584}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1058992-E4FA-46F0-A391-E92B011E4584}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2771E6B8-CEBB-4AA6-90E4-8FFDED19EAD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2771E6B8-CEBB-4AA6-90E4-8FFDED19EAD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2771E6B8-CEBB-4AA6-90E4-8FFDED19EAD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2771E6B8-CEBB-4AA6-90E4-8FFDED19EAD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D93A4E9-32CB-4E5B-9828-D998971EE0E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D93A4E9-32CB-4E5B-9828-D998971EE0E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D93A4E9-32CB-4E5B-9828-D998971EE0E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D93A4E9-32CB-4E5B-9828-D998971EE0E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -206,6 +220,8 @@ Global
 		{892D86C7-41FE-473F-B19E-D4983CC8FA6D} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 		{0949AA65-B294-4EA4-B94A-5A6D90C5BC2D} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 		{A1058992-E4FA-46F0-A391-E92B011E4584} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
+		{2771E6B8-CEBB-4AA6-90E4-8FFDED19EAD2} = {D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}
+		{8D93A4E9-32CB-4E5B-9828-D998971EE0E2} = {D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {137970B0-B381-4D3F-AD18-F22A2B0365E6}

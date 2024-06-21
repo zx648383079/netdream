@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.MessageService.Entities;
-using NetDream.Core.Migrations;
+using NetDream.Shared.Migrations;
 using NPoco;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using NetDream.Modules.MessageService.Repositories;
 
 namespace NetDream.Modules.MessageService.Migrations
 {
-    public class CreateMessageServiceTables(IDatabase db) : Migration(db)
+    public class CreateMessageServiceTables(IDatabase db, MessageRepository repository) : Migration(db)
     {
 
         public override void Up()
@@ -25,6 +25,7 @@ namespace NetDream.Modules.MessageService.Migrations
                 table.String("data").Comment("模板字段");
                 table.Text("content").Comment("模板内容");
                 table.String("target_no", 32).Default(string.Empty).Comment("外部编号");
+                table.Bool("status").Default(0).Comment("是否开启");
                 table.Timestamps();
             }).Append<LogEntity>(table => {
                 table.Comment("短信发送记录");
@@ -48,7 +49,6 @@ namespace NetDream.Modules.MessageService.Migrations
 
         public override void Seed()
         {
-            var repository = new MessageRepository(db);
             repository.InsertIf(MessageProtocol.EVENT_LOGIN_CODE,
                 "登录验证码", "登录验证码{code}");
             repository.InsertIf(MessageProtocol.EVENT_REGISTER_CODE,

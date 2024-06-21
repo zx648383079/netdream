@@ -1,5 +1,5 @@
-﻿using NetDream.Core.Helpers;
-using NetDream.Core.Migrations;
+﻿using NetDream.Shared.Helpers;
+using NetDream.Shared.Migrations;
 using NetDream.Modules.Gzo.Entities;
 using NPoco;
 using System.Text;

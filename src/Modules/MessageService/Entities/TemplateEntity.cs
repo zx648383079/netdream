@@ -13,6 +13,9 @@ namespace NetDream.Modules.MessageService.Entities
         public string Content { get; set; } = string.Empty;
         [Column("target_no")]
         public string TargetNo { get; set; } = string.Empty;
+
+        public byte Status { get; set; }
+
         [Column("updated_at")]
         public int UpdatedAt { get; set; }
         [Column("created_at")]

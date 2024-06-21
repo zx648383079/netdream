@@ -1,7 +1,7 @@
-﻿using NetDream.Core.Extensions;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Interfaces.Entities;
-using NetDream.Core.Migrations;
+﻿using NetDream.Shared.Extensions;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Migrations;
 using NetDream.Modules.Shop.Entities;
 using NetDream.Modules.Shop.Repositories;
 using NPoco;

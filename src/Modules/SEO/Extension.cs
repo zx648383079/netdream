@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Repositories;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Repositories;
 using NetDream.Modules.SEO.Repositories;
 using NPoco;
 

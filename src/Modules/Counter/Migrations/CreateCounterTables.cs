@@ -1,5 +1,5 @@
 ﻿using Modules.Counter.Entities;
-using NetDream.Core.Migrations;
+using NetDream.Shared.Migrations;
 using NPoco;
 using System;
 using System.Collections.Generic;

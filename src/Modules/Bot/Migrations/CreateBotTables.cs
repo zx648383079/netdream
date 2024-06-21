@@ -1,6 +1,6 @@
 ﻿using Modules.Bot.Entities;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Migrations;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Migrations;
 using NetDream.Modules.Bot.Repositories;
 using NPoco;
 using System;

@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Modules.OpenPlatform.Entities;
 using System.Data;
 using System.Text;

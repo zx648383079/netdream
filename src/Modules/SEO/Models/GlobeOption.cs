@@ -1,5 +1,5 @@
-﻿using NetDream.Core.Interfaces;
-using NetDream.Core.Interfaces.Entities;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.SEO.Models
 {
@@ -29,6 +29,11 @@ namespace NetDream.Modules.SEO.Models
         public void AddGroup(string groupName, Func<IEnumerable<IOptionConfigureItem>> cb)
         {
             throw new NotImplementedException();
+        }
+
+        public void InsertOrUpdate(string key, object data, string name)
+        {
+
         }
     }
 }

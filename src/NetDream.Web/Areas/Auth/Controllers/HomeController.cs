@@ -4,11 +4,12 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using NetDream.Core.Interfaces;
+using NetDream.Shared.Interfaces;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Web.Base.Http;
@@ -28,7 +29,7 @@ namespace NetDream.Web.Areas.Auth.Controllers
         public async Task<IActionResult> LoginAsync([Bind("email", "password")] EmailSignInForm form, string redirect_uri = "/")
         {
             var res = repository.Login(form);
-            if (!res.IsSuccess)
+            if (!res.Succeeded)
             {
                 return Json(JsonResponse.RenderFailure(res.Message));
             }
@@ -55,7 +56,8 @@ namespace NetDream.Web.Areas.Auth.Controllers
             }, localizer["登录成功！"]));
         }
 
-
+        // [Authorize]
+        // [Authorize(Roles = "Administrator")]
         public async Task<JsonResult> Logout()
         {
             var auth = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);

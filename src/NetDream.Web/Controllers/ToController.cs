@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Web.Base.Helpers;
-using NetDream.Core.Helpers;
+using NetDream.Shared.Helpers;
 using NetDream.Web.Models;
 
 namespace NetDream.Web.Controllers

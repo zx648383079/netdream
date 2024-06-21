@@ -1,8 +1,8 @@
-﻿using NetDream.Core.Extensions;
-using NetDream.Core.Interfaces;
-using NetDream.Core.Migrations;
-using NetDream.Core.Providers;
-using NetDream.Core.Repositories;
+﻿using NetDream.Shared.Extensions;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Migrations;
+using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using NetDream.Modules.SEO.Entities;
 using NetDream.Modules.SEO.Models;
 using NPoco;

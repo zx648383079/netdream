@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Http;
+﻿using NetDream.Shared.Http;
 using NPoco;
 
 namespace NetDream.Web.Base.Http

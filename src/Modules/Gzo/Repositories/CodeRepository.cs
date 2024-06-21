@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Modules.Gzo.Writers;
 using System;
 using System.Text.RegularExpressions;
@@ -38,7 +38,7 @@ namespace NetDream.Modules.Gzo.Repositories
                 var returnType = "void";
                 if (!string.IsNullOrWhiteSpace(match.Groups[3].Value))
                 {
-                    returnType = match.Groups[3].Value.Replace(":", string.Empty).Trim();
+                    returnType = match.Groups[3].Value.Replace(":", string.Empty).Replace("?", string.Empty).Trim();
                 }
                 var func = Studly(match.Groups[1].Value);
                 if (returnType == "void" && (func == "Up" || func == "Seed"))

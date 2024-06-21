@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Http;
+﻿using NetDream.Shared.Http;
 using NetDream.Modules.OpenPlatform.Entities;
 using NetDream.Modules.OpenPlatform.Models;
 using NPoco;

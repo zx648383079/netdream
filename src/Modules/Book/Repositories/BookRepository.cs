@@ -1,9 +1,10 @@
-﻿using NetDream.Core.Providers;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers;
 using NPoco;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class BookRepository(IDatabase db)
+    public class BookRepository(IDatabase db, IClientEnvironment environment)
     {
         const string BASE_KEY = "book";
         public const int CHAPTER_TYPE_FREE_CHAPTER = 0;
@@ -12,7 +13,7 @@ namespace NetDream.Modules.Book.Repositories
 
         public ActionLogProvider Log()  
         {
-            return new ActionLogProvider(db, BASE_KEY);
+            return new ActionLogProvider(db, BASE_KEY, environment);
         }
 
         public TagProvider Tag() 

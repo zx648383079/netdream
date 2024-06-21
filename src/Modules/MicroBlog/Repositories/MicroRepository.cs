@@ -1,4 +1,4 @@
-﻿using NetDream.Core.Providers;
+﻿using NetDream.Shared.Providers;
 using NPoco;
 using System;
 using System.Collections.Generic;

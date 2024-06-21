@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using NetDream.Core.Interfaces;
+using NetDream.Shared.Interfaces;
 using NetDream.Modules.Auth.Repositories;
 
 namespace NetDream.Modules.Auth

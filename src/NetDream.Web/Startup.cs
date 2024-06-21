@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using NetDream.Core.Interfaces;
+using NetDream.Shared.Interfaces;
 using NetDream.Modules.Auth;
 using NetDream.Modules.Blog;
 using NetDream.Modules.Contact;
@@ -30,6 +30,8 @@ namespace NetDream.Web
     public class Startup(IConfiguration configuration)
     {
         public IConfiguration Configuration { get; } = configuration;
+
+        private static readonly string[] _supportedCultures = ["en-US", "zh-CN"];
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -58,21 +60,20 @@ namespace NetDream.Web
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, o =>
                 {
-                    o.LoginPath = new PathString("/Auth");            //µÇÂ¼Â·¾¶£ºÕâÊÇµ±ÓÃ»§ÊÔÍ¼·ÃÎÊ×ÊÔ´µ«Î´¾­¹ýÉí·ÝÑéÖ¤Ê±£¬³ÌÐò½«»á½«ÇëÇóÖØ¶¨Ïòµ½Õâ¸öÏà¶ÔÂ·¾¶¡£
-                    o.AccessDeniedPath = new PathString("/Home/Error");     //½ûÖ¹·ÃÎÊÂ·¾¶£ºµ±ÓÃ»§ÊÔÍ¼·ÃÎÊ×ÊÔ´Ê±£¬µ«Î´Í¨¹ý¸Ã×ÊÔ´µÄÈÎºÎÊÚÈ¨²ßÂÔ£¬ÇëÇó½«±»ÖØ¶¨Ïòµ½Õâ¸öÏà¶ÔÂ·¾¶¡£
-                    o.SlidingExpiration = true; //Cookie¿ÉÒÔ·ÖÎªÓÀ¾ÃÐÔµÄºÍÁÙÊ±ÐÔµÄ¡£ ÁÙÊ±ÐÔµÄÊÇÖ¸Ö»ÔÚµ±Ç°ä¯ÀÀÆ÷½ø³ÌÀïÓÐÐ§£¬ä¯ÀÀÆ÷Ò»µ©¹Ø±Õ¾ÍÊ§Ð§£¨±»ä¯ÀÀÆ÷É¾³ý£©¡£ ÓÀ¾ÃÐÔµÄÊÇÖ¸CookieÖ¸¶¨ÁËÒ»¸ö¹ýÆÚÊ±¼ä£¬ÔÚÕâ¸öÊ±¼äµ½´ïÖ®Ç°£¬´ËcookieÒ»Ö±ÓÐÐ§£¨ä¯ÀÀÆ÷Ò»Ö±¼ÇÂ¼×Å´ËcookieµÄ´æÔÚ£©¡£ slidingExpriationµÄ×÷ÓÃÊÇ£¬Ö¸Ê¾ä¯ÀÀÆ÷°Ñcookie×÷ÎªÓÀ¾ÃÐÔcookie´æ´¢£¬µ«ÊÇ»á×Ô¶¯¸ü¸Ä¹ýÆÚÊ±¼ä£¬ÒÔÊ¹ÓÃ»§²»»áÔÚµÇÂ¼ºó²¢Ò»Ö±»î¶¯£¬µ«ÊÇÒ»¶ÎÊ±¼äºóÈ´×Ô¶¯×¢Ïú¡£Ò²¾ÍÊÇËµ£¬Äã10µãµÇÂ¼ÁË£¬·þÎñÆ÷¶ËÉèÖÃµÄTimeOutÎª30·ÖÖÓ£¬Èç¹ûslidingExpriationÎªfalse,ÄÇÃ´10: 30ÒÔºó£¬Äã¾Í±ØÐëÖØÐÂµÇÂ¼¡£Èç¹ûÎªtrueµÄ»°£¬Äã10: 16·ÖÊ±´ò¿ªÁËÒ»¸öÐÂÒ³Ãæ£¬·þÎñÆ÷¾Í»áÍ¨Öªä¯ÀÀÆ÷£¬°Ñ¹ýÆÚÊ±¼äÐÞ¸ÄÎª10: 46¡£
+                    o.LoginPath = new PathString("/Auth");            //ï¿½ï¿½Â¼Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Çµï¿½ï¿½Ã»ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ò½«»á½«ï¿½ï¿½ï¿½ï¿½ï¿½Ø¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½
+                    o.AccessDeniedPath = new PathString("/Home/Error");     //ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ê±ï¿½ï¿½ï¿½ï¿½Î´Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½ï¿½ó½«±ï¿½ï¿½Ø¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½
+                    o.SlidingExpiration = true; //Cookieï¿½ï¿½ï¿½Ô·ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ÔµÄºï¿½ï¿½ï¿½Ê±ï¿½ÔµÄ¡ï¿½ ï¿½ï¿½Ê±ï¿½Ôµï¿½ï¿½ï¿½Ö¸Ö»ï¿½Úµï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ø±Õ¾ï¿½Ê§Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½ï¿½ï¿½Ö¸CookieÖ¸ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ä£¬ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½äµ½ï¿½ï¿½Ö®Ç°ï¿½ï¿½ï¿½ï¿½cookieÒ»Ö±ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ö±ï¿½ï¿½Â¼ï¿½Å´ï¿½cookieï¿½Ä´ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ slidingExpriationï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç£ï¿½Ö¸Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½cookieï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½cookieï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½Ç»ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½Ê±ï¿½ä£¬ï¿½ï¿½Ê¹ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Â¼ï¿½ï¿½Ò»Ö±ï¿½î¶¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ê±ï¿½ï¿½ï¿½È´ï¿½Ô¶ï¿½×¢ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½10ï¿½ï¿½ï¿½Â¼ï¿½Ë£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½TimeOutÎª30ï¿½ï¿½ï¿½Ó£ï¿½ï¿½ï¿½ï¿½slidingExpriationÎªfalse,ï¿½ï¿½Ã´10: 30ï¿½Ôºï¿½ï¿½ï¿½Í±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Îªtrueï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½10: 16ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ò³ï¿½æ£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½Í¨Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Þ¸ï¿½Îª10: 46ï¿½ï¿½
                 });
             using (var db = new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance))
             {
                 RegisterGlobeRepositories(db, services);
             } 
             RegisterRepositories(services);
-            // ±¾µØ»¯
+            // ï¿½ï¿½ï¿½Ø»ï¿½
             services.Configure<RequestLocalizationOptions>(options => {
-                var supportedCultures = new[] { "en-US", "zh-CN" };
-                options.SetDefaultCulture(supportedCultures[0])
-                    .AddSupportedCultures(supportedCultures)
-                    .AddSupportedUICultures(supportedCultures)
+                options.SetDefaultCulture(_supportedCultures[0])
+                    .AddSupportedCultures(_supportedCultures)
+                    .AddSupportedUICultures(_supportedCultures)
                     .AddInitialRequestCultureProvider(new AcceptLanguageHeaderRequestCultureProvider());
             });
             services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -81,13 +82,13 @@ namespace NetDream.Web
                 .AddViewLocalization()
                 .AddNewtonsoftJson(options =>
                 {
-                    // Ñ­»·ÒýÓÃ
+                    // Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
-                    // ²»Ê¹ÓÃÍÕ·å
+                    // ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½Õ·ï¿½
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                    // ÉèÖÃÊ±¼ä¸ñÊ½
+                    // ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ê½
                     options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
-                    // Èç×Ö¶ÎÎª nullÖµ£¬¸Ã×Ö¶Î²»»á·µ»Øµ½Ç°¶Ë
+                    // ï¿½ï¿½ï¿½Ö¶ï¿½Îª nullÖµï¿½ï¿½ï¿½ï¿½ï¿½Ö¶Î²ï¿½ï¿½á·µï¿½Øµï¿½Ç°ï¿½ï¿½
                     // options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 });
             services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
@@ -119,7 +120,7 @@ namespace NetDream.Web
             app.UseSession();
             app.UseAuthorization();
             app.UseMiddleware<ResponseMiddleware>();
-            // ·½±ã»ñÈ¡µ±Ç°ÓïÑÔ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½
             app.UseRequestLocalization();
             app.UseAuthorization();
 
