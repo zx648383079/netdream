@@ -1,4 +1,5 @@
 ﻿using NetDream.Shared.Interfaces.Database;
+using System;
 using System.Collections.Generic;
 
 namespace NetDream.Shared.Migrations
@@ -99,5 +100,9 @@ namespace NetDream.Shared.Migrations
 
         }
 
+        public void Timestamp(object cOLUMN_CREATED_AT)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

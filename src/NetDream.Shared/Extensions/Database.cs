@@ -140,7 +140,7 @@ namespace NetDream.Shared.Extensions
             db.Execute(sql);
         }
 
-        private static Sql Insert(this Sql sql, IDatabase db, string tableName, Dictionary<string, object> data)
+        public static Sql Insert(this Sql sql, IDatabase db, string tableName, Dictionary<string, object> data)
         {
             return sql.Append(
                     string.Format(

@@ -167,7 +167,7 @@ namespace NetDream.Shared.Providers
             else if(res == 2) {
                 model.AgreeCount ++;
             }
-            Update(id, new Dictionary<string, int>()
+            Update(id, new Dictionary<string, object>()
             {
                 { "agree_count", model.AgreeCount},
                 { "disagree_count", model.DisagreeCount},
@@ -200,7 +200,7 @@ namespace NetDream.Shared.Providers
             else if(res == 2) {
                 model.DisagreeCount++;
             }
-            Update(id, new Dictionary<string, int>()
+            Update(id, new Dictionary<string, object>()
             {
                 { "agree_count", model.AgreeCount},
                 { "disagree_count", model.DisagreeCount},

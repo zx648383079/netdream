@@ -1,10 +1,15 @@
-﻿using NetDream.Shared.Helpers;
+﻿using NetDream.Shared.Extensions;
+using NetDream.Shared.Helpers;
 using NPoco;
 
 namespace NetDream.Shared.Providers
 {
     public static class Extension
     {
+        public static Sql DeleteFrom(this Sql sql, string tableName, IDatabase db)
+        {
+            return sql.Append("DELETE").From(db.DatabaseType.EscapeTableName(tableName));
+        }
         public static int FindCount(this IDatabase db, string tableName, string where, params object[] args)
         {
             var sql = new Sql();
@@ -46,14 +51,24 @@ namespace NetDream.Shared.Providers
             return Convert.ToInt32(id);
         }
 
-        public static int Update(this IDatabase db, string tableName, object data)
+        public static void InsertBatch(this IDatabase db, string tableName, IEnumerable<Dictionary<string, object>> items)
+        {
+            var sql = new Sql();
+            foreach (var item in items)
+            {
+                sql.Insert(db, tableName, item);
+            }
+            db.Execute(sql);
+        }
+
+        public static int TryUpdate(this IDatabase db, string tableName, object data)
         {
             return db.Update(tableName, "id", data);
         }
 
         public static void UpdateWhere(this IDatabase db, 
             string tableName, string where, 
-            IDictionary<string, object> items)
+            IDictionary<string, object> items, params object[] args)
         {
             var builder = new Sql();
             var keys = new List<string>();
@@ -67,7 +82,7 @@ namespace NetDream.Shared.Providers
                     ))
                 ),
                 [.. items.Values]);
-            builder.Where(where);
+            builder.Where(where, args);
             db.Execute(builder);
         }
 
@@ -85,8 +100,16 @@ namespace NetDream.Shared.Providers
         public static int DeleteWhere(this IDatabase db, string tableName, string where, params object[] args)
         {
             var sql = new Sql();
-            sql.From(tableName).Where(where, args);
-            return db.Delete(sql);
+            sql.DeleteFrom(tableName, db).Where(where, args);
+            return db.Execute(sql);
+        }
+        public static int DeleteWhere(this IDatabase db, Sql sql)
+        {
+            if (!sql.SQL.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase))
+            {
+                sql = new Sql().Append("DELETE").Append(sql);
+            }
+            return db.Execute(sql);
         }
     }
 }

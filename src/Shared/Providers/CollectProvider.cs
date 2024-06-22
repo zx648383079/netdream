@@ -63,7 +63,7 @@ namespace NetDream.Shared.Providers
         public void Update(int id, CollectLog data)
         {
             data.Id = id;
-            db.Update(_tableName, data);
+            db.TryUpdate(_tableName, data);
         }
 
         public CollectLog? Get(int id)

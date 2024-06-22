@@ -146,7 +146,7 @@ namespace NetDream.Shared.Providers
         public void Update(int id, ActionLog data)
         {
             data.Id = id;
-            db.Update(_tableName, data);
+            db.TryUpdate(_tableName, data);
         }
 
         public void Remove(int id)

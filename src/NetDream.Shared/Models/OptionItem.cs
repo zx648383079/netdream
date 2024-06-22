@@ -12,4 +12,11 @@ namespace NetDream.Shared.Models
 
         public object Value { get; set; } = value;
     }
+
+    public class OptionItem<T>(string name, T value)
+    {
+        public string Name { get; set; } = name;
+
+        public T Value { get; set; } = value;
+    }
 }

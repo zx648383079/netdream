@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace NetDream.Shared.Helpers
 {
@@ -122,6 +123,51 @@ namespace NetDream.Shared.Helpers
         public static string FormatAgo(int timestamp)
         {
             return FormatAgo(TimestampTo(timestamp));
+        }
+
+
+        /// <summary>
+        /// 当月最大天数
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public static int MonthMaxDay(DateTime date)
+        {
+            var d = new DateTime(date.Year, date.Month, 1);
+            return d.AddMonths(1).AddDays(-1).Day;
+        }
+
+        public static (int, int) WeekRange(DateTime date)
+        {
+            var begin = TimestampFrom(date.AddDays((7 - (int)date.DayOfWeek) % 7 - 7 + 1));
+            var end = TimestampFrom(date.AddDays((7 - (int)date.DayOfWeek) % 7));
+            return (begin, end);
+        }
+
+        /// <summary>
+        /// 获取单月起始时间结束时间
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public static (int, int) MonthRange(DateTime date)
+        {
+            var begin = TimestampFrom(new DateTime(date.Year, date.Month, date.Day));
+            var end = TimestampFrom(new DateTime(date.Year, date.Month, 1).AddMonths(1)) - 1;
+            return (begin, end);
+        }
+        public static string[] RangeDate(int begin, int end)
+        {
+            return RangeDate(TimestampTo(begin), TimestampTo(end));
+        }
+        public static string[] RangeDate(DateTime begin, DateTime end)
+        {
+            var items = new List<string>();
+            while (begin <= end)
+            {
+                items.Add(begin.ToString("yyyy-MM-dd"));
+                begin.AddDays(1);
+            }
+            return [.. items];
         }
     }
 }
