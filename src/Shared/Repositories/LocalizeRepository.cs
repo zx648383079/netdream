@@ -1,14 +1,15 @@
-﻿using NetDream.Shared.Helpers;
+﻿using NetDream.Shared.Extensions;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Database;
-using System.Collections.Generic;
-using System.Linq;
+using NetDream.Shared.Repositories.Models;
+using NPoco;
 
 namespace NetDream.Shared.Repositories
 {
     public class LocalizeRepository(IClientEnvironment environment)
     {
-        const string LANGUAGE_COLUMN_KEY = "language";
+        public const string LANGUAGE_COLUMN_KEY = "language";
         const string BROWSER_DEFAULT_LANGUAGE = "en";
         public readonly Dictionary<string, string> LANGUAGE_MAP = new()
         {
@@ -30,7 +31,7 @@ namespace NetDream.Shared.Repositories
             var enLang = BROWSER_DEFAULT_LANGUAGE;
             var firstLang = string.Empty;
             foreach (var item in LANGUAGE_MAP) {
-                if (lang.Contains(item.Key, System.StringComparison.OrdinalIgnoreCase))
+                if (lang.Contains(item.Key, StringComparison.OrdinalIgnoreCase))
                 {
                     return _browserLang = item.Key;
                 }
@@ -109,6 +110,58 @@ namespace NetDream.Shared.Repositories
             table.Enum(LANGUAGE_COLUMN_KEY, LANGUAGE_MAP.Keys)
                 .Default(FirstLanguage())
                 .Comment("多语言配置");
+        }
+
+        /// <summary>
+        /// 根据标识获取自适应的语言版本
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public T? GetByKey<T>(IDatabase db, Sql query, string key, string value)
+        {
+            var lang = BrowserLanguage();
+            var firstLang = FirstLanguage();
+            if (lang == firstLang)
+            {
+                return db.Single<T>(query.Where($"{LANGUAGE_COLUMN_KEY}=@0 AND {key}=@1", lang, value).OrderBy("id DESC"));
+            }
+            var langItems = new List<string> { lang, firstLang };
+            if (!LANGUAGE_MAP.ContainsKey(BROWSER_DEFAULT_LANGUAGE) 
+                && !langItems.Contains(BROWSER_DEFAULT_LANGUAGE)) {
+                langItems.Add(BROWSER_DEFAULT_LANGUAGE);
+            }
+            return db.Single<T>(query.WhereIn(LANGUAGE_COLUMN_KEY, [..langItems])
+                .Where($"{key}=@1", value).OrderBy("id DESC"));
+        }
+
+        /// <summary>
+        /// 一篇文章可以切换的获取语言切换标识
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="justExist"></param>
+        /// <returns></returns>
+        public IList<ILanguageFormatted> FormatLanguageList<T>(IEnumerable<T> items, bool justExist = true)
+            where T : ILanguageEntity
+        {
+            var data = new List<ILanguageFormatted>();
+            foreach (var item in LANGUAGE_MAP) {
+                foreach(var it in items)
+                {
+                    if (it.Language == item.Key)
+                    {
+                        data.Add(new LanguageFormatted(item.Value, item.Key, it.Id));
+                    }
+                }
+                if (justExist)
+                {
+                    continue;
+                }
+                data.Add(new LanguageFormatted(item.Value, item.Key));
+            }
+            return data;
         }
     }
 }

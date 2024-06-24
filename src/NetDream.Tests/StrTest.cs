@@ -3,10 +3,10 @@ using NetDream.Shared.Helpers;
 namespace NetDream.Tests
 {
     [TestClass]
-    public class UnitTest1
+    public class StrTest
     {
         [TestMethod]
-        public void TestMethod1()
+        public void TestCompare()
         {
             var content = "PUBLISH_STATUS_DRAFT";
             Assert.IsTrue(content.ToUpper().Equals(content, StringComparison.Ordinal));

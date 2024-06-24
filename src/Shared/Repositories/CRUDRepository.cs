@@ -1,8 +1,6 @@
 ﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces.Entities;
 using NPoco;
-using System;
-using System.Collections.Generic;
 
 namespace NetDream.Shared.Repositories
 {

@@ -1,5 +1,4 @@
-﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Migrations;
 using NPoco;
 
@@ -9,10 +8,10 @@ namespace NetDream.Shared.Providers.Models
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
-        public string Extension { get; set; }
-        public string Md5 { get; set; }
-        public string Path { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Extension { get; set; } = string.Empty;
+        public string Md5 { get; set; } = string.Empty;
+        public string Path { get; set; } = string.Empty;
         public byte Folder { get; set; }
         public long Size { get; set; }
         [Column("updated_at")]

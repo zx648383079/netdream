@@ -1,4 +1,6 @@
-﻿using NetDream.Shared.Interfaces;
+﻿using NetDream.Shared.Extensions;
+using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Database;
 using NetDream.Shared.Migrations;
 using NetDream.Shared.Providers.Models;
@@ -22,7 +24,8 @@ namespace NetDream.Shared.Providers
         public const string FILE_LOG_TABLE = "base_file_log";
         public const string FILE_QUOTE_TABLE = "base_file_quote";
 
-        public static StorageProvider Store(IDatabase db, string root, int tag = 3)
+        public static StorageProvider Store(IDatabase db, 
+            string root, int tag = 3)
         {
             return new StorageProvider(db, root, tag);
         }
@@ -209,6 +212,20 @@ namespace NetDream.Shared.Providers
             //    file = Root->file(sprintf("%s_%s", time(), sourceFile.GetName()));
             //}
             //return InsertFileLog(file, rawData, backFile);
+        }
+
+        public Page<FileItem> Search(string keywords, string[] extension, int page = 1)
+        {
+            var sql = new Sql();
+            sql.Select("*").From(FILE_TABLE)
+                .Where("Folder=@0", tag);
+            SearchHelper.Where(sql, "name", keywords);
+            if (extension.Length > 0)
+            {
+                sql.WhereIn("extension", extension);
+            }
+            sql.OrderBy("id DESC");
+            return db.Page<FileItem>(page, 20, sql);
         }
 
         public FileItem Get(string url)

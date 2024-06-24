@@ -1,8 +1,10 @@
+using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Repositories.Models;
 using NPoco;
 namespace NetDream.Modules.SEO.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class AgreementEntity
+    public class AgreementEntity: IIdEntity, ITimestampEntity, ILanguageEntity
     {
         internal const string ND_TABLE_NAME = "seo_agreement";
         public int Id { get; set; }

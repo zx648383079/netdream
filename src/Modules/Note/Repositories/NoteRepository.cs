@@ -57,23 +57,23 @@ namespace NetDream.Modules.Note.Repositories
 
         private void WithUser(IEnumerable<NoteModel> items)
         {
-            var userId = items.Select(item => item.UserId).Where(i => i > 0).Distinct();
-            if (!userId.Any())
+            var idItems = items.Select(item => item.UserId).Where(i => i > 0).Distinct();
+            if (!idItems.Any())
             {
                 return;
             }
-            var userItems = userStore.Get(userId.ToArray());
-            if (!userItems.Any())
+            var data = userStore.Get(idItems.ToArray());
+            if (!data.Any())
             {
                 return;
             }
             foreach (var item in items)
             {
-                foreach (var u in userItems)
+                foreach (var it in data)
                 {
-                    if (item.UserId == u.Id)
+                    if (item.UserId == it.Id)
                     {
-                        item.User = u;
+                        item.User = it;
                         break;
                     }
                 }

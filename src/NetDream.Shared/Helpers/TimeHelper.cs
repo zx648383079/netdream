@@ -63,6 +63,14 @@ namespace NetDream.Shared.Helpers
             return dateTimeStart.Add(toNow);
         }
 
+        public static int TimestampFrom(string time)
+        {
+            if (DateTime.TryParse(time, out var res))
+            {
+                return TimestampFrom(res);
+            }
+            return 0;
+        }
         /// <summary>
         /// 从时间转时间戳，精确到秒
         /// </summary>
@@ -123,6 +131,11 @@ namespace NetDream.Shared.Helpers
         public static string FormatAgo(int timestamp)
         {
             return FormatAgo(TimestampTo(timestamp));
+        }
+
+        public static int Millisecond()
+        {
+            return DateTime.Now.Millisecond;
         }
 
 

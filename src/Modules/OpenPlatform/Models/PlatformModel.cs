@@ -104,9 +104,9 @@ namespace NetDream.Modules.OpenPlatform.Models
                     sb.Append('+');
                     continue;
                 }
-                if (data.ContainsKey(key))
+                if (data.TryGetValue(key, out var value))
                 {
-                    sb.Append(data[key]);
+                    sb.Append(value);
                     continue;
                 }
             }
