@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 using NPoco;
 namespace NetDream.Modules.Contact.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class FriendLinkEntity
+    public class FriendLinkEntity: IIdEntity, ITimestampEntity
     {
         internal const string ND_TABLE_NAME = "cif_friend_link";
         public int Id { get; set; }

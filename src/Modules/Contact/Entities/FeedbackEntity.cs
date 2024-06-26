@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 using NPoco;
 namespace NetDream.Modules.Contact.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class FeedbackEntity
+    public class FeedbackEntity: IIdEntity, ITimestampEntity
     {
         internal const string ND_TABLE_NAME = "cif_feedback";
         public int Id { get; set; }

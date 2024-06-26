@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -40,6 +43,16 @@ namespace NetDream.Shared.Helpers
             var sor = Encoding.UTF8.GetBytes(source);
             var result = MD5.HashData(sor);
             return Convert.ToHexString(result).ToLower();
+        }
+
+        public static string Repeat(string text, int count)
+        {
+            return string.Concat(Enumerable.Repeat(text, count));
+        }
+
+        public static string Repeat(char text, int count)
+        {
+            return new string(text, count);
         }
 
         /// <summary>
@@ -89,6 +102,92 @@ namespace NetDream.Shared.Helpers
                 return Convert.ToChar(29 + index);
             }
             return '-';
+        }
+
+        /// <summary>
+        /// 隐藏姓名
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static string HideName(string name)
+        {
+            return HideText(name, 1, 100, 1);
+        }
+
+        /// <summary>
+        /// 隐藏电话
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <returns></returns>
+        public static string HideTel(string phone)
+        {
+            return HideText(phone, 1, 5, 3);
+        }
+
+        /// <summary>
+        /// 隐藏邮箱
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public static string HideEmail(string email)
+        {
+            var index = email.IndexOf('@');
+            if (index < 0)
+            {
+                return HideText(email, 1, 5, 1);
+            }
+            var first = Math.Min(4, (int)Math.Ceiling((double)index / 2));
+            var middle = Math.Min(3, (int)Math.Floor((double)index / 2));
+            return string.Format("{0}{1}{2}", email[0..first], Repeat('*', middle),
+                email[index..]);
+        }
+
+        public static string HideIp(string ip)
+        {
+            if (string.IsNullOrWhiteSpace(ip))
+            {
+                return string.Empty;
+            }
+            var tag = ip.Contains(':') ? ':' : '.';
+            var items = ip.Split(tag);
+            var last = items.Length - 1;
+            if (last < 3)
+            {
+                return ip;
+            }
+            for (var i = 0; i <= last; i++)
+            {
+                if (i == 0 || i == last)
+                {
+                    continue;
+                }
+                items[i] = "*";
+            }
+            return string.Join(tag, items);
+        }
+
+        public static string HideText(string text, int first = 1, int middle = 2, int end = 1)
+        {
+            var len = text.Length;
+            if (len < 2)
+            {
+                return text;
+            }
+            if (len <= first + end)
+            {
+                first = 0;
+                end = 1;
+                middle = len - end - first;
+            }
+            else if(len <= middle + end) {
+                middle = len - end - first;
+            } else
+            {
+                first = len - end - middle;
+            }
+            return string.Format("{0}{1}{2}", text[0..first], 
+                Repeat('*', middle),
+                text[(first + middle)..]);
         }
     }
 }

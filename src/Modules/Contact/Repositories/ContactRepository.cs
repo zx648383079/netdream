@@ -1,26 +1,77 @@
 ﻿using NetDream.Modules.Contact.Entities;
+using NetDream.Modules.Contact.Forms;
+using NetDream.Shared.Extensions;
+using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Migrations;
 using NPoco;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace NetDream.Modules.Contact.Repositories
 {
-    public class ContactRepository
+    public class ContactRepository(IDatabase db, 
+        IClientEnvironment environment,
+        ISystemBulletin bulletin)
     {
-        private readonly IDatabase _db;
-
-        public ContactRepository(IDatabase db)
-        {
-            _db = db;
-        }
-
         public List<FriendLinkEntity> FriendLinks()
         {
-            return _db.Fetch<FriendLinkEntity>(
-                $"SELECT * FROM `{FriendLinkEntity.ND_TABLE_NAME}` WHERE status = 1");
+            return db.Fetch<FriendLinkEntity>("WHERE status = 1");
+        }
+
+        public FeedbackEntity SaveFeedback(FeedbackForm data)
+        {
+            var model = new FeedbackEntity
+            {
+                Content = data.Content,
+                Email = data.Email,
+                Phone = data.Phone,
+                UserId = environment.UserId
+            };
+            db.TrySave(model);
+            return model;
+        }
+
+        public SubscribeEntity SaveSubscribe(SubscribeForm data)
+        {
+            var model = db.Single<SubscribeEntity>("WHERE email=@0", data.Email);
+            model ??= new SubscribeEntity();
+            if (!string.IsNullOrWhiteSpace(data.Name) && model.Name != data.Name)
+            {
+                model.Name = data.Name;
+                model.Status = 0;
+            }
+            model.Email = data.Email;
+            db.TrySave(model);
+            return model;
+        }
+
+        public bool Unsubscribe(string email)
+        {
+            db.Update<SubscribeEntity>("SET status=1, updated_at=@0 WHERE email=@1", environment.Now, email);
+            return true;
+        }
+
+        public FriendLinkEntity ApplyFriendLink(FriendLinkForm data)
+        {
+            var model = new FriendLinkEntity()
+            {
+                Name = data.Name,
+                Brief = data.Brief,
+                Url = data.Url,
+                Logo = data.Logo,
+                Email = data.Email,
+                UserId= environment.UserId
+            };
+            db.TrySave(model);
+            bulletin.SendAdministrator("友情链接申请", "[马上查看]", 98, [
+                bulletin.Ruler.FormatLink("[马上查看]", "b/friend_link")
+            ]);
+            return model;
         }
     }
 }

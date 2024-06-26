@@ -1,4 +1,5 @@
-﻿using NPoco;
+﻿using NetDream.Shared.Interfaces.Entities;
+using NPoco;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 namespace NetDream.Modules.Auth.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class BulletinEntity
+    public class BulletinEntity: IIdEntity, ITimestampEntity
     {
         internal const string ND_TABLE_NAME = "bulletin";
         public int Id { get; set; }

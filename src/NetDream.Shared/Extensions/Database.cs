@@ -160,7 +160,7 @@ namespace NetDream.Shared.Extensions
             db.Execute(sql);
         }
 
-        public static void Update<T>(this IDatabase db, Sql sql, Dictionary<string, object> items)
+        public static void Update<T>(this IDatabase db, Sql whereSql, Dictionary<string, object> items)
         {
             var builder = new Sql();
             var keys = new List<string>();
@@ -174,7 +174,7 @@ namespace NetDream.Shared.Extensions
                     ))
                 ),
                 [..items.Values]);
-            builder.Append(sql);
+            builder.Append(whereSql);
             db.Execute(builder);
         }
         /// <summary>
@@ -199,6 +199,20 @@ namespace NetDream.Shared.Extensions
             }
             db.Save(data);
             return true;
+        }
+
+        public static void DeleteById<T>(this IDatabase db, params int[] items)
+        {
+            if (items.Length == 0)
+            {
+                return;
+            }
+            if (items.Length == 1) 
+            {
+                db.Delete<T>(items[0]);
+                return;
+            }
+            db.Delete<T>($"WHERE id IN ({string.Join(',', items)})");
         }
     }
 }

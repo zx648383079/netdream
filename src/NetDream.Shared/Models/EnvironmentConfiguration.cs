@@ -12,5 +12,7 @@ namespace NetDream.Shared.Models
         public string AssetRoot { get; set; } = string.Empty;
 
         public string OnlineDiskRoot { get; set; } = string.Empty;
+
+        public string Deeplink { get; set; } = "zodream";
     }
 }

@@ -7,6 +7,7 @@
         public string PublicRoot { get; }
         public string AssetRoot { get; }
         public string OnlineDiskRoot { get; }
+        public string Deeplink { get; }
 
     }
 }

@@ -113,11 +113,7 @@ namespace NetDream.Modules.Note.Repositories
             {
                 model.UserId = userId;
             }
-            if (model.CreatedAt == 0)
-            {
-                model.CreatedAt = environment.Now;
-            }
-            db.Save(model);
+            db.TrySave(model);
             return model;
         }
 
