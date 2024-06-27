@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 using NPoco;
 namespace Modules.Forum.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class ThreadLogEntity
+    public class ThreadLogEntity: IIdEntity, ICreatedEntity, IActionEntity
     {
         internal const string ND_TABLE_NAME = "bbs_thread_log";
         public int Id { get; set; }
@@ -12,7 +13,7 @@ namespace Modules.Forum.Entities
         public int ItemId { get; set; }
         [Column("user_id")]
         public int UserId { get; set; }
-        public int Action { get; set; }
+        public byte Action { get; set; }
         [Column("node_index")]
         public byte NodeIndex { get; set; }
         public string Data { get; set; } = string.Empty;

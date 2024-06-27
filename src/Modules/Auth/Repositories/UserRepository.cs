@@ -3,6 +3,8 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Modules.Auth.Models;
 using NPoco;
+using NetDream.Modules.Auth.Entities;
+using NetDream.Shared.Helpers;
 
 namespace NetDream.Modules.Auth.Repositories
 {
@@ -29,6 +31,47 @@ namespace NetDream.Modules.Auth.Repositories
             sql.From<UserSimpleModel>(db);
             sql.WhereIn("id", userItems);
             return db.Fetch<UserSimpleModel>(sql);
+        }
+
+        public int[] SearchUserId(string keywords)
+        {
+            if (string.IsNullOrWhiteSpace(keywords))
+            {
+                return [];
+            }
+            var sql = new Sql();
+            sql.Select("id").From<UserEntity>(db);
+            SearchHelper.Where(sql, "name", keywords);
+            return [.. db.Pluck<int>(sql)];
+        }
+
+        public void WithUser(IWithUserModel model)
+        {
+            model.User = Get(model.UserId);
+        }
+        public void WithUser(IEnumerable<IWithUserModel> items)
+        {
+            var idItems = items.Select(item => item.UserId).Where(i => i > 0).Distinct();
+            if (!idItems.Any())
+            {
+                return;
+            }
+            var data = Get(idItems.ToArray());
+            if (!data.Any())
+            {
+                return;
+            }
+            foreach (var item in items)
+            {
+                foreach (var it in data)
+                {
+                    if (item.UserId == it.Id)
+                    {
+                        item.User = it;
+                        break;
+                    }
+                }
+            }
         }
     }
 }

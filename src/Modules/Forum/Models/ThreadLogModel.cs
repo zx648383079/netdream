@@ -1,4 +1,4 @@
-﻿using NetDream.Modules.Contact.Entities;
+﻿using Modules.Forum.Entities;
 using NetDream.Shared.Interfaces.Entities;
 using NPoco;
 using System;
@@ -7,11 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetDream.Modules.Contact.Models
+namespace NetDream.Modules.Forum.Models
 {
-    public class ReportModel: ReportEntity, IWithUserModel
+    public class ThreadLogModel: ThreadLogEntity, IWithUserModel
     {
-
         [Ignore]
         public IUser? User { get; set; }
     }

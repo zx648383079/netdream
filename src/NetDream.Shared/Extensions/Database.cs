@@ -203,16 +203,20 @@ namespace NetDream.Shared.Extensions
 
         public static void DeleteById<T>(this IDatabase db, params int[] items)
         {
+            db.DeleteById<T>("id", items);
+        }
+        public static void DeleteById<T>(this IDatabase db, string columnKey, params int[] items)
+        {
             if (items.Length == 0)
             {
                 return;
             }
-            if (items.Length == 1) 
+            if (items.Length == 1)
             {
-                db.Delete<T>(items[0]);
+                db.Delete<T>($"WHERE ${columnKey}=@0", items[0]);
                 return;
             }
-            db.Delete<T>($"WHERE id IN ({string.Join(',', items)})");
+            db.Delete<T>($"WHERE ${columnKey} IN ({string.Join(',', items)})");
         }
     }
 }

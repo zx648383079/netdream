@@ -76,12 +76,12 @@ namespace NetDream.Shared.Repositories
         }
 
 
-        public int ToggleLog(int userId, int itemId, byte itemType, byte action)
+        public byte ToggleLog(int userId, int itemId, byte itemType, byte action)
         {
             return ToggleLog(userId, itemId, itemType, action, [action]);
         }
 
-        public int ToggleLog(
+        public byte ToggleLog(
             int userId, int itemId, byte itemType, byte action, IList<byte> searchAction)
         {
             if (userId <= 0)

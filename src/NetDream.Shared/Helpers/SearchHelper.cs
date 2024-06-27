@@ -72,5 +72,30 @@ namespace NetDream.Shared.Helpers
             }
             return sql.Where(string.Join(" OR ", partItems), data);
         }
+        public static (string, string) CheckSortOrder(string sort,
+            bool order, string[] sortItems, string defaultOrder = "desc")
+        {
+            return CheckSortOrder(sort, order ? "desc" : "asc", sortItems, defaultOrder);
+        }
+        public static (string, string) CheckSortOrder(string sort,
+            int order, string[] sortItems, string defaultOrder = "desc")
+        {
+            return CheckSortOrder(sort, order > 0, sortItems, defaultOrder);
+        }
+        public static (string, string) CheckSortOrder(string sort, 
+            string order, string[] sortItems, string defaultOrder = "desc")
+        {
+            if(!order.Equals("desc", 
+                System.StringComparison.OrdinalIgnoreCase) 
+                && !order.Equals("asc",
+                System.StringComparison.OrdinalIgnoreCase)) {
+                order = defaultOrder;
+            }
+            if (!sortItems.Contains(sort))
+            {
+                sort = sortItems.First();
+            }
+            return (sort, order.ToUpper());
+        }
     }
 }

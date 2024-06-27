@@ -4,7 +4,7 @@ using NPoco;
 
 namespace NetDream.Modules.Note.Models
 {
-    public class NoteModel : NoteEntity
+    public class NoteModel : NoteEntity, IWithUserModel
     {
         [Ignore]
         public IUser? User { get; set; }

@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 using NPoco;
 namespace Modules.Forum.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class ForumEntity
+    public class ForumEntity: IIdEntity, ITimestampEntity
     {
         internal const string ND_TABLE_NAME = "bbs_forum";
         public int Id { get; set; }

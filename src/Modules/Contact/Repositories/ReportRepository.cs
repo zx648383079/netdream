@@ -31,35 +31,9 @@ namespace NetDream.Modules.Contact.Repositories
             }
             sql.OrderBy("status ASC", "id DESC");
             var items = db.Page<ReportModel>(page, 20, sql);
-            WithUser(items.Items);
+            userStore.WithUser(items.Items);
             return items;
         }
-
-        private void WithUser(IEnumerable<ReportModel> items)
-        {
-            var idItems = items.Select(item => item.UserId).Where(i => i > 0).Distinct();
-            if (!idItems.Any())
-            {
-                return;
-            }
-            var data = userStore.Get(idItems.ToArray());
-            if (!data.Any())
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                foreach (var it in data)
-                {
-                    if (item.UserId == it.Id)
-                    {
-                        item.User = it;
-                        break;
-                    }
-                }
-            }
-        }
-
 
         public ReportEntity Get(int id)
         {

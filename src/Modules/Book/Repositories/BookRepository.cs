@@ -23,7 +23,7 @@ namespace NetDream.Modules.Book.Repositories
 
         public DayLogProvider ClickLog() 
         {
-            return new DayLogProvider(db, BASE_KEY);
+            return new DayLogProvider(db, BASE_KEY, environment);
         }
     }
 }

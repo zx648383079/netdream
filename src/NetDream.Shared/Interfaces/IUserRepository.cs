@@ -17,5 +17,14 @@ namespace NetDream.Shared.Interfaces
         /// <param name="userItems"></param>
         /// <returns></returns>
         public IEnumerable<IUser> Get(params int[] userItems);
+        /// <summary>
+        /// 搜索获取用户的id
+        /// </summary>
+        /// <param name="keywords"></param>
+        /// <returns></returns>
+        public int[] SearchUserId(string keywords);
+
+        public void WithUser(IWithUserModel model);
+        public void WithUser(IEnumerable<IWithUserModel> items);
     }
 }
