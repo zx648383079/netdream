@@ -1,16 +1,12 @@
-﻿using NetDream.Shared.Models;
-using NPoco.Expressions;
-using System;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace NetDream.Shared.Helpers
 {
-    public class LinkRule(Deeplink deeplink)
+    public class LinkRule(IDeeplink deeplink)
     {
         public string Render(string content, string rules)
         {

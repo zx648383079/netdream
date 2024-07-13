@@ -1,4 +1,5 @@
-﻿using NetDream.Shared.Providers;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers;
 using NPoco;
 using System;
 using System.Collections.Generic;
@@ -8,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.Document.Repositories
 {
-    public class ProjectRepository(IDatabase db)
+    public class ProjectRepository(IDatabase db, IClientEnvironment environment)
     {
         const string BASE_KEY = "doc";
         public CommentProvider Comment()
         {
-            return new CommentProvider(db, BASE_KEY);
+            return new CommentProvider(db, BASE_KEY, environment);
         }
     }
 }

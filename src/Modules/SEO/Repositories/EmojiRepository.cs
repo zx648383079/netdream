@@ -4,16 +4,7 @@ using NetDream.Modules.SEO.Models;
 using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NPoco;
-using NPoco.Expressions;
-using NPoco.fastJSON;
-using NPoco.FluentMappings;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Data;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace NetDream.Modules.SEO.Repositories

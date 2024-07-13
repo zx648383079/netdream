@@ -5,13 +5,14 @@ using System.Web;
 
 namespace NetDream.Shared.Helpers
 {
-    public class Deeplink(IEnvironment environment)
+    public class Deeplink(IEnvironment environment): IDeeplink
     {
         protected string Schema() {
             return environment.Deeplink;
         }
 
-        public string Encode(string path, IDictionary<string, object>? queries = null) {
+        public string Encode(string path, IDictionary<string, object>? queries = null) 
+        {
             var link = Schema() + "://" + path;
             if (queries is null || queries.Count == 0) {
                 return link;
@@ -42,7 +43,8 @@ namespace NetDream.Shared.Helpers
             };
         }
 
-        public string Decode(string link) {
+        public string Decode(string link) 
+        {
             if (string.IsNullOrWhiteSpace(link) || link.StartsWith('#') 
                 || link.StartsWith("javascript:")) {
                 return link;

@@ -33,15 +33,23 @@ namespace NetDream.Modules.Auth.Repositories
             return db.Fetch<UserSimpleModel>(sql);
         }
 
-        public int[] SearchUserId(string keywords)
+        public int[] SearchUserId(string keywords, IList<int>? userIds = null, bool checkEmpty = false)
         {
             if (string.IsNullOrWhiteSpace(keywords))
+            {
+                return userIds is null ? [] : [..userIds];
+            }
+            if (checkEmpty && (userIds is null || userIds.Count == 0))
             {
                 return [];
             }
             var sql = new Sql();
             sql.Select("id").From<UserEntity>(db);
             SearchHelper.Where(sql, "name", keywords);
+            if (userIds is not null && userIds.Count > 0)
+            {
+                sql.WhereIn("id", [..userIds]);
+            }
             return [.. db.Pluck<int>(sql)];
         }
 

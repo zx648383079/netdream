@@ -5,39 +5,35 @@ using NetDream.Shared.Interfaces.Database;
 using NetDream.Shared.Migrations;
 using NetDream.Shared.Providers.Models;
 using NPoco;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Shared.Providers
 {
     public class StorageProvider(IDatabase db, 
-        string root, 
-        int tag, IClientEnvironment environment) : IMigrationProvider
+        IClientEnvironment client,
+        IEnvironment server) : IMigrationProvider
     {
         public const string FILE_TABLE = "base_file";
         public const string FILE_LOG_TABLE = "base_file_log";
         public const string FILE_QUOTE_TABLE = "base_file_quote";
 
-        public static StorageProvider Store(IDatabase db, 
-            string root, int tag = 3)
+        private string _root = string.Empty;
+        private int _tag;
+
+        public StorageProvider Store(string root, int tag = 3)
         {
-            return new StorageProvider(db, root, tag);
+            _root = root;
+            _tag = tag;
+            return this;
         }
 
-        public static StorageProvider PublicStore(IDatabase db)
+        public StorageProvider PublicStore()
         {
-            return Store(db, "view.asset_directory", 1);
+            return Store(server.AssetRoot, 1);
         }
 
-        public static StorageProvider PrivateStore(IDatabase db)
+        public StorageProvider PrivateStore()
         {
-            return Store(db, "data/storage", 2);
+            return Store(Path.Combine(server.Root, "data/storage"), 2);
         }
         public void Migration(IMigration migration)
         {
@@ -131,6 +127,7 @@ namespace NetDream.Shared.Providers
             //    "name" => upload.GetName(),
             //    "type" => upload.GetType(),
             //], backFile);
+            return null;
         }
 
         /**
@@ -191,6 +188,8 @@ namespace NetDream.Shared.Providers
             //    model["file"] = file;
             //}
             //return model;
+
+            return null;
         }
 
         /**
@@ -212,13 +211,14 @@ namespace NetDream.Shared.Providers
             //    file = Root->file(sprintf("%s_%s", time(), sourceFile.GetName()));
             //}
             //return InsertFileLog(file, rawData, backFile);
+            return null;
         }
 
         public Page<FileItem> Search(string keywords, string[] extension, int page = 1)
         {
             var sql = new Sql();
             sql.Select("*").From(FILE_TABLE)
-                .Where("Folder=@0", tag);
+                .Where("Folder=@0", _tag);
             SearchHelper.Where(sql, "name", keywords);
             if (extension.Length > 0)
             {
@@ -231,7 +231,7 @@ namespace NetDream.Shared.Providers
         public FileItem Get(string url)
         {
             var model = db.FindFirst<FileItem>(FILE_TABLE, "folder=@0 AND path=@1",
-                tag, url);
+                _tag, url);
             if (model is null)
             {
                 throw new Exception("not found file");
@@ -246,7 +246,7 @@ namespace NetDream.Shared.Providers
                 return;
             }
             var id = db.FindScalar<int>(FILE_TABLE, "id", "folder=@0 AND path=@1",
-                tag, url);
+                _tag, url);
             if (id < 1)
             {
                 throw new Exception("not found file");
@@ -262,8 +262,8 @@ namespace NetDream.Shared.Providers
                 FileId = id,
                 ItemId = itemId,
                 ItemType = itemType,
-                UserId = environment.UserId,
-                CreatedAt = environment.Now,
+                UserId = client.UserId,
+                CreatedAt = client.Now,
             });
         }
 
@@ -358,7 +358,7 @@ namespace NetDream.Shared.Providers
             {
                 {"size", 0 }, // file.Size()
                 {"md5", "" } // file.Md5()
-            }, path, tag);
+            }, path, _tag);
         }
 
         protected string ToFile(FileItem path)
@@ -371,7 +371,7 @@ namespace NetDream.Shared.Providers
             {
                 throw new Exception("path is empty");
             }
-            return Path.Combine(root, path);
+            return Path.Combine(_root, path);
         }
 
         /// <summary>
@@ -442,9 +442,9 @@ namespace NetDream.Shared.Providers
                 path = new Uri(path).AbsolutePath;
             }
             var file = Path.GetFullPath(path);
-            if (file.StartsWith(root))
+            if (file.StartsWith(_root))
             {
-                return file[root.Length..].TrimStart('/');
+                return file[_root.Length..].TrimStart('/');
             }
             return path;
         }

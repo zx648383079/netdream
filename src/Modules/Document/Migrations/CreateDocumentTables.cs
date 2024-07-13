@@ -11,11 +11,13 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.Document.Migrations
 {
-    public class CreateDocumentTables(IDatabase db, IPrivilegeManager privilege) : Migration(db)
+    public class CreateDocumentTables(IDatabase db,
+        ProjectRepository repository,
+        IPrivilegeManager privilege) : Migration(db)
     {
         public override void Up()
         {
-            new ProjectRepository(db).Comment().Migration(this);
+            repository.Comment().Migration(this);
             Append<CategoryEntity>(table => {
                 table.Comment("分类");
                 table.Id();

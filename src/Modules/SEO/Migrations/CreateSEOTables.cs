@@ -9,12 +9,14 @@ using NPoco;
 
 namespace NetDream.Modules.SEO.Migrations
 {
-    public class CreateSEOTables(IDatabase db, IGlobeOption option, LocalizeRepository localize) : Migration(db)
+    public class CreateSEOTables(IDatabase db,
+        StorageProvider storage,
+        IGlobeOption option, LocalizeRepository localize) : Migration(db)
     {
 
         public override void Up()
         {
-            StorageProvider.PrivateStore(db).Migration(this);
+            storage.PrivateStore().Migration(this);
             Append<OptionEntity>(table => {
                 table.Comment("全局设置");
                 table.Id();

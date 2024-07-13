@@ -6,11 +6,13 @@ using NPoco;
 
 namespace NetDream.Modules.MicroBlog.Migrations
 {
-    public class CreateMicroBlogTables(IDatabase db, IPrivilegeManager privilege, IGlobeOption option) : Migration(db)
+    public class CreateMicroBlogTables(IDatabase db,
+        MicroRepository repository,
+        IPrivilegeManager privilege, IGlobeOption option) : Migration(db)
     {
         public override void Up()
         {
-            new MicroRepository(db).Comment().Migration(this);
+            repository.Comment().Migration(this);
             Append<MicroBlogEntity>(table => {
                 table.Id();
                 table.Uint("user_id");

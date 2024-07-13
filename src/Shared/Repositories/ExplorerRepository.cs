@@ -1,15 +1,14 @@
 ﻿using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories.Models;
 using NPoco;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace NetDream.Shared.Repositories
 {
-    public class ExplorerRepository(IDatabase db, IEnvironment environment)
+    public class ExplorerRepository(IDatabase db,
+        StorageProvider storage, IEnvironment environment)
     {
         /// <summary>
         /// 备份的文件夹
@@ -82,8 +81,8 @@ namespace NetDream.Shared.Repositories
         protected StorageProvider? Storage(int tag)
         {
             return tag switch {
-                1 => StorageProvider.PublicStore(db),
-                2 => StorageProvider.PrivateStore(db),
+                1 => storage.PublicStore(),
+                2 => storage.PrivateStore(),
                 _ => null,
             };
         }
@@ -297,14 +296,14 @@ namespace NetDream.Shared.Repositories
 
         public Page<VirtualFileItem> SearchWithType(string type, string keywords, int page = 1)
         {
-            var storage = StorageProvider.PublicStore(db);
-            var items = storage.Search(keywords, 
+            var provider = storage.PublicStore();
+            var items = provider.Search(keywords, 
                 FileRepository.TypeExtension(type).Split('|'), page);
             //foreach (var item in items.Items)
             //{
             //    if (type == "image")
             //    {
-            //        item.Thumb = storage.ToPublicUrl(item.Path);
+            //        item.Thumb = provider.ToPublicUrl(item.Path);
             //    }
             //}
             return new Page<VirtualFileItem>()

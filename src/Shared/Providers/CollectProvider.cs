@@ -134,7 +134,7 @@ namespace NetDream.Shared.Providers
             {
                 return;
             }
-            db.Delete(_tableName, "item_id=@0 AND item_type=@1 AND user_id=@2", itemId, itemType, environment.UserId);
+            db.DeleteWhere(_tableName, "item_id=@0 AND item_type=@1 AND user_id=@2", itemId, itemType, environment.UserId);
         }
     }
 }

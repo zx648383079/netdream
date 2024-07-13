@@ -49,7 +49,7 @@ namespace NetDream.Modules.OpenPlatform.Repositories
                 model = new PlatformEntity()
                 {
                     UserId = environment.UserId,
-                    Status = PlatformRepository.STATUS_WAITING;
+                    Status = PlatformRepository.STATUS_WAITING,
                 };
                 GenerateNewId(model);
             }

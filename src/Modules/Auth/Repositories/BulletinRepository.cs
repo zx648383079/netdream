@@ -16,7 +16,7 @@ using System.Web;
 namespace NetDream.Modules.Auth.Repositories
 {
     public class BulletinRepository(IDatabase db, 
-        LinkRule ruler,
+        ILinkRuler ruler,
         IClientEnvironment environment) : ISystemBulletin
     {
         public const byte TYPE_AT = 7;
@@ -24,7 +24,7 @@ namespace NetDream.Modules.Auth.Repositories
         public const byte TYPE_AGREE = 6;
         public const byte TYPE_MESSAGE = 96;
         public const byte TYPE_OTHER = 99;
-        public LinkRule Ruler => ruler;
+        public ILinkRuler Ruler => ruler;
 
         public int SendAt(int[] user, string title, string link)
         {

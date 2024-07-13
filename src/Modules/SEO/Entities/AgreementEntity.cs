@@ -1,6 +1,7 @@
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Repositories.Models;
 using NPoco;
+
 namespace NetDream.Modules.SEO.Entities
 {
     [TableName(ND_TABLE_NAME)]

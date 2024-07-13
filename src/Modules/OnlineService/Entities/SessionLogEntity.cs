@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 using NPoco;
 namespace Modules.OnlineService.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class SessionLogEntity
+    public class SessionLogEntity: IIdEntity, ICreatedEntity
     {
         internal const string ND_TABLE_NAME = "service_session_log";
         public int Id { get; set; }

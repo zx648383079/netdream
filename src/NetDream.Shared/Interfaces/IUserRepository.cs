@@ -21,8 +21,10 @@ namespace NetDream.Shared.Interfaces
         /// 搜索获取用户的id
         /// </summary>
         /// <param name="keywords"></param>
+        /// <param name="userIds">限制搜索范围</param>
+        /// <param name="checkEmpty">true 为先判断 userIds 是否为空</param>
         /// <returns></returns>
-        public int[] SearchUserId(string keywords);
+        public int[] SearchUserId(string keywords, IList<int>? userIds = null, bool checkEmpty = false);
 
         public void WithUser(IWithUserModel model);
         public void WithUser(IEnumerable<IWithUserModel> items);
