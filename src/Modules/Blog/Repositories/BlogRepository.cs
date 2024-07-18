@@ -7,14 +7,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class BlogRepository(IDatabase db)
+    public class BlogRepository(IDatabase db, IClientEnvironment environment)
     {
         public Page<BlogModel> GetPage(int page)
         {
-            return db.Page<BlogModel>(page, 20, $"SELECT * FROM {BlogEntity.ND_TABLE_NAME}");
+            return db.Page<BlogModel>(page, 20, string.Empty);
         }
 
         public List<BlogModel> GetNewBlogs(int count = 8)
@@ -57,6 +58,8 @@ namespace NetDream.Modules.Blog.Repositories
             }
             return items;
         }
+
+   
 
     }
 }

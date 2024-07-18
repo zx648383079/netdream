@@ -3,15 +3,6 @@ using NetDream.Shared.Interfaces.Database;
 using NetDream.Shared.Migrations;
 using NetDream.Shared.Providers.Models;
 using NPoco;
-using NPoco.fastJSON;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Shared.Providers
 {
@@ -158,7 +149,6 @@ namespace NetDream.Shared.Providers
             if (res < 1)
             {
                 model.AgreeCount --;
-                model.AgreeType = 0;
             }
             else if(res == 1) {
                 model.AgreeCount ++;

@@ -1,8 +1,10 @@
+using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Repositories.Models;
 using NPoco;
 namespace NetDream.Modules.Blog.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class BlogEntity
+    public class BlogEntity: IIdEntity, ILanguageEntity, ITimestampEntity
     {
         internal const string ND_TABLE_NAME = "blog";
         public int Id { get; set; }

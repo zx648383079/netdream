@@ -1,8 +1,6 @@
 ﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces.Entities;
 using NPoco;
-using System;
-using System.Collections.Generic;
 
 namespace NetDream.Shared.Repositories
 {
@@ -29,7 +27,7 @@ namespace NetDream.Shared.Repositories
         /// <param name="itemType"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public bool UserAction(int userId, int itemId, byte itemType, byte action)
+        public bool UserHasAction(int userId, int itemId, byte itemType, byte action)
         {
             if (userId <= 0)
             {
@@ -38,6 +36,36 @@ namespace NetDream.Shared.Repositories
             var count = db.ExecuteScalar<int>($"SELECT COUNT(*) as count FROM {TableName} WHERE item_id=@0 AND item_type=@1 AND action=@2 AND user_id=@3", itemId, itemType, action, userId);
             return count > 0;
         }
+
+        /// <summary>
+        /// 仅执行action,不做取消操作
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="itemId"></param>
+        /// <param name="itemType"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public bool UserOnlyAction(int userId, int itemId, 
+            byte itemType, byte action)
+        {
+            if (userId <= 0)
+            {
+                return false;
+            }
+            if (UserHasAction(userId, itemId, itemType, action))
+            {
+                return true;
+            }
+            var log = Activator.CreateInstance<T>();
+            log.UserId = userId;
+            log.ItemId = itemId;
+            log.ItemType = itemType;
+            log.Action = action;
+            log.CreatedAt = TimeHelper.TimestampNow();
+            db.Insert(log);
+            return true;
+        }
+
         /// <summary>
         /// 判断当前用户执行了那一个操作
         /// </summary>

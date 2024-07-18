@@ -33,6 +33,20 @@ namespace NetDream.Modules.Auth.Repositories
             return db.Fetch<UserSimpleModel>(sql);
         }
 
+        /// <summary>
+        /// 根据用户名获取
+        /// </summary>
+        /// <param name="userItems"></param>
+        /// <returns></returns>
+        public IEnumerable<IUser> Get(params string[] userItems)
+        {
+            var sql = new Sql();
+            sql.Select("id,name,avatar");
+            sql.From<UserSimpleModel>(db);
+            sql.WhereIn("name", userItems);
+            return db.Fetch<UserSimpleModel>(sql);
+        }
+
         public int[] SearchUserId(string keywords, IList<int>? userIds = null, bool checkEmpty = false)
         {
             if (string.IsNullOrWhiteSpace(keywords))

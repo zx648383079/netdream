@@ -7,10 +7,11 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class FundAccount
+    public class FundAccount(IDatabase db): IFundAccount
     {
         public const byte TYPE_SYSTEM = 1; // 系统自动
         public const byte TYPE_RECHARGE = 6; // 用户充值
@@ -23,12 +24,6 @@ namespace NetDream.Modules.Auth.Repositories
         public const byte TYPE_BANK = 31;
         public const byte TYPE_GAME = 40;
         public const byte TYPE_SHOPPING = 60;
-
-        private readonly IDatabase _db;
-        public FundAccount(IDatabase db)
-        {
-            _db = db;
-        }
 
         public AccountLogEntity Log(int userId, byte type, int itemId, float money, float totalMoney, 
             string remark, byte status = 0)
@@ -49,11 +44,11 @@ namespace NetDream.Modules.Auth.Repositories
         {
             if (entity.Id > 0)
             {
-                _db.Update(entity);
+                db.Update(entity);
                 return entity;
             }
             entity.UpdatedAt = entity.CreatedAt = TimeHelper.TimestampNow();
-            _db.Insert(entity);
+            db.Insert(entity);
             return entity;
         }
 
@@ -74,7 +69,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public float GetUserMoney(int userId)
         {
-            return _db.ExecuteScalar<float>($"select money from {UserEntity.ND_TABLE_NAME} where user_id=@0", userId);
+            return db.ExecuteScalar<float>($"select money from {UserEntity.ND_TABLE_NAME} where user_id=@0", userId);
         }
 
         public int Change(AccountLogEntity entity)
@@ -88,11 +83,11 @@ namespace NetDream.Modules.Auth.Repositories
             if (newMoney < 0) {
                 return 0;
             }
-            _db.Update(new UserEntity()
+            db.Update(new UserEntity()
             {
                 Id = entity.UserId,
                 Money = (int)newMoney
-            }, new string[] {"money"});
+            }, ["money"]);
             entity.TotalMoney = (int)newMoney;
             entity = Log(entity);
             return entity.Id;

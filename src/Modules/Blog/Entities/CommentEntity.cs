@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 using NPoco;
 namespace NetDream.Modules.Blog.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class CommentEntity
+    public class CommentEntity: IIdEntity, ICreatedEntity
     {
         internal const string ND_TABLE_NAME = "blog_comment";
         public int Id { get; set; }

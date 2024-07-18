@@ -18,6 +18,12 @@ namespace NetDream.Shared.Interfaces
         /// <returns></returns>
         public IEnumerable<IUser> Get(params int[] userItems);
         /// <summary>
+        /// 根据用户名获取
+        /// </summary>
+        /// <param name="userItems"></param>
+        /// <returns></returns>
+        public IEnumerable<IUser> Get(params string[] userItems);
+        /// <summary>
         /// 搜索获取用户的id
         /// </summary>
         /// <param name="keywords"></param>

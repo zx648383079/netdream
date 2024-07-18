@@ -160,6 +160,10 @@ namespace NetDream.Shared.Extensions
             db.Execute(sql);
         }
 
+        public static void UpdateById<T>(this IDatabase db, int id, Dictionary<string, object> items)
+        {
+            db.Update<T>(new Sql().Where("id=@0", id), items);
+        }
         public static void Update<T>(this IDatabase db, Sql whereSql, Dictionary<string, object> items)
         {
             var builder = new Sql();
@@ -176,6 +180,15 @@ namespace NetDream.Shared.Extensions
                 [..items.Values]);
             builder.Append(whereSql);
             db.Execute(builder);
+        }
+
+        public static void UpdateWhere<T>(this IDatabase db, string set, string where, params object[] args)
+        {
+            db.Execute(string.Format("UPDATE {0} SET {1} WHERE {2}",
+                    db.DatabaseType.EscapeTableName(ModelHelper.TableName(typeof(T))),
+                    set, where
+                ),
+                args);
         }
         /// <summary>
         /// 自动添加时间

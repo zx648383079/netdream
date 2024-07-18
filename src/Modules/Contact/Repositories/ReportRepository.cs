@@ -9,7 +9,7 @@ using NPoco;
 namespace NetDream.Modules.Contact.Repositories
 {
     public class ReportRepository(IDatabase db, IUserRepository userStore,
-        IClientEnvironment environment)
+        IClientEnvironment environment): ISystemFeedback
     {
         public Page<ReportModel> GetList(string keywords = "", 
             int itemType = 0, int itemId = 0, int type = 0, int page = 1)
@@ -98,6 +98,12 @@ namespace NetDream.Modules.Contact.Repositories
                 Type = type,
                 Title = "其他投诉/举报"
             });
+        }
+
+        public int Report(byte itemType, int itemId, string content, string title)
+        {
+            var model = QuickCreate(itemType, itemId, content, title);
+            return model.Id;
         }
 
         public ReportEntity Change(int id, int status)

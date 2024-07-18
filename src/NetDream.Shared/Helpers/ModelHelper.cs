@@ -172,6 +172,13 @@ namespace NetDream.Shared.Helpers
             where T : class
         {
             var model = db.SingleById<T>(id);
+            return BatchToggle(db, model, data, allowCollumn);
+        }
+
+        public static T? BatchToggle<T>(IDatabase db, T? model,
+            IDictionary<string, string> data, string[] allowCollumn)
+            where T : class
+        {
             if (model is null)
             {
                 return null;
