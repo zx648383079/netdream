@@ -8,9 +8,10 @@ namespace NetDream.Web.Areas.Chat.WebSockets
 {
     public class WebSocketItem
     {
+
         public WebSocket Socket { get; private set; }
 
-        public Dictionary<string, object> Items { get; private set; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Items { get; private set; } = [];
 
         public WebSocketItem(WebSocket socket)
         {

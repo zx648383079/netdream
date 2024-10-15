@@ -46,14 +46,13 @@ namespace NetDream.Web.Areas.Chat.WebSockets
         {
             try
             {
-                WebSocketItem socket;
-
-                _sockets.TryRemove(id, out socket);
-
+                _sockets.TryRemove(id, out var socket);
+                if (socket is null)
+                {
+                    return;
+                }
 
                 await socket.Socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
-
-
             }
             catch (Exception)
             {
