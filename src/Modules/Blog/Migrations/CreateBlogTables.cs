@@ -48,7 +48,7 @@ namespace NetDream.Modules.Blog.Migrations
                 table.String("name", 100);
                 table.Text("content");
             });
-            Append<TermEntity>(table => {
+            Append<CategoryEntity>(table => {
                 table.Id();
                 foreach (var lang in localize.LanguageAsColumnPrefix())
                 {

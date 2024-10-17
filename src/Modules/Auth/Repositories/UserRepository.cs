@@ -19,6 +19,11 @@ namespace NetDream.Modules.Auth.Repositories
         public const int SEX_MALE = 1; // 性别男
         public const int SEX_FEMALE = 2; //性别女
 
+        public bool Exist(int userId)
+        {
+            return db.FindCount<int, UserSimpleModel>("id=@0", userId) > 0;
+        }
+
         public IUser? Get(int userId)
         {
             return db.FindFirst<UserSimpleModel>("id,name,avatar", "id=@0", userId);
@@ -45,6 +50,34 @@ namespace NetDream.Modules.Auth.Repositories
             sql.From<UserSimpleModel>(db);
             sql.WhereIn("name", userItems);
             return db.Fetch<UserSimpleModel>(sql);
+        }
+
+        public Page<IUser> Search(string keywords, int page, 
+            int[]? items = null, 
+            bool itemsIsExclude = true)
+        {
+            var sql = new Sql();
+            sql.Select("id,name,avatar").From<UserEntity>(db);
+            SearchHelper.Where(sql, "name", keywords);
+            if (items is not null)
+            {
+                if (itemsIsExclude)
+                {
+                    sql.WhereNotIn("id", items);
+                } else
+                {
+                    sql.WhereIn("id", items);
+                }
+            }
+            var res = db.Page<UserSimpleModel>(page, 20, sql);
+            return new Page<IUser>()
+            {
+                CurrentPage = res.CurrentPage,
+                ItemsPerPage = res.ItemsPerPage,
+                TotalItems = res.TotalItems,
+                TotalPages = res.TotalPages,
+                Items = res.Items.Select(x => (IUser)x).ToList()
+            };
         }
 
         public int[] SearchUserId(string keywords, IList<int>? userIds = null, bool checkEmpty = false)

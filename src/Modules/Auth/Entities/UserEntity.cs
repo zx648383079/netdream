@@ -24,5 +24,8 @@ namespace NetDream.Modules.Auth.Entities
         public int UpdatedAt { get; set; }
         [Column("created_at")]
         public int CreatedAt { get; set; }
+
+        [Ignore]
+        public bool IsOnline { get; } = false;
     }
 }

@@ -2,15 +2,9 @@
 using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
 using NetDream.Shared.Models;
 using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace NetDream.Modules.Auth.Repositories

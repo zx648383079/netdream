@@ -23,6 +23,15 @@ namespace NetDream.Shared.Extensions
             return sql.Where($"{key} IN ({string.Join(',', args)})");
         }
 
+        public static Sql WhereNotIn(this Sql sql, string key, params int[] args)
+        {
+            if (args.Length == 0)
+            {
+                return sql;
+            }
+            return sql.Where($"{key} NOT IN ({string.Join(',', args)})");
+        }
+
         public static Sql WhereIn(this Sql sql, string key, params string[] args)
         {
             if (args.Length == 0)

@@ -13,5 +13,7 @@ namespace NetDream.Modules.OnlineService.Models
         public string Name { get; } = "Guest";
 
         public string Avatar { get; } = "assets/images/avatar/0.png";
+
+        public bool IsOnline { get; } = true;
     }
 }

@@ -11,5 +11,7 @@ namespace NetDream.Modules.Auth.Models
         public string Name { get; set; } = string.Empty;
 
         public string Avatar { get; set; } = string.Empty;
+
+        public bool IsOnline { get; set; } = false;
     }
 }
