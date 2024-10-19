@@ -1,12 +1,14 @@
-using NPoco;
-namespace NetDream.Modules.Book.Entities
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NetDream.Modules.Book.Forms
 {
-    [TableName(ND_TABLE_NAME)]
-    public class RoleEntity
+    public class RoleForm
     {
-        internal const string ND_TABLE_NAME = "book_role";
         public int Id { get; set; }
-        [Column("book_id")]
         public int BookId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Avatar { get; set; } = string.Empty;
@@ -14,5 +16,9 @@ namespace NetDream.Modules.Book.Entities
         public string Character { get; set; } = string.Empty;
         public string X { get; set; } = string.Empty;
         public string Y { get; set; } = string.Empty;
+
+        public int linkId { get; set; }
+
+        public string linkTitle { get; set; } = string.Empty;
     }
 }

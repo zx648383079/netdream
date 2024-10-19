@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.Note.Repositories
 {
-    public class StatisticsRepository(IDatabase db) : IStatisticsRepository, IUserStatistics
+    public class StatisticsRepository(IDatabase db, BookRepository bookStore) : IStatisticsRepository, IUserStatistics
     {
         public IDictionary<string, int> Subtotal()
         {

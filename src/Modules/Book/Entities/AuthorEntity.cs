@@ -2,7 +2,7 @@ using NPoco;
 namespace NetDream.Modules.Book.Entities
 {
     [TableName(ND_TABLE_NAME)]
-    public class BookAuthorEntity
+    public class AuthorEntity
     {
         internal const string ND_TABLE_NAME = "book_author";
         public int Id { get; set; }
@@ -17,12 +17,12 @@ namespace NetDream.Modules.Book.Entities
         [Column("created_at")]
         public int CreatedAt { get; set; }
 
-        public BookAuthorEntity()
+        public AuthorEntity()
         {
             
         }
 
-        public BookAuthorEntity(string name)
+        public AuthorEntity(string name)
         {
             Name = name;
         }
