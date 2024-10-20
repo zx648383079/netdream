@@ -149,6 +149,15 @@ namespace NetDream.Shared.Providers
             db.TryUpdate(_tableName, data);
         }
 
+        public void Update(string set, string where, params object[] args)
+        {
+            db.Execute(string.Format("UPDATE {0} SET {1} WHERE {2}",
+                    db.DatabaseType.EscapeTableName(_tableName),
+                    set, where
+                ),
+                args);
+        }
+
         public void Remove(int id)
         {
             db.Delete(_tableName, id);

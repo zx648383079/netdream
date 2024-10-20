@@ -111,5 +111,33 @@ namespace NetDream.Shared.Providers
             }
             return db.Execute(sql);
         }
+
+        /// <summary>
+        /// 更新自增字段
+        /// </summary>
+        /// <param name="cb">(oldId, newId)</param>
+        /// <param name="key"></param>
+        public static void RefreshPk<T>(this IDatabase db, Action<int, int> cb, string key = "id")
+            where T : class
+        {
+            var tableName = db.DatabaseType.EscapeTableName(ModelHelper.TableName<T>());
+            var sql = new Sql();
+            sql.Select(key).From(tableName)
+                .OrderBy($"{key} asc");
+            var data = db.Pluck<int>(sql);
+            var i = 1;
+            foreach (var id in data)
+            {
+                if (id == i)
+                {
+                    i++;
+                    continue;
+                }
+                db.UpdateWhere<T>("id=@0", "id=@1", i, id);
+                cb.Invoke(id, i);
+                i++;
+            }
+            db.Execute($"ALTER TABLE {tableName} AUTO_INCREMENT = {i};");
+        }
     }
 }

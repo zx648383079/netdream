@@ -351,5 +351,19 @@ namespace NetDream.Shared.Providers
             }
             MergeCount(itemType, itemId, action, year.ToString(), monthItems);
         }
+
+        public void Update(string set, string where, params object[] args)
+        {
+            db.Execute(string.Format("UPDATE {0} SET {1} WHERE {2}",
+                    db.DatabaseType.EscapeTableName(_logTableName),
+                    set, where
+                ),
+                args);
+            db.Execute(string.Format("UPDATE {0} SET {1} WHERE {2}",
+                    db.DatabaseType.EscapeTableName(_dayTableName),
+                    set, where
+                ),
+                args);
+        }
     }
 }
