@@ -7,10 +7,6 @@ using NetDream.Shared.Interfaces;
 using NPoco;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Modules.Book.Repositories
 {
@@ -55,7 +51,7 @@ namespace NetDream.Modules.Book.Repositories
             {
                 throw new Exception("error");
             }
-            // BookRepository.RefreshSize(model.BookId);
+            bookStore.RefreshSize(model.BookId);
             return model;
         }
 
@@ -68,7 +64,7 @@ namespace NetDream.Modules.Book.Repositories
             }
             db.DeleteById<ChapterEntity>(id);
             db.DeleteById<ChapterBodyEntity>(id);
-            // BookRepository.RefreshSize(model.BookId);
+            bookStore.RefreshSize(model.BookId);
         }
 
         public ChapterModel GetSelf(int id)
@@ -98,6 +94,8 @@ namespace NetDream.Modules.Book.Repositories
                 model.Position = db.FindScalar<int, ChapterEntity>("MAX(position) as pos",
                     "book_id=@0", data.BookId) + 1;
             }
+
+
             if (!db.TrySave(model))
             {
                 throw new Exception("error");
@@ -127,24 +125,29 @@ namespace NetDream.Modules.Book.Repositories
          * @param items
          * @return mixed
          */
-        public void ApplyIsBought(int bookId, Page<ChapterModel> items)
+        public void ApplyIsBought(int bookId, IEnumerable<ChapterModel> items)
         {
-            //idItems = [];
-            //foreach (items as item)
-            //{
-            //    if (item["type"] == 1)
-            //    {
-            //        idItems[] = item["id"];
-            //    }
-            //}
-            //// TODO 获取已购买的id
-            //boughtItems = empty(idItems) ? [] : BookBuyLogModel.Where("book_id", bookId)
-            //    .Where("user_id", auth().Id()).Pluck("chapter_id");
-            //foreach (items as item)
-            //{
-            //    item["is_bought"] = item["type"] != 1 || in_array(item["id"], boughtItems);
-            //}
-            //return items;
+            var idItems = new List<int>();
+            foreach (var item in items)
+            {
+                if (item.Type == 1)
+                {
+                    idItems.Add(item.Id);
+                }
+            }
+            // TODO 获取已购买的id
+            if (idItems.Count == 0)
+            {
+                return;
+            }
+            var sql = new Sql();
+            sql.Select("chapter_id").From<BuyLogEntity>(db)
+                .Where("book_id=@0 and user_id=@1", bookId, environment.UserId);
+            var boughtItems = db.Pluck<int>(sql);
+            foreach (var item in items)
+            {
+                item.IsBought = item.Type != 1 || boughtItems.Contains(item.Id);
+            }
         }
 
         public bool IsBought(int bookId, int chapterId, int chapterType)
@@ -178,25 +181,29 @@ namespace NetDream.Modules.Book.Repositories
 
         public void MoveBefore(int id, int before)
         {
-            //list(model, beforeModel) = self.CheckPosition(id, before);
-            //if (model.Position < beforeModel.Position)
-            //{
-            //    BookChapterModel.Query().Where("book_id", model.BookId)
-            //        .Where("position", ">", model.Position)
-            //        .Where("position", "<", beforeModel.Position)
-            //        .UpdateDecrement("position");
-            //    BookChapterModel.Where("id", id).Update([
-            //        "position" => beforeModel.Position - 1
-            //    ]);
-            //    return;
-            //}
-            //BookChapterModel.Query().Where("book_id", model.BookId)
-            //    .Where("position", "<", model.Position)
-            //    .Where("position", ">=", beforeModel.Position)
-            //    .UpdateIncrement("position");
-            //BookChapterModel.Where("id", id).Update([
-            //    "position" => beforeModel.Position
-            //]);
+            var (model, beforeModel) = CheckPosition(id, before);
+            if (model.Position < beforeModel.Position)
+            {
+                db.UpdateWhere<ChapterEntity>("position=position-1",
+                    "book_id=@0 and position>@1 and position<@2",
+                    model.BookId,
+                    model.Position,
+                    beforeModel.Position);
+                db.UpdateWhere<ChapterEntity>("position=@0",
+                    "id=@1",
+                    beforeModel.Position - 1,
+                    id);
+                return;
+            }
+            db.UpdateWhere<ChapterEntity>("position=position+1",
+                    "book_id=@0 and position<@1 and position>=@2",
+                    model.BookId,
+                    model.Position,
+                    beforeModel.Position);
+            db.UpdateWhere<ChapterEntity>("position=@0",
+                "id=@1",
+                beforeModel.Position,
+                id);
         }
 
         private (ChapterEntity, ChapterEntity) CheckPosition(int id, int twoId)
@@ -226,25 +233,29 @@ namespace NetDream.Modules.Book.Repositories
 
         public void MoveAfter(int id, int after)
         {
-            //list(model, afterModel) = CheckPosition(id, after);
-            //if (model.Position < afterModel.Position)
-            //{
-            //    BookChapterModel.Query().Where("book_id", model.BookId)
-            //        .Where("position", ">", model.Position)
-            //        .Where("position", "<=", afterModel.Position)
-            //        .UpdateDecrement("position");
-            //    BookChapterModel.Where("id", id).Update([
-            //        "position" => afterModel.Position
-            //    ]);
-            //    return;
-            //}
-            //BookChapterModel.Query().Where("book_id", model.BookId)
-            //    .Where("position", "<", model.Position)
-            //    .Where("position", ">", afterModel.Position)
-            //    .UpdateIncrement("position");
-            //BookChapterModel.Where("id", id).Update([
-            //    "position" => afterModel.Position + 1
-            //]);
+            var (model, afterModel) = CheckPosition(id, after);
+            if (model.Position < afterModel.Position)
+            {
+                db.UpdateWhere<ChapterEntity>("position=position-1",
+                    "book_id=@0 and position>@1 and position<=@2",
+                    model.BookId,
+                    model.Position,
+                    afterModel.Position);
+                db.UpdateWhere<ChapterEntity>("position=@0",
+                    "id=@1",
+                    afterModel.Position,
+                    id);
+                return;
+            }
+            db.UpdateWhere<ChapterEntity>("position=position+1",
+                    "book_id=@0 and position<@1 and position>@2",
+                    model.BookId,
+                    model.Position,
+                    afterModel.Position);
+            db.UpdateWhere<ChapterEntity>("position=@0",
+                "id=@1",
+                afterModel.Position + 1,
+                id);
         }
     }
 }

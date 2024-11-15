@@ -5,6 +5,7 @@ using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NPoco;
+using System;
 
 namespace NetDream.Modules.Contact.Repositories
 {

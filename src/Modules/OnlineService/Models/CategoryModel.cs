@@ -1,5 +1,6 @@
 ﻿using Modules.OnlineService.Entities;
 using NPoco;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.OnlineService.Models
 {

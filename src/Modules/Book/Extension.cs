@@ -6,6 +6,7 @@ namespace NetDream.Modules.Book
     {
         public static void ProvideBookRepositories(this IServiceCollection service)
         {
+
         }
     }
 }

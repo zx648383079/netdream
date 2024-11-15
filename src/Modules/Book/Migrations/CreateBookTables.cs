@@ -42,13 +42,13 @@ namespace NetDream.Modules.Book.Migrations
                 table.Uint("target_id");
                 table.String("name", 50);
                 table.String("content").Default(string.Empty);
-            }).Append<BookSourceSiteEntity>(table => {
+            }).Append<SourceSiteEntity>(table => {
                 table.Comment("小说来源站点");
                 table.Id();
                 table.String("name", 30).Comment("站点名");
                 table.String("url", 100).Comment("网址");
                 table.Timestamps();
-            }).Append<BookSourceEntity>(table => {
+            }).Append<SourceEntity>(table => {
                 table.Comment("小说来源");
                 table.Id();
                 table.Uint("book_id");
@@ -73,12 +73,12 @@ namespace NetDream.Modules.Book.Migrations
                 table.Comment("小说章节内容");
                 table.Id();
                 table.LongText("content").Comment("内容");
-            }).Append<BookCategoryEntity>(table => {
+            }).Append<CategoryEntity>(table => {
                 table.Comment("小说分类");
                 table.Id();
                 table.String("name", 100).Unique().Comment("分类名");
                 table.Timestamp(MigrationTable.COLUMN_CREATED_AT);
-            }).Append<BookAuthorEntity>(table => {
+            }).Append<AuthorEntity>(table => {
                 table.Comment("小说作者");
                 table.Id();
                 table.String("name", 100).Unique().Comment("作者名");
@@ -87,7 +87,7 @@ namespace NetDream.Modules.Book.Migrations
                 table.Uint("user_id").Default(0);
                 table.Uint("status", 2).Default(0);
                 table.Timestamps();
-            }).Append<BookHistoryEntity>(table => {
+            }).Append<HistoryEntity>(table => {
                 table.Comment("小说阅读历史");
                 table.Id();
                 table.Uint("user_id");
@@ -96,14 +96,14 @@ namespace NetDream.Modules.Book.Migrations
                 table.Uint("progress", 1).Default(0);
                 table.Uint("source_id").Default(0);
                 table.Timestamps();
-            }).Append<BookBuyLogEntity>(table => {
+            }).Append<BuyLogEntity>(table => {
                 table.Comment("小说购买记录");
                 table.Id();
                 table.Uint("book_id");
                 table.Uint("chapter_id");
                 table.Uint("user_id");
                 table.Timestamp(MigrationTable.COLUMN_CREATED_AT);
-            }).Append<BookRoleEntity>(table => {
+            }).Append<RoleEntity>(table => {
                 table.Comment("小说角色");
                 table.Id();
                 table.Uint("book_id");
@@ -119,7 +119,7 @@ namespace NetDream.Modules.Book.Migrations
                 table.Uint("role_id");
                 table.String("title", 50);
                 table.Uint("role_link");
-            }).Append<BookListEntity>(table => {
+            }).Append<ListEntity>(table => {
                 table.Comment("书单");
                 table.Id();
                 table.Uint("user_id");
@@ -146,11 +146,11 @@ namespace NetDream.Modules.Book.Migrations
         public override void Seed()
         {
             privilege.AddPermission("book_manage", "书籍管理");
-            if (db.FindCount<BookCategoryEntity>(string.Empty) > 0)
+            if (db.FindCount<CategoryEntity>(string.Empty) > 0)
             {
                 return;
             }
-            db.InsertBatch(new BookCategoryEntity[] {
+            db.InsertBatch(new CategoryEntity[] {
                 new("玄幻"),
                 new("奇幻"),
                 new("仙侠"),
@@ -164,7 +164,7 @@ namespace NetDream.Modules.Book.Migrations
                 new("同人"),
                 new("网游"),
             });
-            db.Insert(new BookAuthorEntity("未知", 1));
+            db.Insert(new AuthorEntity("未知", 1));
         }
     }
 }

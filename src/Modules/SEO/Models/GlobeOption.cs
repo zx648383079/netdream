@@ -1,5 +1,7 @@
 ﻿using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
+using System;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.SEO.Models
 {

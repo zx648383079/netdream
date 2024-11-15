@@ -4,6 +4,7 @@ using NetDream.Shared.Interfaces.Forms;
 using NetDream.Modules.Auth.Entities;
 using NPoco;
 using NetDream.Shared.Models;
+using System;
 
 namespace NetDream.Modules.Auth.Forms
 {

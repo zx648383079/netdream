@@ -6,6 +6,8 @@ using NetDream.Shared.Repositories;
 using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Models;
 using NPoco;
+using System.Collections.Generic;
+using System;
 
 namespace NetDream.Modules.Note.Repositories
 {

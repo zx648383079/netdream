@@ -7,6 +7,9 @@ using NetDream.Modules.MessageService.Forms;
 using NetDream.Modules.MessageService.Models;
 using NPoco;
 using System.Text.Json;
+using System.Collections.Generic;
+using System;
+using System.Linq;
 
 namespace NetDream.Modules.MessageService.Repositories
 {
@@ -190,7 +193,7 @@ namespace NetDream.Modules.MessageService.Repositories
             {
                 return data;
             }
-            return data.Where(item => filterKeys.Contains(item.Key)).ToDictionary<string, string>();
+            return data.Where(item => filterKeys.Contains(item.Key)).ToDictionary();
         }
 
         /// <summary>

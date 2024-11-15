@@ -1,6 +1,7 @@
 ﻿using NetDream.Modules.Blog.Entities;
 using NetDream.Shared.Repositories;
 using NPoco;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.Blog.Repositories
 {

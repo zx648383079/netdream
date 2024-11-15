@@ -3,6 +3,8 @@ using NetDream.Modules.Book.Forms;
 using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NPoco;
+using System;
+using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {

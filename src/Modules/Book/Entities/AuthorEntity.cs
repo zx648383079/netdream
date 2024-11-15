@@ -27,7 +27,7 @@ namespace NetDream.Modules.Book.Entities
             Name = name;
         }
 
-        public BookAuthorEntity(string name, int status): this(name)
+        public AuthorEntity(string name, int status): this(name)
         {
             Status = status;
         }

@@ -2,18 +2,14 @@
 using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 using NPoco;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Note.Repositories
 {
-    public class StatisticsRepository(IDatabase db, BookRepository bookStore) : IStatisticsRepository, IUserStatistics
+    public class StatisticsRepository(IDatabase db) : IStatisticsRepository, IUserStatistics
     {
         public IDictionary<string, int> Subtotal()
         {

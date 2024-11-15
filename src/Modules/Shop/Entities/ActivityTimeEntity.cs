@@ -1,4 +1,5 @@
 using NPoco;
+using System;
 namespace NetDream.Modules.Shop.Entities
 {
     [TableName(ND_TABLE_NAME)]

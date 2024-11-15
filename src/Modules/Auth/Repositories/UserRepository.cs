@@ -5,6 +5,8 @@ using NetDream.Modules.Auth.Models;
 using NPoco;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Shared.Helpers;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Modules.Auth.Repositories
 {

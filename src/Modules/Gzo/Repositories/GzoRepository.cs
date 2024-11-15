@@ -4,6 +4,10 @@ using NetDream.Modules.Gzo.Entities;
 using NPoco;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System;
 
 namespace NetDream.Modules.Gzo.Repositories
 {

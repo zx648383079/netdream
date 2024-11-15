@@ -1,6 +1,9 @@
 ﻿using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NPoco;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Shared.Providers
 {

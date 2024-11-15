@@ -1,4 +1,5 @@
 using NetDream.Shared.Helpers;
+using System;
 
 namespace NetDream.Tests
 {

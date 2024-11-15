@@ -3,6 +3,9 @@ using NetDream.Modules.OpenPlatform.Entities;
 using System.Data;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace NetDream.Modules.OpenPlatform.Models
 {

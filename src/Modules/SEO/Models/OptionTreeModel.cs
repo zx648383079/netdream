@@ -1,5 +1,6 @@
 ﻿using NetDream.Modules.SEO.Entities;
 using NPoco;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.SEO.Models
 {

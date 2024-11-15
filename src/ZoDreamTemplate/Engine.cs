@@ -1,4 +1,6 @@
-﻿namespace NetDream.Shared.ZoDreamTemplate
+﻿using System;
+
+namespace NetDream.Shared.ZoDreamTemplate
 {
     public class Engine : IEngine
     {

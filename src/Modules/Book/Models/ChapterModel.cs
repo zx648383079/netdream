@@ -12,5 +12,8 @@ namespace NetDream.Modules.Book.Models
     {
         [Ignore]
         public string Content { get; set; } = string.Empty;
+
+        [Ignore]
+        public bool IsBought { get; set; }
     }
 }

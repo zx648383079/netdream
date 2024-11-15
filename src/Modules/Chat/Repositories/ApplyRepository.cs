@@ -4,6 +4,8 @@ using NetDream.Shared.Extensions;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Migrations;
 using NPoco;
+using System;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.Chat.Repositories
 {

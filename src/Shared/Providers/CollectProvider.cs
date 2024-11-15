@@ -3,6 +3,7 @@ using NetDream.Shared.Interfaces.Database;
 using NetDream.Shared.Migrations;
 using NetDream.Shared.Providers.Models;
 using NPoco;
+using System;
 
 namespace NetDream.Shared.Providers
 {

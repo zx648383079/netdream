@@ -3,6 +3,7 @@ using NetDream.Shared.Migrations;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Repositories;
 using NPoco;
+using System;
 
 namespace NetDream.Modules.Auth.Migrations
 {

@@ -3,6 +3,7 @@ using NetDream.Modules.Blog.Models;
 using NetDream.Shared.Extensions;
 using NetDream.Shared.Repositories;
 using NPoco;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.Book.Repositories
 {

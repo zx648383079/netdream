@@ -3,6 +3,9 @@ using NetDream.Modules.Book.Models;
 using NetDream.Shared.Extensions;
 using NetDream.Shared.Interfaces;
 using NPoco;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {

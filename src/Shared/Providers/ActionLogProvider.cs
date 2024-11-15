@@ -5,6 +5,9 @@ using NetDream.Shared.Interfaces.Database;
 using NetDream.Shared.Migrations;
 using NetDream.Shared.Providers.Models;
 using NPoco;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Shared.Providers
 {

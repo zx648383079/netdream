@@ -1,4 +1,6 @@
-﻿namespace NetDream.Modules.Gzo.Writers
+﻿using System.Collections.Generic;
+
+namespace NetDream.Modules.Gzo.Writers
 {
     public class MemoryWriter : List<MemoryFileItem>, IWriter
     {

@@ -4,7 +4,9 @@ using NetDream.Modules.SEO.Models;
 using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NPoco;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace NetDream.Modules.SEO.Repositories

@@ -3,6 +3,8 @@ using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NPoco;
+using System;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.AdSense.Repositories
 {

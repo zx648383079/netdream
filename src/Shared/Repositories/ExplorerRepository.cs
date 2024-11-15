@@ -4,6 +4,10 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories.Models;
 using NPoco;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace NetDream.Shared.Repositories
 {

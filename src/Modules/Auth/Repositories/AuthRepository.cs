@@ -7,6 +7,7 @@ using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Models;
 using NPoco;
 using System.Text.RegularExpressions;
+using System;
 
 namespace NetDream.Modules.Auth.Repositories
 {

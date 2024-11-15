@@ -2,6 +2,7 @@
 using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NPoco;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.Contact.Repositories
 {
