@@ -1,0 +1,29 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Retrieve password";
+    Layout = "../Shared/_Layout.cshtml";
+    var code = ViewData["code"];
+}
+<section class="container">
+    <div class="login-box">
+        <form class="form-ico login-form" asp-action="reset" method="POST">
+            <div class="input-group">
+                <input type="email" class="form-control" placeholder="Please input email" name="email" required>
+                <i class="fa fa-at" aria-hidden="true"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" class="form-control" placeholder="Please input the password" name="password" required>
+                <i class="fa fa-lock" aria-hidden="true"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" class="form-control" placeholder="Please confirm your password" name="rePassword" required>
+                <i class="fa fa-circle" aria-hidden="true"></i>
+            </div>
+
+            <button type="submit" class="btn btn-full">Reset Password</button>
+            <input type="hidden" name="code" value="@code">
+        </form>
+
+    </div>
+</section>
+

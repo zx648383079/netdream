@@ -8,6 +8,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     var items = ViewData["items"] as Page<BlogModel>;
     var pageIndex = (int)ViewData["pageIndex"];
+    var listViewMode = 0;
 }
 
 @section Styles {
@@ -73,19 +74,38 @@
         </div>
         @foreach (var item in items.Items)
         {
-            <dl class="book-item">
-                <dt>
-                    <a href="@Url.Action("Detail", new { id= item.Id })" title="@item.Title">@item.Title</a>
-                    <span class="book-time">@TimeHelper.FormatAgo(item.CreatedAt)</span>
-                </dt>
-                <dd>
-                    <p>@item.Description</p>
-                    <a class="author" href=""><i class="fa fa-edit"></i><b></b></a>
-                    <span class="comment"><i class="fa fa-comments"></i><b>@item.CommentCount</b></span>
-                    <span class="agree"><i class="fas fa-thumbs-up"></i><b>@item.RecommendCount</b></span>
-                    <span class="click"><i class="fa fa-eye"></i><b>@item.ClickCount</b></span>
-                </dd>
-            </dl>
+            <div class="book-item">
+                @if (listViewMode == 1)
+                {
+                    <div class="item-cover">
+                        <img src="@item.Thumb" alt="@item.Title">
+                    </div>
+                }
+                <dl class="item-body">
+                    <dt>
+                        @if (item.OpenType > 0)
+                        {
+                            <i class="fa fa-lock" title="Reading needs to meet the conditions"></i>
+                        }
+                        <a href="@Url.Action("Detail", new { id= item.Id })" title="@item.Title">@item.Title</a>
+                        <span class="book-time">@TimeHelper.FormatAgo(item.CreatedAt)</span>
+                    </dt>
+                    <dd>
+                        <p>@item.Description</p>
+                        <a class="author" href=""><i class="fa fa-edit"></i><b></b></a>
+                        <a class="category" href=""><i class="fa fa-edit"></i><b></b></a>
+                        <span class="comment"><i class="fa fa-comments"></i><b>@item.CommentCount</b></span>
+                        <span class="agree"><i class="fas fa-thumbs-up"></i><b>@item.RecommendCount</b></span>
+                        <span class="click"><i class="fa fa-eye"></i><b>@item.ClickCount</b></span>
+                    </dd>
+                </dl>
+                @if (listViewMode == 2)
+                {
+                    <div class="item-cover">
+                        <img src="@item.Thumb" alt="@item.Title">
+                    </div>
+                }
+            </div>
         }
     </div>
     <div class="book-footer">

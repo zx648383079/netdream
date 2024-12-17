@@ -1,4 +1,4 @@
-﻿namespace NetDream.Shared.ZoDreamTemplate
+﻿namespace NetDream.Shared.Template
 {
     public class TemplateContext
     {

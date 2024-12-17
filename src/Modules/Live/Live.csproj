@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LiveStreamingServerNet" Version="0.20.0" />
+    <PackageReference Include="LiveStreamingServerNet" Version="0.21.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
     <PackageReference Include="NPoco" Version="5.7.1" />
   </ItemGroup>

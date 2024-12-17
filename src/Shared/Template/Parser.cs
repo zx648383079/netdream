@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NetDream.Shared.ZoDreamTemplate
+namespace NetDream.Shared.Template
 {
     internal class Parser
     {

@@ -4,12 +4,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using NetDream.Shared.Interfaces;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Web.Base.Http;
@@ -22,6 +19,7 @@ namespace NetDream.Web.Areas.Auth.Controllers
     {
         public IActionResult Index()
         {
+            ViewData["isCaptcha"] = false;
             return View();
         }
 

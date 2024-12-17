@@ -1,0 +1,31 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Verify email address";
+    Layout = "../Shared/_Layout.cshtml";
+    var message = (string)ViewData["message"];
+}
+<div class="container">
+    @if (string.IsNullOrEmpty(message))
+    {
+    <div class="toast-panel">
+        <div class="panel-icon">
+            <i class="fa fa-times-circle"></i>
+        </div>
+        <div class="panel-body">
+            @message
+        </div>
+    </div>
+    }
+    else
+    {
+    <div class="toast-panel toast-success">
+        <div class="panel-icon">
+            <i class="fa fa-check-circle"></i>
+        </div>
+        <div class="panel-body">
+            Email验证成功，可以正常登录使用了！
+        </div>
+    </div>
+    }
+</div>
+

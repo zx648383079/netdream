@@ -1,0 +1,55 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Sign up";
+    Layout = "../Shared/_Layout.cshtml";
+}
+<section class="container">
+    <div class="login-box">
+        <form class="form-ico login-form" asp-action="post" method="POST">
+            <div class="input-group">
+                <input type="text" name="name" class="form-control" placeholder="Please input nickname" required>
+                <i class="fa fa-user" aria-hidden="true"></i>
+            </div>
+            <div class="input-group">
+                <input type="email" name="email" class="form-control" placeholder="Please input email" required>
+                <i class="fa fa-at" aria-hidden="true"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" name="password" class="form-control" placeholder="Please input the password" required>
+                <i class="fa fa-lock" aria-hidden="true"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" name="rePassword" class="form-control" placeholder="Please confirm your password" required>
+                <i class="fa fa-redo" aria-hidden="true"></i>
+            </div>
+            <div class="input-group">
+                <input type="text" name="invite_code" class="form-control" placeholder="Please input the invite code">
+                <i class="fa fa-gift" aria-hidden="true"></i>
+            </div>
+
+            <div class="input-group">
+                <div class="checkbox">
+                    <input type="checkbox" name="agree" value="1" id="checkboxInput" />
+                    <label for="checkboxInput"></label>
+                </div>
+                I agree to《
+                <a asp-Area="" asp-controller="Agreement">terms of service</a>
+                》
+            </div>
+
+            <button type="submit" class="btn">Sign up</button>
+            <div class="other-box">
+                <a asp-controller="Home">Back</a>
+            </div>
+        </form>
+
+    </div>
+</section>
+@section Scripts{
+    <script type="text/javascript">
+    $(function () {
+            bindRegister();
+    });
+    </script>
+}
+

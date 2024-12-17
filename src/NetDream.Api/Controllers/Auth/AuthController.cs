@@ -15,10 +15,10 @@ namespace NetDream.Api.Controllers.Auth
 {
     [ApiController]
     [Route("open/[controller]")]
-    public class AuthController(IOptions<JwtSettings> _jwtSettingsAccesser) : ControllerBase
+    public class AuthController(IOptions<JwtSettings> _jwtSettingsAccessor) : ControllerBase
     {
         //获取JwtSettings对象信息
-        private readonly JwtSettings _jwtSettings = _jwtSettingsAccesser.Value;
+        private readonly JwtSettings _jwtSettings = _jwtSettingsAccessor.Value;
 
         [Authorize]
         [Route("get_user_info")]
@@ -43,7 +43,7 @@ namespace NetDream.Api.Controllers.Auth
             var key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
             var authTime = DateTime.Now;//授权时间
             var expiresAt = authTime.AddDays(30);//过期时间
-            var tokenDescripor = new SecurityTokenDescriptor
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity([
                     new(JwtClaimTypes.Audience,_jwtSettings.Audience),
@@ -55,7 +55,7 @@ namespace NetDream.Api.Controllers.Auth
                 //签名证书(秘钥，加密算法)SecurityAlgorithms
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-            var token = tokenHandler.CreateToken(tokenDescripor);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
             return tokenString;
         }

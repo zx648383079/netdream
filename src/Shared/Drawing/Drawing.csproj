@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<LangVersion>12</LangVersion>
+		<AssemblyName>NetDream.Shared.$(MSBuildProjectName)</AssemblyName>
+		<RootNamespace>NetDream.Shared.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="SkiaSharp" Version="3.116.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

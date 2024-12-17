@@ -14,15 +14,8 @@
     <link type="text/css" href="~/assets/css/blog.min.css" rel="stylesheet" media="all">
 }
 <div id="book-page" class="book-skin">
-    <div class="book-title">
-        <ul class="book-nav">
-            <li class="book-navicon">
-                <i class="fa fa-bars"></i>
-            </li>
-            <li class="active">
-                <a>@data.Title</a>
-            </li>
-        </ul>
+    <div class="book-title book-mobile-inline">
+        <h1>@data.Title</h1>
     </div>
 
 
@@ -52,11 +45,11 @@
         </div>
     </div>
 
-    <div class="book-body open">
+    <div class="book-body book-fork-box open">
         <a class="book-fork" href="https://github.com/zx648383079/PHP-ZoDream">
-            <img src="~/assets/images/forkme.png" alt="Fork Me On Github">
+            <span>Fork Me On Github</span>
         </a>
-        <div class="info">
+        <div class="book-info">
             @if (!string.IsNullOrEmpty(data.ProgrammingLanguage))
             {
                 <a class="language" title="@data.ProgrammingLanguage"><i class="fa fa-code"></i><b>@data.ProgrammingLanguage</b></a>
@@ -74,11 +67,22 @@
         </div>
         <article id="content" class="content style-type-@data.EditType">
             <markdown>@data.Content</markdown>
-                <p class="book-copyright">
-                    Reprint please keep the original link:
-                    <a title="@data.Title">@ViewData["fullUrl"]</a>
-                </p>
+            <p class="book-copyright">
+                Reprint please keep the original link:
+                <a title="@data.Title">@ViewData["fullUrl"]</a>
+            </p>
         </article>
+        <div class="toggle-open">
+            @if (data.Type == 1)
+            {
+                <a href="metaItems['source_url']" target="_blank" title="Reprint Tip">Click here to view source</a>
+            } 
+            else 
+            {
+                <span>Click here to view</span>
+            }
+            <i class="fa fa-angle-double-down" title="<?=__('Click here to view')?>"></i>
+        </div>
         <div class="tools">
             <span class="comment"><i class="fa fa-comments"></i><b>@data.CommentCount</b></span>
             <span class="click"><i class="fa fa-eye"></i><b>@data.ClickCount</b></span>

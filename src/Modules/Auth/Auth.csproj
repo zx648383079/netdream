@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
+    <ProjectReference Include="..\..\Shared\Drawing\Drawing.csproj" />
   </ItemGroup>
 
 </Project>

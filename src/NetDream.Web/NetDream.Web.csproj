@@ -55,4 +55,11 @@
     <Folder Include="Areas\Open\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Areas\Auth\Views\Qr\Authorize.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

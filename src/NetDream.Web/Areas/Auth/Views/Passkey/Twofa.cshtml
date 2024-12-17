@@ -1,0 +1,26 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "2FA";
+    Layout = "../Shared/_Layout.cshtml";
+    var qr = ViewData["qr"];
+}
+
+<form class="form-table" asp-action="TwofaSave" method="POST" accept-charset="UTF-8" data-type="ajax" role="form">
+    <div class="input-group">
+        <label for="recovery_code_Hi4">恢复码</label>
+        <div>
+            <input type="text" id="recovery_code_Hi4" class="form-control" name="recovery_code" value="ae80d397de8fd19660ca321aef1d6c81" label="恢复码" placeholder="请输入 恢复码">
+
+        </div>
+    </div>
+    <p>打开 Authenticator APP进行扫码添加</p>
+
+    <img src="@qr" alt="">
+
+    <div class="input-group">
+        <label for="twofa_code_Y7z">动态码</label>
+        <div>
+            <input type="text" id="twofa_code_Y7z" class="form-control" name="twofa_code" value="" label="动态码" required placeholder="请输入 动态码">
+        </div>
+    </div>
+</form>

@@ -67,7 +67,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{D4EF7F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repositories", "Shared\Repositories\Repositories.csproj", "{8D93A4E9-32CB-4E5B-9828-D998971EE0E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZoDreamTemplate", "ZoDreamTemplate\ZoDreamTemplate.csproj", "{EB230CEE-BF28-4292-9ADF-469AF6E7A217}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template", "Shared\Template\Template.csproj", "{EB230CEE-BF28-4292-9ADF-469AF6E7A217}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing", "Shared\Drawing\Drawing.csproj", "{C517C038-A7D7-45F8-BCDA-270688574AFC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -199,6 +201,10 @@ Global
 		{EB230CEE-BF28-4292-9ADF-469AF6E7A217}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB230CEE-BF28-4292-9ADF-469AF6E7A217}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB230CEE-BF28-4292-9ADF-469AF6E7A217}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C517C038-A7D7-45F8-BCDA-270688574AFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C517C038-A7D7-45F8-BCDA-270688574AFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C517C038-A7D7-45F8-BCDA-270688574AFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C517C038-A7D7-45F8-BCDA-270688574AFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -229,6 +235,7 @@ Global
 		{2771E6B8-CEBB-4AA6-90E4-8FFDED19EAD2} = {D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}
 		{8D93A4E9-32CB-4E5B-9828-D998971EE0E2} = {D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}
 		{EB230CEE-BF28-4292-9ADF-469AF6E7A217} = {D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}
+		{C517C038-A7D7-45F8-BCDA-270688574AFC} = {D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {137970B0-B381-4D3F-AD18-F22A2B0365E6}

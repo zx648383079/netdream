@@ -11,6 +11,7 @@ namespace NetDream.Modules.Auth
             service.AddScoped<IUserRepository, UserRepository>();
             service.AddScoped<AuthRepository>();
             service.AddScoped<ISystemBulletin, BulletinRepository>();
+            service.AddScoped<CaptchaRepository>();
         }
     }
 }
