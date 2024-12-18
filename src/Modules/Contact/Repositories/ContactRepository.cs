@@ -1,16 +1,9 @@
 ﻿using NetDream.Modules.Contact.Entities;
 using NetDream.Modules.Contact.Forms;
 using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
 using NPoco;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Contact.Repositories
 {

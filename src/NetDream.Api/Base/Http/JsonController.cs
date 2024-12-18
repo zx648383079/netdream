@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NetDream.Api.Base.Middleware;
 using NetDream.Shared.Http;
 using NetDream.Modules.OpenPlatform.Http;
 using NPoco;
 
 namespace NetDream.Web.Base.Http
 {
-    public abstract class JsonController : Controller
+    public abstract class JsonController : ControllerBase
     {
 
         public IJsonResponse JsonResponse
@@ -17,16 +16,16 @@ namespace NetDream.Web.Base.Http
             }
         }
 
-        public JsonResult Render(object data) => Json(JsonResponse.Render(data));
+        public IActionResult Render(object data) => Ok(JsonResponse.Render(data));
 
-        public JsonResult RenderData<T>(T data) => Json(JsonResponse.RenderData(data));
+        public IActionResult RenderData<T>(T data) => Ok(JsonResponse.RenderData(data));
 
-        public JsonResult RenderData<T>(T data, string message) => Json(JsonResponse.RenderData(data, message));
+        public IActionResult RenderData<T>(T data, string message) => Ok(JsonResponse.RenderData(data, message));
 
-        public JsonResult RenderPage<T>(Page<T> page) => Json(JsonResponse.RenderPage(page));
+        public IActionResult RenderPage<T>(Page<T> page) => Ok(JsonResponse.RenderPage(page));
 
-        public JsonResult RenderFailure(string message, int code) => Json(JsonResponse.RenderFailure(message, code));
+        public IActionResult RenderFailure(string message, int code) => StatusCode(code, JsonResponse.RenderFailure(message, code));
 
-        public JsonResult RenderFailure(string message) => Json(JsonResponse.RenderFailure(message));
+        public IActionResult RenderFailure(string message) => StatusCode(404, JsonResponse.RenderFailure(message));
     }
 }

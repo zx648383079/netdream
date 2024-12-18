@@ -6,28 +6,41 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using NetDream.Api.Base.Http;
 using NetDream.Api.Base.Middleware;
 using NetDream.Api.Models;
 using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Securities;
-using NetDream.Modules.Auth.Repositories;
-using NetDream.Modules.Blog.Repositories;
-using NetDream.Modules.Contact.Repositories;
-using NetDream.Modules.Gzo.Repositories;
+using NetDream.Modules.Auth;
+using NetDream.Modules.Blog;
+using NetDream.Modules.Contact;
+using NetDream.Modules.Gzo;
+using NetDream.Modules.OpenPlatform;
+using NetDream.Modules.SEO;
+using NetDream.Modules.Note;
 using NetDream.Modules.OpenPlatform.Http;
-using NetDream.Modules.OpenPlatform.Repositories;
-using NetDream.Modules.SEO.Repositories;
 using NPoco;
 using System.Text;
+using NetDream.Shared.Models;
+using System.IO;
 
 namespace NetDream.Api
 {
-    public class Startup(IConfiguration configuration)
+    public class Startup
     {
-        public IConfiguration Configuration { get; } = configuration;
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+            var env = configuration.GetSection(EnvironmentConfiguration.EnvironmentKey)
+            .Get<EnvironmentConfiguration>() ?? new EnvironmentConfiguration();
+            var currentFolder = Directory.GetCurrentDirectory();
+            env.Root = Path.Combine(currentFolder, env.Root);
+            env.PublicRoot = Path.Combine(currentFolder, env.PublicRoot);
+            _environment = env;
+        }
+        public IConfiguration Configuration { get; private set; }
+        private readonly IEnvironment _environment;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -96,52 +109,44 @@ namespace NetDream.Api
             {
                 RegisterGlobeRepositories(db, services);
             }
-            RegisterAuthRepositories(services);
+            RegisterRepositories(services);
             services.AddTransient<ISecurity, Encryptor>();
             services.AddTransient<IJsonResponse, PlatformResponse>();
             services.AddControllers();
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "NetDream.Api", Version = "v1" });
-            });
+            services.AddOpenApi();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(WebApplication app)
         {
-            if (env.IsDevelopment())
+            if (app.Environment.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "NetDream.Api v1"));
+                app.MapOpenApi();
             }
 
-            app.UseRouting();
+            // app.UseRouting();
             app.UseMiddleware<ResponseMiddleware>();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.MapControllers();
         }
 
-        private static void RegisterGlobeRepositories(IDatabase db, IServiceCollection services)
+        private void RegisterGlobeRepositories(IDatabase db, IServiceCollection services)
         {
-            var option = new OptionRepository(db);
-            services.AddSingleton(typeof(IGlobeOption), option.LoadOption());
+            services.AddSingleton(_environment);
+            services.ProvideSEORepositories(db);
+            services.AddHttpContextAccessor();
+            services.AddScoped<IClientContext, ClientContext>();
         }
-        private static void RegisterAuthRepositories(IServiceCollection services)
+        private static void RegisterRepositories(IServiceCollection services)
         {
-            services.AddScoped(typeof(ClientContext), typeof(IClientContext));
-            services.AddScoped(typeof(UserRepository));
-            services.AddScoped(typeof(BlogRepository));
-            services.AddScoped(typeof(GzoRepository));
-            services.AddScoped(typeof(ContactRepository));
-            services.AddScoped(typeof(OpenRepository));
-            // services.AddSingleton(typeof(OptionRepository));
+            services.ProvideAuthRepositories();
+            services.ProvideOpenRepositories();
+            services.ProvideBlogRepositories();
+            services.ProvideGzoRepositories();
+            services.ProvideContactRepositories();
+            services.ProvideOpenRepositories();
+            services.ProvideNoteRepositories();
         }
     }
 }

@@ -1,0 +1,9 @@
+
+GET {{HostAddress}}/open/auth?appid={{Appid}}
+Accept: application/json
+
+
+###
+
+GET {{HostAddress}}/open/contact/friend_link?appid={{Appid}}
+Accept: application/json

@@ -14,12 +14,19 @@ namespace NetDream.Api.Base.Middleware
     {
         public Task InvokeAsync(HttpContext context, OpenRepository repository)
         {
+            var uriPath = context.Request.Path.HasValue ? context.Request.Path.Value : string.Empty;
+#if DEBUG
+            if (uriPath.StartsWith("/openapi/"))
+            {
+                return next.Invoke(context);
+            }
+#endif
             var res = new PlatformResponse();
-            if (!context.Request.Query.ContainsKey("appid"))
+            if (!context.Request.Query.TryGetValue("appid", out var val))
             {
                 return JsonAsync(context, res.RenderFailure("APP ID error"), 404);
             }
-            var appId = context.Request.Query["appid"];
+            var appId = val.ToString();
             if (string.IsNullOrWhiteSpace(appId))
             {
                 return JsonAsync(context, res.RenderFailure("APP ID error"), 404);
@@ -29,14 +36,17 @@ namespace NetDream.Api.Base.Middleware
             {
                 return JsonAsync(context, res.RenderFailure("APP ID error"), 404);
             }
-            if (!model.VerifyRule(context.Request.Path.Value))
+            if (!model.VerifyRule(uriPath))
             {
                 return JsonAsync(context, res.RenderFailure("The URL you requested was disabled"), 404);
             }
+#if !DEBUG
             if (!VerifyRest(model, context))
             {
                 return JsonAsync(context, res.RenderFailure("sign or encrypt error"), 404);
             }
+#endif
+
             res.Platform = model;
             context.Features.Set<IJsonResponse>(res);
             return next.Invoke(context);
