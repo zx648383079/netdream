@@ -12,7 +12,7 @@ namespace NetDream.Modules.Book.Repositories
 {
     public class ChapterRepository(IDatabase db, 
         BookRepository bookStore,
-        IClientEnvironment environment)
+        IClientContext environment)
     {
         public const int TYPE_FREE_CHAPTER = 0;
         public const int TYPE_VIP_CHAPTER = 1;

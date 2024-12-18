@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class HistoryRepository(IDatabase db, IClientEnvironment environment)
+    public class HistoryRepository(IDatabase db, IClientContext environment)
     {
         public bool HasBook(object id)
         {

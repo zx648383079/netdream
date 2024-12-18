@@ -12,7 +12,7 @@ using System;
 namespace NetDream.Modules.Note.Repositories
 {
     public class NoteRepository(IDatabase db, 
-        IClientEnvironment environment, IUserRepository userStore,
+        IClientContext environment, IUserRepository userStore,
         LocalizeRepository localize)
     {
         public const int STATUS_VISIBLE = 1;

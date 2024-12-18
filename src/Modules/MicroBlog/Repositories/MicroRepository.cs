@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.MicroBlog.Repositories
 {
-    public class MicroRepository(IDatabase db, IClientEnvironment environment)
+    public class MicroRepository(IDatabase db, IClientContext environment)
     {
         const string BASE_KEY = "micro";
 

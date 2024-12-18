@@ -11,7 +11,7 @@ using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class BlogRepository(IDatabase db, IClientEnvironment environment)
+    public class BlogRepository(IDatabase db, IClientContext environment)
     {
         public Page<BlogModel> GetPage(int page)
         {

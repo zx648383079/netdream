@@ -14,7 +14,7 @@ namespace NetDream.Shared.Providers
     public class ActionLogProvider(
         IDatabase db, 
         string prefix,
-        IClientEnvironment environment) : IMigrationProvider
+        IClientContext environment) : IMigrationProvider
     {
         private readonly string _tableName = prefix + "_log";
         public void Migration(IMigration migration)

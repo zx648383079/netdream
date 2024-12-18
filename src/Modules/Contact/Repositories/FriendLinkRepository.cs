@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.Contact.Repositories
 {
-    public class FriendLinkRepository(IDatabase db, IClientEnvironment environment)
+    public class FriendLinkRepository(IDatabase db, IClientContext environment)
     {
         public Page<FriendLinkEntity> GetList(string keywords = "", int page = 1)
         {

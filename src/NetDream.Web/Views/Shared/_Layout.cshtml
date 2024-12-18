@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using NetDream.Shared.Interfaces
+@using NetDream.Shared.Interfaces.Entities
+@inject IClientContext client;
+<!DOCTYPE html>
 <html lang="zh-cn">
 <head>
     <meta charset="utf-8">
@@ -27,9 +30,61 @@
                     <li><a asp-area="" asp-controller="Home" asp-action="About">关于</a></li>
                 </ul>
                 <ul class="nav-right">
-                    <li>
-                        <a asp-area="Auth" asp-controller="Home" asp-action="Index">Sign In</a>
-                    </li>
+                    @if (client.TryGetUser(out var o) && o is IUserProfile user)
+                    {
+                        <li>
+                            <a href="javascript:;">
+                                @user.Name
+                                @if (user.BulletinCount > 0)
+                                {
+                                    <i class="new-tip" title="You have new Messages"></i>
+                                }
+                            </a>
+                            <div class="nav-drop-bar">
+                                <ul>
+                                    <li>
+                                        <a asp-area="Auth" asp-controller="Space">账户中心</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Auth" asp-controller="Bulletin">
+                                            @Localizer["Bulletin"]
+                                            @if (user.BulletinCount > 0)
+                                            {
+                                                <span>(@(user.BulletinCount > 99 ? "+99" : user.BulletinCount))</span>
+                                            }
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Auth" asp-controller="Space">个人中心</a>
+                                    </li>
+                                    <li>
+                                        <hr class="nav-drop-divider" />
+                                    </li>
+                                    <li>
+                                        <a asp-area="Auth" asp-controller="Space">帮助</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Auth" asp-controller="Space">设置</a>
+                                    </li>
+                                    <li>
+                                        <a asp-area="Auth" asp-controller="Space">后台管理</a>
+                                    </li>
+                                    <li>
+                                        <hr class="nav-drop-divider" />
+                                    </li>
+                                    <li>
+                                        <a asp-area="Auth" asp-action="Logout">@Localizer["Logout"]</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a asp-area="Auth" asp-controller="Home" asp-action="Index">Sign In</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>

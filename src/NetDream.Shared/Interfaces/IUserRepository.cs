@@ -20,6 +20,14 @@ namespace NetDream.Shared.Interfaces
         /// <returns></returns>
         public IUser? Get(int userId);
         /// <summary>
+        /// web 内部调用
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public IUser? GetProfile(int userId);
+
+
+        /// <summary>
         /// 批量获取简单用户信息
         /// </summary>
         /// <param name="userItems"></param>

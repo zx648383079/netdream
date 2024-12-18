@@ -11,7 +11,7 @@ namespace NetDream.Modules.Chat.Repositories
 {
     public class ApplyRepository(
         IDatabase db,
-        IClientEnvironment environment,
+        IClientContext environment,
         IUserRepository userStore,
         GroupRepository groupStore
         )

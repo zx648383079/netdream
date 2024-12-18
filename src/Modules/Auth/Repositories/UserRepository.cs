@@ -31,6 +31,16 @@ namespace NetDream.Modules.Auth.Repositories
             return db.FindFirst<UserSimpleModel>("id,name,avatar", "id=@0", userId);
         }
 
+        public IUser? GetProfile(int userId)
+        {
+            var model = db.FindFirst<UserProfileModel>("id,name,avatar", "id=@0", userId);
+            if (model is not null)
+            {
+                model.BulletinCount = db.FindCount<BulletinUserEntity>("user_id=@0 and status=0", userId);
+            }
+            return model;
+        }
+
         public IEnumerable<IUser> Get(params int[] userItems)
         {
             var sql = new Sql();

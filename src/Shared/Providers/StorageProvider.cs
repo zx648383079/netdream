@@ -12,7 +12,7 @@ using System.IO;
 namespace NetDream.Shared.Providers
 {
     public class StorageProvider(IDatabase db, 
-        IClientEnvironment client,
+        IClientContext client,
         IEnvironment server) : IMigrationProvider
     {
         public const string FILE_TABLE = "base_file";

@@ -38,12 +38,12 @@ namespace NetDream.Web
             var currentFolder = Directory.GetCurrentDirectory();
             env.Root = Path.Combine(currentFolder, env.Root);
             env.PublicRoot = Path.Combine(currentFolder, env.PublicRoot);
-            environment = env;
+            _environment = env;
         }
 
         public IConfiguration Configuration { get; }
 
-        private readonly IEnvironment environment;
+        private readonly IEnvironment _environment;
         private static readonly string[] _supportedCultures = ["en-US", "zh-CN"];
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -126,16 +126,16 @@ namespace NetDream.Web
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(
-                    Path.Combine(environment.PublicRoot, environment.AssetRoot)),
+                    Path.Combine(_environment.PublicRoot, _environment.AssetRoot)),
                 RequestPath = "/assets"
             });
             app.UseCookiePolicy();
             app.UseSession();
+            app.UseAuthentication();
             app.UseAuthorization();
             app.UseMiddleware<ResponseMiddleware>();
             // 方便获取当前语言
             app.UseRequestLocalization();
-            app.UseAuthorization();
 
             #region Websocket
             //var webSocketOptions = new WebSocketOptions()
@@ -159,10 +159,10 @@ namespace NetDream.Web
 
         private void RegisterGlobeRepositories(IDatabase db, IServiceCollection services)
         {
-            services.AddSingleton(environment);
+            services.AddSingleton(_environment);
             services.ProvideSEORepositories(db);
             services.AddHttpContextAccessor();
-            services.AddScoped<IClientEnvironment, ClientEnvironment>();
+            services.AddScoped<IClientContext, ClientContext>();
         }
         private static void RegisterRepositories(IServiceCollection services)
         {

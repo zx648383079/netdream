@@ -7,7 +7,7 @@ using System;
 
 namespace NetDream.Shared.Providers
 {
-    public class CollectProvider(IDatabase db, string prefix, IClientEnvironment environment) : IMigrationProvider
+    public class CollectProvider(IDatabase db, string prefix, IClientContext environment) : IMigrationProvider
     {
         private readonly string _tableName = prefix + "_collect";
         public void Migration(IMigration migration)

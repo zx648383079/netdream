@@ -10,7 +10,7 @@ using System;
 namespace NetDream.Modules.Contact.Repositories
 {
     public class ReportRepository(IDatabase db, IUserRepository userStore,
-        IClientEnvironment environment): ISystemFeedback
+        IClientContext environment): ISystemFeedback
     {
         public Page<ReportModel> GetList(string keywords = "", 
             int itemType = 0, int itemId = 0, int type = 0, int page = 1)

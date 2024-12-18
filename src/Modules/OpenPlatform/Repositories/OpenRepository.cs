@@ -16,7 +16,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Modules.OpenPlatform.Repositories
 {
-    public class OpenRepository(IDatabase db, IClientEnvironment environment)
+    public class OpenRepository(IDatabase db, IClientContext environment)
     {
         public PlatformModel GetByAppId(string appId)
         {

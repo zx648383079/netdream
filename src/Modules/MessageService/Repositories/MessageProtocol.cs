@@ -14,7 +14,7 @@ using System.Linq;
 namespace NetDream.Modules.MessageService.Repositories
 {
     public class MessageProtocol(IDatabase db, 
-        IClientEnvironment environment,
+        IClientContext environment,
         IGlobeOption option)
     {
         public const string SESSION_KEY = "ms_code";

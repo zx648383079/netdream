@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace NetDream.Modules.Contact.Repositories
 {
     public class ContactRepository(IDatabase db, 
-        IClientEnvironment environment,
+        IClientContext environment,
         ISystemBulletin bulletin)
     {
         public List<FriendLinkEntity> FriendLinks()

@@ -19,7 +19,7 @@ using System.Text.RegularExpressions;
 namespace NetDream.Modules.Chat.Repositories
 {
     public class MessageRepository(IDatabase db, 
-        IClientEnvironment environment,
+        IClientContext environment,
         IUserRepository userStore,
         ILinkRuler ruler,
         ISystemBulletin bulletin,

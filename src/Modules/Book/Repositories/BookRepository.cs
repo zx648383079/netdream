@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class BookRepository(IDatabase db, IClientEnvironment environment)
+    public class BookRepository(IDatabase db, IClientContext environment)
     {
         const string BASE_KEY = "book";
         public const int CHAPTER_TYPE_FREE_CHAPTER = 0;

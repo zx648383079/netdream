@@ -4,6 +4,7 @@ namespace NetDream.Shared.Interfaces
 {
     public interface IOperationResult<T>
     {
+        
         public T? Result { get; }
 
         public bool Succeeded { get; }

@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 namespace NetDream.Modules.Blog.Repositories
 {
     public class PublishRepository(IDatabase db, 
-        IClientEnvironment environment,
+        IClientContext environment,
         LocalizeRepository localize,
         MetaRepository meta)
     {

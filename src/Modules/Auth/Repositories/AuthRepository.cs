@@ -11,7 +11,7 @@ using System;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public partial class AuthRepository(IDatabase db, IGlobeOption option, IClientEnvironment client)
+    public partial class AuthRepository(IDatabase db, IGlobeOption option, IClientContext client)
     {
         const byte ACCOUNT_TYPE_NAME = 1;
         const byte ACCOUNT_TYPE_EMAIL = 2;
@@ -176,7 +176,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 log.ExpiredAt = client.Now - 1;
             }
-            db.Update(log, new string[] {"invite_count", "expired_at"});
+            db.Update(log, new string[] { "invite_count", "expired_at" });
             db.Insert(new InviteLogEntity
             {
                 Code = code,

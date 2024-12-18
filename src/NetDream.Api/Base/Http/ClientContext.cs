@@ -4,17 +4,17 @@ using NetDream.Shared.Helpers;
 using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
 using NetDream.Modules.OpenPlatform.Http;
+using NetDream.Shared.Interfaces.Entities;
+using System.Diagnostics.CodeAnalysis;
 
-namespace NetDream.Web.Base.Http
+namespace NetDream.Api.Base.Http
 {
-    public class ClientEnvironment(IHttpContextAccessor contextAccessor) : IClientEnvironment
+    public class ClientContext(IHttpContextAccessor contextAccessor, IUserRepository userStore) : IClientContext
     {
         private readonly HttpContext? _context = contextAccessor.HttpContext;
-
-        public string Ip 
-        { 
-            get 
-            {
+        private IUser? _currentUser;
+        public string Ip {
+            get {
                 if (_context is null)
                 {
                     return string.Empty;
@@ -31,15 +31,14 @@ namespace NetDream.Web.Base.Http
                 {
                     return _context.Connection?.RemoteIpAddress?.ToString() ?? string.Empty;
                 }
-            } 
+            }
         }
 
         public string Language => _context?.Features.Get<IRequestCultureFeature>()?.RequestCulture.Culture.Name ?? string.Empty;
 
-        public string UserAgent => _context?.Request.Headers.UserAgent.ToString() ??string.Empty;
+        public string UserAgent => _context?.Request.Headers.UserAgent.ToString() ?? string.Empty;
 
-        public int PlatformId 
-        {
+        public int PlatformId {
             get {
                 var res = _context?.Features.Get<IJsonResponse>();
                 if (res is PlatformResponse o)
@@ -50,21 +49,36 @@ namespace NetDream.Web.Base.Http
             }
         }
 
-        public int UserId 
-        { 
-            get 
-            {
+        public int UserId {
+            get {
                 var val = _context?.User.Identity?.Name;
                 if (!string.IsNullOrWhiteSpace(val) && int.TryParse(val, out var userId))
                 {
                     return userId;
                 }
                 return 0;
-            } 
+            }
         }
 
         public string ClientName { get; private set; } = "web";
 
         public int Now { get; private set; } = TimeHelper.TimestampNow();
+
+        public bool TryGetUser([NotNullWhen(true)] out IUser? user)
+        {
+            var userId = UserId;
+            if (userId <= 0)
+            {
+                user = null;
+                return false;
+            }
+            if (_currentUser?.Id == userId)
+            {
+                user = _currentUser;
+                return true;
+            }
+            user = _currentUser = userStore.Get(userId);
+            return user is not null;
+        }
     }
 }

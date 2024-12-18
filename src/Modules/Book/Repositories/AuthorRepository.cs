@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace NetDream.Modules.Book.Repositories
 {
     public class AuthorRepository(IDatabase db, 
-        IClientEnvironment environment,
+        IClientContext environment,
         IUserRepository userStore) : CRUDRepository<AuthorEntity>(db)
     {
         public Page<AuthorEntity> Search(string keywords = "", int page = 1, params int[] ids)

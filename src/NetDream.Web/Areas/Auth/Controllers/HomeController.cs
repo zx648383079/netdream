@@ -24,7 +24,7 @@ namespace NetDream.Web.Areas.Auth.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoginAsync([Bind("email", "password")] EmailSignInForm form, string redirect_uri = "/")
+        public async Task<IActionResult> LoginAsync([FromForm] EmailSignInForm form, string redirect_uri = "/")
         {
             var res = repository.Login(form);
             if (!res.Succeeded)
@@ -38,6 +38,7 @@ namespace NetDream.Web.Areas.Auth.Controllers
             }
             var claims = new List<Claim>(){
                 new(ClaimTypes.Name, user.Id.ToString()),
+                new(ClaimTypes.Role, "user"),
             };
 
             //init the identity instances 
@@ -45,7 +46,7 @@ namespace NetDream.Web.Areas.Auth.Controllers
             // sign in 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, userPrincipal, new AuthenticationProperties
             {
-                ExpiresUtc = DateTime.UtcNow.AddMinutes(20),
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(30),
                 IsPersistent = false,
                 AllowRefresh = false
             });

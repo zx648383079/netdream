@@ -16,7 +16,7 @@ namespace NetDream.Modules.Chat.Repositories
 {
     public class FriendRepository(
         IDatabase db, 
-        IClientEnvironment environment,
+        IClientContext environment,
         IUserRepository userStore)
     {
 

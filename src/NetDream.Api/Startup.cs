@@ -32,7 +32,7 @@ namespace NetDream.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            #region ����
+            #region 跨域
             var hosts = Configuration["AllowedHosts"].Split(',');
             services.AddCors(options =>
                 options.AddPolicy("AllowSameDomain",
@@ -44,53 +44,50 @@ namespace NetDream.Api
             );
             #endregion
 
-            #region Jwt����
-            //�� appsettings.json�е�JwtSettings�����ļ���ȡ��JwtSettings�У����Ǹ������ط��õ�
+            #region Jwt配置
+            //将 appsettings.json中的JwtSettings部分文件读取到JwtSettings中，这是给其他地方用的
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
 
-            //���ڳ�ʼ����ʱ�����Ǿ���Ҫ�ã�����ʹ��Bind�ķ�ʽ��ȡ����
-            //�����ð󶨵�JwtSettingsʵ����
+            //由于初始化的时候我们就需要用，所以使用Bind的方式读取配置
+            //将配置绑定到JwtSettings实例中
             var jwtSettings = new JwtSettings();
             Configuration.Bind("JwtSettings", jwtSettings);
 
-            //����������֤
-            services.AddAuthentication(options =>
-            {
-                //��֤ middleware����
+            //添加身份验证
+            services.AddAuthentication(options => {
+                //认证 middleware配置
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(o =>
-            {
-                //jwt token��������
+            .AddJwtBearer(o => {
+                //jwt token参数设置
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = JwtClaimTypes.Name,
                     RoleClaimType = JwtClaimTypes.Role,
-                    //Token�䷢����
+                    //Token颁发机构
                     ValidIssuer = jwtSettings.Issuer,
-                    //�䷢��˭
+                    //颁发给谁
                     ValidAudience = jwtSettings.Audience,
-                    //����� keyҪ���м���
+                    //这里的 key要进行加密
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
 
-                    /***********************************TokenValidationParameters�Ĳ���Ĭ��ֵ***********************************/
+                    /***********************************TokenValidationParameters的参数默认值***********************************/
                     // RequireSignedTokens = true,
                     // SaveSigninToken = false,
                     // ValidateActor = false,
-                    // ������������������Ϊ false�����Բ���֤Issuer��Audience�����ǲ�������������
+                    // 将下面两个参数设置为 false，可以不验证Issuer和Audience，但是不建议这样做。
                     // ValidateAudience = true,
                     // ValidateIssuer = true, 
                     // ValidateIssuerSigningKey = false,
-                    // �Ƿ�Ҫ��Token��Claims�б������Expires
+                    // 是否要求Token的Claims中必须包含Expires
                     // RequireExpirationTime = true,
-                    // �����ķ�����ʱ��ƫ����
+                    // 允许的服务器时间偏移量
                     // ClockSkew = TimeSpan.FromSeconds(300),
-                    // �Ƿ���֤Token��Ч�ڣ�ʹ�õ�ǰʱ����Token��Claims�е�NotBefore��Expires�Ա�
+                    // 是否验证Token有效期，使用当前时间与Token的Claims中的NotBefore和Expires对比
                     // ValidateLifetime = true
                 };
             });
-
             #endregion
             services.AddScoped<IDatabase>(x => {
                 return new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance);
@@ -138,7 +135,7 @@ namespace NetDream.Api
         }
         private static void RegisterAuthRepositories(IServiceCollection services)
         {
-            services.AddScoped(typeof(ClientEnvironment), typeof(IClientEnvironment));
+            services.AddScoped(typeof(ClientContext), typeof(IClientContext));
             services.AddScoped(typeof(UserRepository));
             services.AddScoped(typeof(BlogRepository));
             services.AddScoped(typeof(GzoRepository));

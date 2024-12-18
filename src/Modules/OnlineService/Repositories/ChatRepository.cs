@@ -20,7 +20,7 @@ namespace NetDream.Modules.OnlineService.Repositories
 {
     public class ChatRepository(IDatabase db, 
         IUserRepository userStore,
-        IClientEnvironment environment,
+        IClientContext environment,
         ILinkRuler ruler)
     {
         public IList<MessageModel> GetList(int sessionId, 

@@ -21,7 +21,7 @@ namespace NetDream.Shared.Providers
     /// <param name="db"></param>
     /// <param name="prefix"></param>
     public class DayLogProvider(IDatabase db, 
-        string prefix, IClientEnvironment environment) : IMigrationProvider
+        string prefix, IClientContext environment) : IMigrationProvider
     {
         private readonly string _logTableName = prefix + "_log";
         private readonly string _dayTableName = prefix + "_log_day";

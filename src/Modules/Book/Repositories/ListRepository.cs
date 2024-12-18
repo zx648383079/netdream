@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace NetDream.Modules.Book.Repositories
 {
     public class ListRepository(IDatabase db, 
-        IClientEnvironment environment,
+        IClientContext environment,
         BookRepository bookStore,
         HistoryRepository historyStore,
         IUserRepository userStore)

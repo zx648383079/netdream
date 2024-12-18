@@ -13,7 +13,7 @@ using System.Linq;
 namespace NetDream.Modules.Chat.Repositories
 {
     public class GroupRepository(IDatabase db, 
-        IClientEnvironment environment,
+        IClientContext environment,
         IUserRepository userStore)
     {
         public List<GroupEntity> All()

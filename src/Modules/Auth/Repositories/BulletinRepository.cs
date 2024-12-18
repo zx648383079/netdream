@@ -13,7 +13,7 @@ namespace NetDream.Modules.Auth.Repositories
 {
     public class BulletinRepository(IDatabase db, 
         ILinkRuler ruler,
-        IClientEnvironment environment) : ISystemBulletin
+        IClientContext environment) : ISystemBulletin
     {
         public const byte TYPE_AT = 7;
         public const byte TYPE_COMMENT = 8;

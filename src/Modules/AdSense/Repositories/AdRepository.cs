@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.AdSense.Repositories
 {
-    public class AdRepository(IDatabase db, IClientEnvironment environment)
+    public class AdRepository(IDatabase db, IClientContext environment)
     {
         public const int TYPE_TEXT = 0;
         public const int TYPE_IMAGE = 1;

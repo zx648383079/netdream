@@ -11,7 +11,7 @@ using System.Text.Json;
 namespace NetDream.Shared.Providers
 {
     public class SketchBoxProvider(IDatabase db,
-        IClientEnvironment environment,
+        IClientContext environment,
         byte itemType, int maxUndoCount = 1) : IMigrationProvider
     {
         public const string SKETCH_TABLE = "base_sketch_box";

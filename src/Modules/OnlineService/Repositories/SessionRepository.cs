@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace NetDream.Modules.OnlineService.Repositories
 {
     public class SessionRepository(IDatabase db, 
-        IClientEnvironment environment,
+        IClientContext environment,
         IUserRepository userStore)
     {
         public Page<SessionModel> GetList(string keywords = "", int status = 0, int page = 1)

@@ -9,17 +9,21 @@ using System;
 
 namespace NetDream.Modules.Auth.Forms
 {
-    public class EmailSignInForm: ISignInForm
+    public class EmailSignUpForm: ISignUpForm
     {
+        public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
 
         public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+        public string InviteCode { get; set; } = string.Empty;
+        public string Agree { get; set; } = string.Empty;
 
         public string Account => Email;
 
         public IOperationResult<IUser> Verify(IDatabase db)
         {
-            if (!Validator.IsEmail(Email) || string.IsNullOrWhiteSpace(Password)) 
+            if (Validator.IsEmail(Email) || string.IsNullOrWhiteSpace(Password)) 
             {
                 return OperationResult<IUser>.Fail(FailureReasons.ValidateError, new ArgumentNullException("email or password is empty"));
             }

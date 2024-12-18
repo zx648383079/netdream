@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace NetDream.Shared.Repositories
 {
-    public class LocalizeRepository(IClientEnvironment environment)
+    public class LocalizeRepository(IClientContext environment)
     {
         public const string LANGUAGE_COLUMN_KEY = "language";
         const string BROWSER_DEFAULT_LANGUAGE = "en";

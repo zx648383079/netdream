@@ -11,7 +11,7 @@ using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 namespace NetDream.Web.Areas.Note.Controllers
 {
     [Area("Note")]
-    public class HomeController(NoteRepository repository, IClientEnvironment environment) : JsonController
+    public class HomeController(NoteRepository repository, IClientContext environment) : JsonController
     {
         public IActionResult Index(string keywords = "", int id = 0, int user = 0, long page = 1)
         {

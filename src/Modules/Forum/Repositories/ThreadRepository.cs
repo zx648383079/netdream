@@ -17,7 +17,7 @@ namespace NetDream.Modules.Forum.Repositories
 {
     public class ThreadRepository(IDatabase db, 
         IUserRepository userStore,
-        IClientEnvironment environment)
+        IClientContext environment)
     {
         public Page<ThreadModel> ManageList(string keywords = "", 
             int forum_id = 0, int page = 1)

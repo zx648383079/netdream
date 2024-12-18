@@ -20,7 +20,7 @@ using System.Xml.Linq;
 namespace NetDream.Modules.MessageService.Repositories
 {
     public partial class MessageRepository(IDatabase db, 
-        IGlobeOption option, IClientEnvironment environment,
+        IGlobeOption option, IClientContext environment,
         MessageProtocol protocol)
     {
         protected bool IsSystemTemplate(string name)

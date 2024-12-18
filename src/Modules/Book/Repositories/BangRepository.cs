@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class BangRepository(IDatabase db, IClientEnvironment environment)
+    public class BangRepository(IDatabase db, IClientContext environment)
     {
         public List<BookModel> Recommend(int limit = 4)
         {

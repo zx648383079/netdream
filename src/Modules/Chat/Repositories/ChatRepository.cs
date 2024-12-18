@@ -18,7 +18,7 @@ namespace NetDream.Modules.Chat.Repositories
     public class ChatRepository(
         IDatabase db, 
         IUserRepository userStore,
-        IClientEnvironment environment)
+        IClientContext environment)
     {
         public Page<HistoryModel> Histories(int page)
         {

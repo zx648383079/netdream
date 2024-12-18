@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace NetDream.Shared.Providers
 {
     public class ScoreProvider(IDatabase db, 
-        string prefix, IClientEnvironment environment) : IMigrationProvider
+        string prefix, IClientContext environment) : IMigrationProvider
     {
         private readonly string _tableName = prefix + "_score";
         public void Migration(IMigration migration)

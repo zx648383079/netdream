@@ -24,7 +24,7 @@ namespace NetDream.Modules.Blog.Repositories
 {
     public class CommentRepository(IDatabase db, 
         IUserRepository userStore,
-        IClientEnvironment environment,
+        IClientContext environment,
         IGlobeOption option,
         ILinkRuler ruler,
         ISystemBulletin bulletin,

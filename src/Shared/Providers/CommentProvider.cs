@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace NetDream.Shared.Providers
 {
-    public class CommentProvider(IDatabase db, string prefix, IClientEnvironment environment) : IMigrationProvider
+    public class CommentProvider(IDatabase db, string prefix, IClientContext environment) : IMigrationProvider
     {
         public const byte LOG_TYPE_COMMENT = 6;
         public const byte LOG_ACTION_AGREE = 1;
