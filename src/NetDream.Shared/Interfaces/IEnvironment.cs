@@ -8,6 +8,10 @@
         public string AssetRoot { get; }
         public string OnlineDiskRoot { get; }
         public string Deeplink { get; }
+        /// <summary>
+        /// 配置 cors 跨域的域名
+        /// </summary>
+        public string AllowedHosts { get; }
 
     }
 }

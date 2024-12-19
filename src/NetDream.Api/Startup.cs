@@ -24,6 +24,9 @@ using NPoco;
 using System.Text;
 using NetDream.Shared.Models;
 using System.IO;
+using Microsoft.Net.Http.Headers;
+using System.Text.Json;
+using NetDream.Shared.Converters;
 
 namespace NetDream.Api
 {
@@ -46,29 +49,40 @@ namespace NetDream.Api
         public void ConfigureServices(IServiceCollection services)
         {
             #region 跨域
-            var hosts = Configuration["AllowedHosts"].Split(',');
+            var hosts = _environment.AllowedHosts.Split(',');
             services.AddCors(options =>
-                options.AddPolicy("AllowSameDomain",
-                builder => builder.WithOrigins(hosts)
-                    .AllowAnyMethod()
+                options.AddDefaultPolicy(
+                    builder =>
+#if DEBUG
+                    builder.AllowAnyOrigin()
                     .AllowAnyHeader()
-                    .AllowAnyOrigin()
-                    .AllowCredentials())
+
+#else
+                    builder.WithOrigins(hosts)
+                    .AllowCredentials()
+                    .WithHeaders(HeaderNames.Authorization, HeaderNames.ContentType)
+                    
+#endif
+                    .WithExposedHeaders(HeaderNames.ContentDisposition)
+                    .AllowAnyMethod()
+                )
             );
             #endregion
 
+
             #region Jwt配置
+            var jwtConfigure = Configuration.GetSection("JwtSettings");
             //将 appsettings.json中的JwtSettings部分文件读取到JwtSettings中，这是给其他地方用的
-            services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
+            services.Configure<JwtSettings>(jwtConfigure);
 
             //由于初始化的时候我们就需要用，所以使用Bind的方式读取配置
             //将配置绑定到JwtSettings实例中
-            var jwtSettings = new JwtSettings();
-            Configuration.Bind("JwtSettings", jwtSettings);
+            var jwtSettings = jwtConfigure.Get<JwtSettings>() ?? new JwtSettings();
 
             //添加身份验证
             services.AddAuthentication(options => {
                 //认证 middleware配置
+                options.RequireAuthenticatedSignIn = false;
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
@@ -102,17 +116,24 @@ namespace NetDream.Api
                 };
             });
             #endregion
+
+            #region db
+            var dbConnectString = Configuration.GetConnectionString("Default") ?? string.Empty;
             services.AddScoped<IDatabase>(x => {
-                return new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance);
+                return new Database(dbConnectString, DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance);
             });
-            using (var db = new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance))
+            using (var db = new Database(dbConnectString, DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance))
             {
                 RegisterGlobeRepositories(db, services);
             }
             RegisterRepositories(services);
+            #endregion
             services.AddTransient<ISecurity, Encryptor>();
             services.AddTransient<IJsonResponse, PlatformResponse>();
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(options => {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+                options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
+            });
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
             services.AddOpenApi();
@@ -125,8 +146,10 @@ namespace NetDream.Api
             {
                 app.MapOpenApi();
             }
-
-            // app.UseRouting();
+            //app.UseAuthentication();
+            //app.UseAuthorization();
+            app.UseCors();
+            app.UseRouting();
             app.UseMiddleware<ResponseMiddleware>();
             app.MapControllers();
         }
