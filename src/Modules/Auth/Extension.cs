@@ -8,8 +8,9 @@ namespace NetDream.Modules.Auth
     {
         public static void ProvideAuthRepositories(this IServiceCollection service)
         {
-            service.AddScoped<IUserRepository, UserRepository>();
+            service.AddScoped<IUserRepository, SystemUserRepository>();
             service.AddScoped<AuthRepository>();
+            service.AddScoped<UserRepository>();
             service.AddScoped<ISystemBulletin, BulletinRepository>();
             service.AddScoped<CaptchaRepository>();
         }

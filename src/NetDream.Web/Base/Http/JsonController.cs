@@ -19,15 +19,15 @@ namespace NetDream.Web.Base.Http
                 return HttpContext.Features.Get<IJsonResponse>() ?? new JsonResponse();
             }
         }
-
+        [NonAction]
         public JsonResult Render(object data) => Json(JsonResponse.Render(data));
-
+        [NonAction]
         public JsonResult RenderData<T>(T data) => Json(JsonResponse.RenderData(data));
-
+        [NonAction]
         public JsonResult RenderData<T>(T data, string message) => Json(JsonResponse.RenderData(data, message));
-
+        [NonAction]
         public JsonResult RenderPage<T>(Page<T> page) => Json(JsonResponse.RenderPage(page));
-
+        [NonAction]
         public JsonResult RenderFailure(IEnumerable<KeyValuePair<string, ModelStateEntry?>> message)
         {
             var data = new Dictionary<string, IEnumerable<string>>();
@@ -41,9 +41,9 @@ namespace NetDream.Web.Base.Http
             }
             return Json(JsonResponse.RenderFailure(data));
         }
-
+        [NonAction]
         public JsonResult RenderFailure(string message, int code) => Json(JsonResponse.RenderFailure(message, code));
-
+        [NonAction]
         public JsonResult RenderFailure(string message) => Json(JsonResponse.RenderFailure(message));
     }
 }

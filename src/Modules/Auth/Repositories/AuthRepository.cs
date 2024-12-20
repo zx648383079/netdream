@@ -13,19 +13,19 @@ namespace NetDream.Modules.Auth.Repositories
 {
     public partial class AuthRepository(IDatabase db, IGlobeOption option, IClientContext client)
     {
-        const byte ACCOUNT_TYPE_NAME = 1;
-        const byte ACCOUNT_TYPE_EMAIL = 2;
-        const byte ACCOUNT_TYPE_MOBILE = 3;
-        const byte ACCOUNT_TYPE_OAUTH_QQ = 11;
-        const byte ACCOUNT_TYPE_OAUTH_WX = 12;
-        const byte ACCOUNT_TYPE_OAUTH_WX_MINI = 13;
-        const byte ACCOUNT_TYPE_OAUTH_WEIBO = 14;
-        const byte ACCOUNT_TYPE_OAUTH_TAOBAO = 15;
-        const byte ACCOUNT_TYPE_OAUTH_ALIPAY = 16;
-        const byte ACCOUNT_TYPE_OAUTH_GITHUB = 21;
-        const byte ACCOUNT_TYPE_OAUTH_GOOGLE = 21;
-        const byte ACCOUNT_TYPE_ID_CARD = 98;
-        const byte ACCOUNT_TYPE_IP = 99;
+        internal const byte ACCOUNT_TYPE_NAME = 1;
+        internal const byte ACCOUNT_TYPE_EMAIL = 2;
+        internal const byte ACCOUNT_TYPE_MOBILE = 3;
+        internal const byte ACCOUNT_TYPE_OAUTH_QQ = 11;
+        internal const byte ACCOUNT_TYPE_OAUTH_WX = 12;
+        internal const byte ACCOUNT_TYPE_OAUTH_WX_MINI = 13;
+        internal const byte ACCOUNT_TYPE_OAUTH_WEIBO = 14;
+        internal const byte ACCOUNT_TYPE_OAUTH_TAOBAO = 15;
+        internal const byte ACCOUNT_TYPE_OAUTH_ALIPAY = 16;
+        internal const byte ACCOUNT_TYPE_OAUTH_GITHUB = 21;
+        internal const byte ACCOUNT_TYPE_OAUTH_GOOGLE = 21;
+        internal const byte ACCOUNT_TYPE_ID_CARD = 98;
+        internal const byte ACCOUNT_TYPE_IP = 99;
 
         public const string OAUTH_TYPE_QQ = "qq";
         public const string OAUTH_TYPE_WX = "wx";
@@ -34,6 +34,8 @@ namespace NetDream.Modules.Auth.Repositories
         public const string OAUTH_TYPE_TAOBAO = "taobao";
         public const string OAUTH_TYPE_ALIPAY = "alipay";
         public const string OAUTH_TYPE_WEBAUTHN = "web_authn";
+        public const string OAUTH_TYPE_GITHUB = "github";
+        public const string OAUTH_TYPE_GOOGLE = "google";
         public const string OAUTH_TYPE_2FA = "2fa";
 
         public const string LOGIN_MODE_WEB = "web";

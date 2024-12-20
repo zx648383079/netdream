@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using NetDream.Modules.SEO.Entities;
+﻿using NetDream.Modules.SEO.Entities;
 using NetDream.Modules.SEO.Forms;
 using NetDream.Modules.SEO.Models;
 using NetDream.Shared.Extensions;
@@ -7,8 +6,6 @@ using NPoco;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Modules.SEO.Repositories
 {

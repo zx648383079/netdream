@@ -107,7 +107,7 @@ namespace NetDream.Shared.Repositories
         }
 
         /// <summary>
-        /// 根据主id删除meta
+        /// 根据主id删除 meta
         /// </summary>
         /// <param name="id"></param>
         public void DeleteBatch(int id)

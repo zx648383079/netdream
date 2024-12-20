@@ -108,6 +108,7 @@ namespace NetDream.Web
             services.AddSingleton(Configuration);
             services.AddMemoryCache();
             services.AddLogging();
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Startup>());
             //services.AddWebSocketManager();
         }
 

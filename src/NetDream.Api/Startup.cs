@@ -136,6 +136,7 @@ namespace NetDream.Api
             });
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Startup>());
             services.AddOpenApi();
         }
 
