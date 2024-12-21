@@ -1,5 +1,4 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
-using NPoco;
 using System.Collections.Generic;
 
 namespace NetDream.Shared.Interfaces
@@ -47,7 +46,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="items">已知的用户</param>
         /// <param name="itemsIsExclude">是排除已知用户还是仅限已知用户</param>
         /// <returns></returns>
-        public Page<IUser> Search(string keywords, int page, int[]? items = null, bool itemsIsExclude = true);
+        public IPage<IUser> Search(string keywords, int page, int[]? items = null, bool itemsIsExclude = true);
 
         /// <summary>
         /// 搜索获取用户的id

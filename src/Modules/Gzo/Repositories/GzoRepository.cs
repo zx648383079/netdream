@@ -1,27 +1,19 @@
 ﻿using NetDream.Shared.Helpers;
-using NetDream.Shared.Migrations;
 using NetDream.Modules.Gzo.Entities;
-using NPoco;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System;
+using System.Data.Common;
 
 namespace NetDream.Modules.Gzo.Repositories
 {
-    public partial class GzoRepository
+    public partial class GzoRepository(DbConnection db)
     {
         [GeneratedRegex("Database=([\\w_]+?);")]
         private static partial Regex SchemaRegex();
-
-        private readonly IDatabase _db;
-
-        public GzoRepository(IDatabase db)
-        {
-            _db = db;
-        }
 
         private string _schema = "zodream";
 
@@ -48,19 +40,35 @@ namespace NetDream.Modules.Gzo.Repositories
 
         public string[] AllTableNames()
         {
-            var data = _db.Fetch<TableEntity>("select TABLE_NAME as name from INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=@0", Schema);
-            var tables = new string[data.Count];
-            var i = 0;
-            foreach (var item in data)
+            using var command = db.CreateCommand();
+            command.CommandText = "select TABLE_NAME as name from INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=@0";
+            command.Parameters.Add(Schema);
+            using var reader = command.ExecuteReader();
+            var data = new List<string>();
+            while (reader.Read())
             {
-                tables[i++] = item.Name;
+                data.Add(reader.GetString(0));
             }
-            return tables;
+            return [..data];
         }
 
         public List<ColumnEntity> GetColumns(string table)
         {
-            return _db.Fetch<ColumnEntity>("select COLUMN_NAME as name, DATA_TYPE as type from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=@1 AND TABLE_NAME=@0 order by ORDINAL_POSITION asc", table, Schema);
+            using var command = db.CreateCommand();
+            command.CommandText = "select COLUMN_NAME as name, DATA_TYPE as type from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=@1 AND TABLE_NAME=@0 order by ORDINAL_POSITION asc";
+            command.Parameters.Add(table);
+            command.Parameters.Add(Schema);
+            using var reader = command.ExecuteReader();
+            var data = new List<ColumnEntity>();
+            while (reader.Read())
+            {
+                data.Add(new()
+                {
+                    Name = reader.GetString(0),
+                    Type = reader.GetString(1)
+                });
+            }
+            return data;
         }
 
         public string Generate(string table)
@@ -71,16 +79,10 @@ namespace NetDream.Modules.Gzo.Repositories
         public static string Generate(string table, List<ColumnEntity> columns)
         {
             var str = new StringBuilder();
-            str.Append("[TableName(ND_TABLE_NAME)]\n");
             str.Append($"public class {FormatTableName(table)}Entity{FormatImplement(columns)}\n");
             str.Append("{\n");
-            str.Append($"    internal const string ND_TABLE_NAME = \"{table}\";\n");
             foreach (var item in columns)
             {
-                if (item.Name.IndexOf('_') > 0)
-                {
-                    str.Append($"    [Column(\"{item.Name}\")]\n");
-                }
                 str.AppendLine($"    public {FormatType(item)} {StrHelper.Studly(item.Name)} {{ get; set; }}{FormatDefaultValue(item)}\n");
             }
             str.Append('}');
@@ -98,11 +100,11 @@ namespace NetDream.Modules.Gzo.Repositories
                 {
                     hasId = true;
                 } 
-                else if (item.Name.Equals(MigrationTable.COLUMN_CREATED_AT, StringComparison.OrdinalIgnoreCase))
+                else if (item.Name.Equals("created_at", StringComparison.OrdinalIgnoreCase))
                 {
                     hasCreated = true;
                 }
-                else if (item.Name.Equals(MigrationTable.COLUMN_UPDATED_AT, StringComparison.OrdinalIgnoreCase))
+                else if (item.Name.Equals("updated_at", StringComparison.OrdinalIgnoreCase))
                 {
                     hasUpdated = true;
                 }
@@ -134,19 +136,12 @@ namespace NetDream.Modules.Gzo.Repositories
             }
             var moduleName = index >= 0 ? StrHelper.Studly(table[..index]) : name;
             var str = new StringBuilder();
-            str.AppendLine("using NPoco;");
             str.AppendLine($"namespace {FormatNamespace(folder, moduleName)}");
             str.AppendLine("{");
-            str.AppendLine("    [TableName(ND_TABLE_NAME)]");
             str.AppendLine($"    public class {name}Entity");
             str.AppendLine("    {");
-            str.AppendLine($"        internal const string ND_TABLE_NAME = \"{table}\";");
             foreach (var item in columns)
             {
-                if (item.Name.IndexOf('_') > 0)
-                {
-                    str.AppendLine($"        [Column(\"{item.Name}\")]");
-                }
                 str.AppendLine($"        public {FormatType(item)} {StrHelper.Studly(item.Name)} {{ get; set; }}{FormatDefaultValue(item)}");
             }
             str.AppendLine("    }");
@@ -205,7 +200,6 @@ namespace NetDream.Modules.Gzo.Repositories
 
         public void BatchGenerateModel(string prefix, string folder)
         {
-            
             if (string.IsNullOrWhiteSpace(prefix))
             {
                 BatchGenerateModel(folder);

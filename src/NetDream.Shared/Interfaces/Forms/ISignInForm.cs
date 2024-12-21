@@ -1,5 +1,4 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
-using NPoco;
 
 namespace NetDream.Shared.Interfaces.Forms
 {
@@ -7,6 +6,5 @@ namespace NetDream.Shared.Interfaces.Forms
     {
 
         public string Account { get; }
-        public IOperationResult<IUser> Verify(IDatabase db);
     }
 }

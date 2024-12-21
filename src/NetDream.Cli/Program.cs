@@ -1,9 +1,10 @@
-﻿using NetDream.Cli.Models;
+﻿using MySqlConnector;
+using NetDream.Cli.Models;
 using NetDream.Modules.Gzo.Repositories;
-using NPoco;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 
 namespace NetDream.Cli
@@ -20,44 +21,26 @@ namespace NetDream.Cli
             // Console.WriteLine("-g Generate Database Entities");
             Console.WriteLine("Please select mode:");
             Console.WriteLine("1. Generate Database Entities");
+            Console.WriteLine("2. Update Database Entities");
             Console.Write("input number:");
             var index = ReadInt();
-            if (index != 1)
+            
+            if (index == 1)
+            {
+                GenerateEntities();
+                return;
+            } 
+            else if (index == 2)
+            {
+                UpgradeEntities();
+                return;
+            }
+            else
             {
                 Console.WriteLine("Input error");
                 Console.ReadKey();
                 return;
             }
-            label:
-            Console.WriteLine("Please select save folder:");
-            var i = 0;
-            var items = LoadModuleFolder();
-            foreach (var item in items)
-            {
-                Console.WriteLine(string.Format("{0}. {1}/Entities", ++ i, Path.GetFileName(item)));
-            }
-            Console.Write("input number or folder:");
-            var workspace = Console.ReadLine();
-            if (int.TryParse(workspace, out index) && index > 0 && index <= items.Count)
-            {
-                workspace = Path.Combine(items[index - 1], "Entities");
-            }
-            if (string.IsNullOrWhiteSpace(workspace))
-            {
-                Console.WriteLine("Input error");
-                Console.ReadKey();
-                return;
-            }
-            Console.Write("Please input table prefix:");
-            var prefix = Console.ReadLine();
-            GenerateEntity(prefix is null ? string.Empty : prefix, workspace);
-            Console.WriteLine("Generate finished!");
-            Console.Write("Continue Generate other: Y/N");
-            if (Console.ReadKey().Key == ConsoleKey.Y)
-            {
-                goto label;
-            }
-
         }
 
         static int ReadInt()
@@ -80,10 +63,50 @@ namespace NetDream.Cli
             }
         }
 
+        static void UpgradeEntities()
+        {
+            new CodeRepository().UpgradeEntity(ModuleRootFolder);
+            Console.WriteLine("Upgrade Model Finished");
+        }
+
+        static void GenerateEntities()
+        {
+        label:
+            var index = 0;
+            Console.WriteLine("Please select save folder:");
+            var i = 0;
+            var items = LoadModuleFolder();
+            foreach (var item in items)
+            {
+                Console.WriteLine(string.Format("{0}. {1}/Entities", ++i, Path.GetFileName(item)));
+            }
+            Console.Write("input number or folder:");
+            var workspace = Console.ReadLine();
+            if (int.TryParse(workspace, out index) && index > 0 && index <= items.Count)
+            {
+                workspace = Path.Combine(items[index - 1], "Entities");
+            }
+            if (string.IsNullOrWhiteSpace(workspace))
+            {
+                Console.WriteLine("Input error");
+                Console.ReadKey();
+                return;
+            }
+            Console.Write("Please input table prefix:");
+            var prefix = Console.ReadLine();
+            GenerateEntity(prefix is null ? string.Empty : prefix, workspace);
+            Console.WriteLine("Generate finished!");
+            Console.Write("Continue Generate other: Y/N");
+            if (Console.ReadKey().Key == ConsoleKey.Y)
+            {
+                goto label;
+            }
+        }
+
         static IList<string> LoadModuleFolder()
         {
             return Directory.GetDirectories(
-                Path.Combine(ProjectRootFolder, "Modules")
+                ModuleRootFolder
             );
         }
 
@@ -100,8 +123,8 @@ namespace NetDream.Cli
                 return;
             }
             string connectString = config.ConnectionStrings.Default;
-            using var db = new Database(connectString, DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance);
-
+            using var db = new MySqlConnection(connectString);
+            db.Open();
             //Console.WriteLine("bin folder: " + binFolder);
             Console.WriteLine("workspace: " + workspace);
             //Console.WriteLine("config: " + configFile);

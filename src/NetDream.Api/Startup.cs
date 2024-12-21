@@ -20,13 +20,17 @@ using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.SEO;
 using NetDream.Modules.Note;
 using NetDream.Modules.OpenPlatform.Http;
-using NPoco;
 using System.Text;
 using NetDream.Shared.Models;
 using System.IO;
 using Microsoft.Net.Http.Headers;
 using System.Text.Json;
 using NetDream.Shared.Converters;
+using Microsoft.EntityFrameworkCore;
+using System;
+using Microsoft.Extensions.Logging;
+using MySqlConnector;
+using System.Data.Common;
 
 namespace NetDream.Api
 {
@@ -118,15 +122,7 @@ namespace NetDream.Api
             #endregion
 
             #region db
-            var dbConnectString = Configuration.GetConnectionString("Default") ?? string.Empty;
-            services.AddScoped<IDatabase>(x => {
-                return new Database(dbConnectString, DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance);
-            });
-            using (var db = new Database(dbConnectString, DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance))
-            {
-                RegisterGlobeRepositories(db, services);
-            }
-            RegisterRepositories(services);
+            RegisterDbContext(services);
             #endregion
             services.AddTransient<ISecurity, Encryptor>();
             services.AddTransient<IJsonResponse, PlatformResponse>();
@@ -155,10 +151,35 @@ namespace NetDream.Api
             app.MapControllers();
         }
 
-        private void RegisterGlobeRepositories(IDatabase db, IServiceCollection services)
+        private void RegisterDbContext(IServiceCollection services)
+        {
+            var connectString = Configuration.GetConnectionString("Default") ?? string.Empty;
+#if DEBUG
+            services.AddTransient<DbConnection>(_ => {
+                var db = new MySqlConnection(connectString);
+                db.Open();
+                return db;
+            });
+#endif
+            var serverVersion = ServerVersion.AutoDetect(connectString); //new MySqlServerVersion(new Version(8, 0, 29));
+            services.AddDbContext<AuthContext>(
+                options => options.UseMySql(connectString, serverVersion)
+#if DEBUG
+                .LogTo(Console.WriteLine, LogLevel.Information)
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors()
+#endif
+            );
+            var contextOptions = new DbContextOptionsBuilder<SEOContext>().UseMySql(connectString, serverVersion)
+                .Options;
+            RegisterGlobeRepositories(services, contextOptions);
+            RegisterRepositories(services);
+        }
+
+        private void RegisterGlobeRepositories(IServiceCollection services, DbContextOptions<SEOContext> options)
         {
             services.AddSingleton(_environment);
-            services.ProvideSEORepositories(db);
+            services.ProvideSEORepositories(options);
             services.AddHttpContextAccessor();
             services.AddScoped<IClientContext, ClientContext>();
         }

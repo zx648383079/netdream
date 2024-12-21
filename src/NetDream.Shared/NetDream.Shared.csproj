@@ -6,8 +6,4 @@
 	  <LangVersion>12</LangVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NPoco" Version="5.7.1" />
-  </ItemGroup>
-
 </Project>

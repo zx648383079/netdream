@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -22,6 +20,27 @@ namespace NetDream.Shared.Helpers
                 }
                 res.Append(item[..1].ToUpper());
                 res.Append(item[1..].ToLower());
+            }
+            return res.ToString();
+        }
+
+        public static string UnStudly(string val)
+        {
+            var res = new StringBuilder();
+            for (int i = 0; i < val.Length; i++)
+            {
+                var code = val[i];
+                if (code < 65 || code > 90)
+                {
+                    res.Append(code);
+                    continue;
+                }
+                if (i > 0)
+                {
+                    res.Append('_');
+                }
+                res.Append((char)(code + 32));
+
             }
             return res.ToString();
         }

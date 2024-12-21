@@ -1,26 +1,21 @@
-﻿using NetDream.Modules.SEO.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.SEO.Entities;
 using NetDream.Modules.SEO.Forms;
 using NetDream.Modules.SEO.Models;
-using NetDream.Shared.Extensions;
-using NPoco;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.SEO.Repositories
 {
-    public class OptionRepository(IDatabase db)
+    public class OptionRepository(SEOContext db)
     {
         public GlobeOption LoadOption()
         {
             var data = new GlobeOption();
-            var items = db.Fetch<OptionEntity>();
+            var items = db.Options.Where(item => string.IsNullOrWhiteSpace(item.Code));
             foreach (var item in items)
             {
-                if (string.IsNullOrWhiteSpace(item.Code))
-                {
-                    continue;
-                }
                 var val = FormatOptionValue(item);
                 if (val is null)
                 {
@@ -44,7 +39,8 @@ namespace NetDream.Modules.SEO.Repositories
         public IList<OptionTreeModel> GetEditList()
         {
             /** @var OptionModel[]  items */
-            var items = db.Fetch<OptionEntity>("WHERE visibility>0 ORDER BY parent_id ASC,position DESC");
+            var items = db.Options.Where(item => item.Visibility > 0)
+                .OrderBy(item => item.ParentId).OrderByDescending(item => item.Position).ToArray();
             var res = items.Where(item => item.ParentId == 0).Select(i => new OptionTreeModel(i)).ToArray();
             foreach (var item in items)
             {
@@ -66,7 +62,8 @@ namespace NetDream.Modules.SEO.Repositories
         public IDictionary<string, object> GetOpenList()
         {
             var data = new Dictionary<string, object?>();
-            var items = db.Fetch<OptionEntity>("WHERE visibility>1 ORDER BY position DESC");
+            var items = db.Options.Where(item => item.Visibility > 1)
+                .OrderByDescending(item => item.Position).ToArray();
             foreach (var item in items)
             {
                 data.TryAdd(item.Code, FormatOptionValue(item));
@@ -80,7 +77,7 @@ namespace NetDream.Modules.SEO.Repositories
             {
                 throw new Exception("名称不能为空");
             }
-            if (db.FindCount<OptionEntity>("name=@0", data.Name) > 0)
+            if (db.Options.Where(item => item.Name == data.Name).Any())
             {
                 throw new Exception("名称已存在");
             }
@@ -98,7 +95,7 @@ namespace NetDream.Modules.SEO.Repositories
                 {
                     throw new Exception("别名不能为空");
                 }
-                if (db.FindCount<OptionEntity>("code=@0", data.Code) > 0)
+                if (db.Options.Where(item => item.Code == data.Code).Any())
                 {
                     throw new Exception("别名已存在");
                 }
@@ -113,7 +110,8 @@ namespace NetDream.Modules.SEO.Repositories
                     ParentId = data.ParentId,
                 };
             }
-            entity.Id = (int)db.Insert(entity);
+            db.Options.Add(entity);
+            db.SaveChanges();
             return entity;
         }
 
@@ -125,18 +123,20 @@ namespace NetDream.Modules.SEO.Repositories
             }
             foreach (var item in data)
             {
-                db.Update<OptionEntity>("SET value=@0 WHERE id=@1", item.Value, item.Key);
+                var entity = db.Options.Single(i => i.Id == item.Key);
+                entity.Value = item.Value;
             }
+            db.SaveChanges();
         }
 
         public OptionEntity Update(int id, OptionForm data)
         {
-            var model = db.SingleById<OptionEntity>(id);
-            if (model.Type == "group" && data.Type != model.Type)
+            var model = db.Options.Find(id);
+            if (model is null || (model.Type == "group" && data.Type != model.Type))
             {
                 throw new Exception("分组不能改成项");
             }
-            if (db.FindCount<OptionEntity>("name=@0 AND id<>@1", data.Name, id) > 0)
+            if (db.Options.Where(i => i.Name == data.Name && i.Id != id).Any())
             {
                 throw new Exception("名称重复");
             }
@@ -149,7 +149,7 @@ namespace NetDream.Modules.SEO.Repositories
                 {
                     throw new Exception("别名不能为空");
                 }
-                if (db.FindCount<OptionEntity>("code=@0 AND id<>@1", data.Code, id) > 0)
+                if (db.Options.Where(i => i.Code == data.Code && i.Id != id).Any())
                 {
                     throw new Exception("别名已存在");
                 }
@@ -161,14 +161,13 @@ namespace NetDream.Modules.SEO.Repositories
                 model.Visibility = data.Visibility;
                 model.ParentId = data.ParentId;
             }
-            db.Save(model);
+            db.SaveChanges();
             return model;
         }
 
         public void Remove(int id)
         {
-            db.Delete<OptionEntity>(id);
-            db.Delete<OptionEntity>("WHERE parent_id=@0", id);
+            db.Options.Where(i => i.Id == id || i.ParentId == id).ExecuteDelete();
         }
     }
 }

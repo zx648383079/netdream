@@ -3,6 +3,10 @@ using NetDream.Modules.Gzo.Writers;
 using System;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.IO;
+using System.Text;
+using System.Collections.Generic;
+using System.Reflection.Metadata;
 
 namespace NetDream.Modules.Gzo.Repositories
 {
@@ -135,6 +139,86 @@ namespace NetDream.Modules.Gzo.Repositories
                 return content;
             }
             return StrHelper.Studly(content);
+        }
+
+        public void UpgradeEntity(string projectRootFolder)
+        {
+            foreach (var item in Directory.GetDirectories(projectRootFolder))
+            {
+                if (Path.GetFileName(item) == "Gzo")
+                {
+                    continue;
+                }
+                UpgradeModuleEntity(item);
+            }
+        }
+
+        private void UpgradeModuleEntity(string moduleFolder)
+        {
+            var encoding = new UTF8Encoding(false);
+            var moduleName = Path.GetFileName(moduleFolder);
+            var tableRegex = new Regex(@"internal const string ND_TABLE_NAME.+?;");
+            var columnRegex = new Regex(@"\[Column.+?\]");
+            var tableItems = new List<string>();
+            foreach(var item in Directory.GetFiles(moduleFolder, "*Entity.cs", SearchOption.AllDirectories))
+            {
+                var content = File.ReadAllText(item);
+                content = content.Replace("using NPoco;", string.Empty)
+                    .Replace("[TableName(ND_TABLE_NAME)]", string.Empty);
+                content = tableRegex.Replace(content, string.Empty);
+                content = columnRegex.Replace(content, string.Empty);
+                File.WriteAllText(item, content, encoding);
+                tableItems.Add(Path.GetFileName(item)[..^9]);
+            }
+            if (tableItems.Count == 0)
+            {
+                return;
+            }
+            var contextName = moduleName + "Context";
+            var sb  = new StringBuilder();
+            sb.AppendLine("using Microsoft.EntityFrameworkCore;")
+               .AppendLine($"using NetDream.Modules.{moduleName}.Entities;")
+               .AppendLine($"using NetDream.Modules.{moduleName}.Migrations;")
+               .AppendLine()
+               .AppendLine($"namespace NetDream.Modules.{moduleName}")
+               .AppendLine("{")
+               .AppendLine($"    public class {contextName}(DbContextOptions<{contextName}> options): DbContext(options)")
+               .AppendLine("    {");
+            foreach (var item in tableItems)
+            {
+                sb.AppendLine($"        public DbSet<{item}Entity> {item}s {{get; set; }}");
+            }
+            sb.AppendLine("        protected override void OnModelCreating(ModelBuilder modelBuilder)")
+                .AppendLine("        {");
+            foreach (var item in tableItems)
+            {
+                sb.AppendLine($"            modelBuilder.ApplyConfiguration(new {item}EntityTypeConfiguration());");
+            }
+            sb.AppendLine("            base.OnModelCreating(modelBuilder);")
+                .AppendLine("        }").
+                AppendLine("    }")
+               .AppendLine("}");
+            File.WriteAllText(Path.Combine(moduleFolder, contextName + ".cs"), sb.ToString(), encoding);
+            foreach (var item in tableItems)
+            {
+                sb.Clear();
+                sb.AppendLine("using Microsoft.EntityFrameworkCore;")
+               .AppendLine("using Microsoft.EntityFrameworkCore.Metadata.Builders;")
+               .AppendLine($"using NetDream.Modules.{moduleName}.Entities;")
+               .AppendLine()
+               .AppendLine($"namespace NetDream.Modules.{moduleName}.Migrations")
+               .AppendLine("{")
+               .AppendLine($"    public class {item}EntityTypeConfiguration : IEntityTypeConfiguration<{item}Entity>")
+               .AppendLine("    {")
+               .AppendLine($"        public void Configure(EntityTypeBuilder<{item}Entity> builder)")
+               .AppendLine("        {")
+               .AppendLine($"            builder.ToTable(\"{item}\", table => table.HasComment(\"\"));")
+               .AppendLine($"            builder.HasKey(\"id\");")
+                .AppendLine("        }")
+                .AppendLine("    }")
+                .AppendLine("}");
+                File.WriteAllText(Path.Combine(moduleFolder, "Migrations", $"{item}EntityTypeConfiguration.cs"), sb.ToString(), encoding);
+            }
         }
     }
 }

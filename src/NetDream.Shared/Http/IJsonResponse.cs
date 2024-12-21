@@ -1,4 +1,4 @@
-﻿using NPoco;
+﻿using NetDream.Shared.Interfaces;
 
 namespace NetDream.Shared.Http
 {
@@ -10,7 +10,7 @@ namespace NetDream.Shared.Http
 
         public object RenderData<T>(T data, string message);
 
-        public object RenderPage<T>(Page<T> page);
+        public object RenderPage<T>(IPage<T> page);
 
         public object RenderFailure(string message, int code);
 

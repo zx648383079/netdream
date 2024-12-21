@@ -1,12 +1,12 @@
-using NPoco;
+
 namespace NetDream.Modules.Document.Entities
 {
-    [TableName(ND_TABLE_NAME)]
+    
     public class ProjectEntity
     {
-        internal const string ND_TABLE_NAME = "doc_project";
+        
         public int Id { get; set; }
-        [Column("user_id")]
+        public uint CatId { get; internal set; }
         public int UserId { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Type { get; set; }
@@ -14,11 +14,12 @@ namespace NetDream.Modules.Document.Entities
         public string Description { get; set; } = string.Empty;
         public string Environment { get; set; } = string.Empty;
         public int Status { get; set; }
-        [Column("deleted_at")]
+        
         public int DeletedAt { get; set; }
-        [Column("updated_at")]
+        
         public int UpdatedAt { get; set; }
-        [Column("created_at")]
+        
         public int CreatedAt { get; set; }
+ 
     }
 }

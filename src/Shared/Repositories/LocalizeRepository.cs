@@ -1,9 +1,6 @@
-﻿using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Database;
 using NetDream.Shared.Repositories.Models;
-using NPoco;
 using System;
 using System.Collections.Generic;
 using System.Linq;
