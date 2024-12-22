@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NetDream.Modules.SEO.Entities;
+using NetDream.Shared.Providers.Entities;
 
-namespace NetDream.Modules.SEO.Migrations
+namespace NetDream.Shared.Providers.Migrations
 {
     public class FileLogEntityTypeConfiguration : IEntityTypeConfiguration<FileLogEntity>
     {

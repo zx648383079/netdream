@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetDream.Shared.Http;
 using NetDream.Modules.OpenPlatform.Http;
 using NPoco;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Web.Base.Http
 {
@@ -21,7 +22,7 @@ namespace NetDream.Web.Base.Http
         [NonAction]
         public IActionResult RenderData<T>(T data, string message) => Ok(JsonResponse.RenderData(data, message));
         [NonAction]
-        public IActionResult RenderPage<T>(Page<T> page) => Ok(JsonResponse.RenderPage(page));
+        public IActionResult RenderPage<T>(IPage<T> page) => Ok(JsonResponse.RenderPage(page));
         [NonAction]
         public IActionResult RenderFailure(string message, int code) => StatusCode(code, JsonResponse.RenderFailure(message, code));
         [NonAction]

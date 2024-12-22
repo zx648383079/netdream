@@ -1,38 +1,18 @@
-﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Database;
-using NetDream.Shared.Migrations;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
 using NetDream.Shared.Providers.Models;
-using NPoco;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace NetDream.Shared.Providers
 {
-    public class ScoreProvider(IDatabase db, 
-        string prefix, IClientContext environment) : IMigrationProvider
+    public class ScoreProvider(ISoreContext db, IClientContext environment)
     {
-        private readonly string _tableName = prefix + "_score";
-        public void Migration(IMigration migration)
-        {
-            migration.Append(_tableName, table => {
-                table.Id();
-                table.Uint("item_type", 1).Default(0);
-                table.Uint("item_id");
-                table.Uint("user_id");
-                table.Uint("score", 1).Default(6);
-                table.Uint("from_type", 1).Default(0);
-                table.Uint("from_id").Default(0);
-                table.Timestamp(MigrationTable.COLUMN_CREATED_AT);
-            });
-        }
 
-        public Page<ScoreLog> Search(byte itemType = 0, int itemId = 0, 
+        public IPage<ScoreLogEntity> Search(byte itemType = 0, int itemId = 0, 
             int user = 0, byte fromType = 0, int fromId = 0, string sort = "id", string order = "desc")
         {
             //list(sort, order) = SearchModel.CheckSortOrder(sort, order, [
@@ -64,12 +44,13 @@ namespace NetDream.Shared.Providers
 
         public void Remove(int id)
         {
-            db.Delete(_tableName, id);
+            db.ScoreLogs.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public int Insert(ScoreLog data)
+        public int Insert(ScoreLogEntity data)
         {
-            data.Id = db.Insert(_tableName, data);
+            db.ScoreLogs.Add(data);
+            db.SaveChanges();
             if (data.Id == 0)
             {
                 throw new Exception("insert log error");
@@ -77,15 +58,16 @@ namespace NetDream.Shared.Providers
             return data.Id;
         }
 
-        public void Update(int id, ScoreLog data)
+        public void Update(int id, ScoreLogEntity data)
         {
             data.Id = id;
-            db.TryUpdate(_tableName, data);
+            db.ScoreLogs.Update(data);
+            db.SaveChanges();
         }
 
-        public ScoreLog? Get(int id)
+        public ScoreLogEntity? Get(int id)
         {
-            return db.FindById<ScoreLog>(_tableName, id);
+            return db.ScoreLogs.Where(i => i.Id == id).Single();
         }
 
         /// <summary>
@@ -99,12 +81,12 @@ namespace NetDream.Shared.Providers
         public bool Has(int itemId, byte itemType = 0, byte fromType = 0, 
             int fromId = 0)
         {
-            return db.FindCount(_tableName,
-                "item_id=@0 AND item_type=@1 AND user_id=@2 AND from_type=@3 AND from_id=@4",
-                itemId, itemType, environment.UserId, fromType, fromId) > 0;
+            return db.ScoreLogs.Where(i => i.ItemType == itemType && i.ItemId == itemId 
+            && i.UserId == environment.UserId && i.FromType == fromType 
+            && i.FromId == fromId).Any();
         }
 
-        public ScoreLog Save(ScoreLog data)
+        public ScoreLogEntity Save(ScoreLogEntity data)
         {
             data.UserId = environment.UserId;
             data.CreatedAt = environment.Now;
@@ -113,9 +95,9 @@ namespace NetDream.Shared.Providers
             return data;
         }
 
-        public ScoreLog Add(byte score, int item_id, byte item_type = 0, byte from_type = 0, int from_id = 0)
+        public ScoreLogEntity Add(byte score, int item_id, byte item_type = 0, byte from_type = 0, int from_id = 0)
         {
-            return Save(new ScoreLog()
+            return Save(new ScoreLogEntity()
             {
                 Score = score,
                 ItemId = item_id,
@@ -133,11 +115,8 @@ namespace NetDream.Shared.Providers
         /// <returns></returns>
         public float Avg(int itemId, byte itemType = 0)
         {
-            var sql = new Sql();
-            sql.Select("AVG(score) as s")
-                .From(_tableName)
-                .Where("item_id=@0 AND item_type=@1", itemId, itemType);
-            return db.ExecuteScalar<float>(sql);
+            return (float)db.ScoreLogs.Where(i => i.ItemType == itemType && i.ItemId == itemId)
+                .Average(i => i.Score);
         }
 
         /**
@@ -148,12 +127,12 @@ namespace NetDream.Shared.Providers
          */
         public ScoreSubtotal Count(int itemId, byte itemType = 0)
         {
-            var sql = new Sql();
-            sql.Select("score", "COUNT(*) AS count")
-                .From(_tableName)
-                .Where("item_id=@0 AND item_type=@1", itemId, itemType)
-                .GroupBy("score");
-            var data = db.Fetch<ScoreCount>(sql);
+            var data = db.ScoreLogs.Where(i => i.ItemId == itemId && i.ItemType == itemType)
+                .GroupBy(i => i.Score)
+                .Select(i => new ScoreCount() {
+                    Score = i.Key,
+                    Count = i.Count()
+                }).ToArray();
             var args = new ScoreSubtotal();
             var total = 0;
             foreach (var item in data)
@@ -184,7 +163,7 @@ namespace NetDream.Shared.Providers
             {
                 return;
             }
-            db.DeleteWhere(_tableName, "id=@0 AND user_id=@1", id, environment.UserId);
+            db.ScoreLogs.Where(i => i.Id == id && i.UserId == environment.UserId).ExecuteDelete();
         }
     }
 }

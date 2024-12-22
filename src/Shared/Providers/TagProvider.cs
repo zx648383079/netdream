@@ -1,35 +1,21 @@
-﻿using NetDream.Shared.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Shared.Helpers;
-using NetDream.Shared.Interfaces.Database;
-using NetDream.Shared.Providers.Models;
-using NPoco;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Shared.Providers
 {
-    public class TagProvider(IDatabase db, string prefix) : IMigrationProvider
+    public class TagProvider(ITagContext db, string prefix)
     {
-        private readonly string _mainTableName = prefix + "_tag";
-        private readonly string _linkTableName = prefix + "_tag_link";
-        public void Migration(IMigration migration)
-        {
-            migration.Append(_mainTableName, table => {
-                table.Id();
-                table.String("name", 20);
-            }).Append(_linkTableName, table => {
-                table.Uint("tag_id");
-                table.Uint("target_id");
-            });
-        }
 
         public void Remove(int id) {
-            db.Delete(_mainTableName, id);
-            db.DeleteWhere(_linkTableName, "tag_id=@0", id);
+            db.Tags.Where(i => i.Id == id).ExecuteDelete();
+            db.TagLinks.Where(i => i.TagId == id).ExecuteDelete();
         }
 
         /// <summary>
@@ -78,57 +64,50 @@ namespace NetDream.Shared.Providers
             return [];
         }
 
-        public Page<TagItem> GetList(string keywords = "", long page = 1, int perPage = 20) {
-            var sql = new Sql();
-            sql.Select("*")
-                .From(_mainTableName);
-            SearchHelper.Where(sql, ["name"], keywords);
-            return db.Page<TagItem>(page, perPage, sql);
+        public IPage<TagEntity> GetList(string keywords = "", long page = 1, int perPage = 20) {
+            IQueryable<TagEntity> query = db.Tags;
+            if (!string.IsNullOrWhiteSpace(keywords))
+            {
+                query = query.Where(i => i.Name.Contains(keywords));
+            }
+            var res = new Page<TagEntity>(query.Count(), (int)page, perPage);
+            if (!res.IsEmpty)
+            {
+                res.Items = query.Skip(res.ItemsOffset).Take(res.ItemsPerPage).ToArray();
+            }
+            return res;
         }
 
-        public IList<string> Suggest(string keywords = "", int count = 5) {
-            var sql = new Sql();
-            sql.Select("name").From(_mainTableName);
-            SearchHelper.Where(sql, ["name"], keywords);
-            sql.Limit(count);
-            return db.Pluck<string>(sql);
+        public string[] Suggest(string keywords = "", int count = 5) {
+            IQueryable<TagEntity> query = db.Tags;
+            if (!string.IsNullOrWhiteSpace(keywords))
+            {
+                query = query.Where(i => i.Name.Contains(keywords));
+            }
+            return query.Take(count).Select(i => i.Name).ToArray();
         }
 
-        public IList<TagItem> All() {
-            var sql = new Sql();
-            sql.Select("id", "name")
-                .From(_mainTableName);
-            return db.Fetch<TagItem>(sql);
+        public TagEntity[] All() {
+            return db.Tags.ToArray();
         }
 
-        public IList<TagItem> GetTags(int target) {
-            var sql = new Sql();
-            sql.Select("tag_id").From(_linkTableName)
-                .Where("target_id=@0", target);
-            var tagId = db.Pluck<int>(sql);
-            if (tagId is null || tagId.Count == 0)
+        public TagEntity[] GetTags(int target) {
+            var tagId = db.TagLinks.Where(i => i.TargetId == target).Select(i => i.TagId).ToArray();
+            if (tagId is null || tagId.Length == 0)
             {
                 return [];
             }
-            sql = new Sql();
-            sql.Select("*")
-                .From(_mainTableName).WhereIn("id", tagId.ToArray());
-            return db.Fetch<TagItem>(sql);
+            return db.Tags.Where(i => tagId.Contains(i.Id)).ToArray();
         }
 
-        public IDictionary<int, IList<TagItem>> GetManyTags(int[] target) {
-            var sql = new Sql();
-            sql.Select("tag_id", "target_id").From(_linkTableName)
-                .WhereIn("target_id", target);
-            var data = db.Fetch<TagLinkItem>(sql);
-            var res = new Dictionary<int, IList<TagItem>>();
-            if (data is null || data.Count == 0) {
+        public IDictionary<int, IList<TagEntity>> GetManyTags(int[] target) {
+            var data = db.TagLinks.Where(i => target.Contains(i.TargetId)).ToArray();
+            var res = new Dictionary<int, IList<TagEntity>>();
+            if (data is null || data.Length == 0) {
                 return res;
             }
-            sql = new Sql();
-            sql.Select("*").From(_mainTableName)
-                .WhereIn("id", data.Select(i => i.TagId).Distinct().ToArray());
-            var tags = db.Fetch<TagItem>(sql);
+            var tagIdItems = data.Select(i => i.TagId).Distinct();
+            var tags = db.Tags.Where(i => tagIdItems.Contains(i.Id)).ToArray();
             foreach (var id in target) {
                 var tagId = new List<int>();
                 foreach (var item in data)
@@ -157,23 +136,17 @@ namespace NetDream.Shared.Providers
         /// <param name="keywords"></param>
         /// <returns></returns>
         public IList<int> SearchTag(string keywords = "") {
-            var sql = new Sql();
-            if (string.IsNullOrWhiteSpace(keywords)) {
-                sql.Select("distinct target_id")
-                    .From(_linkTableName);
-                return db.Pluck<int>(sql);
+            IQueryable<TagEntity> query = db.Tags;
+            if (!string.IsNullOrWhiteSpace(keywords))
+            {
+                query = query.Where(i => i.Name.Contains(keywords));
             }
-            sql.Select("id")
-                .From(_mainTableName);
-            SearchHelper.Where(sql, "name", keywords);
-            var tagId = db.Pluck<int>(sql);
-            if (tagId is null || tagId.Count == 0) {
+            var tagId = query.Select(i => i.Id).ToArray();
+            if (tagId.Length == 0)
+            {
                 return [];
             }
-            sql = new Sql();
-            sql.Select("distinct target_id")
-                    .From(_linkTableName).WhereIn("tag_id", tagId.ToArray());
-            return db.Pluck<int>(sql);
+            return db.TagLinks.Where(i => tagId.Contains(i.TagId)).Select(i => i.TargetId).Distinct().ToArray();
         }
 
         /// <summary>
@@ -189,27 +162,28 @@ namespace NetDream.Shared.Providers
                 return;
             }
             var (add, _, remove) = ModelHelper.SplitId(tagId,
-                db.Pluck<int>(new Sql().Select("tag_id").From(_linkTableName)
-                .Where("target_id=@0", target)));
+                db.TagLinks.Where(i => i.TargetId == target).Select(i => i.TagId)
+                .ToArray());
             if (remove.Count > 0)
             {
-                db.DeleteWhere(_linkTableName, 
-                    $"target_id={target} AND tag_id IN ({string.Join(',', remove)})");
+                db.TagLinks.Where(i => i.TargetId == target && remove.Contains(i.TagId)).ExecuteDelete();
             }
             if (add.Count > 0)
             {
-                db.InsertBatch(_linkTableName, add.Select(i => new Dictionary<string, object>()
+                db.TagLinks.AddRange(add.Select(i => new TagLinkEntity()
                 {
-                    {"tag_id", i},
-                    {"target_id", target}
+                    TagId = i,
+                    TargetId = target,
                 }));
+                db.SaveChanges();
             }
             afterBind?.Invoke(tagId, [.. add], [.. remove]);
         }
 
 
-        public void RemoveLink(int target) {
-            db.DeleteWhere(_linkTableName, "target_id=@0", target);
+        public void RemoveLink(int target) 
+        {
+            db.TagLinks.Where(i => i.TargetId == target).ExecuteDelete();
         }
     }
 }

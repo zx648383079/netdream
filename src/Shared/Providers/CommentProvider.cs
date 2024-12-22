@@ -1,40 +1,23 @@
-﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Database;
-using NetDream.Shared.Migrations;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
 using NetDream.Shared.Providers.Models;
-using NPoco;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Shared.Providers
 {
-    public class CommentProvider(IDatabase db, string prefix, IClientContext environment) : IMigrationProvider
+    public class CommentProvider(ICommentContext db, IClientContext environment)
     {
         public const byte LOG_TYPE_COMMENT = 6;
         public const byte LOG_ACTION_AGREE = 1;
         public const byte LOG_ACTION_DISAGREE = 2;
-        private readonly string _tableName = prefix + "_comment";
 
-        private readonly ActionLogProvider _logger = new(db, prefix, environment);
-        public void Migration(IMigration migration)
-        {
-            _logger.Migration(migration);
-            migration.Append(_tableName, table => {
-                table.Id();
-                table.String("content");
-                table.String("extra_rule", 300).Default(string.Empty)
-                    .Comment("内容的一些附加规则");
-                table.Uint("parent_id");
-                table.Uint("user_id").Default(0);
-                table.Uint("target_id");
-                table.Uint("agree_count").Default(0);
-                table.Uint("disagree_count").Default(0);
-                table.Uint("status", 1).Default(0).Comment("审核状态");
-                table.Timestamp(MigrationTable.COLUMN_CREATED_AT);
-            });
-        }
+        private ActionLogProvider _logger => new(db, environment);
 
-        public Page<CommentLog> Search(string keywords = "", int user = 0, 
+        public IPage<CommentLog> Search(string keywords = "", int user = 0, 
             int target = 0, int parentId = -1, 
             string sort = "id", string order = "desc")
         {
@@ -87,16 +70,17 @@ namespace NetDream.Shared.Providers
 
         public void Remove(int id)
         {
-            db.Delete(_tableName, id);
+            db.Comments.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public int Insert(CommentLog data)
+        public int Insert(CommentEntity data)
         {
             //if (isset(data["extra_rule"]) && is_array(data["extra_rule"]))
             //{
             //    data["extra_rule"] = Json.Encode(data["extra_rule"]);
             //}
-            data.Id = db.Insert(_tableName, data);
+            db.Comments.Add(data);
+            db.SaveChanges();
             if (data.Id == 0)
             {
                 throw new Exception("insert log error");
@@ -104,29 +88,24 @@ namespace NetDream.Shared.Providers
             return data.Id;
         }
 
-        public void Update(int id, IDictionary<string, object> data)
+        public CommentEntity? Get(int id)
         {
-            db.UpdateById(_tableName, id, data);
+            return db.Comments.Where(i => i.Id == id).Single();
         }
 
-
-        public CommentLog? Get(int id)
-        {
-            return db.FindById<CommentLog>(_tableName, id);
-        }
-
-        public CommentLog Save(CommentLog data)
+        public CommentEntity Save(CommentEntity data)
         {
             data.UserId = environment.UserId;
             data.CreatedAt = environment.Now;
-            data.Id = db.Insert(_tableName, data);
+            db.Comments.Add(data);
+            db.SaveChanges();
             // data["user"] = UserSimpleModel.ConverterFrom(auth().User());
             return data;
         }
 
         public void RemoveByTarget(int id)
         {
-            db.DeleteWhere(_tableName, "target_id=@0", id);
+            db.Comments.Where(i => i.TargetId == id).ExecuteDelete();
         }
 
         public void RemoveBySelf(int id)
@@ -135,7 +114,7 @@ namespace NetDream.Shared.Providers
             {
                 return;
             }
-            db.DeleteWhere(_tableName, "id=@0 AND user_id=@1", id, environment.UserId);
+            db.Comments.Where(i => i.Id == id && i.UserId == environment.UserId).ExecuteDelete();
         }
 
         public CommentLog Agree(int id)
@@ -159,16 +138,14 @@ namespace NetDream.Shared.Providers
             else if(res == 2) {
                 model.AgreeCount ++;
             }
-            Update(id, new Dictionary<string, object>()
-            {
-                { "agree_count", model.AgreeCount},
-                { "disagree_count", model.DisagreeCount},
-            });
+            db.Comments.Update(model);
+            db.SaveChanges();
+            var log = new CommentLog(model);
             if (res > 0)
             {
-                model.AgreeType = LOG_ACTION_AGREE;
+                log.AgreeType = LOG_ACTION_AGREE;
             }
-            return model;
+            return log;
         }
 
         public CommentLog Disagree(int id)
@@ -192,16 +169,14 @@ namespace NetDream.Shared.Providers
             else if(res == 2) {
                 model.DisagreeCount++;
             }
-            Update(id, new Dictionary<string, object>()
-            {
-                { "agree_count", model.AgreeCount},
-                { "disagree_count", model.DisagreeCount},
-            });
+            db.Comments.Update(model);
+            db.SaveChanges();
+            var log = new CommentLog(model);
             if (res > 0)
             {
-                model.AgreeType = LOG_ACTION_DISAGREE;
+                log.AgreeType = LOG_ACTION_DISAGREE;
             }
-            return model;
+            return log;
         }
 
         /// <summary>

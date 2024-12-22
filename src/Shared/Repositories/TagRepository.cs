@@ -1,84 +1,92 @@
-﻿using NetDream.Shared.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Shared.Helpers;
-using NPoco;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Shared.Repositories
 {
-    public abstract class TagRepository<T>(IDatabase db) where T : class
+    public abstract class TagRepository(ITagContext db)
     {
-        protected virtual string IdKey => "id";
-        protected virtual string NameKey => "name";
-        public int[] Save(IList<string> nameItems)
+        public int[] Save(string[] nameItems)
         {
-            return Save(nameItems, new Dictionary<string, object>());
-        }
-        public int[] Save(IList<string> nameItems, IDictionary<string, object> append)
-        {
-            // TODO
-            return [];
-        }
-
-        public Page<T> GetList(string keywords = "", long page = 1)
-        {
-            var sql = new Sql();
-            SearchHelper.Where(sql, [NameKey], keywords);
-            return db.Page<T>(page, 20, sql);
-        }
-
-        public IList<T> AllList()
-        {
-            return db.Fetch<T>($"SELECT {IdKey},{NameKey}");
-        }
-
-        public IList<int> SearchTag<K>(string linkKey, string keywords = "", string tagKey = "tag_id")
-            where K : class
-        {
-            var sql = new Sql();
-            sql.From(ModelHelper.TableName(typeof(K)));
-            sql.Select($"distinct {linkKey}");
-            if (string.IsNullOrWhiteSpace(keywords))
+            var exist = db.Tags.Where(i => nameItems.Contains(i.Name)).ToArray();
+            var items = nameItems.Select(i => new TagEntity() { Name = i }).ToArray();
+            foreach (var item in items)
             {
-                return db.Pluck<int>(sql);
+                var it = Array.Find(exist, i => i.Name == item.Name);
+                if (it is not null)
+                {
+                    item.Id = it.Id;
+                    continue;
+                }
+                db.Tags.Add(item);
             }
-            var tagSql = new Sql();
-            tagSql.From(ModelHelper.TableName(typeof(T)));
-            SearchHelper.Where(sql, NameKey, keywords);
-            var tagId = db.Pluck<int>(tagSql);
-            if (!tagId.Any())
+            db.SaveChanges();
+            return items.Select(i => i.Id).ToArray();
+        }
+
+        public IPage<TagEntity> GetList(string keywords = "", long page = 1)
+        {
+            IQueryable<TagEntity> query = db.Tags;
+            if (!string.IsNullOrWhiteSpace(keywords))
+            {
+                query = query.Where(i => i.Name.Contains(keywords));
+            }
+            var res = new Page<TagEntity>(query.Count(), (int)page);
+            if (!res.IsEmpty)
+            {
+                res.Items = query.Skip(res.ItemsOffset).Take(res.ItemsPerPage).ToArray();
+            }
+            return res;
+        }
+
+        public TagEntity[] AllList()
+        {
+            return db.Tags.ToArray();
+        }
+
+        public int[] SearchTag(string keywords = "")
+        {
+            IQueryable<TagEntity> query = db.Tags;
+            if (!string.IsNullOrWhiteSpace(keywords))
+            {
+                query = query.Where(i => i.Name.Contains(keywords));
+            }
+            var tagId = query.Select(i => i.Id).ToArray();
+            if (tagId.Length == 0) 
             {
                 return [];
             }
-            sql.Where($"{tagKey} IN ({string.Join(',', tagId)})");
-            return db.Pluck<int>(sql);
+            return db.TagLinks.Where(i => tagId.Contains(i.TagId)).Select(i => i.TargetId).Distinct().ToArray();
         }
 
-        public void BindTag<K>(int linkId, string linkKey, 
-            IList<string> tagItems, 
-            IDictionary<string, object> append,
-            string tagkey = "tag_id")
-            where K : class
+        public void BindTag(int target, string[] tagItems)
         {
-            var tagId = Save(tagItems, append);
+            var tagId = Save(tagItems);
             if (tagId.Length == 0) 
             {
                 return;
             }
             var (add, _, remove) = ModelHelper.SplitId(tagId,
-                db.Pluck<int>(new Sql().From(ModelHelper.TableName(typeof(K)))
-                .Where($"{linkKey}={linkId}"), tagkey));
+                db.TagLinks.Where(i => i.TargetId == target).Select(i => i.TagId)
+                .ToArray());
             if (remove.Count > 0)
             {
-                db.Delete<K>($"WHERE {linkKey}={linkId} AND {tagkey} IN ({string.Join(',', remove)})");
+                db.TagLinks.Where(i => i.TargetId == target && remove.Contains(i.TagId)).ExecuteDelete();
             }
             if (add.Count > 0) 
             {
-                db.InsertBatch<K>(add.Select(i => new Dictionary<string, object>()
+                db.TagLinks.AddRange(add.Select(i => new TagLinkEntity()
                 {
-                    {tagkey, i},
-                    {linkKey, linkId }
+                    TagId = i,
+                    TargetId = target,
                 }));
+                db.SaveChanges();
             }
             OnAfterBind(tagId, add, remove);
         }

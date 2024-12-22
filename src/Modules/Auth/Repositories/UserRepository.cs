@@ -187,7 +187,7 @@ namespace NetDream.Modules.Auth.Repositories
                 throw new Exception("");
             }
             SaveRoles(model.Id, roles);
-            mediator.Publish(ManageAction.Create(client, "user_edit", model.Name, Constants.TYPE_USER_UPDATE, model.Id));
+            mediator.Publish(ManageAction.Create(client, "user_edit", model.Name, ModuleModelType.TYPE_USER_UPDATE, model.Id));
             return model;
         }
 
@@ -220,7 +220,7 @@ namespace NetDream.Modules.Auth.Repositories
             var user = db.SingleById<UserEntity>(id);
             db.DeleteById<UserEntity>(id);
             mediator.Publish(new CancelAccount(user, client.Now));
-            mediator.Publish(ManageAction.Create(client, "user_remove", user.Name, Constants.TYPE_USER_UPDATE, user.Id));
+            mediator.Publish(ManageAction.Create(client, "user_remove", user.Name, ModuleModelType.TYPE_USER_UPDATE, user.Id));
         }
 
         /**

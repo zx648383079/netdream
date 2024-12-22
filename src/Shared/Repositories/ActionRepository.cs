@@ -1,15 +1,15 @@
 ﻿using NetDream.Shared.Helpers;
-using NetDream.Shared.Interfaces.Entities;
-using NPoco;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Shared.Repositories
 {
-    public abstract class ActionRepository<T>(IDatabase db) where T : IActionEntity
+    public abstract class ActionRepository(ILogContext db)
     {
 
-        protected string TableName => ModelHelper.TableName(typeof(T));
         /// <summary>
         /// 获取操作的总记录
         /// </summary>
@@ -19,7 +19,7 @@ namespace NetDream.Shared.Repositories
         /// <returns></returns>
         public int ActionCount(int itemId, byte itemType, byte action)
         {
-            return db.ExecuteScalar<int>($"SELECT COUNT(*) as count FROM {TableName} WHERE item_id=@0 AND item_type=@1 AND action=@2", itemId, itemType, action);
+            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.Action == action).Count();
         }
         /// <summary>
         /// 当前用户是否执行操作
@@ -35,12 +35,11 @@ namespace NetDream.Shared.Repositories
             {
                 return false;
             }
-            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) as count FROM {TableName} WHERE item_id=@0 AND item_type=@1 AND action=@2 AND user_id=@3", itemId, itemType, action, userId);
-            return count > 0;
+            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.Action == action && i.UserId == userId).Any(); ;
         }
 
         /// <summary>
-        /// 仅执行action,不做取消操作
+        /// 仅执行 action,不做取消操作
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="itemId"></param>
@@ -58,13 +57,16 @@ namespace NetDream.Shared.Repositories
             {
                 return true;
             }
-            var log = Activator.CreateInstance<T>();
-            log.UserId = userId;
-            log.ItemId = itemId;
-            log.ItemType = itemType;
-            log.Action = action;
-            log.CreatedAt = TimeHelper.TimestampNow();
-            db.Insert(log);
+            var log = new LogEntity()
+            {
+                UserId = userId,
+                ItemId = itemId,
+                ItemType = itemType,
+                Action = action,
+                CreatedAt = TimeHelper.TimestampNow()
+            };
+            db.Logs.Add(log);
+            db.SaveChanges();
             return true;
         }
 
@@ -78,7 +80,7 @@ namespace NetDream.Shared.Repositories
         /// <returns></returns>
         public byte? UserActionValue(int userId, int itemId, byte itemType, IList<byte> onlyAction)
         {
-            return db.ExecuteScalar<byte>($"SELECT action FROM {TableName} WHERE item_id=@0 AND item_type=@1 AND user_id=@2 AND action IN ({string.Join(',', onlyAction)})", itemId, itemType, userId);
+            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId && onlyAction.Contains(i.Action)).Select(i => i.Action).Single();
         }
 
         /// <summary>
@@ -90,7 +92,7 @@ namespace NetDream.Shared.Repositories
         /// <returns></returns>
         public byte? UserActionValue(int userId, int itemId, byte itemType)
         {
-            return db.ExecuteScalar<byte>($"SELECT action FROM {TableName} WHERE item_id=@0 AND item_type=@1 AND user_id=@2", itemId, itemType, userId);
+            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId).Select(i => i.Action).Single();
         }
         /// <summary>
         /// 取消或执行某个操作
@@ -118,26 +120,30 @@ namespace NetDream.Shared.Repositories
             {
                 return 0;
             }
-            var log = db.First<T>($"WHERE item_id=@0 AND item_type=@1 AND user_id=@2 AND action IN ({string.Join(',', searchAction)})", itemId, itemType, userId);
+            var log = db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId && searchAction.Contains(i.Action)).Single();
             if (log == null)
             {
-                log = Activator.CreateInstance<T>();
-                log.UserId = userId;
-                log.ItemId = itemId;
-                log.ItemType = itemType;
-                log.Action = action;
-                log.CreatedAt = TimeHelper.TimestampNow();
-                db.Insert(log);
+                log = new LogEntity
+                {
+                    UserId = userId,
+                    ItemId = itemId,
+                    ItemType = itemType,
+                    Action = action,
+                    CreatedAt = TimeHelper.TimestampNow()
+                };
+                db.Logs.Add(log);
+                db.SaveChanges();
                 return 2;
             }
             if (log.Action == action)
             {
-                db.Delete(log);
+                db.Logs.Remove(log);
+                db.SaveChanges();
                 return 0;
             }
             log.Action = action;
             log.CreatedAt = TimeHelper.TimestampNow();
-            db.Update(log);
+            db.SaveChanges();
             return 1;
         }
     }

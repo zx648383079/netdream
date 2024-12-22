@@ -4,7 +4,7 @@ using NPoco;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class LogRepository(IDatabase db) : ActionRepository<BlogLogEntity>(db)
+    public class LogRepository(BlogContext db) : ActionRepository<LogEntity>(db)
     {
         public const byte TYPE_BLOG = 0;
         public const byte TYPE_COMMENT = 1;

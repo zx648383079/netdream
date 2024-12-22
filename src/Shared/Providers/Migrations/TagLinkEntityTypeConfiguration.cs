@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NetDream.Modules.Navigation.Entities;
+using NetDream.Shared.Providers.Entities;
 
-namespace NetDream.Modules.Navigation.Migrations
+namespace NetDream.Shared.Providers.Migrations
 {
-    public class TagLinkEntityTypeConfiguration : IEntityTypeConfiguration<TagLinkEntity>
+    public class TagLinkEntityTypeConfiguration(string prefix) : IEntityTypeConfiguration<TagLinkEntity>
     {
         public void Configure(EntityTypeBuilder<TagLinkEntity> builder)
         {
-            builder.ToTable("search_tag_link", table => table.HasComment(""));
+            builder.ToTable(prefix + "_tag_link", table => table.HasComment("±êÇ©¹ØÁª"));
             builder.HasKey("id");
             builder.Property(table => table.TagId).HasColumnName("tag_id");
             builder.Property(table => table.TargetId).HasColumnName("target_id");

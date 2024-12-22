@@ -2,6 +2,7 @@
 using NetDream.Modules.OpenPlatform.Entities;
 using NetDream.Modules.OpenPlatform.Models;
 using NPoco;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.OpenPlatform.Http
 {
@@ -51,7 +52,7 @@ namespace NetDream.Modules.OpenPlatform.Http
             };
         }
 
-        public object RenderPage<T>(Page<T> page)
+        public object RenderPage<T>(IPage<T> page)
         {
 
             return Render(new PageResponse<T>(page));

@@ -1,44 +1,23 @@
-﻿using NetDream.Shared.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Database;
-using NetDream.Shared.Migrations;
-using NetDream.Shared.Providers.Models;
-using NPoco;
-using System.Collections.Generic;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
 using System.Linq;
 using System.Text.Json;
 
 namespace NetDream.Shared.Providers
 {
-    public class SketchBoxProvider(IDatabase db,
+    public class SketchBoxProvider(SketchContext db,
         IClientContext environment,
-        byte itemType, int maxUndoCount = 1) : IMigrationProvider
+        byte itemType, int maxUndoCount = 1)
     {
-        public const string SKETCH_TABLE = "base_sketch_box";
-        public void Migration(IMigration migration)
-        {
-            migration.Append(SKETCH_TABLE, table => {
-                table.Id();
-                table.Uint("item_type", 1).Default(0);
-                table.Uint("item_id").Default(0);
-                table.Uint("user_id");
-                table.MediumText("data");
-                table.String("ip", 120).Default(string.Empty);
-                table.Timestamps();
-            });
-        }
-
         public void Save(object data, int target = 0)
         {
-            var sql = new Sql();
-            sql.Select("id")
-                .From(SKETCH_TABLE)
-                .Where("item_type=@0 AND item_id=@1 AND user_id=@2", itemType, target, environment.UserId)
-                .OrderBy("updated_at DESC");
-            var logList = db.Fetch<SketchLog>(sql);
-            if (logList is null || logList.Count < maxUndoCount)
+            var logList = db.SketchLogs.Where(i => i.ItemType == itemType && i.ItemId == target && i.UserId == environment.UserId)
+                .OrderByDescending(i => i.UpdatedAt).ToArray();
+            if (logList is null || logList.Length < maxUndoCount)
             {
-                db.Insert(SKETCH_TABLE, new SketchLog()
+                db.SketchLogs.Add(new SketchLogEntity()
                 {
                     ItemType = itemType,
                     ItemId = target,
@@ -48,26 +27,22 @@ namespace NetDream.Shared.Providers
                     CreatedAt = environment.Now,
                     UpdatedAt = environment.Now,
                 });
+                db.SaveChanges();
                 return;
             }
-            // unset(saveData[MigrationTable.COLUMN_CREATED_AT]);
-            db.UpdateById(SKETCH_TABLE, logList.Last().Id, new Dictionary<string, object>()
+            var last = logList.Last();
+            last.ItemType = itemType;
+            last.ItemId = target;
+            last.Data = JsonSerializer.Serialize(data);
+            last.Ip = environment.Ip;
+            last.CreatedAt = environment.Now;
+            db.SketchLogs.Update(last);
+            if (logList.Length > maxUndoCount)
             {
-                {"item_type", itemType },
-                { "item_id", target },
-                { "data", JsonSerializer.Serialize(data) },
-                //{ "user_id", environment.UserId },
-                { "ip", environment.Ip },
-                { MigrationTable.COLUMN_UPDATED_AT, environment.Now}
-            });
-
-            if (logList.Count <= maxUndoCount)
-            {
-                return;
+                var del = logList.Skip(maxUndoCount).Take(logList.Length - maxUndoCount);
+                db.SketchLogs.RemoveRange(del);
             }
-            var del = logList.Slice(maxUndoCount, logList.Count - maxUndoCount)
-                .Select(item => item.Id);
-            db.DeleteWhere(SKETCH_TABLE, $"id IN ({string.Join(',', del)})");
+            db.SaveChanges();
         }
 
         /**
@@ -76,21 +51,16 @@ namespace NetDream.Shared.Providers
          * @return array
          * @throws \Exception
          */
-        public IList<SketchLog> Stack(int target = 0)
+        public SketchLogEntity[] Stack(int target = 0)
         {
-            var sql = new Sql();
-            sql.Select("id", "ip", MigrationTable.COLUMN_UPDATED_AT, MigrationTable.COLUMN_CREATED_AT);
-            sql.From(SKETCH_TABLE)
-                .Where("item_type=@0 AND item_id=@1 AND user_id=@2", itemType, target, environment.UserId)
-                .OrderBy("updated_at DESC");
-            return db.Fetch<SketchLog>(sql);
+            return db.SketchLogs.Where(i => i.ItemType == itemType && i.ItemId == target && i.UserId == environment.UserId)
+                .OrderByDescending(i => i.UpdatedAt).ToArray();
         }
 
         public T? Get<T>(int target = 0)
         {
-            var data = db.FindScalar<string>(SKETCH_TABLE, "data", 
-                "item_type=@0 AND item_id=@1 AND user_id=@2 ORDER BY updated_at DESC",
-                itemType, target, environment.UserId);
+            var data = db.SketchLogs.Where(i => i.ItemType == itemType && i.ItemId == target && i.UserId == environment.UserId)
+                .OrderByDescending(i => i.UpdatedAt).Select(i => i.Data).Single();
             if (data is null || string.IsNullOrWhiteSpace(data))
             {
                 return default;
@@ -100,8 +70,8 @@ namespace NetDream.Shared.Providers
 
         public T? GetById<T>(int id)
         {
-            var data = db.FindScalar<string>(SKETCH_TABLE, "data", "item_type=@0 AND id=@1 AND user_id=@2", 
-                itemType, id, environment.UserId);
+            var data = db.SketchLogs.Where(i => i.ItemType == itemType && i.ItemId == id && i.UserId == environment.UserId)
+                .Select(i => i.Data).Single();
             if (data is null || string.IsNullOrWhiteSpace(data))
             {
                 return default;
@@ -111,13 +81,14 @@ namespace NetDream.Shared.Providers
 
         public void Remove(int target = 0)
         {
-            db.DeleteWhere(SKETCH_TABLE, "item_type=@0 AND item_id=@1 AND user_id=@2", 
-                itemType, target, environment.UserId);
+            db.SketchLogs.Where(i => i.ItemType == itemType
+            && i.ItemId == target && i.UserId == environment.UserId)
+                .ExecuteDelete();
         }
 
         public void Clear()
         {
-            db.DeleteWhere(SKETCH_TABLE, "item_type=@0", itemType);
+            db.SketchLogs.Where(i => i.ItemType == itemType).ExecuteDelete();
         }
     }
 }

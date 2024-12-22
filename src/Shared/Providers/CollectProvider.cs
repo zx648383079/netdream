@@ -1,26 +1,14 @@
-﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Database;
-using NetDream.Shared.Migrations;
-using NetDream.Shared.Providers.Models;
-using NPoco;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
 using System;
+using System.Linq;
 
 namespace NetDream.Shared.Providers
 {
-    public class CollectProvider(IDatabase db, string prefix, IClientContext environment) : IMigrationProvider
+    public class CollectProvider(ICollectContext db, IClientContext environment)
     {
-        private readonly string _tableName = prefix + "_collect";
-        public void Migration(IMigration migration)
-        {
-            migration.Append(_tableName, table => {
-                table.Id();
-                table.Uint("item_type", 1).Default(0);
-                table.Uint("item_id");
-                table.Uint("user_id");
-                table.String("extra_data").Default(string.Empty);
-                table.Timestamp(MigrationTable.COLUMN_CREATED_AT);
-            });
-        }
 
         //public Page Search(int itemType = 0, int itemId = 0, int user = 0, string sort = "id", string order = "desc")
         //{
@@ -48,28 +36,30 @@ namespace NetDream.Shared.Providers
 
         public void Remove(int id)
         {
-            db.Delete(_tableName, id);
+            db.Collects.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public int Insert(CollectLog data)
+        public int Insert(CollectLogEntity data)
         {
-            var id = db.Insert(_tableName, data);
-            if (id == 0)
+            db.Collects.Add(data);
+            db.SaveChanges();
+            if (data.Id == 0)
             {
                 throw new Exception("insert log error");
             }
-            return id;
+            return data.Id;
         }
 
-        public void Update(int id, CollectLog data)
+        public void Update(int id, CollectLogEntity data)
         {
             data.Id = id;
-            db.TryUpdate(_tableName, data);
+            db.Collects.Update(data);
+            db.SaveChanges();
         }
 
-        public CollectLog? Get(int id)
+        public CollectLogEntity? Get(int id)
         {
-            return db.FindById<CollectLog>(_tableName, id);
+            return db.Collects.Where(i => i.Id == id).Single();
         }
 
         /**
@@ -85,21 +75,21 @@ namespace NetDream.Shared.Providers
             {
                 return false;
             }
-            return db.FindCount(_tableName, "item_id=@0 AND item_type=@1 AND user_id=@2",
-                itemId, itemType, environment.UserId) > 0;
+            return
+                db.Collects.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == environment.UserId).Any();
         }
 
-        public CollectLog Save(CollectLog data)
+        public CollectLogEntity Save(CollectLogEntity data)
         {
             data.UserId = environment.UserId;
-            data.Id = db.Insert(_tableName, data);
-            // data["user"] = UserSimpleModel.ConverterFrom(auth().User());
+            db.Collects.Add(data);
+            db.SaveChanges();
             return data;
         }
 
-        public CollectLog Add(int itemId, byte itemType = 0, string extraData = "")
+        public CollectLogEntity Add(int itemId, byte itemType = 0, string extraData = "")
         {
-            return Save(new CollectLog()
+            return Save(new CollectLogEntity()
             {
                 ItemId = itemId,
                 ItemType = itemType,
@@ -116,8 +106,7 @@ namespace NetDream.Shared.Providers
          */
         public int Count(int itemId, byte itemType = 0)
         {
-            return db.FindCount(_tableName, "item_id=@0 AND item_type=@1",
-                itemId, itemType);
+            return db.Collects.Where(i => i.ItemId == itemId && i.ItemType == itemType).Count();
         }
 
         public void RemoveBySelf(int id)
@@ -126,7 +115,7 @@ namespace NetDream.Shared.Providers
             {
                 return;
             }
-            db.Delete(_tableName, "id=@0 AND user_id=@1", id, environment.UserId);
+            db.Collects.Where(i => i.Id == id && i.UserId == environment.UserId).ExecuteDelete();
         }
 
         public void RemoveByItem(int itemId, byte itemType = 0)
@@ -135,7 +124,7 @@ namespace NetDream.Shared.Providers
             {
                 return;
             }
-            db.DeleteWhere(_tableName, "item_id=@0 AND item_type=@1 AND user_id=@2", itemId, itemType, environment.UserId);
+            db.Collects.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == environment.UserId).ExecuteDelete();
         }
     }
 }

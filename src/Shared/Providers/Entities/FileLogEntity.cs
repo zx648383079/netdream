@@ -1,5 +1,5 @@
 
-namespace NetDream.Modules.SEO.Entities
+namespace NetDream.Shared.Providers.Entities
 {
     
     public class FileLogEntity

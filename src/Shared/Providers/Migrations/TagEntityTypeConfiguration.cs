@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NetDream.Modules.Navigation.Entities;
+using NetDream.Shared.Providers.Entities;
 
-namespace NetDream.Modules.Navigation.Migrations
+namespace NetDream.Shared.Providers.Migrations
 {
-    public class TagEntityTypeConfiguration : IEntityTypeConfiguration<TagEntity>
+    public class TagEntityTypeConfiguration(string prefix) : IEntityTypeConfiguration<TagEntity>
     {
         public void Configure(EntityTypeBuilder<TagEntity> builder)
         {
-            builder.ToTable("search_tag", table => table.HasComment(""));
+            builder.ToTable(prefix + "_tag", table => table.HasComment("±êÇ©"));
             builder.HasKey("id");
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20);

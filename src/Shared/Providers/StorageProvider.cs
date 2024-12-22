@@ -1,19 +1,17 @@
-﻿using NetDream.Shared.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Database;
-using NetDream.Shared.Migrations;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
 using NetDream.Shared.Providers.Models;
-using NPoco;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace NetDream.Shared.Providers
 {
-    public class StorageProvider(IDatabase db, 
-        IClientContext client,
-        IEnvironment server) : IMigrationProvider
+    public class StorageProvider(StorageContext db,  IClientContext client, IEnvironment server)
     {
         public const string FILE_TABLE = "base_file";
         public const string FILE_LOG_TABLE = "base_file_log";
@@ -21,6 +19,8 @@ namespace NetDream.Shared.Providers
 
         private string _root = string.Empty;
         private int _tag;
+
+        public StorageContext Context => db;
 
         public StorageProvider Store(string root, int tag = 3)
         {
@@ -38,51 +38,20 @@ namespace NetDream.Shared.Providers
         {
             return Store(Path.Combine(server.Root, "data/storage"), 2);
         }
-        public void Migration(IMigration migration)
-        {
-            migration.Append(FILE_TABLE, table => {
-                table.Id();
-                table.String("name", 100);
-                table.String("extension", 10);
-                table.Char("md5", 32);//.Unique();
-                table.String("path", 200);
-                table.Uint("folder", 2).Default(1);
-                table.String("size").Default("0");
-                table.Timestamps();
-            }).Append(FILE_LOG_TABLE, table => {
-                table.Id();
-                table.Uint("file_id");
-                table.Uint("item_type", 1).Default(0);
-                table.Uint("item_id");
-                table.String("data").Default(string.Empty);
-                table.Timestamp(MigrationTable.COLUMN_CREATED_AT);
-            }).Append(FILE_QUOTE_TABLE, table => {
-                table.Id();
-                table.Uint("file_id");
-                table.Uint("item_type", 1).Default(0);
-                table.Uint("item_id");
-                table.Uint("user_id").Default(0);
-                table.Timestamp(MigrationTable.COLUMN_CREATED_AT);
-            });
-        }
 
         public FileOperationResult AddMd5(string md5)
         {
             return new FileOperationResult(GetByMd5(md5));
         }
 
-        protected FileItem GetByMd5(string md5)
+        protected FileEntity GetByMd5(string md5)
         {
             if (string.IsNullOrWhiteSpace(md5))
             {
                 throw new Exception("not found");
             }
-            var model = db.FindFirst<FileItem>(FILE_TABLE, "md5=@0", md5);
-            if (model is null)
-            {
-                throw new Exception("not found");
-            }
-            return model;
+            var model = db.Files.Where(i => i.Md5 == md5).Single();
+            return model is null ? throw new Exception("not found") : model;
         }
 
         /// <summary>
@@ -103,7 +72,7 @@ namespace NetDream.Shared.Providers
          * @return array{id: int,name: string,extension: string,path:string,size: int,md5: string,folder: string, file: File} 返回 log 数据
          * @throws \Exception
          */
-        public FileItem InsertFile(object upload, bool backFile = false)
+        public FileEntity InsertFile(object upload, bool backFile = false)
         {
             //if (is_array(upload))
             //{
@@ -141,7 +110,7 @@ namespace NetDream.Shared.Providers
          * @return array{id: int,name: string,extension: string,path:string,size: int,md5: string,folder: string, file: File} 返回的log数据
          * @throws \Exception
          */
-        protected FileItem InsertFileLog(string file, object rawData, bool backFile = false)
+        protected FileEntity InsertFileLog(string file, object rawData, bool backFile = false)
         {
             //path = file.GetRelative(Root);
             //if (empty(path))
@@ -203,7 +172,7 @@ namespace NetDream.Shared.Providers
             * @return array{id: int,name: string,extension: string,path:string,size: int,md5: string,folder: string, file: File} 返回 log 数据
             * @throws \Exception
             */
-        public FileItem CopyFile(string sourceFile, object rawData, bool backFile = false)
+        public FileEntity CopyFile(string sourceFile, object rawData, bool backFile = false)
         {
             //if (sourceFile.StartsWith(root))
             //{
@@ -217,29 +186,38 @@ namespace NetDream.Shared.Providers
             return null;
         }
 
-        public Page<FileItem> Search(string keywords, string[] extension, int page = 1)
+        public IPage<FileEntity> Search(string keywords, string[] extension, 
+            int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From(FILE_TABLE)
-                .Where("Folder=@0", _tag);
-            SearchHelper.Where(sql, "name", keywords);
-            if (extension.Length > 0)
-            {
-                sql.WhereIn("extension", extension);
-            }
-            sql.OrderBy("id DESC");
-            return db.Page<FileItem>(page, 20, sql);
+            return Search(keywords, extension, _tag, page);
         }
 
-        public FileItem Get(string url)
+        public IPage<FileEntity> Search(string keywords, string[] extension,
+            int folder,
+            int page = 1)
         {
-            var model = db.FindFirst<FileItem>(FILE_TABLE, "folder=@0 AND path=@1",
-                _tag, url);
-            if (model is null)
+            var query = db.Files.Where(i => i.Folder == folder);
+            if (string.IsNullOrWhiteSpace(keywords))
             {
-                throw new Exception("not found file");
+                query = query.Where(i => i.Name.Contains(keywords));
             }
-            return model;
+            if (extension.Length > 0)
+            {
+                query = query.Where(i => extension.Contains(i.Extension));
+            }
+            var res = new Page<FileEntity>(query.Count(), page);
+            if (res.IsEmpty)
+            {
+                return res;
+            }
+            res.Items = query.OrderByDescending(i => i.Id).Skip(res.ItemsOffset).Take(res.ItemsPerPage).ToArray();
+            return res;
+        }
+
+        public FileEntity Get(string url)
+        {
+            var model = db.Files.Where(i => i.Folder == _tag && i.Path == url).Single();
+            return model is null ? throw new Exception("not found file") : model;
         }
 
         public void AddQuote(string url, byte itemType, int itemId)
@@ -248,19 +226,20 @@ namespace NetDream.Shared.Providers
             {
                 return;
             }
-            var id = db.FindScalar<int>(FILE_TABLE, "id", "folder=@0 AND path=@1",
-                _tag, url);
+            var id = db.Files.Where(i => i.Folder == _tag && i.Path == url)
+                .Select(i => i.Id).Single();
             if (id < 1)
             {
                 throw new Exception("not found file");
             }
-            var count = db.FindCount(FILE_QUOTE_TABLE, "file_id=@0 AND item_id=@1 AND item_type=@2",
-                id, itemId, itemType);
-            if (count > 0)
+            var count = db.FileQuotes
+                .Where(i => i.FileId == id && i.ItemId == itemId && i.ItemType == itemType)
+                .Any();
+            if (count)
             {
                 return;
             }
-            db.Insert(FILE_QUOTE_TABLE, new FileQuoteLog()
+            db.FileQuotes.Add(new FileQuoteEntity()
             {
                 FileId = id,
                 ItemId = itemId,
@@ -268,11 +247,12 @@ namespace NetDream.Shared.Providers
                 UserId = client.UserId,
                 CreatedAt = client.Now,
             });
+            db.SaveChanges();
         }
 
         public void RemoveQuote(byte itemType, int itemId)
         {
-            db.DeleteWhere(FILE_QUOTE_TABLE, "item_type=@0 AND item_id=@1", itemType, itemId);
+            db.FileQuotes.Where(i => i.ItemType == itemType && i.ItemId == itemId).ExecuteDelete();
         }
 
         public void RemoveFile(string url)
@@ -284,11 +264,11 @@ namespace NetDream.Shared.Providers
             Remove(Get(url));
         }
 
-        public void Remove(FileItem model)
+        public void Remove(FileEntity model)
         {
-            db.DeleteWhere(FILE_QUOTE_TABLE, "file_id=@0", model.Id);
-            db.DeleteWhere(FILE_LOG_TABLE, "file_id=@0", model.Id);
-            db.DeleteWhere(FILE_TABLE, "id=@0", model.Id);
+            db.FileQuotes.Where(i => i.FileId == model.Id).ExecuteDelete();
+            db.FileLogs.Where(i => i.FileId == model.Id).ExecuteDelete();
+            db.Files.Where(i => i.Id == model.Id).ExecuteDelete();
             File.Delete(ToFile(model));
         }
 
@@ -357,14 +337,16 @@ namespace NetDream.Shared.Providers
             {
                 throw new Exception(string.Format("File is error: {0}", path));
             }
-            db.UpdateWhere(FILE_TABLE, "path=@0 AND folder=@1", new Dictionary<string, object>()
-            {
-                {"size", 0 }, // file.Size()
-                {"md5", "" } // file.Md5()
-            }, path, _tag);
+            using var fs = File.OpenRead(file);
+            var size = fs.Length;
+            var md5 = FileHelper.MD5Encode(fs);
+            db.Files.Where(i => i.Path == path && i.Folder == _tag)
+                .ExecuteUpdate(setters => 
+                setters.SetProperty(i => i.Size, size)
+                .SetProperty(i => i.Md5, md5));
         }
 
-        protected string ToFile(FileItem path)
+        protected string ToFile(FileEntity path)
         {
             return ToFile(path.Path);
         }

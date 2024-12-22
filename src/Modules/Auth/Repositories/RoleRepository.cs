@@ -45,7 +45,7 @@ namespace NetDream.Modules.Auth.Repositories
             BindRolePermission(model.Id, permissions);
             mediator.Publish(ManageAction.Create(client, 
                 "role_edit", 
-                string.Empty, Constants.TYPE_ROLE, model.Id));
+                string.Empty, ModuleModelType.TYPE_ROLE, model.Id));
             return model;
         }
 
@@ -260,7 +260,7 @@ namespace NetDream.Modules.Auth.Repositories
             db.TrySave(model);
 
             mediator.Publish(ManageAction.Create(client, 
-                "permission_edit", model.Name, Constants.TYPE_ROLE_PERMISSION, model.Id));
+                "permission_edit", model.Name, ModuleModelType.TYPE_ROLE_PERMISSION, model.Id));
             return model;
         }
 
@@ -274,7 +274,7 @@ namespace NetDream.Modules.Auth.Repositories
             db.DeleteById<RoleEntity>(id);
             db.DeleteWhere<UserRoleEntity>("role_id", id);
             db.DeleteWhere<RolePermissionEntity>("role_id", id);
-            mediator.Publish(ManageAction.Create(client, "role_remove", model.Name, Constants.TYPE_ROLE, model.Id));
+            mediator.Publish(ManageAction.Create(client, "role_remove", model.Name, ModuleModelType.TYPE_ROLE, model.Id));
         }
     }
 }

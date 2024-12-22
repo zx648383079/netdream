@@ -1,4 +1,6 @@
-﻿using NetDream.Modules.AdSense.Forms;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.AdSense.Entities;
+using NetDream.Modules.AdSense.Forms;
 using NetDream.Modules.AdSense.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
@@ -8,7 +10,7 @@ using System.Linq;
 
 namespace NetDream.Modules.AdSense.Repositories
 {
-    public class AdRepository(IDatabase db, IClientContext environment)
+    public class AdRepository(AdSenseContext db, IClientContext environment)
     {
         public const int TYPE_TEXT = 0;
         public const int TYPE_IMAGE = 1;
@@ -17,13 +19,13 @@ namespace NetDream.Modules.AdSense.Repositories
 
         public void ManagePositionRemove(int id)
         {
-            db.Delete<PositionEntity>(id);
-            db.Delete<AdEntity>("WHERE position_id=@0", id);
+            db.Positions.Where(i => i.Id == id).ExecuteDelete();
+            db.Ads.Where(i => i.PositionId == id).ExecuteDelete();
         }
 
         public IList<PositionEntity> PositionAll()
         {
-            return db.Fetch<PositionEntity>();
+            return db.Positions.ToArray();
         }
 
         public IList<FormattedAdModel> Banners()
@@ -40,7 +42,7 @@ namespace NetDream.Modules.AdSense.Repositories
             var id = 0;
             if (string.IsNullOrWhiteSpace(position))
             {
-                id = db.FindScalar<int, PositionEntity>("id", "name=@0", position);
+                id = db.Positions.Where(i => i.Name == position).Select(i => i.Id).Single();
                 if (id == 0)
                 {
                     return [];

@@ -1,4 +1,4 @@
-﻿using NPoco;
+﻿using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.OpenPlatform.Models
 {
@@ -6,7 +6,7 @@ namespace NetDream.Modules.OpenPlatform.Models
     {
         public PagePaging Paging { get; set; }
 
-        public PageResponse(Page<T> page): base(page.Items)
+        public PageResponse(IPage<T> page): base(page.Items)
         {
             Paging = new()
             {

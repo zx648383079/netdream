@@ -1,9 +1,9 @@
-﻿using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
+using NetDream.Shared.Providers.Entities;
 using NetDream.Shared.Repositories.Models;
-using NPoco;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,8 +11,7 @@ using System.Linq;
 
 namespace NetDream.Shared.Repositories
 {
-    public class ExplorerRepository(IDatabase db,
-        StorageProvider storage, IEnvironment environment)
+    public class ExplorerRepository(StorageProvider storage, IEnvironment environment)
     {
         /// <summary>
         /// 备份的文件夹
@@ -112,17 +111,14 @@ namespace NetDream.Shared.Repositories
             }).ToArray();
         }
 
-        public Page<VirtualFileItem> Search(string path = "", 
+        public IPage<VirtualFileItem> Search(string path = "", 
             string keywords = "", string filter = "", int page = 1)
         {
             var (drive, p, folder) = SplitPath(path);
             path = p;
             if (string.IsNullOrWhiteSpace(drive))
             {
-                return new Page<VirtualFileItem>()
-                {
-                    Items = DriveList().ToList()
-                };
+                return new Page<VirtualFileItem>(DriveList());
             }
             if (string.IsNullOrWhiteSpace(folder))
             {
@@ -136,7 +132,7 @@ namespace NetDream.Shared.Repositories
                 return new Page<VirtualFileItem>();
             }
             var visualFolder = string.Format("{0}:{1}{2}", drive, !string.IsNullOrWhiteSpace(path) ? "/" : string.Empty, path);
-            var items = new Page<VirtualFileItem>();
+            var items = new List<VirtualFileItem>();
             var info = new DirectoryInfo(folder);
             foreach (var item in info.EnumerateDirectories())
             {
@@ -148,7 +144,7 @@ namespace NetDream.Shared.Repositories
                 {
                     continue;
                 }
-                items.Items.Add(new(item.Name, $"{visualFolder}/{item.Name}")
+                items.Add(new(item.Name, $"{visualFolder}/{item.Name}")
                 {
                     IsFolder = true,
                     CreatedAt = TimeHelper.TimestampFrom(item.LastWriteTime)
@@ -164,13 +160,13 @@ namespace NetDream.Shared.Repositories
                 {
                     continue;
                 }
-                items.Items.Add(new(item.Name, $"{visualFolder}/{item.Name}")
+                items.Add(new(item.Name, $"{visualFolder}/{item.Name}")
                 {
                     Size = item.Length,
                     CreatedAt = TimeHelper.TimestampFrom(item.LastWriteTime)
                 });
             }
-            return items;
+            return new Page<VirtualFileItem>(items);
         }
 
         public string Download(string path)
@@ -298,7 +294,7 @@ namespace NetDream.Shared.Repositories
             return FileRepository.IsTypeExtension(ext, filter);
         }
 
-        public Page<VirtualFileItem> SearchWithType(string type, string keywords, int page = 1)
+        public IPage<VirtualFileItem> SearchWithType(string type, string keywords, int page = 1)
         {
             var provider = storage.PublicStore();
             var items = provider.Search(keywords, 
@@ -310,38 +306,23 @@ namespace NetDream.Shared.Repositories
             //        item.Thumb = provider.ToPublicUrl(item.Path);
             //    }
             //}
-            return new Page<VirtualFileItem>()
+            return new Page<VirtualFileItem>(items.TotalItems, items.CurrentPage, items.ItemsPerPage)
             {
-                CurrentPage = items.CurrentPage,
-                TotalItems = items.TotalItems,
-                TotalPages = items.TotalPages,
-                Items = items.Items.Select(item => new VirtualFileItem(item.Name, item.Path)).ToList(),
-                ItemsPerPage = items.ItemsPerPage,
+                Items = items.Items.Select(item => new VirtualFileItem(item.Name, item.Path)).ToArray(),
             };
         }
 
 
-        public Page<Providers.Models.FileItem> StorageSearch(
+        public IPage<FileEntity> StorageSearch(
             string keywords = "", int tag = 0, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From(StorageProvider.FILE_TABLE);
-            SearchHelper.Where(sql, "name", keywords);
-            if (tag > 0)
-            {
-                sql.Where("folder=@0", tag);
-            }
-            sql.OrderBy("id DESC");
-            return db.Page<Providers.Models.FileItem>(page, 20, sql);
+            return storage.Search(keywords, [], tag, page);
         }
 
         public void StorageRemove(int[] id)
         {
-            var sql = new Sql();
-            sql.Select("*").From(StorageProvider.FILE_TABLE)
-                .WhereIn("id", id);
-            var items = db.Fetch<Providers.Models.FileItem>(sql);
-            if (items is null || items.Count == 0)
+            var items = storage.Context.Files.Where(i => id.Contains(i.Id)).ToArray();
+            if (items is null || items.Length == 0)
             {
                 return;
             }
@@ -368,11 +349,8 @@ namespace NetDream.Shared.Repositories
 
         public void StorageSync(int[] id)
         {
-            var sql = new Sql();
-            sql.Select("*").From(StorageProvider.FILE_TABLE)
-                .WhereIn("id", id);
-            var items = db.Fetch<Providers.Models.FileItem>(sql);
-            if (items is null || items.Count == 0)
+            var items = storage.Context.Files.Where(i => id.Contains(i.Id)).ToArray();
+            if (items is null || items.Length == 0)
             {
                 return;
             }

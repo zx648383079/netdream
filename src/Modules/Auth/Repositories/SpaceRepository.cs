@@ -79,7 +79,7 @@ namespace NetDream.Modules.Auth.Repositories
                 throw new Exception("error");
             }
             var user = db.SingleById<UserEntity>(userId) ?? throw new Exception("user is error");
-            feedback.Report(Constants.TYPE_USER,
+            feedback.Report(ModuleModelType.TYPE_USER,
                 userId, $"举报【{user.Name}】：{reason}", "举报用户");
             client.TryGetUser(out var currentUser);
             bulletin.SendAdministrator("举报用户",

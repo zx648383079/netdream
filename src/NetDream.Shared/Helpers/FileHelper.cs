@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace NetDream.Shared.Helpers
 {
@@ -40,6 +39,28 @@ namespace NetDream.Shared.Helpers
                 }
             }
             return string.Join('/', args);
+        }
+
+        public static string MD5Encode(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName) || !File.Exists(fileName))
+            {
+                return string.Empty;
+            }
+            using var fs = File.OpenRead(fileName);
+            return MD5Encode(fs);
+        }
+
+        public static string MD5Encode(Stream fs)
+        {
+            var md5 = MD5.Create();
+            var res = md5.ComputeHash(fs);
+            var sb = new StringBuilder();
+            foreach (var b in res)
+            {
+                sb.Append(b.ToString("x2"));
+            }
+            return sb.ToString();
         }
 
         public static void EachFile(string folder,
