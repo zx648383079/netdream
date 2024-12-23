@@ -4,6 +4,8 @@ using NetDream.Modules.AdSense.Forms;
 using NetDream.Modules.AdSense.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +39,7 @@ namespace NetDream.Modules.AdSense.Repositories
         {
             return Load("mobile_banner");
         }
-        public IList<AdModel> GetList(string keywords, string position)
+        public AdEntity[] GetList(string keywords, string position)
         {
             var id = 0;
             if (string.IsNullOrWhiteSpace(position))
@@ -50,71 +52,35 @@ namespace NetDream.Modules.AdSense.Repositories
             }
             return GetList(keywords, id);
         }
-        public IList<AdModel> GetList(string keywords = "", int position = 0)
+        public AdEntity[] GetList(string keywords = "", int position = 0)
         {
-            var sql = new Sql();
-            SearchHelper.Where(sql, "name", keywords);
+            var query = db.Ads.Include(i => i.Position).Where(i => i.StartAt <= environment.Now && i.EndAt > environment.Now);
+            if (!string.IsNullOrWhiteSpace(keywords))
+            {
+                query = query.Where(i => i.Name.Contains(keywords));
+            }
             if (position > 0)
             {
-                sql.Where("position_id=@0", position);
+                query = query.Where(i => i.PositionId == position);
             }
-            sql.Where("start_at<=@0 AND end_at>@0", environment.Now);
-            var items = db.Fetch<AdModel>(sql);
-            WithPosition(items);
-            return items;
+            return query.ToArray();
         }
 
-        private void WithPosition(IEnumerable<AdModel>? items)
-        {
-            if (items is null)
-            {
-                return;
-            }
-            var idItems = items.Select(item => item.PositionId).Where(i => i > 0).Distinct();
-            if (!idItems.Any())
-            {
-                return;
-            }
-            var data = db.Fetch<PositionEntity>($"WHERE id IN ({string.Join(',', idItems)})");
-            if (data is null || data.Count == 0)
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                foreach (var it in data)
-                {
-                    if (item.PositionId == it.Id)
-                    {
-                        item.Position = it;
-                        break;
-                    }
-                }
-            }
-        }
-        private void WithPosition(AdModel? item)
-        {
-            if (item is null)
-            {
-                return;
-            }
-            item.Position = db.SingleById<PositionEntity>(item.PositionId);
-        }
 
         public AdEntity Get(int id)
         {
-            var model = db.Single<AdModel>("id=@0 AND start_at<=@1 AND end_at>@1", id, environment.Now);
+            var model = db.Ads.Include(i => i.Position)
+                .Where(i => i.Id == id && i.StartAt <= environment.Now && i.EndAt > environment.Now).Single();
             if (model is null)
             {
                 throw new Exception("广告不存在");
             }
-            WithPosition(model);
             return model;
         }
 
-        public IList<FormattedAdModel> Load(string code)
+        public FormattedAdModel[] Load(string code)
         {
-            var position = db.Single<PositionEntity>("WHERE code=@0 AND status=1", code);
+            var position = db.Positions.Where(i => i.Code == code && i.Status == 1).Single();
             if (position is null)
             {
                 return [];
@@ -124,13 +90,13 @@ namespace NetDream.Modules.AdSense.Repositories
                 // 第三方广告
                 // return position.Template;
             }
-            var items = db.Fetch<AdEntity>("WHERE position_id=@0 AND status=1", position.Id);
+            var items = db.Ads.Where(i => i.PositionId == position.Id && i.Status == 1).ToArray();
             return Format(position, items, false);
         }
 
         public string Render(string code)
         {
-            var position = db.Single<PositionEntity>("WHERE code=@0 AND status=1", code);
+            var position = db.Positions.Where(i => i.Code == code && i.Status == 0).Single();
             if (position is null)
             {
                 return string.Empty;
@@ -139,7 +105,7 @@ namespace NetDream.Modules.AdSense.Repositories
             {
                 return position.Template;
             }
-            var items = db.Fetch<AdEntity>("WHERE position_id=@0 AND status=1", position.Id);
+            var items = db.Ads.Where(i => i.PositionId == position.Id && i.Status == 1).ToArray();
             var res = Format(position, items);
             return TemplateCompiler.Render(position.Template, res);
         }
@@ -168,7 +134,7 @@ namespace NetDream.Modules.AdSense.Repositories
          * @param bool formatBody 是否预生成内容
          * @return array
          */
-        public IList<FormattedAdModel> Format(PositionEntity position, IList<AdEntity> items, bool formatBody = true)
+        public FormattedAdModel[] Format(PositionEntity position, IList<AdEntity> items, bool formatBody = true)
         {
             var data = new List<FormattedAdModel>();
             var formatted = FormatSize(position);
@@ -191,46 +157,44 @@ namespace NetDream.Modules.AdSense.Repositories
                      : item.Content
                 });
             }
-            return data;
+            return [..data];
         }
-        public Page<AdModel> ManageList(string keywords, string position, int page = 1)
+        public IPage<AdEntity> ManageList(string keywords, string position, int page = 1)
         {
             var id = 0;
             if (string.IsNullOrWhiteSpace(position))
             {
-                id = db.FindScalar<int, PositionEntity>("id", "name=@0", position);
+                id = db.Positions.Where(i => i.Name == position).Select(i => i.Id).Single();
                 if (id == 0)
                 {
-                    return new Page<AdModel>();
+                    return new Page<AdEntity>();
                 }
             }
             return ManageList(keywords, id, page);
         }
-        public Page<AdModel> ManageList(string keywords = "", 
+        public IPage<AdEntity> ManageList(string keywords = "", 
             int position = 0, int page = 1)
         {
-            var sql = new Sql();
-            SearchHelper.Where(sql, "name", keywords);
-            if (position > 0)
-            {
-                sql.Where("position_id=@0", position);
-            }
-            sql.Where("start_at<=@0 AND end_at>@0", environment.Now);
-            sql.OrderBy("status DESC", "id Desc");
-            var items = db.Page<AdModel>(1, 20, sql);
-            WithPosition(items.Items);
-            return items;
+            return db.Ads.Include(i => i.Position).When(keywords, i => i.Name.Contains(keywords))
+                .When(position > 0, i => i.PositionId == position)
+                .Where(i => i.StartAt <= environment.Now && i.EndAt > environment.Now)
+                .OrderByDescending(i => i.Status)
+                .OrderByDescending(i => i.Id).ToPage(page);
         }
 
         public AdEntity? ManageGet(int id)
         {
-            return db.SingleById<AdEntity>(id);
+            return db.Ads.Where(i => i.Id == id).Single();
         }
 
         public AdEntity ManageSave(AdForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<AdEntity>(data.Id) :
+            var model = data.Id > 0 ? db.Ads.Where(i => i.Id == data.Id).Single() :
                 new AdEntity();
+            if (model is null)
+            {
+                throw new Exception("id is error");
+            }
             model.StartAt = data.StartAt;
             model.EndAt = data.EndAt;
             model.Name = data.Name;
@@ -243,32 +207,43 @@ namespace NetDream.Modules.AdSense.Repositories
                 model.CreatedAt = environment.Now;
             }
             model.UpdatedAt = environment.Now;
-            db.TrySave(model);
+            if (data.Id > 0)
+            {
+                db.Ads.Update(model);
+            }
+            else
+            {
+                db.Ads.Add(model);
+            }
+            db.SaveChanges();
             return model;
         }
 
         public void ManageRemove(int id)
         {
-            db.Delete<AdEntity>(id);
+            db.Ads.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public Page<PositionEntity> ManagePositionList(string keywords = "", int page = 1)
+        public IPage<PositionEntity> ManagePositionList(string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            SearchHelper.Where(sql, "name", keywords);
-            sql.OrderBy("status DESC", "id Desc");
-            return db.Page<PositionEntity>(page, 20, sql);
+            return db.Positions.When(keywords, i => i.Name.Contains(keywords))
+                .OrderByDescending(i => i.Status)
+                .OrderByDescending(i => i.Id).ToPage(page);
         }
 
         public PositionEntity? ManagePosition(int id)
         {
-            return db.SingleById<PositionEntity>(id);
+            return db.Positions.Where(i => i.Id == id).Single();
         }
 
         public PositionEntity ManagePositionSave(PositionForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<PositionEntity>(data.Id) :
+            var model = data.Id > 0 ? db.Positions.Where(i => i.Id == data.Id).Single() :
                 new PositionEntity();
+            if (model is null)
+            {
+                throw new Exception("id error");
+            }
             model.Template = data.Template;
             model.Status = data.Status;
             model.AutoSize = data.AutoSize;
@@ -281,7 +256,14 @@ namespace NetDream.Modules.AdSense.Repositories
                 model.CreatedAt = environment.Now;
             }
             model.UpdatedAt = environment.Now;
-            db.TrySave(model);
+            if (data.Id > 0)
+            {
+                db.Positions.Update(model);
+            } else
+            {
+                db.Positions.Add(model);
+            }
+            db.SaveChanges();
             return model;
         }
 

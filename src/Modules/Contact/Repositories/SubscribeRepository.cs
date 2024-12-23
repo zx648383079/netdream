@@ -1,20 +1,18 @@
-﻿using NetDream.Modules.Contact.Entities;
-using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
-using NPoco;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Contact.Entities;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers;
+using System.Linq;
 
 namespace NetDream.Modules.Contact.Repositories
 {
-    public class SubscribeRepository(IDatabase db)
+    public class SubscribeRepository(ContactContext db)
     {
-        public Page<SubscribeEntity> GetList(string keywords = "", int page = 1)
+        public IPage<SubscribeEntity> GetList(string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From<SubscribeEntity>(db);
-            SearchHelper.Where(sql, ["email", "name"], keywords);
-            sql.OrderBy("status ASC", "id DESC");
-            return db.Page<SubscribeEntity>(page, 20, sql);
+            return db.Subscribes.Search(keywords, "email", "name")
+                .OrderBy(i => i.Status)
+                .OrderByDescending(i => i.Id).ToPage(page);
         }
 
         public void Change(int[] id, int status)
@@ -23,15 +21,13 @@ namespace NetDream.Modules.Contact.Repositories
             {
                 return;
             }
-            db.Update<SubscribeEntity>(new Sql().WhereIn("id", id), new Dictionary<string, object>()
-            {
-                {"status", status},
-            });
+            db.Subscribes.Where(i => id.Contains(i.Id))
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, status));
         }
 
         public void Remove(params int[] id)
         {
-            db.DeleteById<SubscribeEntity>(id);
+            db.Subscribes.Where(i => id.Contains(i.Id)).ExecuteDelete();
         }
     }
 }

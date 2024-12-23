@@ -13,6 +13,7 @@ namespace NetDream.Modules.SEO.Migrations
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(50);
             builder.Property(table => table.Title).HasColumnName("title").HasMaxLength(100);
+            
             builder.Property(table => table.Language).HasColumnName("language").HasComment("¶àÓïÑÔÅäÖÃ");
 
             builder.Property(table => table.Description).HasColumnName("description").HasMaxLength(500).HasDefaultValue(string.Empty);

@@ -18,6 +18,11 @@ namespace NetDream.Shared.Helpers
                 {
                     continue;
                 }
+                if (item[0] is not >= 'a' and <= 'z')
+                {
+                    res.Append(item);
+                    continue;
+                }
                 res.Append(item[..1].ToUpper());
                 res.Append(item[1..].ToLower());
             }

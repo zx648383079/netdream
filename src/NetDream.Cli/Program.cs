@@ -4,6 +4,8 @@ using NetDream.Modules.Gzo.Repositories;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
 
@@ -18,6 +20,8 @@ namespace NetDream.Cli
                 RunWidthArgs(args);
                 return;
             }
+            // var items = new string[] { "h", "g" };
+            // Expression<Func<ConnectionString, ConnectionString>> b = c => new ConnectionString { Default = c.Default };
             // Console.WriteLine("-g Generate Database Entities");
             Console.WriteLine("Please select mode:");
             Console.WriteLine("1. Generate Database Entities");

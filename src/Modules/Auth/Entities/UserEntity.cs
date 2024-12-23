@@ -3,7 +3,7 @@ using NetDream.Shared.Interfaces.Entities;
 namespace NetDream.Modules.Auth.Entities
 {
     
-    public class UserEntity: IUser
+    public class UserEntity: IUser, IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -25,7 +25,6 @@ namespace NetDream.Modules.Auth.Entities
         
         public int CreatedAt { get; set; }
 
-        [Ignore]
-        public bool IsOnline { get; } = false;
+        public bool IsOnline { get; set; }
     }
 }

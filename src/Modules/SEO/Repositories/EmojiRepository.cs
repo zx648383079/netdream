@@ -1,9 +1,10 @@
-﻿using NetDream.Modules.SEO.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.SEO.Entities;
 using NetDream.Modules.SEO.Forms;
-using NetDream.Modules.SEO.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
-using NPoco;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -11,70 +12,43 @@ using System.Text.RegularExpressions;
 
 namespace NetDream.Modules.SEO.Repositories
 {
-    public class EmojiRepository(IDatabase db)
+    public class EmojiRepository(SEOContext db)
     {
         public const string CACHE_KEY = "emoji_tree";
 
-        public Page<EmojiModel> GetList(string keywords = "", int category = 0, int page = 1)
+        public IPage<EmojiEntity> GetList(string keywords = "", 
+            int category = 0, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From<EmojiEntity>(db);
-            SearchHelper.Where(sql, "name", keywords);
-            if (category > 0)
-            {
-                sql.Where("cat_id=@0", category);
-            }
-            sql.OrderBy("id DESC");
-            var items = db.Page<EmojiModel>(page, 20, sql);
-            WithCategory(items.Items);
-            return items;
-        }
-
-        private void WithCategory(IEnumerable<EmojiModel> items)
-        {
-            var idItems = items.Select(item => item.CatId).Where(i => i > 0).Distinct();
-            if (!idItems.Any())
-            {
-                return;
-            }
-            var data = db.Fetch<EmojiCategoryEntity>($"WHERE id IN ({string.Join(',', idItems)})");
-            if (data.Count == 0)
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                foreach (var it in data)
-                {
-                    if (item.CatId == it.Id)
-                    {
-                        item.Category = it;
-                        break;
-                    }
-                }
-            }
+            return db.Emojis.Include(i => i.Category).Search(keywords, "name")
+                .When(category > 0, i => i.CatId == category)
+                .OrderByDescending(i => i.Id).ToPage(page);
         }
 
         public EmojiEntity? Get(int id)
         {
-            return db.SingleById<EmojiEntity>(id);
+            return db.Emojis.Where(i => i.Id == id).Single();
         }
 
-        public EmojiEntity Save(EmojiForm data)
+        public IOperationResult<EmojiEntity> Save(EmojiForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<EmojiEntity>(data.Id) :
+            var model = data.Id > 0 ? db.Emojis.Where(i => i.Id == data.Id).Single() :
                 new EmojiEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<EmojiEntity>("id is error");
+            }
             model.CatId = data.CatId;
             model.Name = data.Name;
             model.Type = data.Type;
             model.Content = data.Content;
-            db.TrySave(model);
-            return model;
+            db.Emojis.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
         public void Remove(int id)
         {
-            db.Delete<EmojiEntity>(id);
+            db.Emojis.Where(i => i.Id == id).ExecuteDelete();
         }
         public void Remove(int[] id)
         {
@@ -82,54 +56,54 @@ namespace NetDream.Modules.SEO.Repositories
             { 
                 return;
             }
-            db.Delete<EmojiEntity>($"WHERE id IN ({string.Join(',', id)})");
+            db.Emojis.Where(i => id.Contains(i.Id)).ExecuteDelete();
         }
 
-        public IList<EmojiCategoryEntity> CatList(string keywords = "")
+        public EmojiCategoryEntity[] CatList(string keywords = "")
         {
-            var sql = new Sql();
-            sql.Select("*").From<EmojiCategoryEntity>(db);
-            SearchHelper.Where(sql, "name", keywords);
-            return db.Fetch<EmojiCategoryEntity>(sql);
+            return db.EmojiCategories.Search(keywords, "name").ToArray();
         }
 
         public EmojiCategoryEntity? GetCategory(int id)
         {
-            return db.SingleById<EmojiCategoryEntity>(id);
+            return db.EmojiCategories.Where(i => i.Id == id).Single();
         }
 
         public EmojiCategoryEntity SaveCategory(EmojiCategoryForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<EmojiCategoryEntity>(data.Id) :
+            var model = data.Id > 0 ? db.EmojiCategories.Where(i => i.Id == data.Id).Single() :
                 new EmojiCategoryEntity();
             model.Name = data.Name;
             model.Icon = data.Icon;
-            db.TrySave(model);
+            db.EmojiCategories.Save(model);
+            db.SaveChanges();
             return model;
         }
 
         public void RemoveCategory(int id)
         {
-            db.Delete<EmojiCategoryEntity>(id);
+            db.EmojiCategories.Where(i => i.Id == id).ExecuteDelete();
         }
 
         public int FindOrNewCategory(string name, string icon = "")
         {
             if (string.IsNullOrEmpty(name))
             {
-                return db.FindScalar<int, EmojiCategoryEntity>("MIN(id) as id", string.Empty);
+                return db.EmojiCategories.Min(i => i.Id);
             }
-            var id = db.FindScalar<int, EmojiCategoryEntity>("id", "name=@0", name);
+            var id = db.EmojiCategories.Where(i => i.Name == name).Select(i => i.Id).Single();
             if (id > 0)
             {
                 return id;
             }
-            id = (int)db.Insert(new EmojiCategoryEntity()
+            var model = new EmojiCategoryEntity()
             {
                 Name = name,
                 Icon = icon
-            });
-            return id;
+            };
+            db.EmojiCategories.Add(model);
+            db.SaveChanges();
+            return model.Id;
         }
 
         /**

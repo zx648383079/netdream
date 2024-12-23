@@ -4,9 +4,9 @@ using NetDream.Modules.SEO.Entities;
 
 namespace NetDream.Modules.SEO.Migrations
 {
-    public class BlackWordEntityTypeConfiguration : IEntityTypeConfiguration<BlackWordEntity>
+    public class BlackWordEntityTypeConfiguration : IEntityTypeConfiguration<WordForm>
     {
-        public void Configure(EntityTypeBuilder<BlackWordEntity> builder)
+        public void Configure(EntityTypeBuilder<WordForm> builder)
         {
             builder.ToTable("seo_black_word", table => table.HasComment("Î¥½û´Ê"));
             builder.HasKey("id");

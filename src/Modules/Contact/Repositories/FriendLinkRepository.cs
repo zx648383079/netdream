@@ -1,40 +1,35 @@
-﻿using NetDream.Modules.Contact.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Contact.Entities;
 using NetDream.Modules.Contact.Forms;
-using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NPoco;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Contact.Repositories
 {
-    public class FriendLinkRepository(IDatabase db, IClientContext environment)
+    public class FriendLinkRepository(ContactContext db, IClientContext environment)
     {
-        public Page<FriendLinkEntity> GetList(string keywords = "", int page = 1)
+        public IPage<FriendLinkEntity> GetList(string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From<FriendLinkEntity>(db);
-            SearchHelper.Where(sql, ["name", "email", "url", "brief"], keywords);
-            sql.OrderBy("status ASC", "id DESC");
-            return db.Page<FriendLinkEntity>(page, 20, sql);
+            return db.FriendLinks.Search(keywords, "name", "email", "url", "brief")
+                .OrderBy(i => i.Status)
+                .OrderByDescending(i => i.Id).ToPage(page);
         }
 
-        public FriendLinkEntity Get(int id)
+        public FriendLinkEntity? Get(int id)
         {
-            return db.SingleById<FriendLinkEntity>(id);
+            return db.FriendLinks.Where(i => i.Id == id).Single();
         }
 
-        public FriendLinkEntity Save(FriendLinkForm data)
+        public IOperationResult<FriendLinkEntity> Save(FriendLinkForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<FriendLinkEntity>(data.Id) :
+            var model = data.Id > 0 ? db.FriendLinks.Where(i => i.Id == data.Id).Single() :
                 new FriendLinkEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<FriendLinkEntity>("id is error");
+            }
             model.Name = data.Name;
             model.Email = data.Email;
             model.Url = data.Url;
@@ -43,15 +38,21 @@ namespace NetDream.Modules.Contact.Repositories
             {
                 model.UserId = environment.UserId;
             }
-            db.TrySave(model);
-            return model;
+            db.FriendLinks.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
-        public FriendLinkEntity Toggle(int id, string remark)
+        public FriendLinkEntity? Toggle(int id, string remark)
         {
             var model = Get(id);
+            if (model is null)
+            {
+                return null;
+            }
             model.Status = model.Status > 0 ? 0 : 1;
-            db.TrySave(model);
+            db.FriendLinks.Save(model);
+            db.SaveChanges();
             //event (new ManageAction("friend_link",
             //    sprintf("友情链接[%d]:%s，理由: %s", model.Url,
             //        model.Status > 0 ? "上架" : "下架", remark)
@@ -62,7 +63,7 @@ namespace NetDream.Modules.Contact.Repositories
 
         public void Remove(params int[] id)
         {
-            db.DeleteById<FriendLinkEntity>(id);
+            db.FriendLinks.Where(i => id.Contains(i.Id)).ExecuteDelete();
         }
 }
 }

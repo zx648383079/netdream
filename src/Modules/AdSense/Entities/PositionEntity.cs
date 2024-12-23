@@ -1,4 +1,5 @@
 using NetDream.Shared.Interfaces.Entities;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.AdSense.Entities
 {
@@ -21,6 +22,8 @@ namespace NetDream.Modules.AdSense.Entities
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }
+
+        public ICollection<AdEntity> Items { get; set; }
 
         public PositionEntity()
         {

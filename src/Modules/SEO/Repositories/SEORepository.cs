@@ -1,17 +1,13 @@
 ﻿using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using NetDream.Shared.Repositories.Models;
-using NPoco;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.SEO.Repositories
 {
-    public class SEORepository(IDatabase db, ExplorerRepository explorer)
+    public class SEORepository(SEOContext db, ExplorerRepository explorer)
     {
         public IList<OptionItem<string>> StoreItems()
         {

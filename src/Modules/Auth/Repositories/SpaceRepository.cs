@@ -2,12 +2,12 @@
 using NetDream.Modules.Auth.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Repositories;
-using NPoco;
 using System;
+using System.Linq;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class SpaceRepository(IDatabase db, 
+    public class SpaceRepository(AuthContext db, 
         IClientContext client, 
         UserRepository repository,
         RelationshipRepository relationship,
@@ -78,7 +78,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 throw new Exception("error");
             }
-            var user = db.SingleById<UserEntity>(userId) ?? throw new Exception("user is error");
+            var user = db.Users.Where(i => i.Id == userId).Single() ?? throw new Exception("user is error");
             feedback.Report(ModuleModelType.TYPE_USER,
                 userId, $"举报【{user.Name}】：{reason}", "举报用户");
             client.TryGetUser(out var currentUser);

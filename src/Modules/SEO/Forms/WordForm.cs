@@ -1,12 +1,14 @@
-using NetDream.Shared.Interfaces.Entities;
 
-namespace NetDream.Modules.SEO.Entities
+using System.ComponentModel.DataAnnotations;
+
+namespace NetDream.Modules.SEO.Forms
 {
     
-    public class BlackWordEntity: IIdEntity
+    public class WordForm
     {
         
         public int Id { get; set; }
+        [Required]
         public string Words { get; set; } = string.Empty;
         
         public string ReplaceWords { get; set; } = string.Empty;

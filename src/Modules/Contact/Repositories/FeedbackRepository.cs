@@ -1,28 +1,19 @@
-﻿using NetDream.Modules.Contact.Entities;
-using NetDream.Shared.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Contact.Entities;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NPoco;
-using NPoco.FluentMappings;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+using NetDream.Shared.Providers;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Contact.Repositories
 {
-    public class FeedbackRepository(IDatabase db)
+    public class FeedbackRepository(ContactContext db)
     {
-        public Page<FeedbackEntity> ManageList(string keywords = "", int page = 1)
+        public IPage<FeedbackEntity> ManageList(string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From<FeedbackEntity>(db);
-            SearchHelper.Where(sql, ["name", "email", "content"], keywords);
-            sql.OrderBy("status ASC", "id DESC");
-            return db.Page<FeedbackEntity>(page, 20, sql);
+            return db.Feedbacks.Search(keywords, "name", "email", "content")
+                .OrderBy(i => i.Status)
+                .OrderByDescending(i => i.Id).ToPage(page);
         }
 
         /// <summary>
@@ -32,14 +23,12 @@ namespace NetDream.Modules.Contact.Repositories
         /// <param name="perPage"></param>
         /// <param name="page"></param>
         /// <returns></returns>
-        public Page<FeedbackEntity> GetList(string keywords = "", 
+        public IPage<FeedbackEntity> GetList(string keywords = "", 
             int perPage = 20, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From<FeedbackEntity>(db);
-            SearchHelper.Where(sql, ["name", "content"], keywords);
-            sql.Where("open_status=1").OrderBy("id DESC");
-            var items = db.Page<FeedbackEntity>(page, 20, sql);
+            var items = db.Feedbacks.Search(keywords, "name", "content")
+                .Where(i => i.OpenStatus == 1).OrderByDescending(i => i.Id)
+                .ToPage(page);
             foreach (var item in items.Items)
             {
                 item.Name = StrHelper.HideName(item.Name);
@@ -51,17 +40,22 @@ namespace NetDream.Modules.Contact.Repositories
 
         public FeedbackEntity Get(int id)
         {
-            return db.SingleById<FeedbackEntity>(id);
+            return db.Feedbacks.Where(i => i.Id == id).Single();
         }
 
         public FeedbackEntity? Change(int id, string[] data)
         {
-            return ModelHelper.BatchToggle<FeedbackEntity>(db, id, data, ["status", "open_status"]);
+            var res = db.Feedbacks.BatchToggle(id, data, ["status", "open_status"]);
+            if (res is not null)
+            {
+                db.SaveChanges();
+            }
+            return res;
         }
 
         public void Remove(params int[] id)
         {
-            db.DeleteById<FeedbackEntity>(id);
+            db.Feedbacks.Where(i => id.Contains(i.Id)).ExecuteDelete();
         }
     }
 }

@@ -1,19 +1,19 @@
-﻿using NetDream.Modules.Contact.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Contact.Entities;
 using NetDream.Modules.Contact.Forms;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Interfaces;
-using NPoco;
-using System.Collections.Generic;
+using NetDream.Shared.Providers;
+using System.Linq;
 
 namespace NetDream.Modules.Contact.Repositories
 {
-    public class ContactRepository(IDatabase db, 
+    public class ContactRepository(ContactContext db, 
         IClientContext environment,
         ISystemBulletin bulletin)
     {
-        public List<FriendLinkEntity> FriendLinks()
+        public FriendLinkEntity[] FriendLinks()
         {
-            return db.Fetch<FriendLinkEntity>("WHERE status = 1");
+            return db.FriendLinks.Where(i => i.Status == 1).ToArray();
         }
 
         public FeedbackEntity SaveFeedback(FeedbackForm data)
@@ -25,13 +25,14 @@ namespace NetDream.Modules.Contact.Repositories
                 Phone = data.Phone,
                 UserId = environment.UserId
             };
-            db.TrySave(model);
+            db.Feedbacks.Add(model);
+            db.SaveChanges();
             return model;
         }
 
         public SubscribeEntity SaveSubscribe(SubscribeForm data)
         {
-            var model = db.Single<SubscribeEntity>("WHERE email=@0", data.Email);
+            var model = db.Subscribes.Where(i => i.Email == data.Email).Single();
             model ??= new SubscribeEntity();
             if (!string.IsNullOrWhiteSpace(data.Name) && model.Name != data.Name)
             {
@@ -39,13 +40,15 @@ namespace NetDream.Modules.Contact.Repositories
                 model.Status = 0;
             }
             model.Email = data.Email;
-            db.TrySave(model);
+            db.Subscribes.Save(model);
+            db.SaveChanges();
             return model;
         }
 
         public bool Unsubscribe(string email)
         {
-            db.Update<SubscribeEntity>("SET status=1, updated_at=@0 WHERE email=@1", environment.Now, email);
+            db.Subscribes.Where(i => i.Email == email)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, 1).SetProperty(i => i.UpdatedAt, environment.Now));
             return true;
         }
 
@@ -60,7 +63,8 @@ namespace NetDream.Modules.Contact.Repositories
                 Email = data.Email,
                 UserId= environment.UserId
             };
-            db.TrySave(model);
+            db.FriendLinks.Save(model);
+            db.SaveChanges();
             bulletin.SendAdministrator("友情链接申请", "[马上查看]", 98, [
                 bulletin.Ruler.FormatLink("[马上查看]", "b/friend_link")
             ]);

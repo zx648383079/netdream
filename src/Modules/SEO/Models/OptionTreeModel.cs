@@ -1,12 +1,10 @@
 ﻿using NetDream.Modules.SEO.Entities;
-using NPoco;
 using System.Collections.Generic;
 
 namespace NetDream.Modules.SEO.Models
 {
     public class OptionTreeModel: OptionEntity
     {
-        [Ignore]
         public List<OptionTreeModel> Children { get; set; } = [];
 
         public bool TryAdd(OptionEntity entity)

@@ -22,7 +22,12 @@ namespace NetDream.Modules.AdSense.Migrations
             builder.Property(table => table.Status).HasColumnName("status").HasDefaultValue(1).HasComment("是否启用广告位");
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
-            
+
+            builder.HasMany(p => p.Items)
+                .WithOne(b => b.Position)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(b => b.PositionId);
+
             
             var data = new PositionEntity[] {
                 new("banner", "首页Banner"),

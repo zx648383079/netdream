@@ -1,17 +1,15 @@
-﻿using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Models;
-using NPoco;
 using System.Text.RegularExpressions;
 using System;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public partial class AuthRepository(IDatabase db, IGlobeOption option, IClientContext client)
+    public partial class AuthRepository(AuthContext db, IGlobeOption option, IClientContext client)
     {
         internal const byte ACCOUNT_TYPE_NAME = 1;
         internal const byte ACCOUNT_TYPE_EMAIL = 2;

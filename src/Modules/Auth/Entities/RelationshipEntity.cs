@@ -2,7 +2,7 @@
 namespace NetDream.Modules.Auth.Entities
 {
     
-    public class UserRelationshipEntity
+    public class RelationshipEntity
     {
         
         

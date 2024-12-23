@@ -13,6 +13,10 @@ namespace NetDream.Modules.SEO.Migrations
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20);
             builder.Property(table => table.Icon).HasColumnName("icon").HasDefaultValue(string.Empty);
+            builder.HasMany(p => p.Items)
+                .WithOne(b => b.Category)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(b => b.CatId);
         }
     }
 }

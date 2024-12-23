@@ -1,5 +1,8 @@
-﻿using NetDream.Shared.Helpers;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories.Models;
 using System;
 using System.Collections.Generic;
@@ -105,12 +108,13 @@ namespace NetDream.Shared.Repositories
 
         public bool BrowserLanguageIsDefault => BrowserLanguage() == BROWSER_DEFAULT_LANGUAGE;
 
-        //public void AddTableColumn(ITable table)
-        //{
-        //    table.Enum(LANGUAGE_COLUMN_KEY, LANGUAGE_MAP.Keys)
-        //        .Default(FirstLanguage())
-        //        .Comment("多语言配置");
-        //}
+        public void AddTableColumn<TEntity>(EntityTypeBuilder<TEntity> builder)
+            where TEntity : class
+        {
+            builder.Column<TEntity, string>(LANGUAGE_COLUMN_KEY)
+                .HasDefaultValue(FirstLanguage())
+                .HasComment("多语言配置");
+        }
 
         /// <summary>
         /// 根据标识获取自适应的语言版本
@@ -120,22 +124,23 @@ namespace NetDream.Shared.Repositories
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        //public T? GetByKey<T>(IDatabase db, Sql query, string key, string value)
-        //{
-        //    var lang = BrowserLanguage();
-        //    var firstLang = FirstLanguage();
-        //    if (lang == firstLang)
-        //    {
-        //        return db.Single<T>(query.Where($"{LANGUAGE_COLUMN_KEY}=@0 AND {key}=@1", lang, value).OrderBy("id DESC"));
-        //    }
-        //    var langItems = new List<string> { lang, firstLang };
-        //    if (!LANGUAGE_MAP.ContainsKey(BROWSER_DEFAULT_LANGUAGE) 
-        //        && !langItems.Contains(BROWSER_DEFAULT_LANGUAGE)) {
-        //        langItems.Add(BROWSER_DEFAULT_LANGUAGE);
-        //    }
-        //    return db.Single<T>(query.WhereIn(LANGUAGE_COLUMN_KEY, [..langItems])
-        //        .Where($"{key}=@1", value).OrderBy("id DESC"));
-        //}
+        public IQueryable<TSource> GetByKey<TSource>(IQueryable<TSource> query, string key, string value)
+        {
+            var lang = BrowserLanguage();
+            var firstLang = FirstLanguage();
+            if (lang == firstLang)
+            {
+                return query.Where(LANGUAGE_COLUMN_KEY, lang).Where(key, value).OrderBy<TSource, int>("id", "DESC");
+            }
+            var langItems = new List<string> { lang, firstLang };
+            if (!LANGUAGE_MAP.ContainsKey(BROWSER_DEFAULT_LANGUAGE)
+                && !langItems.Contains(BROWSER_DEFAULT_LANGUAGE))
+            {
+                langItems.Add(BROWSER_DEFAULT_LANGUAGE);
+            }
+            return query.WhereIn(LANGUAGE_COLUMN_KEY, langItems)
+                .Where(key, value).OrderBy<TSource, int>("id", "DESC");
+        }
 
         /// <summary>
         /// 一篇文章可以切换的获取语言切换标识

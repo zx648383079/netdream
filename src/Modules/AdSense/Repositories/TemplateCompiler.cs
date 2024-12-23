@@ -1,10 +1,7 @@
-﻿using Modules.AdSense.Entities;
+﻿using NetDream.Modules.AdSense.Entities;
 using NetDream.Modules.AdSense.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.AdSense.Repositories
 {

@@ -1,10 +1,7 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
-using NetDream.Modules.Auth.Entities;
-using NPoco;
 
 namespace NetDream.Modules.Auth.Models
 {
-    [TableName(UserEntity.ND_TABLE_NAME)]
     public class UserSimpleModel : IUser
     {
         public int Id { get; set; }

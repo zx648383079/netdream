@@ -49,6 +49,9 @@ namespace NetDream.Shared.Models
         public static OperationResult<T> Fail(int failureReason, string message)
             => new(false, failureReason: failureReason, message: message);
 
+        public static OperationResult<T> Fail(string message)
+            => Fail(404, message);
+
         public static OperationResult<T> Fail(int failureReason, Exception? error)
             => new(false, failureReason: failureReason, error: error);
 

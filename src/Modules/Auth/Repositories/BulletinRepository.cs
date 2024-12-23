@@ -1,9 +1,7 @@
 ﻿using NetDream.Modules.Auth.Entities;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NPoco;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -11,7 +9,7 @@ using System.Web;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class BulletinRepository(IDatabase db, 
+    public class BulletinRepository(AuthContext db, 
         ILinkRuler ruler,
         IClientContext environment) : ISystemBulletin
     {

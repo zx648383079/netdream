@@ -22,5 +22,7 @@ namespace NetDream.Modules.AdSense.Entities
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }
+
+        public PositionEntity? Position { get; set; }
     }
 }

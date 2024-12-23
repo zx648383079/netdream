@@ -1,17 +1,13 @@
 ﻿using NetDream.Shared.Helpers;
 using NetDream.Modules.Auth.Entities;
-using NPoco;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 using NetDream.Shared.Interfaces;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class FundAccount(IDatabase db): IFundAccount
+    public class FundAccount(AuthContext db): IFundAccount
     {
         public const byte TYPE_SYSTEM = 1; // 系统自动
         public const byte TYPE_RECHARGE = 6; // 用户充值
@@ -44,11 +40,13 @@ namespace NetDream.Modules.Auth.Repositories
         {
             if (entity.Id > 0)
             {
-                db.Update(entity);
+                db.AccountLogs.Update(entity);
+                db.SaveChanges();
                 return entity;
             }
             entity.UpdatedAt = entity.CreatedAt = TimeHelper.TimestampNow();
-            db.Insert(entity);
+            db.AccountLogs.Add(entity);
+            db.SaveChanges();
             return entity;
         }
 
@@ -69,7 +67,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public float GetUserMoney(int userId)
         {
-            return db.ExecuteScalar<float>($"select money from {UserEntity.ND_TABLE_NAME} where user_id=@0", userId);
+            return db.Users.Where(i => i.Id == userId).Select(i => i.Money).Single();
         }
 
         public int Change(AccountLogEntity entity)
@@ -83,11 +81,8 @@ namespace NetDream.Modules.Auth.Repositories
             if (newMoney < 0) {
                 return 0;
             }
-            db.Update(new UserEntity()
-            {
-                Id = entity.UserId,
-                Money = (int)newMoney
-            }, ["money"]);
+            db.Users.Where(i => i.Id == entity.UserId)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Money, newMoney));
             entity.TotalMoney = (int)newMoney;
             entity = Log(entity);
             return entity.Id;

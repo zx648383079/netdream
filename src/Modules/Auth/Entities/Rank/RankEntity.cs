@@ -1,6 +1,6 @@
 
 
-namespace NetDream.Modules.Auth.Entities.Rank
+namespace NetDream.Modules.Auth.Entities
 {
     
     public class RankEntity

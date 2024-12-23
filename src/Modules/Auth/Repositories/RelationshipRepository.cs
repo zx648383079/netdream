@@ -1,19 +1,11 @@
-﻿using NetDream.Modules.Auth.Entities;
-using NetDream.Modules.Auth.Models;
-using NetDream.Shared.Extensions;
+﻿using NetDream.Modules.Auth.Models;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
-using NPoco;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class RelationshipRepository(IDatabase db, IClientContext client)
+    public class RelationshipRepository(AuthContext db, IClientContext client)
     {
         public const byte TYPE_FOLLOWING = 1; // 关注
         public const byte TYPE_BLOCKING = 5; // 屏蔽用户

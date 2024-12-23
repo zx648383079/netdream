@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetDream.Cli.Models
+﻿namespace NetDream.Cli.Models
 {
     public class Configuration
     {

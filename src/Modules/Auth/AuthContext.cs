@@ -1,10 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Migrations;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
+using NetDream.Shared.Providers.Migrations;
 
 namespace NetDream.Modules.Auth
 {
-    public class AuthContext(DbContextOptions<AuthContext> options): DbContext(options)
+    public class AuthContext(DbContextOptions<AuthContext> options): 
+        DbContext(options), IMetaContext
     {
         public DbSet<AccountLogEntity> AccountLogs {get; set; }
         public DbSet<ActionLogEntity> ActionLogs {get; set; }
@@ -18,7 +22,7 @@ namespace NetDream.Modules.Auth
         public DbSet<LoginQrEntity> LoginQrs {get; set; }
         public DbSet<MailLogEntity> MailLogs {get; set; }
         public DbSet<MetaEntity> Metas {get; set; }
-        public DbSet<OauthEntity> Oauths {get; set; }
+        public DbSet<OauthEntity> OAuth {get; set; }
         public DbSet<RelationshipEntity> Relationships {get; set; }
         public DbSet<UserEntity> Users {get; set; }
         public DbSet<BulletinEntity> Bulletins {get; set; }
@@ -43,8 +47,8 @@ namespace NetDream.Modules.Auth
             modelBuilder.ApplyConfiguration(new LoginLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new LoginQrEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new MailLogEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new MetaEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new OauthEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaEntityTypeConfiguration("user"));
+            modelBuilder.ApplyConfiguration(new OAuthEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new RelationshipEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new BulletinEntityTypeConfiguration());

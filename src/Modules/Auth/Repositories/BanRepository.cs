@@ -1,14 +1,12 @@
 ﻿using NetDream.Modules.Auth.Entities;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NPoco;
 using System;
 using System.Collections.Generic;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class BanRepository(IDatabase db, IClientContext client)
+    public class BanRepository(AuthContext db, IClientContext client)
     {
         private readonly Dictionary<string, byte> OAUTH_TYPE_MAPS = new() {
             {AuthRepository.OAUTH_TYPE_QQ, AuthRepository.ACCOUNT_TYPE_OAUTH_QQ },

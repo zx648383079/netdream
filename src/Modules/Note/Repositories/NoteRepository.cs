@@ -1,75 +1,67 @@
-﻿using Modules.Note.Entities;
-using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Repositories;
 using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Models;
-using NPoco;
 using System.Collections.Generic;
 using System;
+using NetDream.Modules.Note.Entities;
+using NetDream.Shared.Providers;
+using System.Linq;
+using NetDream.Shared.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace NetDream.Modules.Note.Repositories
 {
-    public class NoteRepository(IDatabase db, 
+    public class NoteRepository(NoteContext db, 
         IClientContext environment, IUserRepository userStore,
         LocalizeRepository localize)
     {
         public const int STATUS_VISIBLE = 1;
         public const int STATUS_HIDE = 0;
 
-        public Page<NoteEntity> GetManageList(string keywords = "", int user = 0, long page = 1)
+        public IPage<NoteEntity> GetManageList(string keywords = "", 
+            int user = 0, int page = 1)
         {
-            var sql = new Sql();
-            SearchHelper.Where(sql, "content", keywords);
-            if (user > 0)
-            {
-                sql.Where("user_id=@0", user);
-            }
-            sql.OrderBy("id DESC");
-            return db.Page<NoteEntity>(page, 20, sql);
+            return db.Notes.Search(keywords, "content")
+                .When(user > 0, i => i.UserId == user).OrderByDescending(i => i.Id)
+                .ToPage(page);
         }
 
-        public Page<NoteModel> GetList(string keywords = "", int user = 0, int id = 0, bool notice = false, long page = 1, int perPage = 20)
+        public IPage<NoteModel> GetList(string keywords = "", int user = 0, 
+            int id = 0, bool notice = false, int page = 1)
         {
-            var sql = new Sql();
-            SearchHelper.Where(sql, "content", keywords);
-            if (id > 0)
-            {
-                sql.Where("id=@0", id);
-            }
-            if (notice)
-            {
-                sql.Where("is_notice=1");
-            }
-            if (user > 0)
-            {
-                sql.Where("user_id=@0", user);
-            }
-            sql.Where("status=@0", STATUS_VISIBLE);
+            var query = db.Notes.Search(keywords, "content")
+                .When(id > 0, i => i.Id == id)
+                .When(notice, i => i.IsNotice == 1)
+                .When(user > 0, i => i.UserId == user);
             if (environment.UserId > 0)
             {
-                sql.Append("OR user_id=@0", environment.UserId);
+                query = query.Where(i => i.Status == STATUS_VISIBLE || i.UserId == environment.UserId);
+            } else
+            {
+                query = query.Where(i => i.Status == STATUS_VISIBLE);
             }
-            sql.OrderBy("id DESC");
-            var items = db.Page<NoteModel>(page, 20, sql);
+            var items = query.OrderByDescending(i => i.Id).ToPage(page)
+                .CopyTo<NoteEntity, NoteModel>();
             userStore.WithUser(items.Items);
             return items;
         }
 
         public NoteModel? Get(int id)
         {
-            var model = db.SingleById<NoteModel>(id);
-            if (model is not null)
+            var model = db.Notes.Where(i => i.Id == id).Single()?.CopyTo<NoteModel>();
+            if (model is null)
             {
-                model.User = userStore.Get(model.UserId);
+                return null;
             }
+            model.User = userStore.Get(model.UserId);
             return model;
         }
 
         public NoteModel? GetSelf(int id)
         {
-            var model = db.Single<NoteModel>("WHERE user_id=@0 AND id=@1", environment.UserId, id);
+            var model = db.Notes.Where(i => i.Id == id && i.UserId == environment.UserId).Single()?.CopyTo<NoteModel>();
             if (model is not null)
             {
                 model.User = userStore.Get(model.UserId);
@@ -77,60 +69,64 @@ namespace NetDream.Modules.Note.Repositories
             return model;
         }
 
-        public NoteEntity Save(NoteForm data, int userId = 0)
+        public IOperationResult<NoteEntity> Save(NoteForm data, int userId = 0)
         {
-            var model = data.Id > 0 ? db.SingleById<NoteEntity>(data.Id) : 
+            var model = data.Id > 0 ? db.Notes.Where(i => i.Id == data.Id).Single() : 
                 new NoteEntity();
             if (data.Id > 0 && userId > 0 && model.UserId != userId)
             {
-                throw new Exception("note error");
+                return OperationResult.Fail<NoteEntity>("note error");
             }
             model.Content = data.Content;
             if (userId > 0 || model.UserId == 0)
             {
                 model.UserId = userId;
             }
-            db.TrySave(model);
-            return model;
+            db.Notes.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
-        public NoteEntity SaveSelf(NoteForm data)
+        public IOperationResult<NoteEntity> SaveSelf(NoteForm data)
         {
             return Save(data, environment.UserId);
         }
 
         public void Remove(int id)
         {
-            db.Delete<NoteEntity>(id);
+            db.Notes.Where(i => i.Id == id).ExecuteDelete();
         }
 
         public void RemoveSelf(int id)
         {
-            db.Delete<NoteEntity>("WHERE user_id=@0 AND id=@1", environment.UserId, id);
+            db.Notes.Where(i => i.Id == id && i.UserId == environment.UserId).ExecuteDelete();
         }
 
-        public IList<string> Suggestion(string keywords)
+        public string[] Suggestion(string keywords)
         {
-            var sql = new Sql();
-            SearchHelper.Where(sql, "content", keywords);
-            sql.Limit(4);
-            return db.Pluck<string>(sql, "content");
+            return db.Notes.Search(keywords, "content")
+                .Take(4).Select(i => i.Content).ToArray();
         }
 
-        public IList<NoteModel> GetNewList(int limit = 5)
+        public NoteModel[] GetNewList(int limit = 5)
         {
-            var sql = new Sql();
-            sql.Where("is_notice=@0", localize.BrowserLanguageIsDefault ? 2 : 1);
-            sql.OrderBy("id DESC");
-            sql.Limit(limit > 0 ? limit : 5);
-            var items = db.Fetch<NoteModel>(sql);
+            var notice = localize.BrowserLanguageIsDefault ? 2 : 1;
+            var items = db.Notes.Where(i => i.IsNotice == notice)
+                .OrderByDescending(i => i.Id).Take(limit > 0 ? limit : 5)
+                .ToArray().Select(i => i.CopyTo<NoteModel>()).ToArray();
             userStore.WithUser(items);
             return items;
         }
 
         public NoteEntity? Change(int id, IDictionary<string, string> data)
         {
-            return ModelHelper.BatchToggle<NoteEntity>(db, id, data, ["is_notice"]);
+            var res = db.Notes.BatchToggle(id, data, "is_notice");
+            if (res is null)
+            {
+                return null;
+            }
+            db.SaveChanges();
+            return res;
         }
     }
 }

@@ -3,11 +3,9 @@ using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Events;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Repositories;
-using NPoco;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,7 +13,7 @@ using System.Linq;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class RoleRepository(IDatabase db, IClientContext client, IMediator mediator)
+    public class RoleRepository(AuthContext db, IClientContext client, IMediator mediator)
     {
         /**
          * @param array data

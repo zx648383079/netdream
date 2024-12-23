@@ -1,22 +1,20 @@
-﻿using Modules.Note.Entities;
-using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NPoco;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Modules.Note.Repositories
 {
-    public class StatisticsRepository(IDatabase db) : IStatisticsRepository, IUserStatistics
+    public class StatisticsRepository(NoteContext db) : IStatisticsRepository, IUserStatistics
     {
         public IDictionary<string, int> Subtotal()
         {
             var todayStart = TimeHelper.TimestampFrom(DateTime.Today);
-            var noteCount = db.FindCount<NoteEntity>(string.Empty);
+            var noteCount = db.Notes.Count();
             var noteToday = noteCount > 0 ? 
-                db.FindCount<NoteEntity>("created_at>=@0", todayStart) : 0; 
+                db.Notes.Where(i => i.CreatedAt >= todayStart).Count() : 0; 
             return new Dictionary<string, int>()
             {
                 {"note_count", noteCount},
@@ -27,7 +25,7 @@ namespace NetDream.Modules.Note.Repositories
         public IEnumerable<StatisticsItem> Subtotal(int user)
         {
             return [
-                new("便签数量", db.FindCount<NoteEntity>("user_id=@0", user), "条")
+                new("便签数量", db.Notes.Where(i => i.UserId == user).Count(), "条")
             ];
         }
     }

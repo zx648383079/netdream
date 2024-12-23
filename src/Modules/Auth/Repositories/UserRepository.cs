@@ -1,23 +1,23 @@
-﻿using NetDream.Shared.Extensions;
-using NetDream.Shared.Interfaces;
+﻿using NetDream.Shared.Interfaces;
 using NetDream.Modules.Auth.Models;
-using NPoco;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Shared.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using NetDream.Modules.Auth.Events;
-using NetDream.Shared.Migrations;
 using System.Data;
 using System;
 using NetDream.Shared.Repositories;
 using NetDream.Modules.Auth.Forms;
 using MediatR;
+using NetDream.Shared.Providers;
+using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class UserRepository(IDatabase db, IClientContext client, IMediator mediator) 
-        : MetaRepository<UserMetaEntity>(db)
+    public class UserRepository(AuthContext db, IClientContext client, IMediator mediator) 
+        : MetaRepository(db)
     {
         public const int STATUS_DELETED = 0; // 已删除
         public const int STATUS_FROZEN = 2; // 账户已冻结
@@ -28,11 +28,9 @@ namespace NetDream.Modules.Auth.Repositories
         public const int SEX_MALE = 1; // 性别男
         public const int SEX_FEMALE = 2; //性别女
 
-        protected override string IdKey => "user_id";
-
-        protected override Dictionary<string, object> DefaultItems => new()
+        protected override Dictionary<string, string> DefaultItems => new()
         {
-            {"address_id", 0 }, // 默认收货地址
+            {"address_id", "0" }, // 默认收货地址
             { "id_card", "" } // 身份证
         };
 
@@ -63,7 +61,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return null;
             }
-            var model = db.SingleById<UserEntity>(client.UserId);
+            var model = db.Users.Where(i => i.Id == client.UserId).Single();
 
             return new UserProfile()
             {
@@ -73,7 +71,17 @@ namespace NetDream.Modules.Auth.Repositories
 
         public UserProfile? GetPublicProfile(int id, string extra = "")
         {
-            var model = db.FindFirst<UserEntity>("id,name,avatar,mobile,email,sex,status,created_at", "id=@0", id);
+            var model = db.Users.Where(i => i.Id == client.UserId)
+                .Select(i => new UserEntity { 
+                    Id = i.Id,
+                    Name = i.Name,
+                    Avatar = i.Avatar,
+                    Email = i.Email,
+                    Mobile = i.Mobile,
+                    Sex = i.Sex,
+                    Status = i.Status,
+                    CreatedAt = i.CreatedAt
+                }).Single();
             if (model is null)
             {
                 return null;
@@ -86,7 +94,11 @@ namespace NetDream.Modules.Auth.Repositories
 
         public string GetLastIp(int user)
         {
-            var ip = db.FindScalar<string, LoginLogEntity>("ip", "user_id=@0 and status=1 order by created_at desc", user);
+            var ip = db.LoginLogs
+                .Where(i => i.UserId == user && i.Status == 1)
+                .OrderByDescending(i => i.CreatedAt)
+                .Select(i => i.Ip)
+                .Single();
             if (ip is null)
             {
                 return string.Empty;
@@ -101,7 +113,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public int GetBulletinCount(int user)
         {
-            return db.FindCount<BulletinUserEntity>("user_id=@0 and status=0", user);
+            return db.BulletinUsers.Where(i => i.UserId == user && i.Status == 0).Count();
         }
 
         public int GetPostCount(int user)
@@ -124,30 +136,30 @@ namespace NetDream.Modules.Auth.Repositories
             return false; //CheckinRepository.TodayIsChecked(user);
         }
 
-        public Page<UserEntity> GetAll(string keywords = "", 
+        public IPage<UserEntity> GetAll(string keywords = "", 
             string sort = "id", string order = "desc",
             int page = 1)
         {
             (sort, order) = SearchHelper.CheckSortOrder(sort, order, [
-               "id", MigrationTable.COLUMN_CREATED_AT,
+               "id", "created_at",
                 "name", "email",
                 "status", "sex", "money", "credits"
             ]);
-            var sql = new Sql();
-            sql.Select().From<UserEntity>(db);
-            SearchHelper.Where(sql, "name", keywords);
-            sql.OrderBy($"{sort} {order}");
-            var items = db.Page<UserEntity>(page, 20, sql);
-            return items;
+            return db.Users.Search(keywords, "name")
+                .OrderBy<UserEntity, object>(sort, order)
+                .ToPage(page);
         }
 
-        public Page<UserSimpleModel> SearchUser(string keywords = "", int page = 1)
+        public IPage<UserSimpleModel> SearchUser(string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<UserEntity>(db);
-            SearchHelper.Where(sql, "name", keywords);
-            sql.OrderBy("id desc");
-            return db.Page<UserSimpleModel>(page, 20, sql);
+            return db.Users.Search(keywords, "name")
+                .OrderByDescending(i => i.Id)
+                .Select(i => new UserSimpleModel()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Avatar = i.Avatar,
+                }).ToPage(page);
         }
 
 
@@ -157,9 +169,9 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 {"id_card", idCard }
             });
-            db.UpdateWhere<UserEntity>("status=" + (string.IsNullOrWhiteSpace(idCard) ? STATUS_ACTIVE : STATUS_ACTIVE_VERIFIED),
-                "id=@0 and status>=@1", id, STATUS_ACTIVE);
-           
+            var status = string.IsNullOrWhiteSpace(idCard) ? STATUS_ACTIVE : STATUS_ACTIVE_VERIFIED;
+            db.Users.Where(i => i.Id == id && i.Status >= STATUS_ACTIVE)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, status));
         }
 
         /**
@@ -169,45 +181,50 @@ namespace NetDream.Modules.Auth.Repositories
          * @return UserModel
          * @throws Exception
          */
-        public UserEntity Save(UserForm data, int[] roles)
+        public IOperationResult<UserEntity> Save(UserForm data, int[] roles)
         {
             if (data.Password != data.ConfirmPassword)
             {
-                throw new Exception("两次密码不一致！");
+                return OperationResult.Fail<UserEntity>("两次密码不一致！");
             }
-            var model = data.Id > 0 ? db.SingleById<UserEntity>(data.Id) : new UserEntity();
+            var model = data.Id > 0 ? db.Users.Where(i => i.Id == data.Id).Single() : new UserEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<UserEntity>("user is error");
+            }
             // TODO
             if (!string.IsNullOrWhiteSpace(data.Password))
             {
                 // 
             }
-
-            if (!db.TrySave(model))
+            db.Users.Save(model);
+            if (db.SaveChanges() == 0)
             {
-                throw new Exception("");
+                return OperationResult.Fail<UserEntity>("");
             }
             SaveRoles(model.Id, roles);
             mediator.Publish(ManageAction.Create(client, "user_edit", model.Name, ModuleModelType.TYPE_USER_UPDATE, model.Id));
-            return model;
+            return OperationResult.Ok(model);
         }
 
         public void SaveRoles(int user, int[] roles)
         {
             var (add, _, remove) = ModelHelper.SplitId(roles,
-                db.Pluck<int>(new Sql().Select("role_id").From<UserRoleEntity>(db).Where("user_id=@0", user))
+                db.UserRoles.Where(i => i.UserId == user)
+                .Select(i => i.RoleId).ToArray()
             );
             if (remove.Count > 0)
             {
-                db.DeleteWhere<UserRoleEntity>(
-                    $"user_id={user} AND role_id IN ({string.Join(',', remove)})");
+                db.UserRoles.Where(i => i.UserId == user && remove.Contains(i.RoleId)).ExecuteDelete();
             }
             if (add.Count > 0)
             {
-                db.InsertBatch<UserRoleEntity>(add.Select(i => new Dictionary<string, object>()
+                db.UserRoles.AddRange(add.Select(i => new UserRoleEntity()
                 {
-                    {"role_id", i},
-                    {"user_id", user}
+                    RoleId = i,
+                    UserId = user,
                 }));
+                db.SaveChanges();
             }
         }
 
@@ -217,8 +234,8 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 throw new Exception("不能删除自己！");
             }
-            var user = db.SingleById<UserEntity>(id);
-            db.DeleteById<UserEntity>(id);
+            var user = db.Users.Where(i => i.Id == id).Single();
+            db.Users.Remove(user);
             mediator.Publish(new CancelAccount(user, client.Now));
             mediator.Publish(ManageAction.Create(client, "user_remove", user.Name, ModuleModelType.TYPE_USER_UPDATE, user.Id));
         }
@@ -236,7 +253,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public string GetName(int id)
         {
-            return db.FindScalar<string, UserEntity>("name", "user_id=@0", id);
+            return db.Users.Where(i => i.Id == id).Select(i => i.Name).Single();
         }
 
     }

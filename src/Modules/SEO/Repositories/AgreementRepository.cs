@@ -1,59 +1,94 @@
-﻿using NetDream.Shared.Helpers;
-using NetDream.Modules.SEO.Entities;
-using NPoco;
-using System;
-using System.Collections.Generic;
+﻿using NetDream.Modules.SEO.Entities;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NetDream.Shared.Repositories;
-using NetDream.Shared.Migrations;
-using NetDream.Modules.SEO.Models;
-using NetDream.Shared.Extensions;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers;
+using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.SEO.Forms;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.SEO.Repositories
 {
-    public class AgreementRepository(IDatabase db, LocalizeRepository localize) : CRUDRepository<AgreementEntity>(db)
+    public class AgreementRepository(
+        SEOContext db, 
+        IClientContext client,
+        LocalizeRepository localize)
     {
 
-        public override IList<string> SearchKeys => ["name", "title"];
-
-
-        public AgreementEntity Detail(int id)
+        public IPage<AgreementEntity> GetList(string keywords = "", int page = 1)
         {
-            var model = db.SingleById<AgreementModel>(id);
-            var sql = new Sql();
-            sql.Select("id", LocalizeRepository.LANGUAGE_COLUMN_KEY)
-                .From<AgreementEntity>(db)
-                .Where("name=@0 AND status=@1", model.Name, model.Status)
-                .OrderBy("created_at ASC");
-            var items = db.Fetch<AgreementEntity>(sql);
-            model.Languages = localize.FormatLanguageList(items, false);
-            return model;
+            return db.Agreements.Search(keywords, "name", "title")
+                .OrderByDescending(i => i.Id)
+                .ToPage(page);
         }
 
-        public AgreementEntity GetByName(string name)
+        public AgreementEntity? Get(int id)
         {
-            var model = localize.GetByKey<AgreementEntity>(
-                db,
-                new Sql().Select("*").From<AgreementEntity>(db)
-                .Where("status=1"),
-                "name",
-                name
-            );
+            return db.Agreements.Where(i => i.Id == id).Single();
+        }
+        public IOperationResult<AgreementEntity> Save(AgreementForm data)
+        {
+            var model = data.Id > 0 ? db.Agreements.Where(i => i.Id == data.Id).Single() :
+                new AgreementEntity();
             if (model is null)
             {
-                throw new Exception("Service agreement does not exist");
+                return OperationResult.Fail<AgreementEntity>("id error");
             }
-            return model;
+            model.Name = data.Name;
+            model.Title = data.Title;
+            model.Language = data.Language;
+            model.Description = data.Description;
+            model.Content = data.Content;
+            model.Status = data.Status;
+            if (model.CreatedAt == 0)
+            {
+                model.CreatedAt = client.Now;
+            }
+            model.UpdatedAt = client.Now;
+            db.Agreements.Save(model);
+            db.SaveChanges();
+            AfterSave(model.Id, model);
+            return OperationResult.Ok(model);
         }
 
-        protected override void AfterSave(int id, AgreementEntity data)
+        public void Remove(int id)
+        {
+            db.Agreements.Where(i => i.Id == id).ExecuteDelete();
+        }
+
+        public IOperationResult<AgreementEntity> Detail(int id)
+        {
+            var model = db.Agreements.Where(i => i.Id == id).Single();
+            if (model is null)
+            {
+                return OperationResult.Fail<AgreementEntity>("id error");
+            }
+            var items = db.Agreements.Where(i => i.Name == model.Name && i.Status == model.Status)
+                .OrderByDescending(i => i.CreatedAt).ToArray();
+            var Languages = localize.FormatLanguageList(items, false);
+            return OperationResult.Ok(model);
+        }
+
+        public IOperationResult<AgreementEntity> GetByName(string name)
+        {
+            var model = localize.GetByKey(
+                db.Agreements.Where(i => i.Status == 1),
+                "name",
+                name
+            ).Single();
+            if (model is null)
+            {
+                return OperationResult.Fail<AgreementEntity>("Service agreement does not exist");
+            }
+            return OperationResult.Ok(model);
+        }
+
+        protected void AfterSave(int id, AgreementEntity data)
         {
             if (data.Status > 0)
             {
-                db.Update<AgreementEntity>("SET status=0 WHERE name=@0 AND language=@1 AND id<>@2", 
-                    data.Name, data.Language, data.Id);
+                db.Agreements.Where(i => i.Name == data.Name && i.Language == data.Language && i.Id != data.Id)
+                    .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, 0));
             }
         }
 
