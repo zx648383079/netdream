@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Chat.Entities
 {
     
-    public class MessageEntity
+    public class MessageEntity: IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

@@ -1,148 +1,138 @@
-﻿using NetDream.Modules.Chat.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Forms;
 using NetDream.Modules.Chat.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
-using NPoco;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.Chat.Repositories
 {
-    public class GroupRepository(IDatabase db, 
-        IClientContext environment,
+    public class GroupRepository(ChatContext db, 
+        IClientContext client,
         IUserRepository userStore)
     {
-        public List<GroupEntity> All()
+        public GroupEntity[] All()
         {
-            var sql = new Sql();
-            sql.Select("group_id").From<GroupUserEntity>(db)
-                .Where("user_id=@0", environment.UserId);
-            var ids = db.Pluck<int>(sql, "group_id");
-            if (!ids.Any())
+            var ids = db.GroupUsers.Where(i => i.UserId == client.UserId)
+                .Select(i => i.GroupId)
+                .ToArray();
+            if (ids.Length == 0)
             {
                 return [];
             }
-            sql = new Sql();
-            sql.Select().From<GroupEntity>(db)
-                .WhereIn("id", ids.ToArray());
-            return db.Fetch<GroupEntity>(sql);
+            return db.Groups.Where(i => ids.Contains(i.Id))
+                .ToArray();
         }
 
-        public GroupModel Detail(int id)
+        public IOperationResult<GroupModel> Detail(int id)
         {
             if (!Canable(id))
             {
-                throw new Exception("无权限查看");
+                return OperationResult<GroupModel>.Fail("无权限查看");
             }
-            var model = db.SingleById<GroupModel>(id);
+            var model = db.Groups.Where(i => i.Id == id).Single()?.CopyTo<GroupModel>();
+            if (model == null)
+            {
+                return OperationResult<GroupModel>.Fail("群不存在");
+            }
             model.Users = Users(id);
-            return model;
+            return OperationResult.Ok(model);
         }
 
-        public Page<GroupUserModel> Users(int id, string keywords = "", int page = 1)
+        public IPage<GroupUserModel> Users(int id, string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<GroupUserModel>(db)
-                .Where("group_id=@0", id);
-            SearchHelper.Where(sql, "name", keywords);
-            var items = db.Page<GroupUserModel>(page, 20, sql);
+            var items = db.GroupUsers.Search(keywords, "name")
+                .Where(i => i.GroupId == id).ToPage(page)
+                .CopyTo<GroupUserEntity, GroupUserModel>();
             userStore.WithUser(items.Items);
             return items;
         }
 
-        public Page<GroupEntity> Search(string keywords = "", int page = 1)
+        public IPage<GroupEntity> Search(string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("group_id").From<GroupUserEntity>(db)
-                .Where("user_id=@0", environment.UserId);
-            var ids = db.Pluck<int>(sql, "group_id");
-            sql = new Sql();
-            sql.Select().From<GroupEntity>(db);
-            if (ids.Any())
-            {
-                sql.WhereNotIn("id", ids.ToArray());
-            }
-            return db.Page<GroupEntity>(page, 20, sql);
+            var ids = db.GroupUsers.Where(i => i.UserId == client.UserId)
+                .Select(i => i.GroupId)
+                .ToArray();
+            return db.Groups.When(ids.Length > 0, i => !ids.Contains(i.Id)).ToPage(page);
         }
 
         public bool Canable(int id)
         {
-            return db.FindCount<int, GroupUserEntity>("group_id=@0 AND user_id=@1", id, environment.UserId) > 0;
+            return db.GroupUsers.Where(i => i.GroupId == id && i.UserId == client.UserId).Any();
         }
 
         public bool Manageable(int id)
         {
-            return db.FindCount<int, GroupEntity>("id=@0 AND user_id=@1", id, environment.UserId) > 0;
+            return db.Groups.Where(i => i.Id == id && i.UserId == client.UserId).Any();
         }
 
-        public void Agree(int user, int id)
+        public IOperationResult Agree(int user, int id)
         {
             if (!Manageable(id)) {
-                throw new Exception("无权限处理");
+                return OperationResult.Fail("无权限处理");
             }
-            var exist = db.FindCount<int, GroupUserEntity>("group_id=@0 AND user_id=@1", id, user) > 0;
+            var exist = db.GroupUsers.Where(i => i.GroupId == id && i.UserId == user).Any();
             if (exist)
             {
-                throw new Exception("已处理过");
+                return OperationResult.Fail("已处理过");
             }
             var userModel = userStore.Get(user);
             if (userModel is null)
             {
-                db.DeleteWhere<ApplyEntity>(
-                    "user_id=@0 AND item_type=1 AND item_id=@1", user, id);
-                throw new Exception("用户不存在");
+                db.Applies.Where(i => i.UserId == user && i.ItemType == 1 && i.ItemId == id)
+                    .ExecuteDelete();
+                return OperationResult.Fail("用户不存在");
             }
-            db.Insert(new GroupUserEntity()
+            db.GroupUsers.Save(new GroupUserEntity()
             {
                 GroupId = id,
                 UserId = user,
                 Name = userModel.Name,
                 RoleId = 0,
                 Status = 5,
-            });
-            var sql = new Sql();
-            sql.Where("user_id=@0 AND item_type=1 AND item_id=@1", user, id);
-            db.Update<ApplyEntity>(sql, new Dictionary<string, object>()
-            {
-                {"status", 1},
-                { MigrationTable.COLUMN_UPDATED_AT, environment.Now }
-            });
+            }, client.Now);
+            db.Applies.Where(i => i.UserId == user && i.ItemType == 1 && i.ItemId == id && i.Status == 0)
+                  .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, 1)
+                  .SetProperty(i => i.UpdatedAt, client.Now));
+
+            return OperationResult.Ok();
         }
 
-        public void Apply(int id, string remark = "")
+        public IOperationResult Apply(int id, string remark = "")
         {
             if (Canable(id)) {
-                throw new Exception("你已加入该群");
+                return OperationResult.Fail("你已加入该群");
             }
-            var exist = db.FindCount<GroupEntity>("id=@0", id) > 0;
+            var exist = db.Groups.Where(i => i.Id == id).Any();
             if (!exist)
             {
-                throw new Exception("群不存在");
+                return OperationResult.Fail("群不存在");
             }
-            db.Insert(new ApplyEntity()
+            db.Applies.Save(new ApplyEntity()
             {
                 ItemType = 1,
                 ItemId = id,
                 Remark = remark,
-                UserId = environment.UserId,
+                UserId = client.UserId,
                 Status = 0
-            });
+            }, client.Now);
+            return OperationResult.Ok();
         }
 
-        public Page<ApplyModel> ApplyLog(int id, int page = 1)
+        public IPage<ApplyModel> ApplyLog(int id, int page = 1)
         {
             if (!Manageable(id)) {
-                throw new Exception("无权限处理");
+                // throw new Exception("无权限处理");
+                return new Page<ApplyModel>();
             }
-            var sql = new Sql();
-            sql.Select().From<ApplyEntity>(db)
-                .Where("item_type=1 AND item_id=@1", id)
-                .OrderBy("status asc, id desc");
-            var items = db.Page<ApplyModel>(page, 20, sql);
+            var items = db.Applies.Where(i => i.ItemType == 1 && i.ItemId == id)
+                .OrderBy(i => i.Status)
+                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
             userStore.WithUser(items.Items);
             return items;
         }
@@ -151,45 +141,47 @@ namespace NetDream.Modules.Chat.Repositories
          * 创建群
          * @param array data
          */
-        public GroupEntity Create(GroupForm data)
+        public IOperationResult<GroupEntity> Create(GroupForm data)
         {
-            var model = new GroupModel()
+            var model = new GroupEntity()
             {
                 Name = data.Name,
                 Description = data.Description,
                 Logo = data.Logo,
-                UserId = environment.UserId
+                UserId = client.UserId
             };
-            if (!db.TrySave(model))
+            db.Groups.Save(model, client.Now);
+            if (db.SaveChanges() == 0)
             {
-                throw new Exception("error");
+                return OperationResult<GroupEntity>.Fail("error");
             }
-            db.Insert(new GroupUserEntity()
+            db.GroupUsers.Save(new GroupUserEntity()
             {
                 UserId = model.UserId,
                 Name = userStore.Get(model.UserId)!.Name,
                 GroupId = model.Id,
                 RoleId = 99,
                 Status = 5,
-            });
-            return model;
+            }, client.Now);
+            return OperationResult.Ok(model);
         }
 
         /// <summary>
         /// 解散群
         /// </summary>
         /// <param name="id"></param>
-        public void Disband(int id)
+        public IOperationResult Disband(int id)
         {
-            var model = db.SingleById<GroupEntity>(id);
-            if (model.UserId != environment.UserId)
+            var model = db.Groups.Where(i => i.Id == id).Single();
+            if (model.UserId != client.UserId)
             {
-                throw new Exception("无权限操作");
+                return OperationResult.Fail("无权限操作");
             }
-            db.DeleteById<GroupEntity>(id);
-            db.DeleteWhere<GroupUserEntity>("group_id=@0", id);
-            db.DeleteWhere<MessageEntity>("group_id=@0", id);
-            db.DeleteWhere<HistoryEntity>("item_id=@0 AND item_type=1", id);
+            db.Groups.Where(i => i.Id == id).ExecuteDelete();
+            db.GroupUsers.Where(i => i.GroupId == id).ExecuteDelete();
+            db.Messages.Where(i => i.GroupId == id).ExecuteDelete();
+            db.Histories.Where(i => i.ItemId == id && i.ItemType == 1).ExecuteDelete();
+            return OperationResult.Ok();
         }
 
     }

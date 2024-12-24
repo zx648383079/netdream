@@ -90,20 +90,18 @@ namespace NetDream.Modules.Auth.Repositories
                 UserId = sender,
                 ExtraRule = extraRule is not null && extraRule.Any() ? JsonSerializer.Serialize(extraRule) 
                 : string.Empty,
-                CreatedAt = TimeHelper.TimestampNow()
+                CreatedAt = environment.Now,
+                Items = user.Select(i => {
+                    return new BulletinUserEntity()
+                    {
+                        UserId = i,
+                        CreatedAt = environment.Now,
+                    };
+                }).ToArray()
             };
-            if (!db.TrySave(bulletin))
-            {
-                return 0;
-            }
-            return db.InsertBatch(user.Select(i => {
-                return new BulletinUserEntity()
-                {
-                    BulletinId = bulletin.Id,
-                    UserId = i,
-                    CreatedAt = bulletin.CreatedAt
-                };
-            }));
+            db.Bulletins.Add(bulletin);
+            db.SaveChanges();
+            return bulletin.Id;
         }
     }
 }

@@ -6,6 +6,10 @@ using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Models;
 using System.Text.RegularExpressions;
 using System;
+using System.Linq;
+using NetDream.Modules.Auth.Forms;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 
 namespace NetDream.Modules.Auth.Repositories
 {
@@ -69,7 +73,8 @@ namespace NetDream.Modules.Auth.Repositories
         public bool LoginPreCheck(string ip, string account, string? captcha = null)
         {
             var today = TimeHelper.TimestampFrom(DateTime.Today);
-            var count = db.FindCount<int, LoginLogEntity>("id", "ip=@0 and status=0 and created_at>=@1", ip, today);
+            var count = db.LoginLogs.Where(i => i.Ip == ip && i.Status == 0 && i.CreatedAt>= today)
+               .Count();
             if (count > 20)
             {
                 return false;
@@ -78,7 +83,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return true;
             }
-            count = db.FindCount<int, LoginLogEntity>("id", "user=@0 and status=0 and created_at>=@1", account, today);
+            count = db.LoginLogs.Where(i => i.User == account && i.Status == 0 && i.CreatedAt >= today).Count();
             if (count > 10)
             {
                 return false;
@@ -97,7 +102,11 @@ namespace NetDream.Modules.Auth.Repositories
 
         public IOperationResult<IUser> Login(ISignInForm data)
         {
-            var res = data.Verify(db);
+            if (data is not IContextForm form)
+            {
+                return OperationResult.Fail<IUser>("form is error");
+            }
+            var res = form.Verify(db);
             if (!string.IsNullOrWhiteSpace(data.Account) || res.Succeeded)
             {
                 LogLogin(data.Account, res.Result?.Id ?? 0, res.Succeeded);
@@ -148,7 +157,8 @@ namespace NetDream.Modules.Auth.Repositories
                     : BCrypt.Net.BCrypt.HashPassword(data.Password),
                     CreatedAt = client.Now
                 };
-                db.Insert(model);
+                db.Users.Add(model);
+                db.SaveChanges();
                 return model;
             });
             return new UserModel();
@@ -160,7 +170,9 @@ namespace NetDream.Modules.Auth.Repositories
             InviteCodeEntity? log = null;
             if (!string.IsNullOrWhiteSpace(code))
             {
-                log = db.Single<InviteCodeEntity>("where code=@0 and (expired_at>@1 or expired_at=0)", code, client.Now);
+                log = db.InviteCodes.Where(i => i.Token == code && i.Type == InviteRepository.TYPE_CODE)
+                    .Where(i => i.ExpiredAt > client.Now || i.ExpiredAt == 0)
+                    .Single();
             }
             if (log is null)
             {
@@ -176,21 +188,21 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 log.ExpiredAt = client.Now - 1;
             }
-            db.Update(log, new string[] { "invite_count", "expired_at" });
-            db.Insert(new InviteLogEntity
+            db.InviteCodes.Update(log);
+            db.InviteLogs.Add(new InviteLogEntity
             {
-                Code = code,
+                CodeId = log.Id,
                 UserId = user.Id,
                 ParentId = log.UserId,
                 CreatedAt = client.Now,
             });
+            db.SaveChanges();
             return user;
         }
 
         public bool IsExist(string value, string name = "email")
         {
-            var count = db.FindCount<int, UserEntity>("id", $"where {db.DatabaseType.EscapeSqlIdentifier(name)}=@0", value);
-            return count > 0;
+            return db.Users.Where(name, value).Any();
         }
 
         public bool IsBan(string account)
@@ -200,7 +212,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public void LogLogin(string account, int userId = 0, bool status = false)
         {
-            db.Insert(new LoginLogEntity
+            db.LoginLogs.Add(new LoginLogEntity
             {
                 Ip = client.Ip,
                 UserId = userId,
@@ -209,6 +221,7 @@ namespace NetDream.Modules.Auth.Repositories
                 User = account,
                 CreatedAt = client.Now
             });
+            db.SaveChanges();
         }
 
         [GeneratedRegex("^zreno_\\d{11}@zodream\\.cn$")]

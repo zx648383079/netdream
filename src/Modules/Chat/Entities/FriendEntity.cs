@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Chat.Entities
 {
     
-    public class FriendEntity
+    public class FriendEntity: IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

@@ -1,10 +1,10 @@
 ﻿using NetDream.Modules.Chat.Entities;
-using NPoco;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Chat.Models
 {
     public class GroupModel: GroupEntity
     {
-        public Page<GroupUserModel>? Users { get; set; }
+        public IPage<GroupUserModel>? Users { get; set; }
     }
 }

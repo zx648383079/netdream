@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Navigation.Entities;
 using NetDream.Modules.Navigation.Migrations;
+using NetDream.Shared.Providers.Context;
+using NetDream.Shared.Providers.Entities;
+using NetDream.Shared.Providers.Migrations;
 
 namespace NetDream.Modules.Navigation
 {
-    public class NavigationContext(DbContextOptions<NavigationContext> options): DbContext(options)
+    public class NavigationContext(DbContextOptions<NavigationContext> options): DbContext(options), ITagContext
     {
         public DbSet<CategoryEntity> Categories {get; set; }
         public DbSet<CollectEntity> Collects {get; set; }
@@ -26,8 +29,8 @@ namespace NetDream.Modules.Navigation
             modelBuilder.ApplyConfiguration(new PageKeywordEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SiteEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SiteScoringLogEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new TagEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new TagLinkEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new TagEntityTypeConfiguration("search"));
+            modelBuilder.ApplyConfiguration(new TagLinkEntityTypeConfiguration("search"));
             base.OnModelCreating(modelBuilder);
         }
     }

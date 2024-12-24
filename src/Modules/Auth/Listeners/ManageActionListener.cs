@@ -1,17 +1,16 @@
 ﻿using MediatR;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Events;
-using NPoco;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetDream.Modules.Auth.Listeners
 {
-    public class ManageActionListener(IDatabase db) : INotificationHandler<ManageAction>
+    public class ManageActionListener(AuthContext db) : INotificationHandler<ManageAction>
     {
         public Task Handle(ManageAction notification, CancellationToken cancellationToken)
         {
-            db.Insert(new AdminLogEntity()
+            db.AdminLogs.Add(new AdminLogEntity()
             {
                 Ip = notification.Ip,
                 Action = notification.Action,
@@ -20,6 +19,7 @@ namespace NetDream.Modules.Auth.Listeners
                 ItemId = notification.ItemId,
                 CreatedAt = notification.CreateAt
             });
+            db.SaveChanges();
             return Task.CompletedTask;
         }
     }

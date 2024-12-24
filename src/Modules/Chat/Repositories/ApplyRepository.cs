@@ -1,94 +1,82 @@
-﻿using NetDream.Modules.Chat.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
-using NPoco;
-using System;
-using System.Collections.Generic;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
+using System.Linq;
 
 namespace NetDream.Modules.Chat.Repositories
 {
     public class ApplyRepository(
-        IDatabase db,
-        IClientContext environment,
+        ChatContext db,
+        IClientContext client,
         IUserRepository userStore,
         GroupRepository groupStore
         )
     {
-        public Page<ApplyModel> GroupList(int id = 0, int page = 1)
+        public IPage<ApplyModel> GroupList(int id = 0, int page = 1)
         {
             if (!groupStore.Manageable(id))
             {
-                throw new Exception("无权限处理");
+                // throw new Exception("无权限处理");
+                return new Page<ApplyModel>();
             }
-            var sql = new Sql();
-            sql.Select().From<ApplyEntity>(db)
-                .Where("item_type=1 AND item_id=@0", id)
-                .OrderBy("status asc, id desc");
-            var items = db.Page<ApplyModel>(page, 20, sql);
+            var items = db.Applies.Where(i => i.ItemType == 1 && i.ItemId == id)
+                .OrderBy(i => i.Status)
+                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
             userStore.WithUser(items.Items);
             return items;
         }
 
-        public Page<ApplyModel> GetList(int page = 1)
+        public IPage<ApplyModel> GetList(int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<ApplyEntity>(db)
-                .Where("item_type=0 AND item_id=@0", environment.UserId)
-                .OrderBy("status asc, id desc");
-            var items = db.Page<ApplyModel>(page, 20, sql);
+            var items = db.Applies.Where(i => i.ItemType == 0 && i.ItemId == client.UserId)
+                .OrderBy(i => i.Status)
+                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
             userStore.WithUser(items.Items);
             return items;
         }
 
         public void RemoveMy()
         {
-            db.DeleteWhere<ApplyEntity>("item_type=0 AND item_id=@0", environment.UserId);
+            db.Applies.Where(i => i.ItemType == 0 && i.ItemId == client.UserId).ExecuteDelete();
         }
 
-        public void RemoveGroup(int id)
+        public IOperationResult RemoveGroup(int id)
         {
             if (!groupStore.Manageable(id))
             {
-                throw new Exception("无权限处理");
+                return OperationResult.Fail("无权限处理");
             }
-            db.DeleteWhere<ApplyEntity>("item_type=1 AND item_id=@0", id);
+            db.Applies.Where(i => i.ItemType == 0 && i.ItemId == id).ExecuteDelete(); ;
+            return OperationResult.Ok();
         }
 
         public void Agree(int user)
         {
-            var sql = new Sql();
-            sql.Where("user_id=@0 AND item_type=0 AND item_id=@1 AND status=0", user, environment.UserId);
-            db.Update<ApplyEntity>(sql, new Dictionary<string, object>()
-            {
-                {"status", 1},
-                { MigrationTable.COLUMN_UPDATED_AT, environment.Now }
-            });
-
+            db.Applies.Where(i => i.UserId == user && i.ItemType == 0 && i.ItemId == client.UserId && i.Status == 0)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, 1)
+                .SetProperty(i => i.UpdatedAt, client.Now));
         }
 
         public void AgreeGroup(int user, int id)
         {
-            var sql = new Sql();
-            sql.Where("user_id=@0 AND item_type=1 AND status=0 AND item_id=@1", user, id);
-            db.Update<ApplyEntity>(sql, new Dictionary<string, object>()
-            {
-                {"status", 1},
-                { MigrationTable.COLUMN_UPDATED_AT, environment.Now }
-            });
+            db.Applies.Where(i => i.UserId == user && i.ItemType == 1 && i.ItemId == id && i.Status == 0)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, 1)
+                .SetProperty(i => i.UpdatedAt, client.Now));
         }
 
         public void Apply(int type, int id, string remark = "")
         {
-            db.Insert(new ApplyEntity()
+            db.Applies.Save(new ApplyEntity()
             {
                 ItemType = type,
                 ItemId = id,
                 Remark = remark,
-                UserId = environment.UserId,
+                UserId = client.UserId,
                 Status = 0
-            });
+            }, client.Now);
         }
     }
 }

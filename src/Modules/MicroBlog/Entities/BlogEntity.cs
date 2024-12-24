@@ -2,7 +2,7 @@
 namespace NetDream.Modules.MicroBlog.Entities
 {
     
-    public class MicroBlogEntity
+    public class BlogEntity
     {
         
         public int Id { get; set; }

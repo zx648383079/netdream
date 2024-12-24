@@ -1,7 +1,6 @@
 ﻿using NetDream.Shared.Http;
 using NetDream.Modules.OpenPlatform.Entities;
 using NetDream.Modules.OpenPlatform.Models;
-using NPoco;
 using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.OpenPlatform.Http

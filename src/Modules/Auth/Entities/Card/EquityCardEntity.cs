@@ -1,9 +1,10 @@
-
+using NetDream.Shared.Interfaces.Entities;
+using System.Collections.Generic;
 
 namespace NetDream.Modules.Auth.Entities
 {
     
-    public class EquityCardEntity
+    public class EquityCardEntity: IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -21,6 +22,8 @@ namespace NetDream.Modules.Auth.Entities
 
         
         public int CreatedAt { get; set; }
+
+        public ICollection<UserEquityCardEntity>? Items { get; set; }
 
     }
 }

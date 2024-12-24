@@ -3,24 +3,18 @@ using NetDream.Modules.OpenPlatform.Forms;
 using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
-using NPoco;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Modules.OpenPlatform.Repositories
 {
-    public class OpenRepository(IDatabase db, IClientContext environment)
+    public class OpenRepository(OpenContext db, IClientContext environment)
     {
         public PlatformModel GetByAppId(string appId)
         {
-            return db.Single<PlatformModel>("where appid=@0", appId);
+            return db.Platforms.Where(i => i.Appid == appId).Single().CopyTo<PlatformModel>();
         }
 
         public void GenerateNewId(PlatformEntity entity)
@@ -34,15 +28,15 @@ namespace NetDream.Modules.OpenPlatform.Repositories
         /// <param name="data"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public PlatformEntity SavePlatform(PlatformForm data)
+        public IOperationResult<PlatformEntity> SavePlatform(PlatformForm data)
         {
-            PlatformEntity model;
+            PlatformEntity? model;
             if (data.Id > 0)
             {
-                model = db.Single<PlatformEntity>("WHERE id=@0 AND user_id=@1", data.Id, environment.UserId);
+                model = db.Platforms.Where(i => i.Id == data.Id && i.UserId == environment.UserId).Single();
                 if (model is null)
                 {
-                    throw new Exception("应用不存在");
+                   return OperationResult<PlatformEntity>.Fail("应用不存在");
                 }
             } else
             {
@@ -61,35 +55,28 @@ namespace NetDream.Modules.OpenPlatform.Repositories
             model.EncryptType = data.EncryptType;
             model.PublicKey = data.PublicKey;
             model.AllowSelf = data.AllowSelf;
-            if (model.UpdatedAt == 0)
-            {
-                model.UpdatedAt = environment.Now;
-            }
-            if (model.CreatedAt == 0)
-            {
-                model.CreatedAt = environment.Now;
-            }
-            db.Save(model);
-            return model;
+            db.Platforms.Save(model, environment.Now);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
-        /**
-         * 创建token
-         * @param int platform_id
-         * @return UserTokenModel
-         * @throws Exception
-         */
-        public UserTokenEntity CreateToken(int platform_id, 
+        /// <summary>
+        /// 创建 token
+        /// </summary>
+        /// <param name="platform_id"></param>
+        /// <param name="expired_at"></param>
+        /// <returns></returns>
+        public IOperationResult<UserTokenEntity> CreateToken(int platform_id, 
             string expired_at = "")
         {
             if (platform_id < 0)
             {
-                throw new Exception("请选择应用");
+                return OperationResult<UserTokenEntity>.Fail("请选择应用");
             }
-            var platform = db.Single<PlatformEntity>("WHERE id=@0 AND allow_self=1 AND status=1");
+            var platform = db.Platforms.Where(i => i.Id == platform_id && i.AllowSelf == 1 && i.Status == 1).Single();
             if (platform is null)
             {
-                throw new Exception("请选择应用");
+                return OperationResult<UserTokenEntity>.Fail("请选择应用");
             }
             var model = new UserTokenEntity()
             {
@@ -101,12 +88,13 @@ namespace NetDream.Modules.OpenPlatform.Repositories
                 CreatedAt = environment.Now,
                 UpdatedAt = environment.Now,
             };
-            model.Id = (int)db.Insert(model);
+            db.UserTokens.Add(model);
+            db.SaveChanges();
             if (model.Id == 0)
             {
-                throw new Exception("生成失败");
+                return OperationResult<UserTokenEntity>.Fail("生成失败");
             }
-            return model;
+            return OperationResult.Ok(model);
         }
 
 

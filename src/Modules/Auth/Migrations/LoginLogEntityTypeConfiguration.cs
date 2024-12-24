@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.Auth.Entities;
+using NetDream.Modules.Auth.Repositories;
 
 namespace NetDream.Modules.Auth.Migrations
 {
@@ -15,7 +16,7 @@ namespace NetDream.Modules.Auth.Migrations
             builder.Property(table => table.UserId).HasColumnName("user_id").HasDefaultValue(0);
             builder.Property(table => table.User).HasColumnName("user").HasMaxLength(100).HasComment("µÇÂ½ÕË»§");
             builder.Property(table => table.Status).HasColumnName("status").HasDefaultValue(0);
-            builder.Property(table => table.Mode).HasColumnName("mode").HasMaxLength(20).HasDefaultValue(LoginLogModel.MODE_WEB);
+            builder.Property(table => table.Mode).HasColumnName("mode").HasMaxLength(20).HasDefaultValue(AuthRepository.LOGIN_MODE_WEB);
             builder.Property(table => table.PlatformId).HasColumnName("platform_id").HasDefaultValue(0).HasComment("Æ½Ì¨id");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
         }

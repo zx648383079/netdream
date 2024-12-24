@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Auth.Entities
 {
     
-    public class BanAccountEntity
+    public class BanAccountEntity : IIdEntity, ICreatedEntity
     {
         
         public int Id { get; set; }

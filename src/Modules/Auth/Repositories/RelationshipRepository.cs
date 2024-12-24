@@ -1,5 +1,8 @@
-﻿using NetDream.Modules.Auth.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Auth.Entities;
+using NetDream.Modules.Auth.Models;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using System;
 using System.Linq;
 
@@ -19,14 +22,13 @@ namespace NetDream.Modules.Auth.Repositories
          */
         public bool Is(int me, int user, int type)
         {
-            return db.FindCount<UserRelationshipEntity>("user_id=@0 and link_id=@1 and type=@2",
-                me, user, type) > 0;
+            return db.Relationships.Where(i => i.UserId == me && i.LinkId == user && i.Type == type)
+                .Any();
         }
 
         public int Count(int user, int type)
         {
-            return db.FindCount<UserRelationshipEntity>("user_id=@0 and type=@1",
-                user, type);
+            return db.Relationships.Where(i => i.UserId == user && i.Type == type).Count();
         }
 
         public int FollowingCount(int user)
@@ -36,8 +38,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public int FollowerCount(int user)
         {
-            return db.FindCount<UserRelationshipEntity>("link_id=@0 and type=@1",
-                user, TYPE_FOLLOWING);
+            return db.Relationships.Where(i => i.LinkId == user && i.Type == TYPE_FOLLOWING).Count();
         }
 
         /**
@@ -47,39 +48,35 @@ namespace NetDream.Modules.Auth.Repositories
          * @return void
          * @throws \Exception
          */
-        public void Bind(int user, int type)
+        public IOperationResult Bind(int user, int type)
         {
             var me = client.UserId;
             if (me == user)
             {
-                throw new Exception("can link self");
+                return OperationResult.Fail("can link self");
             }
-            var log = db.First<UserRelationshipEntity>("user_id=@0 and link_id=@1",
-                me, user);
+            var log = db.Relationships.Where(i => i.UserId == me && i.LinkId == user).Single();
             if (log is null)
             {
-                db.Insert(new UserRelationshipEntity()
+                db.Relationships.Add(new RelationshipEntity()
                 {
                     UserId = me,
                     LinkId = user,
                     Type = type,
                     CreatedAt = client.Now
                 });
-                return;
+                db.SaveChanges();
+                return OperationResult.Ok();
             }
             if (log.Type == type)
             {
-                return;
+                return OperationResult.Ok();
             }
-            db.Update<UserRelationshipEntity>(
-                new Sql().Where("user_id=@0 and link_id=@1",
-                me, user),
-                new()
-                {
-                    {"type", type},
-                    {MigrationTable.COLUMN_CREATED_AT, client.Now}
-                }
-            );
+            db.Relationships.Where(i => i.UserId == me && i.LinkId == user)
+                .ExecuteUpdate(setters => 
+                    setters.SetProperty(i => i.Type, type)
+                    .SetProperty(i => i.CreatedAt, client.Now));
+            return OperationResult.Ok();
         }
 
         /**
@@ -96,8 +93,8 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return;
             }
-            db.DeleteWhere<UserRelationshipEntity>("user_id=@0 and link_id=@1 and type=@2",
-                me, user, type);
+            db.Relationships.Where(i => i.UserId == me && i.LinkId == user 
+                && i.Type == type).ExecuteDelete();
         }
 
         /**
@@ -114,34 +111,28 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 throw new Exception("can link self");
             }
-            var log = db.First<UserRelationshipEntity>("user_id=@0 and link_id=@1",
-                 me, user);
+            var log = db.Relationships.Where(i => i.UserId == me && i.LinkId == user).Single();
             if (log is null)
             {
-                db.Insert(new UserRelationshipEntity()
+                db.Relationships.Add(new RelationshipEntity()
                 {
                     UserId = me,
                     LinkId = user,
                     Type = type,
                     CreatedAt = client.Now
                 });
+                db.SaveChanges();
                 return 2;
             }
             if (log.Type == type)
             {
-                db.DeleteWhere<UserRelationshipEntity>("user_id=@0 and link_id=@1",
-                me, user);
+                db.Relationships.Where(i => i.UserId == me && i.LinkId == user).ExecuteDelete();
                 return 0;
             }
-            db.Update<UserRelationshipEntity>(
-                new Sql().Where("user_id=@0 and link_id=@1",
-                me, user),
-                new()
-                {
-                    {"type", type},
-                    {MigrationTable.COLUMN_CREATED_AT, client.Now}
-                }
-            );
+            db.Relationships.Where(i => i.UserId == me && i.LinkId == user)
+             .ExecuteUpdate(setters =>
+                 setters.SetProperty(i => i.Type, type)
+                 .SetProperty(i => i.CreatedAt, client.Now));
             return 1;
         }
 
@@ -184,8 +175,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return res;
             }
-            var log = db.First<UserRelationshipEntity>("user_id=@0 and link_id=@1",
-                 me, user); 
+            var log = db.Relationships.Where(i => i.UserId == me && i.LinkId == user).Single(); 
             if (log is null)
             {
                 return res;

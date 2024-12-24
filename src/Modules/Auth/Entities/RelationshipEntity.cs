@@ -1,11 +1,11 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Auth.Entities
 {
     
-    public class RelationshipEntity
+    public class RelationshipEntity: ICreatedEntity
     {
-        
-        
         public int UserId { get; set; }
         
         public int LinkId { get; set; }

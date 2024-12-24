@@ -28,5 +28,7 @@ namespace NetDream.Modules.Auth.Entities
         
         public int CreatedAt { get; set; }
 
+        public BulletinEntity? Bulletin { get; set; }
+
     }
 }

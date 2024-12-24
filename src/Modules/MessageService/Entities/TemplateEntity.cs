@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.MessageService.Entities
 {
     
-    public class TemplateEntity
+    public class TemplateEntity: IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

@@ -4,7 +4,7 @@ using NetDream.Modules.OpenPlatform.Migrations;
 
 namespace NetDream.Modules.OpenPlatform
 {
-    public class OpenPlatformContext(DbContextOptions<OpenPlatformContext> options): DbContext(options)
+    public class OpenContext(DbContextOptions<OpenContext> options): DbContext(options)
     {
         public DbSet<PlatformEntity> Platforms {get; set; }
         public DbSet<PlatformOptionEntity> PlatformOptions {get; set; }

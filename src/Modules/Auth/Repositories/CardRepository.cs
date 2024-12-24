@@ -1,8 +1,11 @@
-﻿using NetDream.Modules.Auth.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +16,9 @@ namespace NetDream.Modules.Auth.Repositories
     {
         public IPage<EquityCardModel> GetList(string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<EquityCardEntity>(db);
-            SearchHelper.Where(sql, "name", keywords);
-            sql.OrderBy("id DESC");
-            var items = db.Page<EquityCardModel>(page, 20, sql);
+            var items = db.EquityCards.Search(keywords, "name")
+                .OrderByDescending(i => i.Id)
+                .ToPage(page).CopyTo<EquityCardEntity, EquityCardModel>();
             WithAmount(items.Items);
             return items;
         }
@@ -29,11 +30,10 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return;
             }
-            var sql = new Sql();
-            sql.Select("card_id, COUNT(user_id) as count").From<UserEquityCardEntity>(db)
-                .WhereIn("card_id", [..idItems])
-                .GroupBy("card_id");
-            var data = db.Pluck<int, int>(sql, "card_id", "count", false);
+            var data = db.UserEquityCards.Where(i => idItems.Contains(i.CardId))
+                .GroupBy(i => i.CardId)
+                .Select(i => new { CardId = i.Key, Count = i.Count() })
+                .ToDictionary(i => i.CardId, i => i.Count);
             if (data is null || data.Count == 0)
             {
                 return;
@@ -47,59 +47,34 @@ namespace NetDream.Modules.Auth.Repositories
             }
         }
 
-        public EquityCardEntity Save(EquityCardForm data)
+        public IOperationResult<EquityCardEntity> Save(EquityCardForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<EquityCardEntity>(data.Id) : 
+            var model = data.Id > 0 ? db.EquityCards.Where(i => i.Id == data.Id).Single() : 
                 new EquityCardModel();
+            if (model is null)
+            {
+                return OperationResult.Fail<EquityCardEntity>("id is error");
+            }
             model.Name = data.Name;
             model.Icon = data.Icon;
             model.Configure = data.Configure;
-            if (!db.TrySave(model))
-            {
-                throw new Exception("save error");
-            }
-            return model;
+            db.EquityCards.Save(model, client.Now);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
         public void Remove(int id)
         {
-            db.DeleteById<EquityCardEntity>(id);
-            db.DeleteWhere<UserEquityCardEntity>("card_id=@0", id);
+            db.EquityCards.Where(i => i.Id == id).ExecuteDelete();
+            db.UserEquityCards.Where(i => i.CardId == id).ExecuteDelete();
         }
 
-        public Page<UserEquityCardModel> UserCardList(int user, int page = 1)
+        public IPage<UserEquityCardEntity> UserCardList(int user, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<UserEquityCardEntity>(db);
-            sql.Where("user_id=@0", user).OrderBy("expired_at DESC");
-            var items = db.Page<UserEquityCardModel>(page, 20, sql);
-            WithCard(items.Items);
-            return items;
-        }
-
-        private void WithCard(IEnumerable<UserEquityCardModel> items)
-        {
-            var idItems = items.Select(item => item.CardId);
-            if (!idItems.Any())
-            {
-                return;
-            }
-            var data = db.Fetch<EquityCardEntity>($"WHERE id IN({string.Join(',', idItems)})");
-            if (!data.Any())
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                foreach (var it in data)
-                {
-                    if (item.CardId == it.Id)
-                    {
-                        item.Card = it;
-                        break;
-                    }
-                }
-            }
+            return db.UserEquityCards
+                .Include(i => i.Card).Where(i => i.UserId == user)
+                .OrderByDescending(i => i.ExpiredAt)
+                .ToPage(page);
         }
 
 
@@ -113,37 +88,39 @@ namespace NetDream.Modules.Auth.Repositories
          */
         public void Recharge(int user, int card, int second)
         {
-            var model = db.SingleById<EquityCardEntity>(card);
-            var log = db.First<UserEquityCardEntity>("card_id=@0 and user_id=@1", card, user);
+            var model = db.EquityCards.Where(i => i.Id == card).Single();
+            var log = db.UserEquityCards.Where(
+                i => i.CardId == card && i.UserId == user).Single();
             var now = TimeHelper.TimestampNow();
             if (log is null)
             {
-                db.Insert(new UserEquityCardEntity()
+                db.UserEquityCards.Save(new UserEquityCardEntity()
                 {
                     UserId = user,
                     CardId = card,
                     Status = 1,
                     ExpiredAt = now + second
-                });
-                return;
+                }, now);
+            } else
+            {
+                log.ExpiredAt = Math.Max(log.ExpiredAt, now) + second;
+                log.Status = 1;
+                db.UserEquityCards.Save(log, now);
             }
-            log.ExpiredAt = Math.Max(log.ExpiredAt, now) + second;
-            log.Status = 1;
-            db.Update(log);
+            db.SaveChanges();
         }
 
-        public Page<EquityCardEntity> Search(string keywords, int[] id, int page = 1)
+        public IPage<EquityCardEntity> Search(string keywords, int[] id, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("id", "name", "icon").From<EquityCardEntity>(db);
-            SearchHelper.Where(sql, "name", keywords);
-            if (id.Length > 0)
-            {
-                sql.WhereIn("id", id);
-            }
-            sql.OrderBy("id DESC");
-            var items = db.Page<EquityCardEntity>(page, 20, sql);
-            return items;
+            return db.EquityCards.Search(keywords, "name")
+                .When(id.Length > 0, i => id.Contains(i.Id))
+                .OrderByDescending(i => i.Id)
+                .Select(i => new EquityCardEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Icon = i.Icon
+                }).ToPage(page);
         }
         public UserEquityCardEntity UserUpdate(int userId, int cardId, string expiredAt)
         {
@@ -151,7 +128,7 @@ namespace NetDream.Modules.Auth.Repositories
         }
         public UserEquityCardEntity UserUpdate(int userId, int cardId, int expiredAt)
         {
-            var log = db.First<UserEquityCardEntity>("card_id=@0 and user_id=@1", cardId, userId);
+            var log = db.UserEquityCards.Where(i => i.CardId == cardId && i.UserId == userId).Single();
             var status = expiredAt > TimeHelper.TimestampNow() ? 1 : 0;
             if (log is null)
             {
@@ -162,27 +139,29 @@ namespace NetDream.Modules.Auth.Repositories
                     Status = status,
                     ExpiredAt = expiredAt
                 };
-                db.Insert(log);
-                return log;
+                
+            } else
+            {
+                log.ExpiredAt = expiredAt;
+                log.Status = status;
             }
-            log.ExpiredAt = expiredAt;
-            log.Status = status;
-            db.Update(log);
+            db.UserEquityCards.Save(log);
+            db.SaveChanges();
             // TODO 埋点记录管理账户记录
             return log;
         }
 
         public UserEquityCard[] GetUserCard(int user)
         {
-            var sql = new Sql();
-            sql.Select().From<UserEquityCardEntity>(db);
-            sql.Where("user_id=@0 and status=1 and expired_at>@1", user, TimeHelper.TimestampNow()).OrderBy("card_id DESC");
-            var items = db.Fetch<UserEquityCardModel>(sql);
-            if (items.Count == 0)
+            var now = TimeHelper.TimestampNow();
+            var items = db.UserEquityCards
+                .Include(i => i.Card)
+                .Where(i => i.UserId == user && i.Status == 1 && i.ExpiredAt > now)
+                .OrderByDescending(i => i.CardId).ToArray();
+            if (items.Length == 0)
             {
                 return [];
             }
-            WithCard(items);
             var data = new List<UserEquityCard>();
             foreach (var item in items)
             {

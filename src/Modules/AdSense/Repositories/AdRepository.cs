@@ -67,15 +67,15 @@ namespace NetDream.Modules.AdSense.Repositories
         }
 
 
-        public AdEntity Get(int id)
+        public IOperationResult<AdEntity> Get(int id)
         {
             var model = db.Ads.Include(i => i.Position)
                 .Where(i => i.Id == id && i.StartAt <= environment.Now && i.EndAt > environment.Now).Single();
             if (model is null)
             {
-                throw new Exception("广告不存在");
+                return OperationResult.Fail<AdEntity>("广告不存在");
             }
-            return model;
+            return OperationResult.Ok(model);
         }
 
         public FormattedAdModel[] Load(string code)

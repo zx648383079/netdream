@@ -32,5 +32,7 @@ namespace NetDream.Modules.Auth.Entities
         
         public int CreatedAt { get; set; }
 
+        public ICollection<BulletinUserEntity>? Items { get; set; }
+
     }
 }

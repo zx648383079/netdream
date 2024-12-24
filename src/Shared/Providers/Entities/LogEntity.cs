@@ -13,6 +13,7 @@ namespace NetDream.Shared.Providers.Entities
 
         public int UserId { get; set; }
         public byte Action { get; set; }
+        public string Data { get; set; } = string.Empty;
         public string Ip { get; set; } = string.Empty;
         public int CreatedAt { get; set; }
 

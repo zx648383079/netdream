@@ -1,12 +1,9 @@
 ﻿using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Modules.Auth.Models;
-using NetDream.Modules.Auth.Entities;
-using NetDream.Shared.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using NetDream.Shared.Providers;
-using NetDream.Shared.Models;
 using System;
 
 namespace NetDream.Modules.Auth.Repositories

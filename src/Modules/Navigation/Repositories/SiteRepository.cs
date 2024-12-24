@@ -1,14 +1,8 @@
 ﻿using NetDream.Shared.Providers;
-using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Navigation.Repositories
 {
-    public class SiteRepository(IDatabase db)
+    public class SiteRepository(NavigationContext db)
     {
         const string BASE_KEY = "search";
 

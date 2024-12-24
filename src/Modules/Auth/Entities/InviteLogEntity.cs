@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Auth.Entities
 {
     
-    public class InviteLogEntity
+    public class InviteLogEntity: IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -10,8 +12,10 @@ namespace NetDream.Modules.Auth.Entities
         public int UserId { get; set; }
         
         public int ParentId { get; set; }
-        public string Code { get; set; } = string.Empty;
-        
+        public byte Status { get; set; }
+        public int CodeId { get; set; }
+        public int UpdatedAt { get; set; }
         public int CreatedAt { get; set; }
+ 
     }
 }

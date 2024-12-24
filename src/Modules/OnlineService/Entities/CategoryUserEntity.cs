@@ -14,5 +14,7 @@ namespace NetDream.Modules.OnlineService.Entities
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }
+
+        public CategoryEntity? Category { get; set; }
     }
 }

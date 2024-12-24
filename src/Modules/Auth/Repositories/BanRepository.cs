@@ -1,8 +1,10 @@
-﻿using NetDream.Modules.Auth.Entities;
-using NetDream.Shared.Helpers;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Auth.Entities;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Modules.Auth.Repositories
 {
@@ -24,25 +26,27 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 throw new Exception("不能拉黑自己");
             }
-            var user = db.FindFirst<UserEntity>("email,mobile", "id=@0", userId);
+            var user = db.Users.Where(i => i.Id == userId).Select(i => new UserEntity()
+            {
+                Email = i.Email,
+                Mobile = i.Mobile
+            }).Single();
             if (user is null)
             {
                 return;
             }
             Ban(user.Email, AuthRepository.ACCOUNT_TYPE_EMAIL);
             Ban(user.Mobile, AuthRepository.ACCOUNT_TYPE_MOBILE);
-            var items = db.Fetch<OauthEntity>("user_id=@0", userId);
+            var items = db.OAuth.Where(i => i.UserId == userId).ToArray();
             foreach (var item in items)
             {
                 var type = OAUTH_TYPE_MAPS[item.Vendor];
                 Ban(item.Identity, type, item.PlatformId);
                 Ban(item.Unionid, type, item.PlatformId);
             }
-            db.Update<UserEntity>(new Sql().Where("id=@0 and status>=@1", 
-                userId, UserRepository.STATUS_ACTIVE), new()
-            {
-                {"status", UserRepository.STATUS_FROZEN}
-            });
+            db.Users.Where(i => i.Id == userId && i.Status >= UserRepository.STATUS_ACTIVE)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, UserRepository.STATUS_FROZEN));
+        
         }
 
         /**
@@ -63,23 +67,24 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return;
             }
-            db.Insert(new BanAccountEntity()
+            db.BanAccounts.Add(new BanAccountEntity()
             {
                 UserId = client.UserId,
                 ItemKey = itemKey,
                 ItemType = itemType,
-                PlatformId = platformId
+                PlatformId = platformId,
+                CreatedAt = client.Now
             });
+            db.SaveChanges();
         }
 
         public bool IsBan(string itemKey, int itemType = -1, int platformId = 0)
         {
             if (itemType < 0)
             {
-                return db.FindCount<BanAccountEntity>("item_key=@0", itemKey) > 0;
+                return db.BanAccounts.Where(i => i.ItemKey == itemKey).Any();
             }
-            return db.FindCount<BanAccountEntity>("item_key=@0 and item_type=@1 and platform_id=@2", 
-                itemKey, itemType, platformId) > 0;
+            return db.BanAccounts.Where(i => i.ItemKey == itemKey && i.ItemType == itemType && i.PlatformId == platformId).Any();
         }
 
         public bool IsBanOAuth(string openId, string unionId, string vendor, int platformId)
@@ -106,47 +111,47 @@ namespace NetDream.Modules.Auth.Repositories
         {
             if (itemType < 0)
             {
-                db.DeleteWhere<BanAccountEntity>("item_key=@0", itemKey);
+                db.BanAccounts.Where(i => i.ItemKey == itemKey).ExecuteDelete();
                 return;
             }
-            db.DeleteWhere<BanAccountEntity>("item_key=@0 and item_type=@1 and platform_id=@2",
-                itemKey, itemType, platformId);
+            db.BanAccounts.Where(i => i.ItemKey == itemKey && i.ItemType == itemType && i.PlatformId == platformId)
+                .ExecuteDelete();
         }
 
-        public Page<BanAccountEntity> GetList(string keywords, int page = 1)
+        public IPage<BanAccountEntity> GetList(string keywords, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<BanAccountEntity>(db);
-            SearchHelper.Where(sql, "item_key", keywords);
-            return db.Page<BanAccountEntity>(page, 20, sql);
+            return db.BanAccounts.Search(keywords, "item_key")
+                .ToPage(page);
         }
 
         public void Remove(int id)
         {
-            db.DeleteById<BanAccountEntity>(id);
+            db.BanAccounts.Where(i => i.Id == id).ExecuteDelete();
         }
 
         public void RemoveUser(int userId)
         {
-            var user = db.FindFirst<UserEntity>("email,mobile", "id=@0", userId);
+            var user = db.Users.Where(i => i.Id == userId).Select(i => new UserEntity()
+            {
+                Email = i.Email,
+                Mobile = i.Mobile
+            }).Single();
             if (user is null)
             {
                 return;
             }
             Unban(user.Email, AuthRepository.ACCOUNT_TYPE_EMAIL);
             Unban(user.Mobile, AuthRepository.ACCOUNT_TYPE_MOBILE);
-            var items = db.Fetch<OauthEntity>("user_id=@0", userId);
+            var items = db.OAuth.Where(i => i.UserId == userId).ToArray();
             foreach (var item in items)
             {
                 var type = OAUTH_TYPE_MAPS[item.Vendor];
                 Unban(item.Identity, type, item.PlatformId);
                 Unban(item.Unionid, type, item.PlatformId);
             }
-            db.Update<UserEntity>(new Sql().Where("id=@0 and status<@1",
-                userId, UserRepository.STATUS_ACTIVE), new()
-            {
-                {"status", UserRepository.STATUS_ACTIVE}
-            });
+            db.Users.Where(i => i.Id == userId && i.Status < UserRepository.STATUS_ACTIVE)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, UserRepository.STATUS_ACTIVE));
+   
         }
     }
 }

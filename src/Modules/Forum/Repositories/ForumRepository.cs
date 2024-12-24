@@ -1,38 +1,29 @@
-﻿using Modules.Forum.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Forum.Entities;
 using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
-using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
-using NPoco;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+using NetDream.Shared.Providers;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace NetDream.Modules.Forum.Repositories
 {
-    public class ForumRepository(IDatabase db, IUserRepository userStore)
+    public class ForumRepository(ForumContext db, IUserRepository userStore)
     {
-        public Page<ForumEntity> GetList(string keywords = "", 
+        public IPage<ForumEntity> GetList(string keywords = "", 
             int parent = 0, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From<ForumEntity>(db).Where("parent_id=@0", parent);
-            SearchHelper.Where(sql, "name", keywords);
-            return db.Page<ForumEntity>(page, 20, sql);
+            return db.Forums.Search(keywords, "name")
+                .Where(i => i.ParentId == parent)
+                .ToPage(page);
         }
 
         public ForumModel? Get(int id, bool full = true)
         {
-            var model = db.SingleById<ForumModel>(id);
+            var model = db.Forums.Where(i => i.Id == id).Single()?.CopyTo<ForumModel>();
             if (model is not null && full)
             {
-                model.Classifies = db.Fetch<ForumClassifyEntity>("WHERE forum_id=@0 ORDER BY id ASC", id);
+                model.Classifies = db.ForumClassifies.Where(i => i.ForumId == id).OrderBy(i => i.Id).ToArray();
                 // model.Moderators;
             }
             return model;
@@ -40,12 +31,12 @@ namespace NetDream.Modules.Forum.Repositories
 
         public ForumModel? GetFull(int id, bool full = true)
         {
-            var model = db.SingleById<ForumModel>(id);
+            var model = db.Forums.Where(i => i.Id == id).Single()?.CopyTo<ForumModel>();
             if (model is null)
             {
                 return model;
             }
-            model.Classifies = db.Fetch<ForumClassifyEntity>("WHERE forum_id=@0 ORDER BY id ASC", id);
+            model.Classifies = db.ForumClassifies.Where(i => i.ForumId == id).OrderBy(i => i.Id).ToArray();
             if (full)
             {
                 //model.Moderators;
@@ -116,7 +107,7 @@ namespace NetDream.Modules.Forum.Repositories
 
         public void Remove(int id)
         {
-            db.Delete<ForumEntity>(id);
+            db.Forums.Where(i => i.Id == id).ExecuteDelete();
         }
 
         public void All()
@@ -147,14 +138,18 @@ namespace NetDream.Modules.Forum.Repositories
 
         private ThreadModel? LastThread(int id)
         {
-            var sql = new Sql();
-            sql.Select("id", "title", "user_id", "view_count",
-            "post_count",
-            "collect_count", MigrationTable.COLUMN_UPDATED_AT)
-                .From<ThreadEntity>(db)
-                .Where("forum_id=@0", id)
-                .OrderBy("id DESC");
-            var model = db.Single<ThreadModel>(sql);
+            var model = db.Threads.Where(i => i.ForumId == id)
+                .OrderByDescending(i => i.Id)
+                .Select(i => new ThreadModel()
+                {
+                    Id = i.Id,
+                    Title = i.Title,
+                    UserId = i.UserId,
+                    ViewCount = i.ViewCount,
+                    PostCount = i.PostCount,
+                    CollectCount = i.CollectCount,
+                    UpdatedAt = i.UpdatedAt,
+                }).Single();
             if (model is not null)
             {
                 model.User = userStore.Get(id);

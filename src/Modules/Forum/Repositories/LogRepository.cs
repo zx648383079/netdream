@@ -1,15 +1,8 @@
-﻿using Modules.Forum.Entities;
-using NetDream.Shared.Repositories;
-using NPoco;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using NetDream.Shared.Repositories;
 
 namespace NetDream.Modules.Forum.Repositories
 {
-    public class LogRepository(IDatabase db) : ActionRepository<ThreadLogEntity>(db)
+    public class LogRepository(ForumContext db) : ActionRepository(db)
     {
 
         public const byte TYPE_FORUM = 0;

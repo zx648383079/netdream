@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Models;
+using NetDream.Modules.Auth.Repositories;
 using System;
 
 namespace NetDream.Modules.Auth.Migrations
@@ -25,7 +26,7 @@ namespace NetDream.Modules.Auth.Migrations
             builder.Property(table => table.Credits).HasColumnName("credits").HasDefaultValue(0).HasComment("»ı·Ö");
             builder.Property(table => table.ParentId).HasColumnName("parent_id").HasDefaultValue(0);
             builder.Property(table => table.Token).HasColumnName("token").HasMaxLength(60).HasDefaultValue(0);
-            builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(2).HasDefaultValue(UserModel.STATUS_ACTIVE);
+            builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(2).HasDefaultValue(UserRepository.STATUS_ACTIVE);
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
         }

@@ -1,36 +1,30 @@
-﻿using Modules.Forum.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Forum.Entities;
 using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
 using NetDream.Shared.Models;
-using NPoco;
+using NetDream.Shared.Providers;
+using NetDream.Shared.Providers.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace NetDream.Modules.Forum.Repositories
 {
-    public class ThreadRepository(IDatabase db, 
+    public class ThreadRepository(ForumContext db, 
         IUserRepository userStore,
-        IClientContext environment)
+        IClientContext client)
     {
-        public Page<ThreadModel> ManageList(string keywords = "", 
+        public IPage<ThreadModel> ManageList(string keywords = "", 
             int forum_id = 0, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From<ThreadEntity>(db);
-            if (forum_id > 0)
-            {
-                sql.Where("forum_id=@0", forum_id);
-            }
-            SearchHelper.Where(sql, "title", keywords)
-                .OrderBy("updated_at DESC");
-            var items = db.Page<ThreadModel>(page, 20, sql);
+            var items = db.Threads.Search(keywords, "title")
+                .When(forum_id > 0, i => i.ForumId == forum_id)
+                .OrderByDescending(i => i.UpdatedAt)
+                .ToPage(page).CopyTo<ThreadEntity, ThreadModel>();
             userStore.WithUser(items.Items);
             WithForum(items.Items);
             return items;
@@ -43,8 +37,8 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return;
             }
-            var data = db.Fetch<ForumEntity>($"WHERE id IN({string.Join(',', idItems)})");
-            if (!data.Any())
+            var data = db.Forums.Where(i => idItems.Contains(i.Id)).ToArray();
+            if (data.Length == 0)
             {
                 return;
             }
@@ -67,7 +61,7 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return;
             }
-            var data = db.Fetch<ForumClassifyEntity>($"WHERE id IN({string.Join(',', idItems)})");
+            var data = db.ForumClassifies.Where(i => idItems.Contains(i.Id)).ToArray();
             if (!data.Any())
             {
                 return;
@@ -88,80 +82,78 @@ namespace NetDream.Modules.Forum.Repositories
 
         public ThreadEntity? Get(int id)
         {
-            return db.SingleById<ThreadEntity>(id);
+            return db.Threads.Where(i => i.Id == id).Single();
         }
 
-        public ThreadModel GetSource(int id)
+        public IOperationResult<ThreadModel> GetSource(int id)
         {
-            var model = db.SingleById<ThreadModel>(id);
-            if (model is null ||  model.UserId != environment.UserId)
+            var model = db.Threads.Where(i => i.Id == id && i.UserId == client.UserId).Single()?.CopyTo<ThreadModel>();
+            if (model is null)
             {
-                throw new Exception("操作失败");
+                return OperationResult<ThreadModel>.Fail("操作失败");
             }
-            model.Content = db.ExecuteScalar<string>(new Sql().Select("content")
-                .From<ThreadPostEntity>(db)
-                .Where("user_id=@0 AND thread_id=@1 AND grade=0", environment.UserId, model.Id));
-            return model;
+            model.Content = db.ThreadPosts.Where(i => i.UserId == client.UserId && i.ThreadId == model.Id && i.Grade == 0)
+                .Select(i => i.Content).Single();
+            return OperationResult.Ok(model);
         }
 
-        public ThreadEntity Save(ThreadForm data)
+        public IOperationResult<ThreadEntity> Save(ThreadForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<ThreadEntity>(data.Id) :
+            var model = data.Id > 0 ? db.Threads.Where(i => i.Id == data.Id).Single() :
                 new ThreadEntity();
+            if (model is null) 
+            {
+                return OperationResult<ThreadEntity>.Fail("id is error");
+            }
             model.Title = data.Title;
             model.ClassifyId = data.ClassifyId;
             model.ForumId = data.ForumId;
             if (model.UserId == 0)
             {
-                model.UserId = environment.UserId;
+                model.UserId = client.UserId;
             }
-            db.TrySave(model);
+            db.Threads.Save(model, client.Now);
+            db.SaveChanges();
             if (data.Id == 0)
             {
-                db.Insert(new ThreadPostEntity()
+                db.ThreadPosts.Add(new ThreadPostEntity()
                 {
                     ThreadId = model.Id,
                     Content = data.Content,
-                    UserId = environment.UserId,
+                    UserId = client.UserId,
                     Grade = 0,
-                    Ip = environment.Ip,
-                    CreatedAt = environment.Now,
-                    UpdatedAt = environment.Now,
+                    Ip = client.Ip,
+                    CreatedAt = client.Now,
+                    UpdatedAt = client.Now,
                 });
             } else if (!string.IsNullOrWhiteSpace(data.Content))
             {
-                db.Update<ThreadPostEntity>(new Sql().Where("thread_id=@0 AND grade=0", model.Id), new Dictionary<string, object>()
-                {
-                    { "content" , data.Content}
-                });
+                db.ThreadPosts.Where(i => i.ThreadId == model.Id && i.Grade == 0)
+                    .ExecuteUpdate(setters => setters.SetProperty(i => i.Content, data.Content));
+
             }
-            return model;
+            return OperationResult.Ok(model);
         }
 
         public void ManageRemove(params int[] id)
         {
-            db.DeleteById<ThreadEntity>(id);
-            db.DeleteById<ThreadPostEntity>("thread_id", id);
+            db.Threads.Where(i => id.Contains(i.Id)).ExecuteDelete();
+            db.ThreadPosts.Where(i => id.Contains(i.ThreadId)).ExecuteDelete();
         }
 
-        public Page<ThreadModel> GetList(int forum, int classify = 0, 
+        public IPage<ThreadModel> GetList(int forum, int classify = 0, 
             string keywords = "", int user = 0, int type = 0, 
             string sort = "", string order = "", int page = 1)
         {
             (sort, order) = SearchHelper.CheckSortOrder(sort, order, [
-                MigrationTable.COLUMN_UPDATED_AT, MigrationTable.COLUMN_CREATED_AT, "post_count", "top_type"
+                "updated_at", "created_at", "post_count", "top_type"
             ]);
 
-            var sql = new Sql();
-            sql.Select("*").From<ThreadEntity>(db);
-            if (classify > 0)
-            {
-                sql.Where("classify_id=@0", classify);
-            }
-            sql.WhereIn("forum_id", forum);
+            var query = db.Threads.When(classify > 0, i => i.ClassifyId == classify)
+                .Where(i => i.ForumId == forum);
             if (type < 2)
             {
-                SearchHelper.Where(sql, "title", keywords);
+                query = query.Search(keywords, "title");
             } else
             {
                 var users = userStore.SearchUserId(keywords);
@@ -169,14 +161,11 @@ namespace NetDream.Modules.Forum.Repositories
                 {
                     return new Page<ThreadModel>();
                 }
-                sql.WhereIn("user_id", users);
+                query = query.Where(i => users.Contains(i.UserId));
             } 
-            if (user > 0)
-            {
-                sql.Where("user_id=@0", user);
-            }
-            sql.OrderBy($"{sort} {order}");
-            var items = db.Page<ThreadModel>(page, 20, sql);
+            var items = query.When(user > 0, i => i.UserId == user)
+                .OrderBy<ThreadEntity, int>(sort, order)
+                .ToPage(page).CopyTo<ThreadEntity, ThreadModel>();
             userStore.WithUser(items.Items);
             WithClassify(items.Items);
             foreach (var item in items.Items)
@@ -187,28 +176,28 @@ namespace NetDream.Modules.Forum.Repositories
             return items;
         }
 
-        public Page<ThreadModel> SelfList(string keywords = "", 
+        public IPage<ThreadModel> SelfList(string keywords = "", 
             string sort = "", 
             string order = "", int page = 1)
         {
             (sort, order) = SearchHelper.CheckSortOrder(sort, order, [
-                MigrationTable.COLUMN_UPDATED_AT, MigrationTable.COLUMN_CREATED_AT, "post_count", "top_type"
+                "updated_at", "created_at", "post_count", "top_type"
             ]);
-            var sql = new Sql().Select("*")
-                .From<ThreadEntity>(db)
-                .Where("user_id=@0", environment.UserId);
-            SearchHelper.Where(sql, "title", keywords);
-            sql.OrderBy($"{sort} {order}");
-            var items = db.Page<ThreadModel>(page, 20, sql);
+            var items = db.Threads.Where(i => i.UserId == client.UserId)
+                .Search(keywords, "title")
+                .OrderBy<ThreadEntity, int>(sort, order)
+                .ToPage(page).CopyTo<ThreadEntity, ThreadModel>();
             WithClassify(items.Items);
             WithForum(items.Items);
             return items;
         }
 
-        public IList<ThreadModel> TopList(int forum)
+        public ThreadModel[] TopList(int forum)
         {
-            var data = db.Fetch<ThreadModel>(
-                "WHERE forum_id=@0 AND top_type>0 ORDER BY top_type DESC, id DESC");
+            var data = db.Threads.Where(i => i.ForumId == forum && i.TopType > 0)
+                .OrderByDescending(i => i.TopType)
+                .OrderByDescending(i => i.Id)
+                .ToArray().CopyTo<ThreadEntity, ThreadModel>();
             userStore.WithUser(data);
             WithClassify(data);
             foreach (var item in data)
@@ -226,13 +215,14 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 time = model.LastPost.CreatedAt;
             }
-            return time > environment.Now - 86400;
+            return time > client.Now - 86400;
         }
 
-        protected ThreadPostEntity LastPost(int thread, 
+        protected ThreadPostModel? LastPost(int thread, 
             bool hasUser = true)
         {
-            var data = db.Single<ThreadPostModel>("WHERE thread_id=@0 ORDER BY id DESC", thread);
+            var data = db.ThreadPosts.Where(i => i.ThreadId == thread)
+                .OrderByDescending(i => i.Id).Single()?.CopyTo<ThreadPostModel>();
             if (data is not null && hasUser)
             {
                 data.User = userStore.Get(data.UserId);
@@ -295,15 +285,13 @@ namespace NetDream.Modules.Forum.Repositories
             //return items.SetPage(data);
         }
 
-        public Page<ThreadPostModel> SelfPostList(string keywords = "", 
+        public IPage<ThreadPostEntity> SelfPostList(string keywords = "", 
             int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("*").From<ThreadPostEntity>(db)
-                .Where("user_id", environment.UserId);
-            SearchHelper.Where(sql, "content", keywords);
-            sql.OrderBy("created_at ASC");
-            return db.Page<ThreadPostModel>(page, 20, sql);
+            return db.ThreadPosts.Where(i => i.UserId == client.UserId)
+                .Search(keywords, "content")
+                .OrderBy(i => i.CreatedAt)
+                .ToPage(page);
         }
 
         /**
@@ -312,20 +300,20 @@ namespace NetDream.Modules.Forum.Repositories
          * @return bool
          * @throws Exception
          */
-        public bool ToggleCollect(int id)
+        public IOperationResult<bool> ToggleCollect(int id)
         {
-            var model = db.SingleById<ThreadEntity>(id);
+            var model = db.Threads.Where(i => i.Id == id).Single();
             if (model is null)
             {
-                throw new Exception("帖子不存在");
+                return OperationResult<bool>.Fail("帖子不存在");
             }
-            return ToggleCollectThread(model);
+            return OperationResult.Ok(ToggleCollectThread(model));
         }
 
         public bool ToggleCollectThread(ThreadEntity model)
         {
             var yes = new LogRepository(db)
-                .ToggleAction(environment.UserId, model.Id, LogRepository.TYPE_THREAD, 
+                .ToggleAction(client.UserId, model.Id, LogRepository.TYPE_THREAD, 
                 LogRepository.ACTION_COLLECT);
             model.CollectCount += (yes ? 1 : -1);
             db.Update(model);
@@ -339,16 +327,16 @@ namespace NetDream.Modules.Forum.Repositories
          * @return array
          * @throws Exception
          */
-        public AgreeResult AgreePost(int id, bool agree = true)
+        public IOperationResult<AgreeResult> AgreePost(int id, bool agree = true)
         {
-            var model = db.SingleById<ThreadPostEntity>(id);
+            var model = db.ThreadPosts.Where(i => i.Id == id).Single();
             if (model is null)
             {
-                throw new Exception("回复不存在");
+                return OperationResult<AgreeResult>.Fail("回复不存在");
             }
             var action = agree ? LogRepository.ACTION_AGREE : LogRepository.ACTION_DISAGREE;
             var res = new LogRepository(db).ToggleLog(
-                environment.UserId,
+                client.UserId,
                 model.Id,
                 LogRepository.TYPE_THREAD_POST,
                 action,
@@ -380,25 +368,25 @@ namespace NetDream.Modules.Forum.Repositories
                 }
             }
             db.Update(model);
-            return new AgreeResult(agree, model.AgreeCount, model.DisagreeCount);
+            return OperationResult.Ok(new AgreeResult(agree, model.AgreeCount, model.DisagreeCount));
         }
 
-        public ThreadPostEntity Create(string title, 
+        public IOperationResult<ThreadPostEntity> Create(string title, 
             string content, int forum_id, int classify_id = 0, 
             byte is_private_post = 0)
         {
             title = title.Trim();
             if (string.IsNullOrWhiteSpace(title))
             {
-                throw new Exception("标题不能为空");
+                return OperationResult<ThreadPostEntity>.Fail("标题不能为空");
             }
             if (forum_id < 1)
             {
-                throw new Exception("请选择版块");
+                return OperationResult<ThreadPostEntity>.Fail("请选择版块");
             }
-            var userId = environment.UserId;
+            var userId = client.UserId;
             if (!CanPublish(userId, title)) {
-                throw new Exception("你的操作太频繁了，请五分钟后再试");
+                return OperationResult<ThreadPostEntity>.Fail("你的操作太频繁了，请五分钟后再试");
             }
             var thread = new ThreadEntity()
             {
@@ -408,50 +396,51 @@ namespace NetDream.Modules.Forum.Repositories
                 UserId = userId,
                 IsPrivatePost = is_private_post
             };
-            if (!db.TrySave(thread))
+            db.Threads.Save(thread, client.Now);
+            if (db.SaveChanges() == 0)
             {
-                throw new Exception("发帖失败");
+                return OperationResult<ThreadPostEntity>.Fail("发帖失败");
             }
             var model = new ThreadPostEntity() {
                 Content = content,
                 UserId=userId,
                 ThreadId = thread.Id,
                 Grade =0,
-                Ip = environment.Ip,
+                Ip = client.Ip,
             };
-            db.TrySave(model);
+            db.ThreadPosts.Save(model, client.Now);
             new ForumRepository(db, userStore).
                 UpdateCount(thread.ForumId, "thread_count");
-            return model;
+            return OperationResult.Ok(model);
         }
 
         public bool CanPublish(int userId, string title)
         {
-            var count = db.FindCount<ThreadEntity>("user_id=@0 AND created_at>@1", userId,
-                TimeHelper.TimestampNow() - 300);
-            if (count > 0)
+            var now = TimeHelper.TimestampNow();
+            var count = db.Threads.Where(i => i.UserId == userId && i.CreatedAt > now - 300)
+                .Any();
+            if (count)
             {
                 return false;
             }
-            count = db.FindCount<ThreadEntity>("user_id=@0 AND created_at>@1 AND title=@2", userId,
-                TimeHelper.TimestampNow() - 3600, title);
-            return count < 1;
+            count = db.Threads.Where(i => i.UserId == userId && i.CreatedAt > now - 3600 && i.Title == title).Any();
+            return !count;
         }
 
-        public ThreadEntity Update(int id, ThreadForm data)
+        public IOperationResult<ThreadEntity> Update(int id, ThreadForm data)
         {
             var thread = Get(id);
             if (thread is null)
             {
-                throw new Exception("无权限");
+                return OperationResult<ThreadEntity>.Fail("无权限");
             }
-            if (thread.UserId != environment.UserId)
+            if (thread.UserId != client.UserId)
             {
-                throw new Exception("无权限");
+                return OperationResult<ThreadEntity>.Fail("无权限");
             }
             if (thread.IsClosed > 0)
             {
-                throw new Exception("帖子已锁定，无法编辑");
+                return OperationResult<ThreadEntity>.Fail("帖子已锁定，无法编辑");
             }
             if (!string.IsNullOrWhiteSpace(data.Title))
             {
@@ -465,23 +454,27 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 thread.IsPrivatePost = data.IsPrivatePost;
             }
-            db.TrySave(thread);
-            db.Update<ThreadPostEntity>(new Sql().Where("user_id=@0 AND thread_id=@1 AND grade=0", environment.UserId,
-                thread.Id), new Dictionary<string, object>()
-                {
-                    {"content", data.Content},
-                });
-            return thread;
+            db.Threads.Save(thread, client.Now);
+            db.ThreadPosts.Where(i => i.ThreadId == thread.Id && i.Grade == 0 && i.UserId == client.UserId)
+                    .ExecuteUpdate(setters => setters.SetProperty(i => i.Content, data.Content));
+            return OperationResult.Ok(thread);
         }
 
 
-        public ThreadModel GetFull(int id, bool isSee = false)
+        public IOperationResult<ThreadModel> GetFull(int id, bool isSee = false)
         {
+            var res = db.Threads.Where(i => i.Id == id).Single();
+            if (res is null)
+            {
+                return OperationResult<ThreadModel>.Fail("id is error");
+            }
             if (isSee)
             {
-                db.Update<ThreadEntity>("SET view_count=view_count+1 WHERE id=@0", id);
+                res.ViewCount++;
+                db.SaveChanges();
             }
-            var model = db.SingleById<ThreadModel>(id); ;
+            var model = res.CopyTo<ThreadModel>();
+
             //model.Forum;
             //model.Path = array_merge(ForumModel.FindPath(model.ForumId), [model.Forum]);
             //model.Digestable = static.Can(model, "is_digest");
@@ -506,50 +499,53 @@ namespace NetDream.Modules.Forum.Repositories
             //    .Where("item_id", id)
             //    .Where("action", ThreadLogModel.ACTION_REWARD).OrderBy("id", "desc")
             //    .Limit(5).Get();
-            return model;
+            return OperationResult.Ok(model);
         }
 
         public bool Editable(ThreadEntity model)
         {
-            if (environment.UserId == 0 || model.IsClosed > 0)
+            if (client.UserId == 0 || model.IsClosed > 0)
             {
                 return false;
             }
-            return model.UserId == environment.UserId || Can(model, "edit");
+            return model.UserId == client.UserId || Can(model, "edit");
         }
 
-        public ThreadPostEntity Reply(string content, int thread_id)
+        public IOperationResult<ThreadPostEntity> Reply(string content, int thread_id)
         {
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new Exception("请输入内容");
+                return OperationResult<ThreadPostEntity>.Fail("请输入内容");
             }
             if (thread_id < 1)
             {
-                throw new Exception("请选择帖子");
+                return OperationResult<ThreadPostEntity>.Fail("请选择帖子");
             }
             var thread = Get(thread_id);
             if (thread is null || thread.IsClosed > 0)
             {
-                throw new Exception("帖子已关闭");
+                return OperationResult<ThreadPostEntity>.Fail("帖子已关闭");
             }
-            var max = db.FindScalar<int, ThreadPostEntity>("MAX(grade) as grade", "thread_id=@0", thread.Id);
+            var max = db.ThreadPosts.Where(i => i.ThreadId == thread_id).Max(i => i.Grade);
             var post = new ThreadPostEntity() {
                 Content = content,
-                UserId = environment.UserId,
+                UserId = client.UserId,
                 ThreadId = thread_id,
                 Grade = max + 1,
-                Ip = environment.Ip,
+                Ip = client.Ip,
             };
-            if (!db.TrySave(post))
+            db.ThreadPosts.Save(post, client.Now);
+            if (db.SaveChanges() == 0)
             {
-                throw new Exception("发表失败");
+                return OperationResult<ThreadPostEntity>.Fail("发表失败");
             }
             new ForumRepository(db, userStore)
                 .UpdateCount(thread.ForumId, "post_count");
-            db.Update<ThreadEntity>("SET post_count=post_count+1, updated_at=@0 WHERE id=@1",
-                environment.Now, thread_id);
-            return post;
+            db.Threads.Where(i => i.Id == thread_id)
+                .ExecuteUpdate(setters => 
+                    setters.SetProperty(i => i.PostCount, i => i.PostCount + 1)
+                    .SetProperty(i => i.UpdatedAt, client.Now));
+            return OperationResult.Ok(post);
         }
 
         /**
@@ -558,12 +554,12 @@ namespace NetDream.Modules.Forum.Repositories
          * @return ThreadModel
          * @throws Exception
          */
-        public ThreadEntity ThreadAction(int id, Dictionary<string, object> data)
+        public IOperationResult<ThreadEntity> ThreadAction(int id, Dictionary<string, object> data)
         {
             var thread = Get(id);
             if (thread is null)
             {
-                throw new Exception("请选择帖子");
+                return OperationResult<ThreadEntity>.Fail("请选择帖子");
             }
             //if (in_array("like", data) || array_key_exists("like", data))
             //{
@@ -608,7 +604,7 @@ namespace NetDream.Modules.Forum.Repositories
             //    "action" => 1,
             //    "data" => Json.Encode(data)
             //]);
-            return thread;
+            return OperationResult.Ok(thread);
         }
 
         /**
@@ -620,7 +616,7 @@ namespace NetDream.Modules.Forum.Repositories
          */
         public bool Can(ThreadEntity model, string action)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return false;
             }
@@ -629,86 +625,92 @@ namespace NetDream.Modules.Forum.Repositories
 
         public bool CanRemovePost(ThreadEntity model, ThreadPostEntity item)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return false;
             }
-            if (environment.UserId == model.UserId)
+            if (client.UserId == model.UserId)
             {
                 return true;
             }
-            if (environment.UserId == item.UserId)
+            if (client.UserId == item.UserId)
             {
                 return true;
             }
             return true;//TODO auth().User().HasRole("administrator");
         }
 
-        public void RemovePost(int id)
+        public IOperationResult RemovePost(int id)
         {
-            var item = db.SingleById<ThreadPostEntity>(id);
+            var item = db.ThreadPosts.Where(i => i.Id == id).Single();
             if (item is null)
             {
-                throw new Exception("请选择回帖");
+                return OperationResult.Fail("请选择回帖");
             }
             var thread = Get(item.ThreadId);
             if (thread is null)
             {
-                throw new Exception("请选择回帖");
+                return OperationResult.Fail("请选择回帖");
             }
             if (!CanRemovePost(thread, item)) {
-                throw new Exception("无权限");
+                return OperationResult.Fail("无权限");
             }
-            db.Delete(item);
+            db.ThreadPosts.Remove(item);
+            db.SaveChanges();
             new ForumRepository(db, userStore).UpdateCount(thread.ForumId, "post_count", -1);
-            db.Update<ThreadEntity>("SET post_count=post_count-1, updated_at=@0 WHERE id=@1",
-                environment.Now, thread.Id);
+            db.Threads.Where(i => i.Id == item.ThreadId)
+                .ExecuteUpdate(setters =>
+                    setters.SetProperty(i => i.PostCount, i => i.PostCount - 1)
+                    .SetProperty(i => i.UpdatedAt, client.Now));
+            return OperationResult.Ok();
         }
 
-        public void Remove(int id)
+        public IOperationResult Remove(int id)
         {
             var thread = Get(id);
-            if (thread is null || (thread.UserId != environment.UserId && Can(thread, "delete"))) {
-                throw new Exception("操作失败");
+            if (thread is null || (thread.UserId != client.UserId && Can(thread, "delete"))) {
+                return OperationResult.Fail("操作失败");
             }
-            db.Delete(thread);
-            var count = db.FindCount<int, ThreadPostEntity>("COUNT(*) as c", "thread_id=@0", id) - 1;
-            db.DeleteById<ThreadPostEntity>("thread_id", id);
+            db.Threads.Remove(thread);
+            var count = db.ThreadPosts.Where(i => i.ThreadId == id).Count() - 1;
+            db.ThreadPosts.Where(i => i.ThreadId == id).ExecuteDelete();
             var repository = new ForumRepository(db, userStore);
             repository.UpdateCount(thread.ForumId, "thread_count", -1);
             repository.UpdateCount(thread.ForumId, "post_count", -count);
-            db.Insert(new ForumLogEntity() { 
+            db.Logs.Add(new LogEntity() { 
                 ItemType = LogRepository.TYPE_THREAD,
                 ItemId = id,
                 Action = LogRepository.ACTION_DELETE,
-                UserId = environment.UserId,
-                CreatedAt = environment.Now,
+                UserId = client.UserId,
+                CreatedAt = client.Now,
             });
+            db.SaveChanges();
+            return OperationResult.Ok();
         }
 
 
-        public IList<ThreadEntity> Suggestion(string keywords = "")
+        public ThreadEntity[] Suggestion(string keywords = "")
         {
-            var sql = new Sql();
-            sql.Select("id", "title").From<ThreadEntity>(db);
-            SearchHelper.Where(sql, "title", keywords);
-            sql.Limit(4);
-            return db.Fetch<ThreadEntity>(sql);
+            return db.Threads.Search(keywords, "title")
+                .Take(4).Select(i => new ThreadEntity()
+                {
+                    Id = i.Id,
+                    Title = i.Title,
+                }).ToArray();
         }
 
-        public Page<ThreadLogModel> RewardList(int item_id, 
+        public IPage<ThreadLogModel> RewardList(int item_id, 
             byte item_type = 0, int page = 1)
         {
-            var items = db.Page<ThreadLogModel>(page, 20,
-                "WHERE item_type=@0 AND item_id=@1 AND action=@2 ORDER BY id DESC",
-                item_type, item_id, LogRepository.ACTION_REWARD);
+            var items = db.ThreadLogs.Where(i => i.ItemType == item_type && i.ItemId == item_id && i.Action == LogRepository.ACTION_REWARD)
+                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ThreadLogEntity, ThreadLogModel>();
             userStore.WithUser(items.Items);
             return items;
         }
 
         private byte ToggleLike(ThreadEntity thread)
         {
-            return new LogRepository(db).ToggleLog(environment.UserId,
+            return new LogRepository(db).ToggleLog(client.UserId,
                 thread.Id,
                 LogRepository.TYPE_THREAD,
                 LogRepository.ACTION_AGREE, [
@@ -718,7 +720,7 @@ namespace NetDream.Modules.Forum.Repositories
 
         private void RewardThread(ThreadModel thread, float money)
         {
-            if (thread.UserId == environment.UserId)
+            if (thread.UserId == client.UserId)
             {
                 throw new Exception("不能自己打赏自己");
             }
@@ -737,29 +739,30 @@ namespace NetDream.Modules.Forum.Repositories
             //}
         }
 
-        public ThreadPostEntity? ChangePost(int id, byte status)
+        public IOperationResult<ThreadPostEntity> ChangePost(int id, byte status)
         {
-            var model = db.SingleById<ThreadPostEntity>(id);
+            var model = db.ThreadPosts.Where(i => i.Id == id).Single();
             if (model is null)
             {
-                return null;
+                return OperationResult<ThreadPostEntity>.Fail("id is error");
             }
-            var thread = db.SingleById<ThreadEntity>(model.ThreadId);
+            var thread = db.Threads.Where(i => i.Id == model.ThreadId).Single();
             if (!Editable(thread)) {
-                throw new Exception("无权限操作");
+                return OperationResult<ThreadPostEntity>.Fail("无权限操作");
             }
             model.Status = status;
-            db.TrySave(model);
-            db.Insert(new ForumLogEntity()
+            db.ThreadPosts.Save(model, client.Now);
+            db.Logs.Add(new LogEntity()
             {
                 ItemType = LogRepository.TYPE_POST,
                 ItemId = id,
                 Action = LogRepository.ACTION_STATUS,
                 Data = status.ToString(),
-                UserId = environment.UserId,
-                CreatedAt = environment.Now,
+                UserId = client.UserId,
+                CreatedAt = client.Now,
             });
-            return model;
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
         /**

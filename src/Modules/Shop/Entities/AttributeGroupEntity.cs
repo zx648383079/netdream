@@ -11,5 +11,6 @@ namespace NetDream.Modules.Shop.Entities
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }
+        public string PropertyGroups { get; set; } = string.Empty;
     }
 }

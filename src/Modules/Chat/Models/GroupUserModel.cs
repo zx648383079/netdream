@@ -1,12 +1,10 @@
 ﻿using NetDream.Modules.Chat.Entities;
 using NetDream.Shared.Interfaces.Entities;
-using NPoco;
 
 namespace NetDream.Modules.Chat.Models
 {
     public class GroupUserModel: GroupUserEntity, IWithUserModel, IUser
     {
-        [Ignore]
         public IUser? User { get; set; }
 
         public string Avatar => User?.Avatar ?? string.Empty;

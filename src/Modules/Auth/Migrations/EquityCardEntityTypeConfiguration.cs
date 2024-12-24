@@ -17,6 +17,11 @@ namespace NetDream.Modules.Auth.Migrations
             builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(2).HasDefaultValue(0);
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
+
+            builder.HasMany(p => p.Items)
+              .WithOne(b => b.Card)
+              .HasPrincipalKey(p => p.Id)
+              .HasForeignKey(b => b.CardId);
         }
     }
 }

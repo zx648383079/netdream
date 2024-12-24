@@ -1,6 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Entities;
-
-namespace NetDream.Shared.Interfaces.Forms
+﻿namespace NetDream.Shared.Interfaces.Forms
 {
     public interface ISignInForm
     {

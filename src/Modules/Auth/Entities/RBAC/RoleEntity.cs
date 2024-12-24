@@ -1,14 +1,10 @@
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Auth.Entities
 {
     
-    public class RoleEntity
+    public class RoleEntity: IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

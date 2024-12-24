@@ -1,19 +1,19 @@
-﻿using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Modules.MessageService.Entities;
 using NetDream.Modules.MessageService.Forms;
 using NetDream.Modules.MessageService.Models;
-using NPoco;
 using System.Text.Json;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using NetDream.Shared.Providers;
+using Microsoft.EntityFrameworkCore;
 
 namespace NetDream.Modules.MessageService.Repositories
 {
-    public class MessageProtocol(IDatabase db, 
+    public class MessageProtocol(MessageServiceContext db, 
         IClientContext environment,
         IGlobeOption option)
     {
@@ -52,10 +52,10 @@ namespace NetDream.Modules.MessageService.Repositories
         /// <param name="extra"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public int SendCode(string target, string templateName, string code, IDictionary<string, string>? extra = null)
+        public IOperationResult<int> SendCode(string target, string templateName, string code, IDictionary<string, string>? extra = null)
         {
             if (!VerifySpace(target) || !VerifyIp() || !VerifyCount()) {
-                throw new Exception("发送过于频繁");
+                return OperationResult<int>.Fail("发送过于频繁");
             }
             var data = new Dictionary<string, string>()
             {
@@ -69,17 +69,11 @@ namespace NetDream.Modules.MessageService.Repositories
                 }
             }
             var res = Send(target, templateName, data);
-            if (res > 0)
+            if (res.Succeeded && res.Result > 0)
             {
-                var sql = new Sql();
-                sql.Where("target=@0", target)
-                    .Where("template_name=@0", templateName)
-                    .Where("id!=@0", res)
-                    .Where("status=@0", STATUS_SENT);
-                db.Update<LogEntity>(sql, new Dictionary<string, object>
-                {
-                    {"status",  STATUS_SENT_EXPIRED}
-                });
+                db.Logs.Where(i => i.Target == target && i.TemplateName == templateName
+                 && i.Id != res.Result && i.Status == STATUS_SENT)
+                    .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, STATUS_SENT_EXPIRED));
             }
             //if (res && EnableSession(templateName)) {
             //    session().set(self.SESSION_KEY, [
@@ -100,22 +94,21 @@ namespace NetDream.Modules.MessageService.Repositories
         /// <param name="data"></param>
         /// <returns>返回记录id, 失败则为0</returns>
         /// <exception cref="Exception"></exception>
-        public int Send(string target, string templateName, IDictionary<string, string> data)
+        public IOperationResult<int> Send(string target, string templateName, IDictionary<string, string> data)
         {
             var (type, option, optionKey) = TargetOption(target);
-            var sql = new Sql();
-            sql.Where("name=@0", templateName).Where("status=1");
+            var query = db.Templates.Where(i => i.Name == templateName && i.Status == 1);
             if (type == RECEIVE_TYPE_MOBILE)
             {
-                sql.Where("type=@0", TYPE_TEXT);
+                query = query.Where(i => i.Type == TYPE_TEXT);
             } else
             {
-                sql.OrderBy("type DESC");
+                query = query.OrderByDescending(i => i.Type);
             }
-            var template = db.Single<TemplateEntity>(sql);
+            var template = query.Single();
             if (template is null)
             {
-                throw new Exception(string.Format("未配置相关模板[{0}:{1}]", optionKey, templateName));
+                return OperationResult<int>.Fail(string.Format("未配置相关模板[{0}:{1}]", optionKey, templateName));
             }
             var logData = new LogEntity() {
                 TemplateId = template.Id,
@@ -131,22 +124,30 @@ namespace NetDream.Modules.MessageService.Repositories
             };
             // TODO 根据模板值过滤
             data = FilterData(data, template.Data);
-            db.Save(logData);
-            OperationResult? res = null;
+            db.Logs.Save(logData, TimeHelper.TimestampNow());
+            db.SaveChanges();
             try
             {
-                res = type == RECEIVE_TYPE_MOBILE ? SendSMS(option as SmsProtocolSetting, target, template, data) : 
+                var res = type == RECEIVE_TYPE_MOBILE ? SendSMS(option as SmsProtocolSetting, target, template, data) : 
                     SendMail(option as MailProtocolSetting, target, template, data);
                 logData.Status = res != false ? STATUS_SENT: STATUS_SEND_FAILURE;
                 logData.Message = res ? res.Message : string.Empty;
+                if (res.Succeeded)
+                {
+                    return OperationResult.Ok(logData.Id);
+                }
+                return OperationResult<int>.Fail(res.FailureReason, res.Message);
             }
             catch (Exception ex) 
             {
                 logData.Status = STATUS_SEND_FAILURE;
                 logData.Message = ex.Message;
+                return OperationResult<int>.Fail(ex.Message);
+            } finally
+            {
+                db.Logs.Save(logData, TimeHelper.TimestampNow());
+                db.SaveChanges();
             }
-            db.Save(logData);
-            return res is not null && res ? logData.Id : 0;
         }
 
         /// <summary>
@@ -225,8 +226,8 @@ namespace NetDream.Modules.MessageService.Repositories
                 //    return false;
                 //}
             }
-            var log = db.Single<LogEntity>(
-                "WHERE target=@0 AND template_name=@1 AND status=@2", target, templateName, STATUS_SENT);
+            var log = db.Logs.Where(i => i.Target == target && i.TemplateName == templateName && i.Status == STATUS_SENT)
+                .Single();
        
             if (log is null)
             {
@@ -236,7 +237,8 @@ namespace NetDream.Modules.MessageService.Repositories
             if (once)
             {
                 log.Status = STATUS_SENT_USED;
-                db.Save(log);
+                db.Logs.Save(log, TimeHelper.TimestampNow());
+                db.SaveChanges();
             }
             if (once && EnableSession(templateName))
             {
@@ -311,7 +313,8 @@ namespace NetDream.Modules.MessageService.Repositories
                 Status = STATUS_SENDING,
                 Ip = environment.Ip,
             };
-            db.Save(log);
+            db.Logs.Save(log, environment.Now);
+            db.SaveChanges();
             OperationResult? res = null;
             try
             {
@@ -337,7 +340,8 @@ namespace NetDream.Modules.MessageService.Repositories
                 log.Status = STATUS_SEND_FAILURE;
                 log.Message = ex.Message;
             }
-            db.Save(log);
+            db.Logs.Save(log, TimeHelper.TimestampNow());
+            db.SaveChanges();
         }
 
         protected string RenderTemplateFile(string fileName, IDictionary<string, string> data)
@@ -375,7 +379,7 @@ namespace NetDream.Modules.MessageService.Repositories
                 return true;
             }
             var time = TimeHelper.TimestampFrom(DateTime.Today);
-            var count = db.FindCount<LogEntity>("created_at>=@1", time);
+            var count = db.Logs.Where(i => i.CreatedAt>=time).Count();
             return count < _configs.Everyday;
         }
 
@@ -386,7 +390,7 @@ namespace NetDream.Modules.MessageService.Repositories
                 //log = session(self.SESSION_KEY);
                 //return empty(log) || (time() - log["at"]) > self.configs["space"];
             }
-            var last = db.FindScalar<int, LogEntity>("MAX(created_at) as time", "target=@0 AND status!=@1", target, STATUS_SEND_FAILURE);
+            var last = db.Logs.Where(i => i.Target == target && i.Status == STATUS_SEND_FAILURE).Max(i => i.CreatedAt);
             if (last == 0)
             {
                 return true;
@@ -401,7 +405,7 @@ namespace NetDream.Modules.MessageService.Repositories
                 return true;
             }
             var time = TimeHelper.TimestampFrom(DateTime.Today);
-            var count = db.FindCount<LogEntity>("ip=@0 AND created_at>=@1", environment.Ip, time);
+            var count = db.Logs.Where(i => i.Ip == environment.Ip && i.CreatedAt >= time).Count();
             return count < _configs.Everyone;
         }
 

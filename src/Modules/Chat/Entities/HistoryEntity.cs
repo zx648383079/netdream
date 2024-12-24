@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Chat.Entities
 {
     
-    public class HistoryEntity
+    public class HistoryEntity: IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

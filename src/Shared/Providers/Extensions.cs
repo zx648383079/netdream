@@ -31,6 +31,12 @@ namespace NetDream.Shared.Providers
             }
             return res;
         }
+        public static TSource[] CopyTo<FSource, TSource>(this IEnumerable<FSource> data)
+            where FSource : class
+            where TSource : class, new()
+        {
+            return data.Select(i => i.CopyTo<TSource>()).ToArray();
+        }
 
         public static IPage<TSource> CopyTo<FSource, TSource>(this IPage<FSource> data)
             where FSource : class
@@ -69,6 +75,24 @@ namespace NetDream.Shared.Providers
                 db.Update(model);
             } else
             {
+                db.Add(model);
+            }
+        }
+
+        public static void Save<TSource>(this DbSet<TSource> db, TSource model, int timestamp)
+            where TSource : class, IIdEntity, ICreatedEntity
+        {
+            if (model is ITimestampEntity o)
+            {
+                o.UpdatedAt = timestamp;
+            }
+            if (model.Id > 0)
+            {
+                db.Update(model);
+            }
+            else
+            {
+                model.CreatedAt = timestamp;
                 db.Add(model);
             }
         }

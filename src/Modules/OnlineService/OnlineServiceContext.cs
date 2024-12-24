@@ -6,7 +6,7 @@ namespace NetDream.Modules.OnlineService
 {
     public class OnlineServiceContext(DbContextOptions<OnlineServiceContext> options): DbContext(options)
     {
-        public DbSet<CategoryEntity> Categorys {get; set; }
+        public DbSet<CategoryEntity> Categories {get; set; }
         public DbSet<CategoryUserEntity> CategoryUsers {get; set; }
         public DbSet<CategoryWordEntity> CategoryWords {get; set; }
         public DbSet<MessageEntity> Messages {get; set; }

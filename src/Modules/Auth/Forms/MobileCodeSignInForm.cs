@@ -2,13 +2,13 @@
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Forms;
 using NetDream.Modules.Auth.Entities;
-using NPoco;
 using NetDream.Shared.Models;
 using System;
+using System.Linq;
 
 namespace NetDream.Modules.Auth.Forms
 {
-    public class MobileCodeSignInForm: ISignInForm
+    public class MobileCodeSignInForm: ISignInForm, IContextForm
     {
         public string Mobile { get; set; } = string.Empty;
 
@@ -16,13 +16,13 @@ namespace NetDream.Modules.Auth.Forms
 
         public string Account => Mobile;
 
-        public IOperationResult<IUser> Verify(IDatabase db)
+        public IOperationResult<IUser> Verify(AuthContext db)
         {
             if (string.IsNullOrWhiteSpace(Mobile) || string.IsNullOrWhiteSpace(Code))
             {
-                throw new ArgumentNullException("mobile or password is empty");
+                return OperationResult<IUser>.Fail("mobile or password is empty");
             }
-            var user = db.Single<UserEntity>("where mobile=@0", Mobile) ?? throw new ArgumentException("email is not sign in");
+            var user = db.Users.Where(i => i.Mobile == Mobile).Single() ?? throw new ArgumentException("email is not sign in");
             // TODO 验证
             return OperationResult<IUser>.Ok(user);
         }

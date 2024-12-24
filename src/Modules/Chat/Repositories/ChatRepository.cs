@@ -1,29 +1,24 @@
-﻿using Google.Protobuf;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Migrations;
-using NPoco;
-using System;
+using NetDream.Shared.Providers;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Chat.Repositories
 {
     public class ChatRepository(
-        IDatabase db, 
+        ChatContext db, 
         IUserRepository userStore,
-        IClientContext environment)
+        IClientContext client)
     {
-        public Page<HistoryModel> Histories(int page)
+        public IPage<HistoryModel> Histories(int page)
         {
-            var items = db.Page<HistoryModel>(page, 20, "WHERE user_id=@0 ORDER BY updated_at desc", 
-                environment.UserId);
+            var items = db.Histories.Where(i => i.UserId == client.UserId)
+                .OrderByDescending(i => i.CreatedAt).ToPage(page)
+                .CopyTo<HistoryEntity, HistoryModel>();
             var userIds = new List<int>();
             var groupIds = new List<int>();
             var messageIds = new List<int>();
@@ -70,41 +65,41 @@ namespace NetDream.Modules.Chat.Repositories
 
         public void RemoveHistory(int type, int id, int user_id)
         {
-            db.DeleteWhere<HistoryEntity>("item_type=@0 and item_id=@1 and user_id=@2",
-                type, id, user_id);
+            db.Histories.Where(i => i.ItemType == type && i.ItemId == id && i.UserId == user_id)
+                .ExecuteDelete();
         }
 
         public void RemoveIdHistory(int id)
         {
-            db.DeleteWhere<HistoryEntity>("id=@0 and user_id=@1",
-                id, environment.UserId);
+            db.Histories.Where(i => i.Id == id && i.UserId == client.UserId)
+                .ExecuteDelete();
         }
 
         public void ClearUnread(int type, int id, int user_id)
         {
-            db.Update<HistoryEntity>("SET unread_count=0 WHERE item_type=@0 and item_id=@1 and user_id=@2",
-                type, id, user_id);
+            db.Histories.Where(i => i.ItemType == type && i.ItemId == id && i.UserId == user_id)
+               .ExecuteUpdate(setters => setters.SetProperty(i => i.UnreadCount, 0));
         }
 
         protected void AddIfHistory(int type, int id, int user_id, int message = 0, int messageCount = 0)
         {
-            var count = db.FindCount<HistoryEntity>("item_type=@0 and item_id=@1 and user_id=@2",
-                type, id, user_id);
-            if (count > 0)
+            var count = db.Histories.Where(i => i.ItemType == type && i.ItemId == id && i.UserId == user_id).Any();
+            if (count)
             {
-                db.UpdateWhere<HistoryEntity>("unread_count=unread_count+@0, last_message=@1",
-                    "item_type=@2 and item_id=@3 and user_id=@4",
-                    messageCount, message, type, id, user_id);
+                db.Histories.Where(i => i.ItemType == type && i.ItemId == id && i.UserId == user_id)
+                    .ExecuteUpdate(setters => 
+                    setters.SetProperty(i => i.UnreadCount, i => i.UnreadCount + messageCount)
+                    .SetProperty(i => i.LastMessage, message));
                 return;
             }
-            db.Insert(new HistoryEntity()
+            db.Histories.Save(new HistoryEntity()
             {
                 ItemType = type,
                 ItemId = id,
                 UserId = user_id,
                 UnreadCount = messageCount,
                 LastMessage = message
-            });
+            }, client.Now);
         }
 
         protected Dictionary<int, MessageEntity> GetLastMessage(params int[] ids)
@@ -113,10 +108,7 @@ namespace NetDream.Modules.Chat.Repositories
             {
                 return [];
             }
-            var sql = new Sql();
-            sql.Select().From<MessageEntity>(db)
-                .WhereIn("id", ids);
-            return db.Fetch<MessageEntity>(sql).ToDictionary(i => i.Id);
+            return db.Messages.Where(i => ids.Contains(i.Id)).ToDictionary(i => i.Id);
         }
 
         protected Dictionary<int, GroupEntity> GetGroup(params int[] ids)
@@ -125,10 +117,7 @@ namespace NetDream.Modules.Chat.Repositories
             {
                 return [];
             }
-            var sql = new Sql();
-            sql.Select().From<GroupEntity>(db)
-                .WhereIn("id", ids);
-            return db.Fetch<GroupEntity>(sql).ToDictionary(i => i.Id);
+            return db.Groups.Where(i => ids.Contains(i.Id)).ToDictionary(i => i.Id);
         }
 
         protected Dictionary<int, FriendEntity> GetFriend(params int[] ids)
@@ -137,11 +126,7 @@ namespace NetDream.Modules.Chat.Repositories
             {
                 return [];
             }
-            var sql = new Sql();
-            sql.Select().From<FriendEntity>(db)
-                .WhereIn("user_id", ids)
-                .Where("belong_id=@0", environment.UserId);
-            return db.Fetch<FriendEntity>(sql).ToDictionary(i => i.UserId);
+            return db.Friends.Where(i => ids.Contains(i.UserId) && i.BelongId == client.UserId).ToDictionary(i => i.UserId);
         }
 
         protected Dictionary<int, IUser> GetUsers(params int[] ids)

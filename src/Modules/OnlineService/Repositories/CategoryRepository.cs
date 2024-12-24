@@ -1,89 +1,84 @@
-﻿using Modules.OnlineService.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.OnlineService.Entities;
 using NetDream.Modules.OnlineService.Forms;
 using NetDream.Modules.OnlineService.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Repositories;
-using NPoco;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.OnlineService.Repositories
 {
-    public class CategoryRepository(IDatabase db, IUserRepository userStore): CRUDRepository<CategoryEntity>(db)
+    public class CategoryRepository(OnlineServiceContext db, 
+        IUserRepository userStore, IClientContext client)
     {
-        public IList<CategoryEntity> All()
+        public IPage<CategoryEntity> GetList(string keywords = "", int page = 1)
         {
-            return db.Fetch<CategoryEntity>();
+            return db.Categories.Search(keywords, "name")
+                .OrderByDescending(i => i.Id)
+                .ToPage(page);
         }
 
-        private void WithCategory(IEnumerable<IWithCategoryModel> items)
+        public CategoryEntity? Get(int id)
         {
-            var idItems = items.Select(item => item.CatId).Where(i => i > 0).Distinct();
-            if (!idItems.Any())
+            return db.Categories.Where(i => i.Id == id).Single();
+        }
+        public IOperationResult<CategoryEntity> Save(CategoryForm data)
+        {
+            var model = data.Id > 0 ? db.Categories.Where(i => i.Id == data.Id)
+                .Single() :
+                new CategoryEntity();
+            if (model is null)
             {
-                return;
+                return OperationResult.Fail<CategoryEntity>("id error");
             }
-            var data = db.Fetch<CategoryEntity>($"WHERE id IN({string.Join(',', idItems)})");
-            if (!data.Any())
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                foreach (var it in data)
-                {
-                    if (item.CatId == it.Id)
-                    {
-                        item.Category = it;
-                        break;
-                    }
-                }
-            }
+            model.Name = data.Name;
+            db.Categories.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
-        public Page<CategoryUserModel> UserList(int category = 0, 
+        public void Remove(int id)
+        {
+            db.Categories.Where(i => i.Id == id).ExecuteDelete();
+        }
+
+        public CategoryEntity[] All()
+        {
+            return db.Categories.ToArray();
+        }
+
+        public IPage<CategoryUserModel> UserList(int category = 0, 
             string keywords = "", int page = 1)
         {
             if (string.IsNullOrWhiteSpace(keywords))
             {
-                var res = db.Page<CategoryUserModel>(page, 20, category > 0 ? "cat_id=" + category : string.Empty);
+                var res = db.CategoryUsers.When(category > 0, i=> i.CatId == category).ToPage(page)
+                    .CopyTo<CategoryUserEntity, CategoryUserModel>();
                 userStore.WithUser(res.Items);
-                WithCategory(res.Items);
                 return res;
             }
-            var sql = new Sql().Select("user_id").From<CategoryUserEntity>(db);
-            if (category > 0)
-            {
-                sql.Where("cat_id=@0", category);
-            }
-            var userId = db.Pluck<int>(sql);
+            var userId = db.CategoryUsers.When(category > 0, i => i.CatId == category)
+                .Select(i => i.UserId).ToArray();
             userId = userStore.SearchUserId(keywords, userId, true);
-            if (userId.Count == 0)
+            if (userId.Length == 0)
             {
                 return new Page<CategoryUserModel>();
             }
-            sql = new Sql().Select("user_id").From<CategoryUserEntity>(db);
-            if (category > 0)
-            {
-                sql.Where("cat_id=@0", category);
-            }
-            sql.WhereIn("user_id", [..userId]);
-            var items = db.Page<CategoryUserModel>(page, 20, sql);
+            var items = db.CategoryUsers.When(category > 0, i => i.CatId == category)
+                .Where(i => userId.Contains(i.UserId)).ToPage(page)
+                .CopyTo<CategoryUserEntity, CategoryUserModel>();
             userStore.WithUser(items.Items);
-            WithCategory(items.Items);
             return items;
         }
 
-        public void UserAdd(int category, int[] user)
+        public IOperationResult UserAdd(int category, int[] user)
         {
-            var sql = new Sql().Select("user_id").From<CategoryUserEntity>(db)
-                .Where("cat_id=@0", category);
-            var userIds = db.Pluck<int>(sql);
+            var userIds = db.CategoryUsers.When(category > 0, i => i.CatId == category)
+                .Select(i => i.UserId).ToArray();
             var data = new List<CategoryUserEntity>();
             var exit = new List<int>();
             foreach (var item in user)
@@ -101,72 +96,61 @@ namespace NetDream.Modules.OnlineService.Repositories
             }
             if (data.Count == 0)
             {
-                throw new Exception("客服已存在");
+                return OperationResult.Fail("客服已存在");
             }
-            db.InsertBatch(data);
+            db.CategoryUsers.AddRange(data);
+            db.SaveChanges();
+            return OperationResult.Ok();
         }
 
         public void UserRemove(int category, int[] user)
         {
-
-            db.Delete<CategoryUserEntity>($"WHERE cat_id={category} AND user_id IN({string.Join(',', user)})");
+            db.CategoryUsers.Where(i => i.CatId == category && user.Contains(i.UserId)).ExecuteDelete();
         }
 
-        public Page<CategoryWordModel> WordList(int category = 0, 
+        public IPage<CategoryWordEntity> WordList(int category = 0, 
             string keywords = "", int page = 1)
         {
-            var sql = new Sql().Select("*").From<CategoryWordEntity>(db);
-            if (category >0)
-            {
-                sql.Where("cat_id=@0", category);
-            }
-            SearchHelper.Where(sql, "content", keywords);
-            var items = db.Page<CategoryWordModel>(page, 20, sql);
-            WithCategory(items.Items);
-            return items;
+            return db.CategoryWords.Include(i => i.Category)
+                .Search(keywords, "content")
+                .When(category > 0, i => i.CatId == category)
+                .ToPage(page);
         }
 
-        public CategoryWordEntity WordSave(CategoryWordForm data)
+        public IOperationResult<CategoryWordEntity> WordSave(CategoryWordForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<CategoryWordEntity>(data.Id) :
+            var model = data.Id > 0 ? db.CategoryWords.Where(i => i.Id == data.Id).Single() :
                 new CategoryWordEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<CategoryWordEntity>("id is error");
+            }
             model.Content = data.Content;
             model.CatId = data.CatId;
-            db.TrySave(model);
-            return model;
+            db.CategoryWords.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
         public void WordRemove(int id)
         {
-            db.DeleteById<CategoryWordEntity>(id);
+            db.CategoryWords.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public IList<CategoryModel> WordAll()
+        public CategoryEntity[] WordAll()
         {
-            var items = db.Fetch<CategoryModel>("ORDER BY id ASC");
-            var res = db.Fetch<CategoryWordEntity>();
-            foreach (var item in items)
-            {
-                item.Words = [];
-                foreach (var it in res)
-                {
-                    if (it.CatId == item.Id)
-                    {
-                        item.Words.Add(it);
-                    }
-                }
-            }
-            return items;
+            return db.Categories.Include(i => i.Words)
+                .OrderBy(i => i.Id).ToArray();
         }
 
         public bool HasService(int userId)
         {
-            return db.FindCount<CategoryUserEntity>("user_id=@0", userId) > 0;
+            return db.CategoryUsers.Where(i => i.UserId == userId).Any();
         }
 
         public bool HasWord(int word)
         {
-            return db.FindCount<CategoryWordEntity>("id=@0", word) > 0;
+            return db.CategoryWords.Where(i => i.Id == word).Any();
         }
     }
 }

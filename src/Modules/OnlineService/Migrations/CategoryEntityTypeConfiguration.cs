@@ -12,6 +12,16 @@ namespace NetDream.Modules.OnlineService.Migrations
             builder.HasKey("id");
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name");
+
+            builder.HasMany(p => p.Items)
+                .WithOne(b => b.Category)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(b => b.CatId);
+
+            builder.HasMany(p => p.Words)
+                .WithOne(b => b.Category)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(b => b.CatId);
         }
     }
 }

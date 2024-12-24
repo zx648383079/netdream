@@ -4,12 +4,12 @@ using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using NetDream.Modules.Auth.Entities;
-using NPoco;
 using System;
+using System.Linq;
 
 namespace NetDream.Modules.Auth.Forms
 {
-    public class EmailSignInForm: ISignInForm
+    public class EmailSignInForm: ISignInForm, IContextForm
     {
         public string Email { get; set; } = string.Empty;
 
@@ -17,13 +17,17 @@ namespace NetDream.Modules.Auth.Forms
 
         public string Account => Email;
 
-        public IOperationResult<IUser> Verify(IDatabase db)
+        public IOperationResult<IUser> Verify(AuthContext db)
         {
             if (!Validator.IsEmail(Email) || string.IsNullOrWhiteSpace(Password)) 
             {
-                return OperationResult<IUser>.Fail(FailureReasons.ValidateError, new ArgumentNullException("email or password is empty"));
+                return OperationResult<IUser>.Fail(FailureReasons.ValidateError, "email or password is empty");
             }
-            var user = db.Single<UserEntity>("where email=@0", Email) ?? throw new ArgumentException("email is not sign in");
+            var user = db.Users.Where(i => i.Email == Email).Single();
+            if (user is null)
+            {
+                return OperationResult<IUser>.Fail(FailureReasons.ValidateError, "email is not sign in");
+            }
             if (!BCrypt.Net.BCrypt.Verify(Password, user.Password))
             {
                 return OperationResult<IUser>.Fail(FailureReasons.ValidateError, new ArgumentException("password is error"));

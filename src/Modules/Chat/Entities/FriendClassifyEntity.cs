@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Chat.Entities
 {
     
-    public class FriendClassifyEntity
+    public class FriendClassifyEntity: IIdEntity, ICreatedEntity
     {
         
         public int Id { get; set; }

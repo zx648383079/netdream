@@ -17,5 +17,6 @@ namespace NetDream.Modules.Shop.Entities
         
         public string DefaultValue { get; set; } = string.Empty;
         public int Position { get; set; }
+        public string PropertyGroup { get; set; } = string.Empty;
     }
 }

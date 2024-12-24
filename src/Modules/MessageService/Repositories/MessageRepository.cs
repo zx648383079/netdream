@@ -1,26 +1,20 @@
-﻿using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
+﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Forms;
-using NetDream.Shared.Migrations;
 using NetDream.Shared.Models;
 using NetDream.Modules.MessageService.Entities;
 using NetDream.Modules.MessageService.Forms;
-using NPoco;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using NetDream.Shared.Providers;
+using Microsoft.EntityFrameworkCore;
 
 namespace NetDream.Modules.MessageService.Repositories
 {
-    public partial class MessageRepository(IDatabase db, 
-        IGlobeOption option, IClientContext environment,
+    public partial class MessageRepository(MessageServiceContext db, 
+        IGlobeOption option, IClientContext client,
         MessageProtocol protocol)
     {
         protected bool IsSystemTemplate(string name)
@@ -78,29 +72,36 @@ namespace NetDream.Modules.MessageService.Repositories
                 data, isMail ? "Mail Smtp 配置" : "SMS配置");
         }
 
-        public Page<TemplateEntity> TemplateList(string keywords = "", int type = -1, long page = 1)
+        public IPage<TemplateEntity> TemplateList(string keywords = "", int type = -1, 
+            int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("id", "type", "name", "title", "target_no", "status", MigrationTable.COLUMN_CREATED_AT);
-            sql.From<TemplateEntity>(db);
-            SearchHelper.Where(sql, ["name", "title"], keywords);
-            if (type > 0)
-            {
-                sql.Where("type=@0", type);
-            }
-            sql.OrderBy("id DESC");
-            return db.Page<TemplateEntity>(page, 20, sql);
+            return db.Templates.Search(keywords, "name", "title")
+                .When(type > 0, i => i.Type == type)
+                .OrderByDescending(i => i.Id)
+                .Select(i => new TemplateEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Type = i.Type,
+                    TargetNo = i.TargetNo,
+                    Status = i.Status,
+                    CreatedAt = i.CreatedAt,
+                }).ToPage(page);
         }
 
-        public TemplateEntity Template(int id)
+        public TemplateEntity? Template(int id)
         {
-            return db.SingleById<TemplateEntity>(id);
+            return db.Templates.Where(i => i.Id == id).Single();
         }
 
-        public TemplateEntity TemplateSave(TemplateForm data)
+        public IOperationResult<TemplateEntity> TemplateSave(TemplateForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<TemplateEntity>(data.Id) :
+            var model = data.Id > 0 ? db.Templates.Where(i => i.Id == data.Id).Single() :
                 new TemplateEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<TemplateEntity>("id is error");
+            }
             model.Content = data.Content;
             model.Title = data.Title;
             model.Name = data.Name;
@@ -111,29 +112,22 @@ namespace NetDream.Modules.MessageService.Repositories
             {
                 model.Data = JsonSerializer.Serialize(data.Data);
             }
-            if (model.CreatedAt == 0)
-            {
-                model.CreatedAt = environment.Now;
-            }
-            model.UpdatedAt = environment.Now;
-            db.TrySave(model);
-            return model;
+            db.Templates.Save(model, client.Now);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
-        public void TemplateRemove(int id)
-        {
-            TemplateRemove([id]);
-        }
-        public void TemplateRemove(int[] items)
+        public void TemplateRemove(params int[] items)
         {
             if (items.Length == 0)
             {
                 return;
             }
-            var sql = new Sql();
-            sql.Select("id", "name");
-            sql.From<TemplateEntity>(db);
-            sql.WhereIn("id", items);
-            var exist = db.Fetch<TemplateEntity>(sql);
+            var exist = db.Templates.Where(i => items.Contains(i.Id))
+                .Select(i => new TemplateEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                }).ToArray();
             var del = new List<int>();
             foreach (var item in exist)
             {
@@ -142,7 +136,7 @@ namespace NetDream.Modules.MessageService.Repositories
                     del.Add(item.Id);
                     continue;
                 }
-                if (db.FindCount<TemplateEntity>("id<>@0 AND name=@1", item.Id, item.Name) > 0)
+                if (db.Templates.Where(i => i.Id != item.Id && i.Name == item.Name).Any())
                 {
                     del.Add(item.Id);
                     continue;
@@ -152,43 +146,49 @@ namespace NetDream.Modules.MessageService.Repositories
             {
                 return;
             }
-            sql = new Sql();
-            sql.WhereIn("id", [..del]);
-            db.Delete<TemplateEntity>(sql);
+            db.Templates.Where(i => del.Contains(i.Id)).ExecuteDelete();
         }
 
         public TemplateEntity? TemplateChange(int id, string[] data)
         {
-            return ModelHelper.BatchToggle<TemplateEntity>(db, id, data, ["status"]);
+            var res = db.Templates.BatchToggle(id, data, "status");
+            if (res is not null)
+            {
+                db.SaveChanges();
+            }
+            return res;
         }
 
-        public Page<LogEntity> LogList(string keywords = "", int status = -1, long page = 1)
+        public IPage<LogEntity> LogList(string keywords = "", 
+            int status = -1, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("id", "target", "template_name", "status", "message", MigrationTable.COLUMN_CREATED_AT);
-            sql.From<LogEntity>(db);
-            SearchHelper.Where(sql, ["target", "template_name"], keywords);
-            if (status > 0)
-            {
-                sql.Where("status=@0", status);
-            }
-            sql.OrderBy("id DESC");
-            return db.Page<LogEntity>(page, 20, sql);
+            return db.Logs.Search(keywords, "target", "template_name")
+                .When(status > 0, i => i.Status == status)
+                .OrderByDescending(i => i.Id)
+                .Select(i => new LogEntity()
+                {
+                    Id = i.Id,
+                    Target = i.Target,
+                    TemplateName = i.TemplateName,
+                    Status = i.Status,
+                    Message = i.Message,
+                    CreatedAt = i.CreatedAt,
+                }).ToPage(page);
         }
 
         public void LogRemove(int id)
         {
-            db.Delete<LogEntity>(id);
+            db.Logs.Where(i => i.Id == id).ExecuteDelete();
         }
 
         public void LogClear()
         {
-            db.Delete<LogEntity>(string.Empty);
+            db.Logs.ExecuteDelete();
         }
 
         public void InsertIf(string name, string title, string content, byte type = MessageProtocol.TYPE_TEXT)
         {
-            if (db.FindCount<TemplateEntity>("name=@0", name) > 0 ||
+            if (db.Templates.Where(i => i.Name == name).Any() ||
                 string.IsNullOrWhiteSpace(content))
             {
                 return;
@@ -207,7 +207,8 @@ namespace NetDream.Modules.MessageService.Repositories
                 Type = type,
                 Data = data,
             };
-            db.TrySave(model);
+            db.Templates.Save(model, client.Now);
+            db.SaveChanges();
         }
 
         public void Debug(DebugForm data)
