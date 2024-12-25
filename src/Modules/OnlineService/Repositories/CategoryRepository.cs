@@ -13,7 +13,7 @@ using System.Linq;
 namespace NetDream.Modules.OnlineService.Repositories
 {
     public class CategoryRepository(OnlineServiceContext db, 
-        IUserRepository userStore, IClientContext client)
+        IUserRepository userStore)
     {
         public IPage<CategoryEntity> GetList(string keywords = "", int page = 1)
         {

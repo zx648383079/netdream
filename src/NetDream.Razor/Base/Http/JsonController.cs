@@ -6,7 +6,7 @@ using NetDream.Shared.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NetDream.Web.Base.Http
+namespace NetDream.Razor.Base.Http
 {
     public abstract class JsonController : Controller
     {

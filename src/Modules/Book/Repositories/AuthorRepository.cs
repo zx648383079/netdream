@@ -1,33 +1,61 @@
-﻿using NetDream.Modules.Book.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Book.Entities;
+using NetDream.Modules.Book.Forms;
 using NetDream.Modules.Book.Models;
-using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Repositories;
-using NPoco;
-using System;
-using System.Collections.Generic;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class AuthorRepository(IDatabase db, 
-        IClientContext environment,
-        IUserRepository userStore) : CRUDRepository<AuthorEntity>(db)
+    public class AuthorRepository(BookContext db, 
+        IClientContext client,
+        IUserRepository userStore)
     {
-        public Page<AuthorEntity> Search(string keywords = "", int page = 1, params int[] ids)
+        public IPage<AuthorEntity> GetList(string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select("id", "name", "avatar").From<AuthorEntity>(db);
-            if (ids.Length > 0)
+            return db.Authors.Search(keywords, "name")
+                .OrderByDescending(i => i.Id)
+                .ToPage(page);
+        }
+
+        public AuthorEntity? Get(int id)
+        {
+            return db.Authors.Where(i => i.Id == id).Single();
+        }
+        public IOperationResult<AuthorEntity> Save(AuthorForm data)
+        {
+            var model = data.Id > 0 ? db.Authors.Where(i => i.Id == data.Id)
+                .Single() :
+                new AuthorEntity();
+            if (model is null)
             {
-                sql.WhereIn("id", ids);
+                return OperationResult.Fail<AuthorEntity>("id error");
             }
-            SearchHelper.Where(sql, "name", keywords);
-            return db.Page<AuthorEntity>(page, 20, sql);
+            model.Name = data.Name;
+            db.Authors.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
+        }
+
+        public void Remove(int id)
+        {
+            db.Authors.Where(i => i.Id == id).ExecuteDelete();
+        }
+
+
+        public IPage<AuthorEntity> Search(string keywords = "", int page = 1, 
+            params int[] ids)
+        {
+            return db.Authors.Search(keywords, "name")
+                .When(ids.Length > 0, i => ids.Contains(i.Id))
+                .Select(i => new AuthorEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Avatar = i.Avatar,
+                }).ToPage(page);
         }
 
         public AuthorModel? Profile(int id)
@@ -44,23 +72,24 @@ namespace NetDream.Modules.Book.Repositories
             var author = new AuthorModel(model);
             if (model.Id > 0)
             {
-                var sql = new Sql();
-                sql.Select("COUNT(id) as count", "SUM(size) as size")
-                    .From<BookEntity>(db)
-                    .Where("author_id=@0", model.Id);
-                var data = db.First<Dictionary<string, int>>(sql);
-                author.BookCount = data["count"];
-                author.WordCount = data["size"];
+                var data = db.Books.Where(i => i.AuthorId == model.Id)
+                    .GroupBy(i => i.AuthorId)
+                    .Select(i => new {
+                        Count = i.Count(), 
+                        Size = i.Sum(j => j.Size),
+                    }).Single();
+                author.BookCount = data.Count;
+                author.WordCount = data.Size;
             }
             return author;
         }
 
         public AuthorModel? ProfileByAuth()
         {
-            var model = db.First<AuthorEntity>("WHERE user_id=@0", environment.UserId);
+            var model = db.Authors.Where(i => i.UserId == client.UserId).Single();
             if (model is null)
             {
-                var user = userStore.Get(environment.UserId);
+                var user = userStore.Get(client.UserId);
                 return new AuthorModel() 
                 {
                     Name = user.Name,
@@ -72,19 +101,20 @@ namespace NetDream.Modules.Book.Repositories
 
         public int AuthAuthor()
         {
-            var model = db.First<AuthorEntity>("WHERE user_id=@0", environment.UserId);
+            var model = db.Authors.Where(i => i.UserId == client.UserId).Single();
             if (model is not null && model.Id > 0)
             {
                 return model.Id;
             }
-            var user = userStore.Get(environment.UserId);
+            var user = userStore.Get(client.UserId);
             model = new AuthorEntity()
             {
                 Name = user.Name,
                 Avatar = user.Avatar,
                 UserId = user.Id
             };
-            db.TrySave(model);
+            db.Authors.Save(model, client.Now);
+            db.SaveChanges();
             return model.Id;
         }
     }

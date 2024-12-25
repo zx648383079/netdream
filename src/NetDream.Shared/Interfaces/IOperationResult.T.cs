@@ -1,20 +1,12 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace NetDream.Shared.Interfaces
 {
-    public interface IOperationResult<T>
+    public interface IOperationResult<T> : IOperationResult
     {
         [MemberNotNullWhen(true, "Result")]
-        public bool Succeeded { get; }
+        public new bool Succeeded { get; }
         public T? Result { get; }
-        
-
-        public int FailureReason { get; }
-
-        public string Message { get; }
-
-        public Exception? Error { get; }
 
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers.Context;
 using NetDream.Shared.Providers.Entities;
 using NetDream.Shared.Providers.Models;
@@ -117,66 +118,80 @@ namespace NetDream.Shared.Providers
             db.Comments.Where(i => i.Id == id && i.UserId == environment.UserId).ExecuteDelete();
         }
 
-        public CommentLog Agree(int id)
+        public IOperationResult<AgreeResult> Agree(int id)
         {
             var model = Get(id);
             if (model is null)
             {
-                throw new Exception("评论不存在");
+                return OperationResult<AgreeResult>.Fail("评论不存在");
             }
             var res = _logger.ToggleLog(LOG_TYPE_COMMENT,
                 LOG_ACTION_AGREE, id,
                 [LOG_ACTION_AGREE, LOG_ACTION_DISAGREE]);
+            var data = new AgreeResult()
+            {
+                AgreeCount = model.AgreeCount,
+                DisagreeCount = model.DisagreeCount,
+            };
             if (res < 1)
             {
-                model.AgreeCount --;
+                data.AgreeCount--;
+                data.AgreeType = 0;
             }
-            else if(res == 1) {
-                model.AgreeCount ++;
-                model.DisagreeCount --;
-            }
-            else if(res == 2) {
-                model.AgreeCount ++;
-            }
-            db.Comments.Update(model);
-            db.SaveChanges();
-            var log = new CommentLog(model);
-            if (res > 0)
+            else if (res == 1)
             {
-                log.AgreeType = LOG_ACTION_AGREE;
+                data.AgreeCount++;
+                data.DisagreeCount--;
+                data.AgreeType = 1;
             }
-            return log;
+            else if (res == 2)
+            {
+                data.AgreeCount++;
+                data.AgreeType = 1;
+            }
+            db.Comments.Where(i => i.Id == model.Id)
+                .ExecuteUpdate(setters => setters
+                .SetProperty(i => i.AgreeCount, data.AgreeCount)
+                .SetProperty(i => i.DisagreeCount, data.DisagreeCount));
+            return OperationResult.Ok(data);
         }
 
-        public CommentLog Disagree(int id)
+        public IOperationResult<AgreeResult> Disagree(int id)
         {
             var model = Get(id);
             if (model is null)
             {
-                throw new Exception("评论不存在");
+                return OperationResult<AgreeResult>.Fail("评论不存在");
             }
             var res = _logger.ToggleLog(LOG_TYPE_COMMENT,
                 LOG_ACTION_DISAGREE, id,
                 [LOG_ACTION_AGREE, LOG_ACTION_DISAGREE]);
+            var data = new AgreeResult()
+            {
+                AgreeCount = model.AgreeCount,
+                DisagreeCount = model.DisagreeCount,
+            };
             if (res < 1)
             {
-                model.DisagreeCount--;
+                data.DisagreeCount--;
+                data.AgreeType = 0;
             }
-            else if(res == 1) {
-                model.AgreeCount--;
-                model.DisagreeCount++;
-            }
-            else if(res == 2) {
-                model.DisagreeCount++;
-            }
-            db.Comments.Update(model);
-            db.SaveChanges();
-            var log = new CommentLog(model);
-            if (res > 0)
+            else if (res == 1)
             {
-                log.AgreeType = LOG_ACTION_DISAGREE;
+                data.AgreeCount--;
+                data.DisagreeCount++;
+                data.AgreeType = 2;
             }
-            return log;
+            else if (res == 2)
+            {
+                data.DisagreeCount++;
+                data.AgreeType = 2;
+            }
+            db.Comments.Where(i => i.Id == model.Id)
+                   .ExecuteUpdate(setters => setters
+                   .SetProperty(i => i.AgreeCount, data.AgreeCount)
+                   .SetProperty(i => i.DisagreeCount, data.DisagreeCount));
+            return OperationResult.Ok(data);
         }
 
         /// <summary>

@@ -1,46 +1,57 @@
 ﻿using NetDream.Shared.Helpers;
 using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Models;
-using NPoco;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Providers;
+using NetDream.Shared.Providers.Entities;
+using System.Linq;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class BlogRepository(IDatabase db, IClientContext environment)
+    public class BlogRepository(BlogContext db)
     {
-        public Page<BlogModel> GetPage(int page)
+        public IPage<BlogModel> GetPage(int page)
         {
-            return db.Page<BlogModel>(page, 20, string.Empty);
+            return db.Blogs.ToPage(page).CopyTo<BlogEntity, BlogModel>();
         }
 
-        public List<BlogModel> GetNewBlogs(int count = 8)
+        public BlogEntity[] GetNewBlogs(int count = 8)
         {
-            return db.Fetch<BlogModel>($"select id, title, description, created_at from {BlogEntity.ND_TABLE_NAME} order by created_at desc limit @0", count);
+            return db.Blogs.OrderByDescending(i => i.CreatedAt)
+                .Select(i => new BlogEntity()
+                {
+                    Id = i.Id,
+                    Title = i.Title,
+                    Description = i.Description,
+                    CreatedAt = i.CreatedAt
+                }).Take(count).ToArray();
         }
 
-        public List<TagModel> GetTags()
+        public TagModel[] GetTags()
         {
-            return db.Fetch<TagModel>();
+            return db.Tags.Select<TagEntity, TagModel>().ToArray();
         }
 
-        public List<CategoryModel> Categories()
+        public CategoryModel[] Categories()
         {
-            return db.Fetch<CategoryModel>();
+            return db.Categories.Select<CategoryEntity, CategoryModel>().ToArray();
         }
 
         public BlogModel GetBlog(int id)
         {
-            return db.SingleById<BlogModel>(id);
+            return db.Blogs.Where(i => i.Id == id).Single().CopyTo<BlogModel>();
         }
 
         public List<BlogArchives> GetArchives()
         {
-            var data = db.Fetch<BlogModel>($"select id, title, created_at from {BlogEntity.ND_TABLE_NAME} order by created_at desc");
+            var data = db.Blogs.OrderByDescending(i => i.CreatedAt)
+                .Select(i => new BlogEntity()
+                {
+                    Id = i.Id,
+                    Title = i.Title,
+                    CreatedAt = i.CreatedAt
+                });
             var items = new List<BlogArchives>();
             BlogArchives? last = null;
             foreach (var item in data)
@@ -51,8 +62,10 @@ namespace NetDream.Modules.Blog.Repositories
                     last.Items.Add(item);
                     continue;
                 }
-                last = new BlogArchives();
-                last.Year = date.Year;
+                last = new BlogArchives
+                {
+                    Year = date.Year
+                };
                 last.Items.Add(item);
                 items.Add(last);
             }

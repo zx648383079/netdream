@@ -1,9 +1,9 @@
-﻿@using NPoco
-@using NetDream.Shared.Helpers
+﻿@using NetDream.Shared.Helpers
 @using NetDream.Modules.Note.Models
+@using NetDream.Shared.Interfaces
 @{
     var isGuest = (bool)ViewData["isGuest"];
-    var items = ViewData["items"] as Page<NoteModel>;
+    var items = ViewData["items"] as IPage<NoteModel>;
 }
 @foreach(var item in items.Items)
 {

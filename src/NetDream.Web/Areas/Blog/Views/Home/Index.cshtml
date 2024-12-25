@@ -1,12 +1,12 @@
 ﻿@using NetDream.Modules.Blog.Models;
-@using NPoco;
 @using NetDream.Shared.Helpers;
+@using NetDream.Shared.Interfaces
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @addTagHelper *, NetDream.Web
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var items = ViewData["items"] as Page<BlogModel>;
+    var items = ViewData["items"] as IPage<BlogModel>;
     var pageIndex = (int)ViewData["pageIndex"];
     var listViewMode = 0;
 }

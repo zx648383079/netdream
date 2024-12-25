@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.Blog.Entities;
-using System.Xml.Linq;
 
 namespace NetDream.Modules.Blog.Migrations
 {

@@ -19,5 +19,6 @@ namespace NetDream.Modules.CMS.Entities
         
         public string ShowTemplate { get; set; } = string.Empty;
         public string Setting { get; set; } = string.Empty;
+        public string EditTemplate { get; internal set; } = string.Empty;
     }
 }

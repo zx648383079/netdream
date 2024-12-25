@@ -1,26 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
 using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Repositories;
 using NetDream.Web.Base.Extensions;
-using NetDream.Web.Base.Helpers;
 using NetDream.Web.Base.Http;
-using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace NetDream.Web.Areas.Note.Controllers
 {
     [Area("Note")]
     public class HomeController(NoteRepository repository, IClientContext environment) : JsonController
     {
-        public IActionResult Index(string keywords = "", int id = 0, int user = 0, long page = 1)
+        public IActionResult Index(string keywords = "", int id = 0, int user = 0, int page = 1)
         {
             ViewData["isGuest"] = environment.UserId == 0;
             ViewData["items"] = repository.GetList(keywords, user, id, false, page);
             return View();
         }
 
-        public IActionResult Page(string keywords = "", int id = 0, int user = 0, long page = 1)
+        public IActionResult Page(string keywords = "", int id = 0, int user = 0, int page = 1)
         {
             ViewData["isGuest"] = environment.UserId == 0;
             var items = repository.GetList(keywords, user, id, false, page);

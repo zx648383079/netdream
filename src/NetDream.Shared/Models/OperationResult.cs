@@ -16,6 +16,10 @@ namespace NetDream.Shared.Models
 
         public static OperationResult Ok() => new(success: true);
 
+        public static OperationResult Fail(IOperationResult result)
+        {
+            return new(false, result.FailureReason, result.Message, result.Error);
+        }
 
         public static OperationResult Fail(int failureReason)
             => new(false, failureReason: failureReason);
@@ -31,6 +35,11 @@ namespace NetDream.Shared.Models
 
         public static OperationResult<T> Ok<T>(T content)
             => OperationResult<T>.Ok(content);
+
+        public static OperationResult<T> Fail<T>(IOperationResult result)
+        {
+            return OperationResult<T>.Fail(result);
+        }
 
         public static OperationResult<T> Fail<T>(string message)
             => OperationResult<T>.Fail(message);

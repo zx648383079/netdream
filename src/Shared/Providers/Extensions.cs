@@ -114,6 +114,26 @@ namespace NetDream.Shared.Providers
             return source.Select(lambda);
         }
 
+        public static IQueryable<TTarget> Select<TSource, TTarget>(this IQueryable<TSource> source)
+            where TTarget : class, TSource
+        {
+            var type = typeof(TSource);
+            var target = typeof(TTarget);
+            var thisArg = Expression.Parameter(type);
+            var lambda = Expression.Lambda<Func<TSource, TTarget>>(Expression.MemberInit(
+                    Expression.New(target.GetConstructor([])),
+                    type.GetProperties()
+                    .Where(i => !i.GetType().IsArray && !i.GetType().IsClass)
+                    .Select(i => {
+                        return Expression.Bind(
+                            i,
+                            Expression.Property(thisArg, i)
+                        );
+                    })
+                ), thisArg);
+            return source.Select(lambda);
+        }
+
         public static IQueryable<TSource> OrderBy<TSource, TProperty>(this IQueryable<TSource> source, string sort, string desc)
         {
             return source.OrderBy<TSource, TProperty>(sort, desc.Equals("desc", StringComparison.InvariantCultureIgnoreCase));
@@ -222,6 +242,10 @@ namespace NetDream.Shared.Providers
         {
             return source.ToPage(new PaginationForm(page));
         }
+        public static IPage<TSource> ToPage<TSource>(this IQueryable<TSource> source, int page, Func<IQueryable<TSource>, IQueryable<TSource>> cb)
+        {
+            return source.ToPage(new PaginationForm(page), cb);
+        }
 
         public static IPage<TSource> ToPage<TSource>(this IQueryable<TSource> source, PaginationForm pagination)
         {
@@ -229,6 +253,17 @@ namespace NetDream.Shared.Providers
             if (!res.IsEmpty)
             {
                 res.Items = source.Skip(res.ItemsOffset).Take(res.ItemsPerPage)
+                    .ToArray();
+            }
+            return res;
+        }
+
+        public static IPage<TSource> ToPage<TSource>(this IQueryable<TSource> source, PaginationForm pagination, Func<IQueryable<TSource>, IQueryable<TSource>> cb)
+        {
+            var res = new Page<TSource>(source.Count(), pagination);
+            if (!res.IsEmpty)
+            {
+                res.Items = cb.Invoke(source).Skip(res.ItemsOffset).Take(res.ItemsPerPage)
                     .ToArray();
             }
             return res;
@@ -347,6 +382,30 @@ namespace NetDream.Shared.Providers
                 db.Update(model);
             }
             return model;
+        }
+
+        /// <summary>
+        /// 更新自增字段
+        /// </summary>
+        /// <param name="cb">(oldId, newId)</param>
+        /// <param name="key"></param>
+        public static void RefreshPk<TSource>(this DbSet<TSource> db, Action<int, int> cb)
+            where TSource : class, IIdEntity
+        {
+            var data = db.OrderBy(i => i.Id).Select(i => i.Id).ToArray();
+            var i = 1;
+            foreach (var id in data)
+            {
+                if (id == i)
+                {
+                    i++;
+                    continue;
+                }
+                db.Where(i => i.Id == id).ExecuteUpdate(setters => setters.SetProperty(i => i.Id, i));
+                cb.Invoke(id, i);
+                i++;
+            }
+            // db.Database.ExecuteSql($"ALTER TABLE [{nameof(TSource)}] AUTO_INCREMENT = {i};");
         }
     }
 }

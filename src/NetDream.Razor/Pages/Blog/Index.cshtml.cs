@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Models;
 using NetDream.Modules.Blog.Repositories;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Razor.Pages.Blog
 {
@@ -13,9 +15,9 @@ namespace NetDream.Razor.Pages.Blog
             _repository = repository;
         }
 
-        public NPoco.Page<BlogModel> Items;
-        public List<NetDream.Modules.Blog.Models.CategoryModel> Categories;
-        public List<BlogModel> NewItems;
+        public IPage<BlogModel> Items;
+        public NetDream.Modules.Blog.Models.CategoryModel[] Categories;
+        public BlogEntity[] NewItems;
         public string FullUrl;
         public int PageIndex;
 

@@ -1,10 +1,10 @@
-﻿@using NPoco
-@using NetDream.Modules.Note.Models
+﻿@using NetDream.Modules.Note.Models
+@using NetDream.Shared.Interfaces
 @{
     ViewData["Title"] = "便签";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var isGuest = (bool)ViewData["isGuest"];
-    var items = ViewData["items"] as Page<NoteModel>;
+    var items = ViewData["items"] as IPage<NoteModel>;
 }
 @section Styles {
     <link type="text/css" href="~/assets/css/note.min.css" rel="stylesheet" media="all">

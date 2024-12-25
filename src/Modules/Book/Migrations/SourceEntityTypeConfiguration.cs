@@ -12,7 +12,7 @@ namespace NetDream.Modules.Book.Migrations
             builder.HasKey("id");
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.BookId).HasColumnName("book_id");
-            builder.Property(table => table.SizeId).HasColumnName("size_id");
+            builder.Property(table => table.SiteId).HasColumnName("site_id");
             builder.Property(table => table.Url).HasColumnName("url").HasMaxLength(200).HasComment("À´Ô´ÍøÖ·");
             builder.Property(table => table.DeletedAt).HasColumnName("deleted_at");
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");

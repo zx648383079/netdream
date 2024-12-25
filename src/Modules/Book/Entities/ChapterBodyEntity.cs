@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Book.Entities
 {
     
-    public class ChapterBodyEntity
+    public class ChapterBodyEntity: IIdEntity
     {
         
         public int Id { get; set; }

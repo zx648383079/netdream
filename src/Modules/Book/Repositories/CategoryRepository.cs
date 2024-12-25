@@ -1,28 +1,62 @@
-﻿using NetDream.Modules.Book.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Book.Entities;
+using NetDream.Modules.Book.Forms;
 using NetDream.Modules.Book.Models;
-using NetDream.Shared.Extensions;
-using NetDream.Shared.Repositories;
-using NPoco;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
+using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class CategoryRepository(IDatabase db) : CRUDRepository<CategoryEntity>(db)
+    public class CategoryRepository(BookContext db)
     {
-
-        public CategoryModel[] GetList(string keywords = "", int page = 1)
+        public IPage<CategoryEntity> GetMangeList(string keywords = "", int page = 1)
         {
-            var items = db.Fetch<CategoryModel>();
+            return db.Categories.Search(keywords, "name")
+                .OrderByDescending(i => i.Id)
+                .ToPage(page);
+        }
+
+        public CategoryEntity? Get(int id)
+        {
+            return db.Categories.Where(i => i.Id == id).Single();
+        }
+        public IOperationResult<CategoryEntity> Save(CategoryForm data)
+        {
+            var model = data.Id > 0 ? db.Categories.Where(i => i.Id == data.Id)
+                .Single() :
+                new CategoryEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<CategoryEntity>("id error");
+            }
+            model.Name = data.Name;
+            db.Categories.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
+        }
+
+        public void Remove(int id)
+        {
+            db.Categories.Where(i => i.Id == id).ExecuteDelete();
+        }
+
+        public CategoryModel[] GetList(string keywords = "")
+        {
+            var items = db.Categories.Search(keywords, "name")
+                .OrderByDescending(i => i.Id).Select<CategoryEntity, CategoryModel>().ToArray();
             foreach (var item in items)
             {
-                var thumb = db.FindScalar<string, BookEntity>("cover", "cat_id=@0", item.Id);
+                var thumb = db.Books.Where(i => i.CatId == item.Id).Select(i => i.Cover).Single();
                 if (string.IsNullOrWhiteSpace(thumb))
                 {
                     thumb = BookRepository.DEFAULT_COVER;
                 }
                 item.Thumb = thumb;
-                item.BookCount = db.FindCount<BookEntity>("cat_id=@0", item.Id);
+                item.BookCount = db.Books.Where(i => i.CatId == item.Id).Count();
             }
-            return [..items];
+            return items;
         }
     }
 }

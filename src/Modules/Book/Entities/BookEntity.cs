@@ -1,8 +1,11 @@
 
+using NetDream.Shared.Interfaces.Entities;
+using System.Collections.Generic;
+
 namespace NetDream.Modules.Book.Entities
 {
     
-    public class BookEntity
+    public class BookEntity: IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -32,5 +35,10 @@ namespace NetDream.Modules.Book.Entities
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }
+
+        public AuthorEntity? Author { get; set; }
+        public CategoryEntity? Category { get; set; }
+        public ICollection<ChapterEntity>? Chapters { get; set; }
+        public ICollection<SourceEntity>? Sources { get; set; }
     }
 }

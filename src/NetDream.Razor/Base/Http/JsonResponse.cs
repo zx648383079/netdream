@@ -1,7 +1,7 @@
 ﻿using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
 
-namespace NetDream.Web.Base.Http
+namespace NetDream.Razor.Base.Http
 {
     public class JsonResponse : IJsonResponse
     {

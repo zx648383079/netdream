@@ -1,22 +1,21 @@
-﻿using NetDream.Modules.Book.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Book.Entities;
 using NetDream.Modules.Book.Forms;
 using NetDream.Modules.Book.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
+using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Models;
-using NPoco;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class BookRepository(IDatabase db, IClientContext environment)
+    public class BookRepository(BookContext db, IClientContext client)
     {
-        const string BASE_KEY = "book";
         public const int CHAPTER_TYPE_FREE_CHAPTER = 0;
         public const int CHAPTER_TYPE_VIP_CHAPTER = 1;
         public const int CHAPTER_TYPE_GROUP = 9; // 卷
@@ -32,17 +31,17 @@ namespace NetDream.Modules.Book.Repositories
 
         public ActionLogProvider Log()  
         {
-            return new ActionLogProvider(db, BASE_KEY, environment);
+            return new ActionLogProvider(db, client);
         }
 
         public TagProvider Tag() 
         {
-            return new TagProvider(db, BASE_KEY);
+            return new TagProvider(db);
         }
 
         public DayLogProvider ClickLog() 
         {
-            return new DayLogProvider(db, BASE_KEY, environment);
+            return new DayLogProvider(db, client);
         }
 
         /// <summary>
@@ -57,72 +56,52 @@ namespace NetDream.Modules.Book.Repositories
         /// <param name="author"></param>
         /// <param name="page"></param>
         /// <param name="per_page"></param>
-        public Page<BookModel> GetList(int[] id, int category = 0, 
+        public IPage<BookEntity> GetList(int[] id, int category = 0, 
             string keywords = "", 
             bool top = false, 
             int status = 0, int author = 0, 
             int page = 1, int perPage = 20)
         {
-            var sql = new Sql();
-            sql.Select().From<BookModel>(db);
-            if (environment.UserId == 0)
-            {
-                sql.Where("classify=0");
-            }
-            if (category > 0)
-            {
-                sql.Where("cat_id=@0", category);
-            }
-            SearchHelper.Where(sql, "name", keywords);
-            if (author > 0)
-            {
-                sql.Where("author_id=@0", author);
-            }
-            sql.Where("status=1");
-            if (status == 1)
-            {
-                sql.Where("over_at=0");
-            } else if (status == 2) 
-            {
-                sql.Where("over_at>0");
-            }
-            var items = db.Page<BookModel>(page, 20, sql.OrderBy("id desc"));
-            // TODO category author
-            return items;
+            return db.Books.Include(i => i.Author)
+                .Include(i => i.Category)
+                .Search(keywords, "name")
+                .When(client.UserId == 0, i => i.Classify == 0)
+                .When(category > 0, i => i.CatId == category)
+                .When(author > 0, i => i.AuthorId == author)
+                .Where(i => i.Status == 1)
+                .When(status == 1, i => i.OverAt == 0)
+                .When(status == 2, i => i.OverAt > 0)
+                .OrderByDescending(i => i.Id)
+                .ToPage(page);
         }
 
-        protected object SortByClick(Sql query, string type, int page = 1, int per_page = 20)
+        protected IPage<BookEntity> SortByClick(IQueryable<BookEntity> query, string type, int page = 1, int per_page = 20)
         {
             var logs = ClickLogs(type);
-            return logs;
-            //pager = new Page(count(logs), per_page, page);
-            //if (empty(logs) || pager.GetTotal() < pager.GetStart())
-            //{
-            //    return pager.SetPage([]);
-            //}
-            //logs = array_splice(logs, pager.GetStart(), pager.GetPageSize());
-            //if (empty(logs))
-            //{
-            //    return pager.SetPage([]);
-            //}
-            //logs = array_column(logs, "count", "item_id");
-            //book_list = query.WhereIn("id", array_keys(logs)).Get();
-            //foreach (book_list as item)
-            //{
-            //    item.ClickCount = logs[item.Id];
-            //}
-            //usort(book_list, (BookModel a, BookModel b) {
-            //    if (a.ClickCount > b.ClickCount)
-            //    {
-            //        return 1;
-            //    }
-            //    if (a.ClickCount == b.ClickCount)
-            //    {
-            //        return 0;
-            //    }
-            //    return -1;
-            //});
-            //return pager.SetPage(book_list);
+            var res = new Page<BookEntity>(logs.Count, page, per_page);
+            if (logs.Count == 0 || res.IsEmpty)
+            {
+                return res;
+            }
+            var items = logs.Skip(res.ItemsOffset).Take(res.ItemsPerPage)
+                .ToDictionary(i => i.ItemId, i => i.Count);
+            if (items.Count == 0)
+            {
+                return res;
+            }
+            var bookItems = query.Where(i => items.Keys.Contains(i.Id)).ToArray();
+            foreach (var item in bookItems)
+            {
+                if (items.TryGetValue(item.Id, out var c))
+                {
+                    item.ClickCount = c;
+                } else
+                {
+                    item.ClickCount = 0;
+                }
+            }
+            res.Items = bookItems.OrderByDescending(i => i.ClickCount).ToArray();
+            return res;
         }
 
         public IList<LogCount> ClickLogs(string type)
@@ -136,157 +115,190 @@ namespace NetDream.Modules.Book.Repositories
             };
         }
 
-        public Page<BookModel> GetManageList(string keywords = "", 
+        public IPage<BookEntity> GetManageList(string keywords = "", 
             int category = 0, int author = 0, int classify = 0, 
             int status = -1,
             int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<BookModel>(db)
-                .Where("classify=@0", classify);
-            if (category > 0)
-            {
-                sql.Where("cat_id=@0", category);
-            }
-            SearchHelper.Where(sql, "name", keywords);
-            if (author > 0)
-            {
-                sql.Where("author_id=@0", author);
-            }
-            if (status >= 0)
-            {
-                sql.Where("status=@0", status);
-            }
-            var items = db.Page<BookModel>(page, 20, sql.OrderBy("id desc"));
-            // TODO category author
-            return items;
+            return db.Books.Include(i => i.Author)
+                .Include(i => i.Category)
+                .Search(keywords, "name")
+                .Where(i => i.Classify == classify)
+                .When(category > 0, i => i.CatId == category)
+                .When(author > 0, i => i.AuthorId == author)
+                .When(status >= 0, i=> i.Status == status)
+                .OrderByDescending(i => i.Id).ToPage(page);
         }
 
-        public Page<BookModel> GetSelfList(string keywords = "", int category = 0, int page = 1)
+        public IPage<BookEntity> GetSelfList(string keywords = "", int category = 0, int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<BookModel>(db)
-                .Where("user_id=@0", environment.UserId);
-            if (category> 0)
-            {
-                sql.Where("cat_id=@0", category);
-            }
-            SearchHelper.Where(sql, "name", keywords);
-            var items = db.Page<BookModel>(page, 20, sql.OrderBy("id desc"));
-            // TODO category author
-            return items;
+            return db.Books.Include(i => i.Author)
+                .Include(i => i.Category)
+                .Search(keywords, "name")
+                .When(category > 0, i => i.CatId == category)
+                .Where(i => i.UserId == client.UserId)
+                .OrderByDescending(i => i.Id).ToPage(page);
         }
 
-        public BookModel Detail(int id)
+        public IOperationResult<BookEntity> Detail(int id)
         {
-            var model = db.SingleById<BookModel>(id);
+            var model = db.Books.Include(i => i.Author)
+                .Include(i => i.Category)
+                .Where(i => i.Id == id).Single();
             if (model is null)
             {
-                throw new Exception("小说不存在");
+                return OperationResult<BookEntity>.Fail("小说不存在");
             }
             if (model.Status != 1)
             {
-                throw new Exception("小说不存在");
+                return OperationResult<BookEntity>.Fail("小说不存在");
             }
-            model.Category = db.SingleById<CategoryEntity>(model.CatId);
-            model.Author = db.SingleById<AuthorEntity>(model.AuthorId);
             // model.OnShelf = HistoryRepository.HasBook(model.Id);
-            return model;
+            return OperationResult.Ok(model);
         }
 
-        public BookModel GetManage(int id)
+        public IOperationResult<BookEntity> GetManage(int id)
         {
-            var model = db.SingleById<BookModel>(id);
+            var model = db.Books.Include(i => i.Author)
+                .Include(i => i.Category)
+                .Where(i => i.Id == id).Single();
             if (model is null)
             {
-                throw new Exception("小说不存在");
+                return OperationResult<BookEntity>.Fail("小说不存在");
             }
-            model.Category = db.SingleById<CategoryEntity>(model.CatId);
-            model.Author = db.SingleById<AuthorEntity>(model.AuthorId);
-            return model;
+            return OperationResult.Ok(model);
         }
 
-        public BookModel GetSelf(int id)
+        public IOperationResult<BookEntity> GetSelf(int id)
         {
-            var model = db.SingleById<BookModel>(id);
-            if (model is null || model.UserId != environment.UserId)
+            var model = db.Books.Where(i => i.Id == id).Single();
+            if (model is null || model.UserId != client.UserId)
             {
-                throw new Exception("小说不存在");
+                return OperationResult<BookEntity>.Fail("小说不存在");
             }
             //model.Chapters = (new Tree(BookChapterModel.Where("book_id", model.Id)
             //    .OrderBy("parent_id", "asc")
             //    .OrderBy("position", "asc")
             //    .OrderBy("id", "asc").Get())).MakeTree();
-            return model;
+            return OperationResult.Ok(model);
         }
 
-        public BookEntity Save(BookForm data)
+        public IOperationResult<BookEntity> Save(BookForm data, bool checkUser = false)
         {
-            var model = new BookModel();
-            // TODO
+            BookEntity? model;
+            if (data.Id > 0)
+            {
+                model = db.Books.When(checkUser, i => i.UserId == client.UserId)
+                    .Where(i => i.Id == data.Id).Single();
+            } else
+            {
+                model = new BookEntity()
+                {
+                    UserId = client.UserId,
+                };
+            }
+            if (model is null)
+            {
+                return OperationResult<BookEntity>.Fail("书籍不存在！");
+            }
+            model.Name = data.Name;
+            model.Cover = data.Cover;
+            model.Description = data.Description;
+            model.CatId = data.CatId;
+            model.AuthorId = data.AuthorId;
+            model.Classify = data.Classify;
             if (IsExist(model))
             {
-                throw new Exception("书籍已存在！");
+                return OperationResult<BookEntity>.Fail("书籍已存在！");
             }
-            if (!db.TrySave(model))
+            db.Books.Save(model, client.Now);
+            if (db.SaveChanges() == 0)
             {
-                throw new Exception("error");
+                return OperationResult<BookEntity>.Fail("error");
             }
-            return model;
+            return OperationResult.Ok(model);
         }
 
-        public BookEntity SaveSelf(BookForm data)
+        public IOperationResult<BookEntity> SaveSelf(BookForm data)
         {
             if (data.Id > 0 && !IsSelf(data.Id))
             {
-                throw new Exception("操作失败");
+                return OperationResult<BookEntity>.Fail("操作失败");
             }
             //data["user_id"] = auth().Id();
             //data["author_id"] = AuthorRepository.AuthAuthor();
-            return Save(data);
+            return Save(data, true);
         }
 
         public void Remove(int id)
         {
-            db.DeleteById<BookEntity>(id);
-            var sql = new Sql();
-            sql.Select("id").From<ChapterEntity>(db).Where("book_id=", id);
-            var ids = db.Pluck<int>(sql);
-            if (ids.Count > 0)
+            db.Books.Where(i => i.Id == id).ExecuteDelete();
+            var ids = db.Chapters.Where(i => i.BookId == id).Select(i => i.Id)
+                .ToArray();
+            if (ids.Length > 0)
             {
-                db.DeleteWhere<ChapterEntity>("book_id=@0", id);
-                db.DeleteWhere<ChapterBodyEntity>($"id in ({string.Join(',', ids)})");
+                db.Chapters.Where(i => i.BookId == id).ExecuteDelete();
+                db.ChapterBodies.Where(i => ids.Contains(i.Id)).ExecuteDelete();
             }
         }
 
-        public object Chapters(int book)
+        public IList<ITreeItem> Chapters(int book)
         {
-            //return (new Tree(BookChapterModel.Where("book_id", book)
-            //    .OrderBy("parent_id", "asc")
-            //    .OrderBy("position", "asc")
-            //    .OrderBy(MigrationTable.COLUMN_CREATED_AT, "asc").Get())).MakeTree();
-            return db.Fetch<ChapterEntity>("WHERE book_id=@0", book);
+            var items = db.Chapters.Where(i => i.BookId == book)
+                .OrderBy(i => i.ParentId)
+                .OrderBy(i => i.Position)
+                .OrderBy(i => i.CreatedAt).Select<ChapterEntity, ChapterTreeItem>().ToArray();
+            return TreeHelper.Create(items);
         }
 
-        public ChapterModel Chapter(int id, int book = 0)
+        public IOperationResult<ChapterModel> Chapter(int id, int book = 0)
         {
+            ChapterEntity? model;
+            if (id > 0)
+            {
+                model = db.Chapters.Where(i => i.Id == id).Single();
+            } else
+            {
+                model = db.Chapters.Where(i => i.BookId == book)
+                    .OrderBy(i => i.Position)
+                    .OrderBy(i => i.CreatedAt)
+                    .Single();
+            }
+            if (model is null)
+            {
+                return OperationResult.Fail<ChapterModel>("章节错误");
+            }
+            ClickLog().Add(LOG_TYPE_BOOK, model.BookId, 0);
+            var data = model.CopyTo<ChapterModel>();
+            data.Content = model.Type < 1 ? db.ChapterBodies.Where(i => i.Id == model.Id).Select(i => i.Content)
+                .Single() : string.Empty;
+            data.Previous = GetPrevious(model);
+            data.Next = GetNext(model);
+            return OperationResult.Ok(data);
+        }
 
-            //chapter = id > 0 ?
-            //    BookChapterModel.Find(id) : BookChapterModel.Where("book_id", book)
-            //        .OrderBy("position", "asc")
-            //        .OrderBy(MigrationTable.COLUMN_CREATED_AT, "asc")
-            //        .First();
-            //if (empty(chapter))
-            //{
-            //    throw new \Exception("id 错误！");
-            //}
-            //self.ClickLog().Add(self.LOG_TYPE_BOOK, chapter.BookId, 0);
-            //data = chapter.ToArray();
-            //data["content"] = chapter.Type < 1 ? chapter.Body->content : string.Empty;
-            //data["previous"] = chapter.Previous;
-            //data["next"] = chapter.Next;
-            //return data;
-            return db.SingleById<ChapterModel>(id);
+        private ChapterEntity? GetPrevious(ChapterEntity model)
+        {
+            return db.Chapters.Where(i => i.BookId == model.BookId && i.Id < model.Id)
+                .OrderByDescending(i => i.Position)
+                .OrderByDescending(i => i.Id)
+                .Select(i => new ChapterEntity()
+                {
+                    Id = i.Id,
+                    Title = i.Title
+                }).Single();
+        }
+
+        private ChapterEntity? GetNext(ChapterEntity model)
+        {
+            return db.Chapters.Where(i => i.BookId == model.BookId && i.Id > model.Id)
+                .OrderBy(i => i.Position)
+                .OrderBy(i => i.Id)
+                .Select(i => new ChapterEntity()
+                {
+                    Id = i.Id,
+                    Title = i.Title
+                }).Single();
         }
 
         public void RefreshBook()
@@ -326,8 +338,10 @@ namespace NetDream.Modules.Book.Repositories
 
         public void RefreshSize(int book)
         {
-            var length = db.FindScalar<int, ChapterEntity>("SUM(size) as total", "book_id=@0", book);
-            db.UpdateWhere<BookEntity>("size=@0", "id=@1", length, book);
+            var length = db.Chapters.Where(i => i.BookId == book).Sum(i => i.Size);
+            db.Books.Where(i => i.Id == book)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Size, length));
+ 
         }
 
         private void DeleteNoBookChapter()
@@ -346,8 +360,7 @@ namespace NetDream.Modules.Book.Repositories
 
         public bool IsSelf(int id)
         {
-            return db.FindCount<BookEntity>("id=@0 and user_id=@1", id,
-                environment.UserId) > 0;
+            return db.Books.Where(i => i.Id == id && i.UserId == client.UserId).Any();
         }
 
         /// <summary>
@@ -356,46 +369,37 @@ namespace NetDream.Modules.Book.Repositories
         /// <returns></returns>
         public bool IsExist(BookEntity entity)
         {
-            return db.FindCount<BookEntity>("id<>@0 and name=@1", entity.Id, entity.Name) > 0;
+            return db.Books.Where(i => i.Id != entity.Id && i.Name == entity.Name).Any();
         }
 
-        public BookEntity OverSelf(int id)
+        public IOperationResult<BookEntity> OverSelf(int id)
         {
-            var model = db.First<BookEntity>("WHERE id=@0 and user_id=@1", id,
-                environment.UserId);
-
+            var model = db.Books.Where(i => i.Id == id && i.UserId == client.UserId).Single();
             if (model is null)
             {
-                throw new Exception("操作失败");
+                return OperationResult.Fail<BookEntity>("操作失败");
             }
-            model.OverAt = environment.Now;
-            db.UpdateWhere<BookEntity>("over_at=@0", "id=@1", model.OverAt, model.Id);
-            return model;
+            model.OverAt = client.Now;
+            db.Books.Save(model, client.Now);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
         public bool CheckOpen(int id)
         {
-            var isOpen = db.FindCount<BookEntity>("id=@0 and status=1", id) > 0;
-            if (!isOpen)
-            {
-                throw new Exception("书籍不存在");
-            }
-            return true;
+            return db.Books.Where(i => i.Id == id && i.Status == 1).Any();
         }
 
         public string[] GetHot()
         {
-            var sql = new Sql();
-            sql.Select("name").From<BookEntity>(db).Where("status=1").Limit(4);
-            return db.Pluck<string>(sql).ToArray();
+            return db.Books.Where(i => i.Status == 1)
+                .Select(i => i.Name).Take(4).ToArray();
         }
 
         public string[] Suggestion(string keywords = "")
         {
-            var sql = new Sql();
-            sql.Select("name").From<BookEntity>(db).Where("status=1");
-            SearchHelper.Where(sql, "name", keywords);
-            return db.Pluck<string>(sql.Limit(4)).ToArray();
+            return db.Books.Search(keywords, "name").Where(i => i.Status == 1)
+                .Select(i => i.Name).Take(4).ToArray();
         }
 
         /**
@@ -403,21 +407,20 @@ namespace NetDream.Modules.Book.Repositories
          */
         public void SortOut()
         {
-            db.RefreshPk<BookEntity>((oldId, newId) => {
-                db.UpdateWhere<ChapterEntity>("book_id=@0", "book_id=@1", newId, oldId);
-                db.UpdateWhere<SourceEntity>("book_id=@0", "book_id=@1", newId, oldId);
-                db.UpdateWhere<HistoryEntity>("book_id=@0", "book_id=@1", newId, oldId);
-                db.UpdateWhere<BuyLogEntity>("book_id=@0", "book_id=@1", newId, oldId);
-                db.UpdateWhere<RoleEntity>("book_id=@0", "book_id=@1", newId, oldId);
-                db.UpdateWhere<ListItemEntity>("book_id=@0", "book_id=@1", newId, oldId);
-                Log().Update("item_id=@0", "item_id=@1 and item_type=@2", newId, oldId, LOG_TYPE_BOOK);
-                ClickLog().Update("item_id=@0", "item_id=@1 and item_type=@2", newId, oldId, LOG_TYPE_BOOK);
+            db.Books.RefreshPk((oldId, newId) => {
+                db.Chapters.Where(i => i.BookId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, newId));
+                db.Sources.Where(i => i.BookId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, newId));
+                db.Histories.Where(i => i.BookId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, newId));
+                db.BuyLogs.Where(i => i.BookId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, newId));
+                db.Roles.Where(i => i.BookId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, newId));
+                db.ListItems.Where(i => i.BookId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, newId));
+                db.Logs.Where(i => i.ItemId == oldId && i.ItemType == LOG_TYPE_BOOK).ExecuteUpdate(setters => setters.SetProperty(i => i.ItemId, newId));
+                db.DayLogs.Where(i => i.ItemId == oldId && i.ItemType == LOG_TYPE_BOOK).ExecuteUpdate(setters => setters.SetProperty(i => i.ItemId, newId));
             });
-            db.RefreshPk<ChapterEntity>((oldId, newId) => {
-                db.UpdateWhere<HistoryEntity>("chapter_id=@0", "chapter_id=@1", newId, oldId);
-                db.UpdateWhere<BuyLogEntity>("chapter_id=@0", "chapter_id=@1", newId, oldId);
-                db.UpdateWhere<ChapterBodyEntity>("id=@0", "id=@1", newId, oldId);
-
+            db.Chapters.RefreshPk((oldId, newId) => {
+                db.Histories.Where(i => i.ChapterId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.ChapterId, newId));
+                db.BuyLogs.Where(i => i.ChapterId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.ChapterId, newId));
+                db.ChapterBodies.Where(i => i.Id == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.Id, newId));
             });
         }
     }

@@ -1,11 +1,11 @@
-﻿using NetDream.Modules.Blog.Entities;
-using NPoco;
+﻿using NetDream.Shared.Providers.Entities;
 
 namespace NetDream.Modules.Blog.Models
 {
     public class TagModel: TagEntity
     {
-        [Ignore]
+        public int BlogCount { get; set; }
+
         public string FontSize
         {
             get

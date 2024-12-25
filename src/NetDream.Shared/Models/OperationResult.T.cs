@@ -55,6 +55,11 @@ namespace NetDream.Shared.Models
         public static OperationResult<T> Fail(int failureReason, Exception? error)
             => new(false, failureReason: failureReason, error: error);
 
+        public static OperationResult<T> Fail(IOperationResult result)
+        {
+            return new(false, default, result.FailureReason, result.Message, result.Error);
+        }
+
         public static implicit operator OperationResult<T>(T value)
             => Ok(value);
 

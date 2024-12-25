@@ -1,32 +1,29 @@
-﻿using NetDream.Modules.Book.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Book.Entities;
 using NetDream.Modules.Book.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Interfaces;
-using NPoco;
-using Org.BouncyCastle.Utilities.Collections;
-using System;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class HistoryRepository(IDatabase db, IClientContext environment)
+    public class HistoryRepository(BookContext db, IClientContext client)
     {
-        public bool HasBook(object id)
+        public bool HasBook(int id)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return false;
             }
-            return db.FindCount<HistoryEntity>("user_id=@0 and book_id=@1",
-                environment.UserId, id) > 0;
+            return db.Histories.Where(i => i.UserId == client.UserId && i.BookId == id).Any();
         }
 
         public void Log(ChapterEntity chapter)
         {
-            if (environment.UserId > 0)
+            if (client.UserId > 0)
             {
                 Record(chapter.BookId, chapter.Id);
                 return;
@@ -43,34 +40,36 @@ namespace NetDream.Modules.Book.Repositories
 
         public void Record(int book, int chapter, float progress = 0)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return;
             }
-            if (HasHistory(book)) {
-                db.UpdateWhere<HistoryEntity>("chapter_id=@0, progress=@1", "user_id=@2 and book_id=@3",
-                    chapter, progress,
-                    environment.UserId, book);
-                return;
-            }
-            db.Insert(new HistoryEntity()
+            var log = db.Histories.Where(i => i.UserId == client.UserId && i.BookId == book).Single();
+            if (log is not null) {
+                log.ChapterId = chapter;
+                log.Progress = progress;
+            } else
             {
-                ChapterId = chapter,
-                Progress = progress,
-                BookId = book,
-                UserId = environment.UserId,
-                
-            });
+                log = new HistoryEntity()
+                {
+                    ChapterId = chapter,
+                    Progress = progress,
+                    BookId = book,
+                    UserId = client.UserId,
+
+                };
+            }
+            db.Histories.Save(log, client.Now);
+            db.SaveChanges();
         }
 
         public void RemoveBook(int id)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return;
             }
-            db.DeleteWhere<HistoryEntity>("user_id=@0 and book_id=@1",
-                environment.UserId, id);
+            db.Histories.Where(i => i.UserId == client.UserId && i.BookId == id).ExecuteDelete();
         }
 
         public int[] GetHistoryId()
@@ -82,8 +81,7 @@ namespace NetDream.Modules.Book.Repositories
 
         public bool HasHistory(int bookId)
         {
-            return db.FindCount<HistoryEntity>("user_id=@0 and book_id=@1",
-                environment.UserId, bookId) > 0;
+            return db.Histories.Where(i => i.UserId == client.UserId && i.BookId == bookId).Any();
         }
 
         /**
@@ -91,16 +89,13 @@ namespace NetDream.Modules.Book.Repositories
          * @return Page
          * @throws \Exception
          */
-        public Page<HistoryModel> GetHistory(int page = 1)
+        public IPage<HistoryModel> GetHistory(int page = 1)
         {
-            Page<HistoryModel> res;
-            Sql sql;
-            if (environment.UserId > 0)
+            IPage<HistoryModel> res;
+            if (client.UserId > 0)
             {
-                sql = new Sql();
-                sql.Select().From<HistoryEntity>(db)
-                    .Where("user_id=@0", environment.UserId);
-                res = db.Page<HistoryModel>(page, 20, sql);
+                res = db.Histories.Where(i => i.UserId == client.UserId)
+                    .ToPage(page).CopyTo<HistoryEntity, HistoryModel>();
                 WithBook(res.Items);
                 WithChapter(res.Items);
                 return res;
@@ -110,38 +105,24 @@ namespace NetDream.Modules.Book.Repositories
             {
                 return new Page<HistoryModel>();
             }
-            sql = new Sql();
-            sql.Select().From<ChapterEntity>(db)
-                .WhereIn("id", items);
-            var chapterItems = db.Page<ChapterEntity>(page, 20, sql);
-            res = new Page<HistoryModel>()
+            var chapterItems = db.Chapters.Where(i => items.Contains(i.Id))
+                .ToPage(page);
+            res = new Page<HistoryModel>(chapterItems.TotalItems, chapterItems.CurrentPage)
             {
-                CurrentPage = chapterItems.CurrentPage,
-                ItemsPerPage = chapterItems.ItemsPerPage,
-                TotalPages = chapterItems.TotalPages,
-                TotalItems = chapterItems.TotalItems,
-                Items = []
-            };
-            foreach (var item in chapterItems.Items)
-            {
-                res.Items.Add(new()
+                Items = chapterItems.Items.Select(item => new HistoryModel()
                 {
                     BookId = item.BookId,
                     ChapterId = item.Id,
                     Chapter = item,
-                });
-            }
+                }).ToArray()
+            };
             WithBook(res.Items);
             return res;
         }
 
-        private List<ChapterEntity> GetChapters(params int[] ids)
+        private ChapterEntity[] GetChapters(params int[] ids)
         {
-            var sql = new Sql();
-            sql.Select()
-                .From<ChapterEntity>(db)
-                .WhereIn("id", ids);
-            return db.Fetch<ChapterEntity>(sql);
+            return db.Chapters.Where(i => ids.Contains(i.Id)).ToArray();
         }
 
         private void WithChapter(IEnumerable<HistoryModel> items)
@@ -169,13 +150,9 @@ namespace NetDream.Modules.Book.Repositories
             }
         }
 
-        private List<BookEntity> GetBooks(params int[] ids)
+        private BookEntity[] GetBooks(params int[] ids)
         {
-            var sql = new Sql();
-            sql.Select()
-                .From<BookEntity>(db)
-                .WhereIn("id", ids);
-            return db.Fetch<BookEntity>(sql);
+            return db.Books.Where(i => ids.Contains(i.Id)).ToArray();
         }
         private void WithBook(IEnumerable<HistoryModel> items)
         {

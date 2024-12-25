@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.CMS.Entities;
+using NetDream.Modules.CMS.Repositories;
 
 namespace NetDream.Modules.CMS.Migrations
 {

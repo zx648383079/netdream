@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Shared.Http;
 using NetDream.Modules.OpenPlatform.Http;
-using NPoco;
 using NetDream.Shared.Interfaces;
 
 namespace NetDream.Web.Base.Http

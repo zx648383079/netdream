@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace NetDream.Shared.Providers
 {
-    public class TagProvider(ITagContext db, string prefix)
+    public class TagProvider(ITagContext db)
     {
 
         public void Remove(int id) {

@@ -1,26 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc.ViewEngines;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Forms;
 using NetDream.Modules.Blog.Models;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using NetDream.Shared.Repositories.Models;
-using NPoco;
-using NPoco.FluentMappings;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class PublishRepository(IDatabase db, 
-        IClientContext environment,
+    public class PublishRepository(BlogContext db, 
+        IClientContext client,
         LocalizeRepository localize,
         MetaRepository meta)
     {
@@ -40,53 +35,35 @@ namespace NetDream.Modules.Blog.Repositories
         public const byte OPEN_PASSWORD = 5; // 需要密码
         public const byte OPEN_BUY = 6; // 需要购买
 
-        public Page<BlogModel> GetList(string keywords = "", 
+        public IPage<BlogModel> GetList(string keywords = "", 
             int category = 0, int status = 0, 
             int type = 0, string language = "", 
             int page = 1)
         {
-            var sql = new Sql();
-            sql.Select(["id", "title", "description", "user_id", "type",
-                "thumb",
-                "language",
-                "programming_language",
-                "term_id",
-                "parent_id",
-                "open_type",
-                "comment_count",
-                "publish_status",
-                "click_count", "recommend_count", MigrationTable.COLUMN_CREATED_AT]);
-            sql.From<BlogEntity>(db)
-                .Where("user_id", environment.UserId);
-            SearchHelper.Where(sql, "title", keywords);
-            if (category > 0)
-            {
-                sql.Where("term_id=@0", category);
-            }
-            if (type > 0)
-            {
-                sql.Where("type=@0", type - 1);
-            }
-            if (status > 0)
-            {
-                sql.Where("publish_status=@0", status - 1);
-            } else
-            {
-                sql.Where("publish_status<>@0", PUBLISH_STATUS_AUTO_SAVE);
-            }
-            if (string.IsNullOrWhiteSpace(language))
-            {
-                sql.Where("language=@0", language);
-            }
-            sql.OrderBy("id DESC");
-            var items = db.Page<BlogModel>(page, 20, sql);
+            var items = db.Blogs.Search(keywords, "title")
+                .When(category > 0, i => i.TermId == category)
+                .When(type > 0, i => i.Type == type - 1)
+                .When(status > 0, i => i.PublishStatus == status - 1, i => i.PublishStatus == PUBLISH_STATUS_AUTO_SAVE)
+                .When(language, i => i.Language == language)
+                .OrderByDescending(i => i.Id)
+                .ToPage(page, query => query.Select<BlogEntity, object>("id", "title", "description", "user_id", "type",
+                    "thumb",
+                    "language",
+                    "programming_language",
+                    "term_id",
+                    "parent_id",
+                    "open_type",
+                    "comment_count",
+                    "publish_status",
+                    "click_count", "recommend_count", "created_at"))
+                .CopyTo<BlogEntity, BlogModel>();
             WithCategory(items.Items);
             foreach (var item in items.Items)
             {
                 var isLocal = item.ParentId > 0;
                 if (!isLocal)
                 {
-                    isLocal = db.FindCount<BlogEntity>("parent_id=@0", item.Id) > 0;
+                    isLocal = db.Blogs.Where(i => i.ParentId == item.Id).Any();
                 }
                 item.IsLocalization = isLocal;
             }
@@ -100,7 +77,7 @@ namespace NetDream.Modules.Blog.Repositories
             {
                 return;
             }
-            var data = db.Fetch<CategoryEntity>($"WHERE id IN({string.Join(',', idItems)})");
+            var data = db.Categories.Where(i => idItems.Contains(i.Id)).ToArray();
             if (!data.Any())
             {
                 return;
@@ -118,59 +95,61 @@ namespace NetDream.Modules.Blog.Repositories
             }
         }
 
-        public BlogModel Get(int id = 0, string language = "")
+        public IOperationResult<BlogModel> Get(int id = 0, string language = "")
         {
-            var model = GetBlog(id, language);
+            var res = GetBlog(id, language);
+            if (!res.Succeeded)
+            {
+                return (OperationResult<BlogModel>)res;
+            }
+            var model = res.Result.CopyTo<BlogModel>();
             //tags = model.IsNewRecord ? [] : TagRepository.GetTags(model.Id);
             //data = model.ToArray();
             //data["tags"] = tags;
             //data["open_rule"] = model.OpenRule;
             //data["languages"] = self.LanguageAll(model.ParentId > 0 ? model.ParentId : model.Id);
             //return array_merge(data, BlogMetaModel.GetOrDefault(id));
-            return model;
+            return OperationResult.Ok(model);
         }
 
-        public BlogEntity GetOrNew(int id = 0, string language = "")
+        public IOperationResult<BlogEntity> GetOrNew(int id = 0, string language = "")
         {
-            BlogModel? model;
+            BlogEntity? model;
             if (id > 0)
             {
-                model = db.Single<BlogModel>("WHERE id=@0 AND user_id=@1", id, environment.UserId);;
+                model = db.Blogs.Where(i => i.Id == id && i.UserId == client.UserId).Single();
                 if (model is null)
                 {
-                    throw new Exception("blog is not exist");
+                    return OperationResult<BlogEntity>.Fail("blog is not exist");
                 }
                 if (string.IsNullOrWhiteSpace(language) || model.Language == language)
                 {
-                    return model;
+                    return OperationResult.Ok(model);
                 }
-                return new BlogEntity
+                return OperationResult.Ok(new BlogEntity
                 {
                     ParentId = model.ParentId > 0 ? model.ParentId : model.Id,
                     Language = language
-                };
+                });
             }
-            model = db.Single<BlogModel>(
-                "WHERE user_id=@0 AND publish_status=@1 ORDER BY parent_id ASC",
-                environment.UserId,
-                PUBLISH_STATUS_AUTO_SAVE
-                );
+            model = db.Blogs.Where(i => i.UserId == client.UserId && i.PublishStatus == PUBLISH_STATUS_AUTO_SAVE)
+                .OrderBy(i => i.ParentId).Single();
             if (model is null)
             {
-                return new BlogEntity
+                return OperationResult.Ok(new BlogEntity
                 {
                     Language = localize.FirstLanguage()
-                };
+                });
             }
             if (string.IsNullOrWhiteSpace(language) || model.Language == language)
             {
-                return model;
+                return OperationResult.Ok(model);
             }
-            return new BlogEntity
+            return OperationResult.Ok(new BlogEntity
             {
                 ParentId = model.ParentId > 0 ? model.ParentId : model.Id,
                 Language = language
-            };
+            });
         }
 
         /**
@@ -180,77 +159,80 @@ namespace NetDream.Modules.Blog.Repositories
          */
         public IList<ILanguageFormatted> LanguageAll(int id)
         {
-            var items = db.Fetch<BlogEntity>(
-                new Sql().Select("id", "language")
-                .From<BlogEntity>(db).Where("parent_id=@0 OR id=@0", id)
-                );
+            var items = db.Blogs.Where(i => i.ParentId == id || i.Id == id).Select(i => new BlogEntity()
+            {
+                Id = i.Id,
+                Language = i.Language,
+            }).ToArray();
             return localize.FormatLanguageList(items, false);
         }
 
-        private BlogModel GetBlog(int id = 0, 
+        private IOperationResult<BlogEntity> GetBlog(int id = 0, 
             string language = "")
         {
             if (id > 0)
             {
                 return GetBlogById(id, language);
             }
-            BlogModel? model;
+            BlogEntity? model;
             if (string.IsNullOrWhiteSpace(language))
             {
                 
-                model = db.Single<BlogModel>("user_id=@0 AND publish_status=@1 ORDER BY parent_id ASC", 
-                    environment.UserId, PUBLISH_STATUS_DRAFT);
+                model = db.Blogs.Where(i => i.UserId == client.UserId && i.PublishStatus == PUBLISH_STATUS_DRAFT)
+                    .OrderBy(i => i.ParentId).Single();
             }
             else
             {
-                model = db.Single<BlogModel>("user_id=@0 AND publish_status=@1 AND language=@2",
-                    environment.UserId, PUBLISH_STATUS_DRAFT, language);
+                model = db.Blogs.Where(i => i.UserId == client.UserId && i.PublishStatus == PUBLISH_STATUS_DRAFT && i.Language == language).Single();
             }
             if (model is null)
             {
-                throw new Exception("blog is not exist");
+                return OperationResult<BlogEntity>.Fail("blog is not exist");
             }
-            return model;
+            return OperationResult.Ok(model);
         }
 
-        private BlogModel GetBlogById(int id, string language = "")
+        private IOperationResult<BlogEntity> GetBlogById(int id, string language = "")
         {
-            var model = db.Single<BlogModel>("id=@0 AND user_id=@1", id, environment.UserId);
+            var model = db.Blogs.Where(i => i.Id == id && i.UserId == client.UserId).Single();
             if (model is null)
             {
-                throw new Exception("blog is not exist");
+                return OperationResult<BlogEntity>.Fail("blog is not exist");
             }
             if (string.IsNullOrWhiteSpace(language) || 
                 language == model.Language)
             {
-                return model;
+                return OperationResult.Ok(model);
             }
             if (model.ParentId > 0)
             {
-                model = db.Single<BlogModel>("(parent_id=@0 OR id=@0) AND language=@1",
-                    model.ParentId, language);
+                model = db.Blogs.Where(i => (i.ParentId == model.ParentId || i.Id == model.ParentId) && i.Language == language)
+                    .Single();
             }
             else
             {
-                model = db.Single<BlogModel>("parent_id=@0 AND language=@1", model.Id,
-                    language);
+                model = db.Blogs.Where(i => i.ParentId == model.Id && i.Language == language).Single();
             }
             if (model is null)
             {
                 throw new Exception("blog is not exist");
             }
-            return model;
+            return OperationResult.Ok(model);
         }
 
-        public BlogEntity Save(BlogForm data, int id = 0)
+        public IOperationResult<BlogEntity> Save(BlogForm data, int id = 0)
         {
             if (id > 0)
             {
                 data.Id = id;
             }
-            var model = data.Id > 0 ? db.Single<BlogEntity>("id=@0 AND user_id=@1", data.Id, environment.UserId) :
+            var model = data.Id > 0 ? db.Blogs.Where(i => i.Id == data.Id && i.UserId == client.UserId).Single() :
                 new BlogEntity();
-            model.UserId = environment.UserId;
+            if (model is null)
+            {
+                return OperationResult<BlogEntity>.Fail("blog is error");
+            }
+            model.UserId = client.UserId;
             model.Language = data.Language;
             model.ParentId = data.ParentId;
             model.Title = data.Title;
@@ -274,8 +256,7 @@ namespace NetDream.Modules.Blog.Repositories
                 "open_rule", };
             if (model.ParentId > 0)
             {
-                var parent = db.Single<BlogEntity>("id=@0 AND user_id=@1", 
-                    model.ParentId, environment.UserId);
+                var parent = db.Blogs.Where(i => i.Id == model.ParentId && i.UserId == client.UserId).Single();
                 if (string.IsNullOrWhiteSpace(model.Language) || model.Language == "zh")
                 {
                     model.Language = "en";
@@ -286,10 +267,10 @@ namespace NetDream.Modules.Blog.Repositories
                     field?.SetValue(model, field.GetValue(parent));
                 }
             }
-            ;
-            if (!db.TrySave(model))
+            db.Blogs.Save(model, client.Now);
+            if (db.SaveChanges() == 0)
             {
-                throw new Exception("save error");
+                return OperationResult<BlogEntity>.Fail("save error");
             }
             //if (model.ParentId < 1)
             //{
@@ -304,7 +285,7 @@ namespace NetDream.Modules.Blog.Repositories
             //}
             // meta.SaveBatch(model.Id, data);
             // event (new BlogUpdate(model.Id, isNew? 0 : 1, time()));
-            return model;
+            return OperationResult.Ok(model);
         }
 
         /// <summary>
@@ -312,37 +293,40 @@ namespace NetDream.Modules.Blog.Repositories
         /// </summary>
         /// <param name="data"></param>
         /// <param name="id"></param>
-        public BlogEntity SaveDraft(BlogForm data, int id = 0)
+        public IOperationResult<BlogEntity> SaveDraft(BlogForm data, int id = 0)
         {
             data.PublishStatus = PUBLISH_STATUS_AUTO_SAVE;
             return Save(data, id);
         }
 
-        public BlogEntity Update(int id, IDictionary<string, string> data)
+        public IOperationResult<BlogEntity> Update(int id, 
+            IDictionary<string, string> data)
         {
-            var model = db.Single<BlogEntity>("id=@0 AND user_id=@1", id, environment.UserId);
+            var model = db.Blogs.Where(i => i.Id == id && i.UserId == client.UserId).Single();
             if (model is null)
             {
-                throw new Exception("blog is not exist");
+                return OperationResult.Fail<BlogEntity>("blog is not exist");
             }
-            ModelHelper.BatchToggle(db, model, data, ["type", "publish_status"]);
-            return model;
+            db.Blogs.BatchToggle(model, data, "type", "publish_status");
+            return OperationResult.Ok(model);
         }
 
-        public void Remove(int id)
+        public IOperationResult Remove(int id)
         {
-            var model = db.Single<BlogEntity>("id=@0 AND user_id=@1", id, environment.UserId);
+            var model = db.Blogs.Where(i => i.Id == id && i.UserId == client.UserId).Single();
             if (model is null)
             {
-                throw new Exception("blog is not exist");
+                return OperationResult.Fail("blog is not exist");
             }
-            db.Delete<BlogEntity>(id);
+            db.Blogs.Remove(model);
+            db.SaveChanges();
             if (model.ParentId < 1)
             {
-                db.Delete<BlogEntity>("WHERE parent_id=@0", id);
+                db.Blogs.Where(i => i.ParentId == id).ExecuteDelete();
             }
             meta.DeleteBatch(id);
             // event(new BlogUpdate(model.Id, 2, time()));
+            return OperationResult.Ok();
         }
     }
 }

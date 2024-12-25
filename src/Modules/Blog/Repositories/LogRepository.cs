@@ -1,10 +1,8 @@
-﻿using NetDream.Modules.Blog.Entities;
-using NetDream.Shared.Repositories;
-using NPoco;
+﻿using NetDream.Shared.Repositories;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class LogRepository(BlogContext db) : ActionRepository<LogEntity>(db)
+    public class LogRepository(BlogContext db) : ActionRepository(db)
     {
         public const byte TYPE_BLOG = 0;
         public const byte TYPE_COMMENT = 1;

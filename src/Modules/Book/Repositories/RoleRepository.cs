@@ -1,66 +1,69 @@
-﻿using NetDream.Modules.Book.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Book.Entities;
 using NetDream.Modules.Book.Forms;
-using NetDream.Shared.Extensions;
 using NetDream.Shared.Helpers;
-using NPoco;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System;
 using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class RoleRepository(IDatabase db)
+    public class RoleRepository(BookContext db)
     {
-        public Page<RoleEntity> GetList(int book, string keywords = "", int page = 1)
+        public IPage<RoleEntity> GetList(int book, string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<RoleEntity>(db)
-                .Where("book_id=@0", book);
-            SearchHelper.Where(sql, ["name", "character"], keywords);
-            return db.Page<RoleEntity>(page, 20, sql);
+            return db.Roles.Where(i => i.BookId == book).Search(keywords, "name", "character")
+                .ToPage(page);
         }
 
         public object All(int book)
         {
-            var items = db.Fetch<RoleEntity>("WHERE book_id=@0", book);
-            if (items.Count == 0)
+            var items = db.Roles.Where(i => i.BookId == book).ToArray();
+            if (items.Length == 0)
             {
                 return new { items };
             }
             var idItems = items.Select(x => x.Id).ToArray();
-            var sql = new Sql();
-            sql.Select().From<RoleRelationEntity>(db)
-                .WhereIn("role_id", idItems);
-            var linkItems = db.Fetch<RoleRelationEntity>(sql);
+            var linkItems = db.RoleRelations.Where(i => idItems.Contains(i.RoleId))
+                .ToArray();
             return new {  items, link_items = linkItems};
         }
 
 
-        public RoleEntity Save(RoleForm data)
+        public IOperationResult<RoleEntity> Save(RoleForm data)
         {
-            var model = data.Id > 0 ? db.SingleById<RoleEntity>(data.Id) : new RoleEntity();
+            var model = data.Id > 0 ? db.Roles.Where(i => i.Id == data.Id).Single() : new RoleEntity();
+            if (model is null)
+            {
+                return OperationResult<RoleEntity>.Fail("id is error");
+            }
             model.Avatar = data.Avatar;
             model.Name = data.Name;
             model.Description = data.Description;
             model.BookId = data.BookId;
             model.X = data.X;
             model.Y = data.Y;
-            if (!db.TrySave(model))
+            db.Roles.Add(model);
+            if (db.SaveChanges() == 0)
             {
-                throw new Exception("error");
+                return OperationResult<RoleEntity>.Fail("error");
             }
             AddLink(model.Id, data.linkId, data.linkTitle ?? string.Empty);
-            return model;
+            return OperationResult.Ok(model);
         }
 
-        public void Remove(int id)
+        public IOperationResult Remove(int id)
         {
-            var model = db.SingleById<RoleEntity>(id);
+            var model = db.Roles.Where(i => i.Id == id).Single();
             if (model is null)
             {
-                throw new Exception("角色不存在");
+                return OperationResult.Fail("角色不存在");
             }
-            db.DeleteWhere<RoleEntity>("id=@0", id);
-            db.DeleteWhere<RoleEntity>("role_id=@0 or role_link=@0", id);
+            db.Roles.Where(i => i.Id == id).ExecuteDelete();
+            db.RoleRelations.Where(i => i.RoleId == id || i.RoleLink == id).ExecuteDelete();
+            return OperationResult.Ok();
         }
 
         public void AddLink(int from, int to, string title)
@@ -69,22 +72,22 @@ namespace NetDream.Modules.Book.Repositories
             {
                 return;
             }
-            var model = db.First<RoleRelationEntity>("WHERE role_id=@0 and role_link=@1",
-                from, to);
+            var model = db.RoleRelations.Where(i => i.RoleId == from && i.RoleLink == to).Single();
             if (model is not null)
             {
                 model.Title = title;
-                db.UpdateWhere<RoleRelationEntity>("title=@0", "id=@1", title, model.Id);
+                db.RoleRelations.Update(model);
             }
             else
             {
-                db.Insert(new RoleRelationEntity()
+                db.RoleRelations.Add(new RoleRelationEntity()
                 {
                     RoleId = from,
                     RoleLink = to,
                     Title = title,
                 });
             }
+            db.SaveChanges();
         }
 
         public void RemoveLink(int from, int to)
@@ -93,7 +96,7 @@ namespace NetDream.Modules.Book.Repositories
             {
                 return;
             }
-            db.DeleteWhere<RoleRelationEntity>("role_id=@0 and role_link=@1", from, to);
+            db.RoleRelations.Where(i => i.RoleId == from && i.RoleLink == to).ExecuteDelete();
         }
     }
 }

@@ -14,6 +14,11 @@ namespace NetDream.Modules.Book.Migrations
             builder.HasIndex("name").IsUnique();
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100).HasComment("·ÖÀàÃû");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
+
+            builder.HasMany(p => p.Books)
+                   .WithOne(b => b.Category)
+                   .HasPrincipalKey(p => p.Id)
+                   .HasForeignKey(b => b.CatId);
         }
     }
 }

@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Book.Entities
 {
     
-    public class ChapterEntity
+    public class ChapterEntity: IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -22,5 +24,9 @@ namespace NetDream.Modules.Book.Entities
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }
+
+        public BookEntity? Book { get; set; }
+
+        public ChapterBodyEntity? Body { get; set; }
     }
 }

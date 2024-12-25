@@ -29,6 +29,16 @@ namespace NetDream.Modules.Book.Migrations
             builder.Property(table => table.DeletedAt).HasColumnName("deleted_at");
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
+
+            builder.HasMany(p => p.Chapters)
+                  .WithOne(b => b.Book)
+                  .HasPrincipalKey(p => p.Id)
+                  .HasForeignKey(b => b.BookId);
+
+            builder.HasMany(p => p.Sources)
+                  .WithOne(b => b.Book)
+                  .HasPrincipalKey(p => p.Id)
+                  .HasForeignKey(b => b.BookId);
         }
     }
 }

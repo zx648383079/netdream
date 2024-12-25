@@ -30,7 +30,7 @@ namespace NetDream.Modules.Bot.Migrations
             builder.Property(table => table.Description).HasColumnName("description").HasDefaultValue(string.Empty).HasComment("¹«ÖÚºÅ¼ò½é");
             builder.Property(table => table.Username).HasColumnName("username").HasMaxLength(40).HasDefaultValue(string.Empty).HasComment("Î¢ĞÅ¹ÙÍøµÇÂ¼Ãû");
             builder.Property(table => table.Password).HasColumnName("password").HasMaxLength(32).HasDefaultValue(string.Empty).HasComment("Î¢ĞÅ¹ÙÍøµÇÂ¼ÃÜÂë");
-            builder.Property(table => table.Status).HasColumnName("status").HasDefaultValue(BotModel.STATUS_INACTIVE).HasComment("×´Ì¬");
+            builder.Property(table => table.Status).HasColumnName("status").HasDefaultValue(BotRepository.STATUS_INACTIVE).HasComment("×´Ì¬");
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
         }

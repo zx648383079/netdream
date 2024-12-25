@@ -16,6 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Auth\Auth.csproj" />
+    <ProjectReference Include="..\Modules\OpenPlatform\OpenPlatform.csproj" />
+    <ProjectReference Include="..\Modules\SEO\SEO.csproj" />
     <ProjectReference Include="..\NetDream.Shared\NetDream.Shared.csproj" />
     <ProjectReference Include="..\Modules\Blog\Blog.csproj" />
   </ItemGroup>

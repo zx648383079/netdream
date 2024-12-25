@@ -1,24 +1,23 @@
-﻿using NetDream.Modules.Blog.Entities;
+﻿using NetDream.Modules.Blog;
+using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Models;
-using NetDream.Shared.Extensions;
+using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
-using NPoco;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class CategoryRepository(IDatabase db, 
+    public class CategoryRepository(BlogContext db, 
         LocalizeRepository localize)
     {
         private IList<CategoryModel> Boot()
         {
-            var data = db.Fetch<CategoryModel>();
-            var sql = new Sql();
-            sql.Select("term_id", "COUNT(*) as count")
-                .From<BlogEntity>(db)
-                .Where("parent_id=0")
-                .GroupBy("term_id");
-            var countItems = db.Dictionary<int, int>(sql);
+            var data = db.Categories.Select<CategoryEntity, CategoryModel>().ToArray();
+            var countItems = db.Blogs.Where(i => i.ParentId == 0)
+                .GroupBy(i => i.TermId)
+                .Select(i => new { TermId = i.Key, Count = i.Count()})
+                .ToDictionary(i => i.TermId, i => i.Count);
             foreach (var item in data)
             {
                 if (countItems.TryGetValue(item.Id, out int value))

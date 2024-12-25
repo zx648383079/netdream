@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.Bot.Entities;
+using NetDream.Modules.Bot.Repositories;
 
 namespace NetDream.Modules.Bot.Migrations
 {
@@ -25,7 +26,7 @@ namespace NetDream.Modules.Bot.Migrations
             builder.Property(table => table.GroupId).HasColumnName("group_id").HasDefaultValue(0);
             builder.Property(table => table.BotId).HasColumnName("bot_id").HasComment("所属微信公众号ID");
             builder.Property(table => table.NoteName).HasColumnName("note_name").HasMaxLength(20).HasDefaultValue(string.Empty).HasComment("备注名");
-            builder.Property(table => table.Status).HasColumnName("status").HasDefaultValue(UserModel.STATUS_SUBSCRIBED)
+            builder.Property(table => table.Status).HasColumnName("status").HasDefaultValue(BotRepository.STATUS_SUBSCRIBED)
                 .HasComment("关注状态");
             builder.Property(table => table.IsBlack).HasColumnName("is_black").HasDefaultValue(0).HasComment("是否是黑名单");
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");

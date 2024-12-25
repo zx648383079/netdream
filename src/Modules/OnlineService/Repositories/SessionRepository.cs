@@ -60,7 +60,7 @@ namespace NetDream.Modules.OnlineService.Repositories
             {
                 return OperationResult.Fail<SessionEntity>("错误");
             }
-            if (!new CategoryRepository(db, userStore, client).HasService(user))
+            if (!new CategoryRepository(db, userStore).HasService(user))
             {
                 return OperationResult.Fail<SessionEntity>("客服错误");
             }
@@ -91,7 +91,7 @@ namespace NetDream.Modules.OnlineService.Repositories
             {
                 return OperationResult.Fail<SessionEntity>("错误");
             }
-            if (word > 0 && !new CategoryRepository(db, userStore, client).HasWord(word))
+            if (word > 0 && !new CategoryRepository(db, userStore).HasWord(word))
             {
                 return OperationResult.Fail<SessionEntity>("自动回复语错误");
             }

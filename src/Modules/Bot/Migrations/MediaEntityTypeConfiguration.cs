@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.Bot.Entities;
+using NetDream.Modules.Bot.Repositories;
 
 namespace NetDream.Modules.Bot.Migrations
 {
@@ -13,7 +14,7 @@ namespace NetDream.Modules.Bot.Migrations
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.BotId).HasColumnName("bot_id").HasComment("所属微信公众号ID");
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(10).HasComment("素材类型");
-            builder.Property(table => table.MaterialType).HasColumnName("material_type").HasDefaultValue(MediaModel.MATERIAL_PERMANENT)
+            builder.Property(table => table.MaterialType).HasColumnName("material_type").HasDefaultValue(MediaRepository.MATERIAL_PERMANENT)
                 .HasComment("素材类别:永久/临时");
             builder.Property(table => table.Title).HasColumnName("title").HasMaxLength(200).HasComment("素材标题");
             builder.Property(table => table.Thumb).HasColumnName("thumb").HasMaxLength(200).HasDefaultValue(string.Empty).HasComment("图文的封面");

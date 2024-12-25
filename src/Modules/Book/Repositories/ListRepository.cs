@@ -1,47 +1,39 @@
-﻿using NetDream.Modules.Book.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Book.Entities;
 using NetDream.Modules.Book.Forms;
 using NetDream.Modules.Book.Models;
-using NetDream.Shared.Extensions;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Migrations;
 using NetDream.Shared.Models;
-using NPoco;
-using Org.BouncyCastle.Crypto;
+using NetDream.Shared.Providers;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class ListRepository(IDatabase db, 
-        IClientContext environment,
+    public class ListRepository(BookContext db, 
+        IClientContext client,
         BookRepository bookStore,
         HistoryRepository historyStore,
         IUserRepository userStore)
     {
-        public Page<ListEntity> GetList(string keywords = "", int page = 1)
+        public IPage<ListEntity> GetList(string keywords = "", int page = 1)
         {
-            var sql = new Sql();
-            sql.Select().From<ListEntity>(db);
-            SearchHelper.Where(sql, "title", keywords);
-            sql.OrderBy("created_at desc");
-            return db.Page<ListEntity>(page, 20, sql);
+            return db.Lists.Search(keywords, "title")
+                .OrderByDescending(i => i.CreatedAt).ToPage(page);
         }
 
-        public ListModel Detail(int id)
+        public IOperationResult<ListModel> Detail(int id)
         {
-            var model = db.SingleById<ListModel>(id);
-            if (model is null)
+            var entity = db.Lists.Where(i => i.Id == id).Single();
+            if (entity is null)
             {
-                throw new Exception("书单不存在");
+                return OperationResult<ListModel>.Fail("书单不存在");
             }
+            var model = entity.CopyTo<ListModel>();
             model.IsCollected = HasLog(BookRepository.LOG_TYPE_LIST,
                 [BookRepository.LOG_ACTION_COLLECT], model.Id);
-            var items = db.Fetch<ListItemModel>("WHERE list_id=@0", id);
+            var items = db.ListItems.Where(i => i.ListId == id).Select<ListItemEntity, ListItemModel>().ToArray();
             foreach (var item in items)
             {
                 item.IsAgree = HasLog(BookRepository.LOG_TYPE_LIST, [BookRepository.LOG_ACTION_AGREE, BookRepository.LOG_ACTION_DISAGREE], id);
@@ -49,8 +41,10 @@ namespace NetDream.Modules.Book.Repositories
             }
             model.User = userStore.Get(model.UserId);
             model.Items = items;
-            db.UpdateWhere<ListEntity>("click_count=click_count+1", "id=@0", id);
-            return model;
+            entity.ClickCount++;
+            db.Lists.Update(entity);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
         private bool HasLog(byte type, byte[] action, int id)
@@ -59,34 +53,32 @@ namespace NetDream.Modules.Book.Repositories
             return action.Length > 0 ? res > 0 : res is not null;
         }
 
-        public ListEntity Save(ListForm data)
+        public IOperationResult<ListEntity> Save(ListForm data)
         {
             if (data.Items.Count == 0)
             {
-                throw new Exception("请选择书籍");
+                return OperationResult<ListEntity>.Fail("请选择书籍");
             }
             var model = data.Id > 0 ? 
-                db.SingleById<ListEntity>(data.Id) : new ListEntity() { 
-                    UserId = environment.UserId,
+                db.Lists.Where(i => i.Id == data.Id).Single() : new ListEntity() { 
+                    UserId = client.UserId,
                 };
-            if (model is null || model.UserId != environment.UserId)
+            if (model is null || model.UserId != client.UserId)
             {
-                throw new Exception("书单不存在");
+                return OperationResult<ListEntity>.Fail("书单不存在");
             }
             model.Title = data.Title;
             model.Description = data.Description;
-            if (!db.TrySave(model))
+            db.Lists.Save(model, client.Now);
+            if (db.SaveChanges() == 0)
             {
-                throw new Exception("error");
+                return OperationResult<ListEntity>.Fail("error");
             }
             var exist = Array.Empty<int>();
-            Sql sql;
             if (data.Id > 0)
             {
-                sql = new Sql();
-                sql.Select("id").From<ListItemEntity>(db)
-                    .Where("list_id=@0", model.Id);
-                exist = db.Pluck<int>(sql, "id").ToArray();
+                exist = db.ListItems.Where(i => i.ListId == model.Id).Select(i => i.Id)
+                    .ToArray();
             }
             var add = new List<ListItemEntity>();
             var update = new List<int>();
@@ -103,47 +95,56 @@ namespace NetDream.Modules.Book.Repositories
                         ListId = model.Id,
                         BookId = item.BookId,
                         Remark = item.Remark,
-                        Star = item.Star < 0 ? 10 : item.Star
+                        Star = item.Star < 0 ? 10 : item.Star,
+                        CreatedAt = client.Now,
+                        UpdatedAt = client.Now,
                     });
                     continue;
                 }
-                db.UpdateWhere<ListItemEntity>("book_id=@0, remark=@1, star=@2",
-                    "list_id=@3 and id=@4", item.BookId, item.Remark, item.Star,
-                    model.Id, item.Id);
+                db.ListItems.Where(i => i.ListId == model.Id && i.Id == item.Id)
+                    .ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, item.BookId)
+                    .SetProperty(i => i.Remark, item.Remark)
+                    .SetProperty(i => i.Star, item.Star));
                 update.Add(item.Id);
             }
             var del = exist.Where(i => !update.Contains(i)).ToArray();
             if (del.Length > 0)
             {
-                db.DeleteWhere<ListItemEntity>($"list_id={model.Id} and id in ({string.Join(',', del)})");
+                db.ListItems.Where(i => i.ListId == model.Id && del.Contains(i.Id)).ExecuteDelete();
             }
             if (add.Count > 0)
             {
-                db.InsertBatch(add);
+                db.ListItems.AddRange(add);
+                db.SaveChanges();
             }
-            model.BookCount = db.FindCount<ListItemEntity>("list_id=@0", model.Id);
-            db.UpdateWhere<ListEntity>("book_count=@0", "id=@1", model.BookCount, model.Id);
-            return model;
+            model.BookCount = db.ListItems.Where(i => i.ListId == model.Id).Count();
+            db.Lists.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
-        public void Remove(int id)
+        public IOperationResult Remove(int id)
         {
-            var model = db.SingleById<ListEntity>(id);
-            if (model is null || model.UserId != environment.UserId)
+            var model = db.Lists.Where(i => i.Id == id).Single();
+            if (model is null || model.UserId != client.UserId)
             {
-                throw new Exception("书单不存在");
+                return OperationResult.Fail("书单不存在");
             }
-            db.DeleteById<ListEntity>(id);
-            db.DeleteWhere<ListItemEntity>("list_id=@0", id);
+            db.Lists.Remove(model);
+            db.ListItems.Where(i => i.ListId == id).ExecuteDelete();
+            db.SaveChanges();
+            return OperationResult.Ok();
         }
 
-        public ListEntity Collect(int id)
+        public IOperationResult<ListModel> Collect(int id)
         {
-            var model = db.SingleById<ListModel>(id);
-            if (model is null)
+            var entity = db.Lists.Where(i => i.Id == id).Single();
+            
+            if (entity is null)
             {
-                throw new Exception("书单不存在");
+                return OperationResult<ListModel>.Fail("书单不存在");
             }
+            var model = entity.CopyTo<ListModel>();
             var res = bookStore.Log().ToggleLog(BookRepository.LOG_TYPE_LIST,
                 BookRepository.LOG_ACTION_COLLECT, id);
             if (res > 0)
@@ -156,16 +157,18 @@ namespace NetDream.Modules.Book.Repositories
                 model.CollectCount--;
                 model.IsCollected = false;
             }
-            db.UpdateWhere<ListEntity>("collect_count=@0", "id=@1", model.CollectCount, id);
-            return model;
+            entity.CollectCount = model.CollectCount;
+            db.Lists.Save(entity);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
-        public AgreeResult Agree(int id)
+        public IOperationResult<AgreeResult> Agree(int id)
         {
-            var model = db.SingleById<ListItemEntity>(id);
+            var model = db.ListItems.Where(i => i.Id == id).Single();
             if (model is null)
             {
-                throw new Exception("书单不存在");
+                return OperationResult<AgreeResult>.Fail("书单不存在");
             }
             var res = bookStore.Log().ToggleLog(BookRepository.LOG_TYPE_LIST,
                 BookRepository.LOG_ACTION_AGREE, id,
@@ -189,17 +192,19 @@ namespace NetDream.Modules.Book.Repositories
                 data.AgreeCount++;
                 data.AgreeType = 1;
             }
-            db.UpdateWhere<ListItemEntity>("agree_count=@0, disagree_count=@1", "id=@2",
-                data.AgreeCount, data.DisagreeCount, model.Id);
-            return data;
+            db.ListItems.Where(i => i.Id == model.Id)
+                .ExecuteUpdate(setters => setters
+                .SetProperty(i => i.AgreeCount, data.AgreeCount)
+                .SetProperty(i => i.DisagreeCount, data.DisagreeCount));
+            return OperationResult.Ok(data);
         }
 
-        public AgreeResult Disagree(int id)
+        public IOperationResult<AgreeResult> Disagree(int id)
         {
-            var model = db.SingleById<ListItemEntity>(id);
+            var model = db.ListItems.Where(i => i.Id == id).Single();
             if (model is null)
             {
-                throw new Exception("书单不存在");
+                return OperationResult<AgreeResult>.Fail("书单不存在");
             }
             var res = bookStore.Log().ToggleLog(BookRepository.LOG_TYPE_LIST,
                 BookRepository.LOG_ACTION_DISAGREE, id,
@@ -223,9 +228,11 @@ namespace NetDream.Modules.Book.Repositories
                 data.DisagreeCount++;
                 data.AgreeType = 2;
             }
-            db.UpdateWhere<ListItemEntity>("agree_count=@0, disagree_count=@1", "id=@2",
-                data.AgreeCount, data.DisagreeCount, model.Id);
-            return data;
+            db.ListItems.Where(i => i.Id == model.Id)
+                   .ExecuteUpdate(setters => setters
+                   .SetProperty(i => i.AgreeCount, data.AgreeCount)
+                   .SetProperty(i => i.DisagreeCount, data.DisagreeCount));
+            return OperationResult.Ok(data);
         }
 
     }

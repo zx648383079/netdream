@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Book.Entities
 {
     
-    public class RoleRelationEntity
+    public class RoleRelationEntity: IIdEntity
     {
         
         public int Id { get; set; }

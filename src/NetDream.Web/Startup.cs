@@ -21,10 +21,13 @@ using NetDream.Web.Base.Http;
 using NetDream.Web.Base.Middleware;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using NPoco;
 using System;
 using System.IO;
 using NetDream.Shared.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using MySqlConnector;
+using System.Data.Common;
 
 namespace NetDream.Web
 {
@@ -60,10 +63,6 @@ namespace NetDream.Web
             {
                 options.EnableEndpointRouting = false;
             });
-            services.AddScoped<IDatabase>(x =>
-            {
-                return new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance);
-            });
             services.AddSession(options =>
             {
                 options.Cookie.Name = ".zodream.session";
@@ -77,11 +76,9 @@ namespace NetDream.Web
                     o.AccessDeniedPath = new PathString("/Home/Error");     //禁止访问路径：当用户试图访问资源时，但未通过该资源的任何授权策略，请求将被重定向到这个相对路径。
                     o.SlidingExpiration = true; //Cookie可以分为永久性的和临时性的。 临时性的是指只在当前浏览器进程里有效，浏览器一旦关闭就失效（被浏览器删除）。 永久性的是指Cookie指定了一个过期时间，在这个时间到达之前，此cookie一直有效（浏览器一直记录着此cookie的存在）。 slidingExpriation的作用是，指示浏览器把cookie作为永久性cookie存储，但是会自动更改过期时间，以使用户不会在登录后并一直活动，但是一段时间后却自动注销。也就是说，你10点登录了，服务器端设置的TimeOut为30分钟，如果slidingExpriation为false,那么10: 30以后，你就必须重新登录。如果为true的话，你10: 16分时打开了一个新页面，服务器就会通知浏览器，把过期时间修改为10: 46。
                 });
-            using (var db = new Database(Configuration.GetConnectionString("Default"), DatabaseType.MySQL, MySql.Data.MySqlClient.MySqlClientFactory.Instance))
-            {
-                RegisterGlobeRepositories(db, services);
-            } 
-            RegisterRepositories(services);
+            #region db
+            RegisterDbContext(services);
+            #endregion
             // 本地化
             services.Configure<RequestLocalizationOptions>(options => {
                 options.SetDefaultCulture(_supportedCultures[0])
@@ -158,10 +155,36 @@ namespace NetDream.Web
             });
         }
 
-        private void RegisterGlobeRepositories(IDatabase db, IServiceCollection services)
+
+        private void RegisterDbContext(IServiceCollection services)
+        {
+            var connectString = Configuration.GetConnectionString("Default") ?? string.Empty;
+#if DEBUG
+            services.AddTransient<DbConnection>(_ => {
+                var db = new MySqlConnection(connectString);
+                db.Open();
+                return db;
+            });
+#endif
+            var serverVersion = ServerVersion.AutoDetect(connectString); //new MySqlServerVersion(new Version(8, 0, 29));
+            services.AddDbContext<AuthContext>(
+                options => options.UseMySql(connectString, serverVersion)
+#if DEBUG
+                .LogTo(Console.WriteLine, LogLevel.Information)
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors()
+#endif
+            );
+            var contextOptions = new DbContextOptionsBuilder<SEOContext>().UseMySql(connectString, serverVersion)
+                .Options;
+            RegisterGlobeRepositories(services, contextOptions);
+            RegisterRepositories(services);
+        }
+
+        private void RegisterGlobeRepositories(IServiceCollection services, DbContextOptions<SEOContext> options)
         {
             services.AddSingleton(_environment);
-            services.ProvideSEORepositories(db);
+            services.ProvideSEORepositories(options);
             services.AddHttpContextAccessor();
             services.AddScoped<IClientContext, ClientContext>();
         }
