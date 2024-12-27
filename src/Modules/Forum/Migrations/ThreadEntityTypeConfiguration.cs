@@ -9,7 +9,7 @@ namespace NetDream.Modules.Forum.Migrations
         public void Configure(EntityTypeBuilder<ThreadEntity> builder)
         {
             builder.ToTable("bbs_thread", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.ForumId).HasColumnName("forum_id");
             builder.Property(table => table.ClassifyId).HasColumnName("classify_id").HasDefaultValue(0);

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace NetDream.Shared.Converters
 {
-    internal partial class TimestampConverter : JsonConverter<int>
+    public partial class TimestampConverter : JsonConverter<int>
     {
         public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

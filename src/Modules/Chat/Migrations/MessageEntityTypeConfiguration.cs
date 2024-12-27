@@ -9,7 +9,7 @@ namespace NetDream.Modules.Chat.Migrations
         public void Configure(EntityTypeBuilder<MessageEntity> builder)
         {
             builder.ToTable("chat_message", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(2).HasDefaultValue(0);
             builder.Property(table => table.Content).HasColumnName("content").HasMaxLength(400).HasComment("ÄÚÈİ");

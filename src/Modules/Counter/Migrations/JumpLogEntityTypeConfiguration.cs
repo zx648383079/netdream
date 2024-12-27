@@ -9,7 +9,7 @@ namespace NetDream.Modules.Counter.Migrations
         public void Configure(EntityTypeBuilder<JumpLogEntity> builder)
         {
             builder.ToTable("ctr_jump_log", table => table.HasComment("Ò³ÃæÌø³ö¼ÇÂ¼"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Referrer).HasColumnName("referrer").HasDefaultValue(string.Empty);
             builder.Property(table => table.Url).HasColumnName("url");

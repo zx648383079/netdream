@@ -9,7 +9,6 @@ namespace NetDream.Shared.Providers.Migrations
         public void Configure(EntityTypeBuilder<TagLinkEntity> builder)
         {
             builder.ToTable(prefix + "_tag_link", table => table.HasComment("±êÇ©¹ØÁª"));
-            builder.HasKey("id");
             builder.Property(table => table.TagId).HasColumnName("tag_id");
             builder.Property(table => table.TargetId).HasColumnName("target_id");
         }

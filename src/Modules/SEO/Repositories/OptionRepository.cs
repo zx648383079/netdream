@@ -13,7 +13,8 @@ namespace NetDream.Modules.SEO.Repositories
         public GlobeOption LoadOption()
         {
             var data = new GlobeOption();
-            var items = db.Options.Where(item => string.IsNullOrWhiteSpace(item.Code));
+            var items = db.Options.Where(item => !string.IsNullOrEmpty(item.Code))
+                .ToArray();
             foreach (var item in items)
             {
                 var val = FormatOptionValue(item);

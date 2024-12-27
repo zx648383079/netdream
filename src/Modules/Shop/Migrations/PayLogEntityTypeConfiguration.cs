@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<PayLogEntity> builder)
         {
             builder.ToTable("PayLog", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.PaymentId).HasColumnName("payment_id");
             builder.Property(table => table.PaymentName).HasColumnName("payment_name").HasMaxLength(30).HasDefaultValue(string.Empty);

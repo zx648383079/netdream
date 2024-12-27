@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<AdEntity> builder)
         {
             builder.ToTable("Ad", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
         }
     }
 }

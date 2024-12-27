@@ -9,7 +9,7 @@ namespace NetDream.Modules.Navigation.Migrations
         public void Configure(EntityTypeBuilder<CategoryEntity> builder)
         {
             builder.ToTable("search_category", table => table.HasComment("站点分类表"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(30);
             builder.Property(table => table.Icon).HasColumnName("icon").HasDefaultValue(string.Empty);

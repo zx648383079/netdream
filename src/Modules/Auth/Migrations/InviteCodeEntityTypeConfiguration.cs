@@ -10,7 +10,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<InviteCodeEntity> builder)
         {
             builder.ToTable("user_invite_code", table => table.HasComment("ÑûÇëÂëÉú³É"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(1).HasDefaultValue(InviteRepository.TYPE_CODE);
             builder.Property(table => table.UserId).HasColumnName("user_id").HasDefaultValue(0);

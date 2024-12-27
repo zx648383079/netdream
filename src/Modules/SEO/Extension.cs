@@ -11,9 +11,11 @@ namespace NetDream.Modules.SEO
     {
         public static void ProvideSEORepositories(this IServiceCollection service, DbContextOptions<SEOContext> options)
         {
-            using var context = new SEOContext(options);
-            var option = new OptionRepository(context);
-            service.AddSingleton(typeof(IGlobeOption), option.LoadOption());
+            using (var context = new SEOContext(options))
+            {
+                var option = new OptionRepository(context);
+                service.AddSingleton(typeof(IGlobeOption), option.LoadOption());
+            }
             service.AddScoped<OptionRepository>();
             service.AddScoped<LocalizeRepository>();
             service.AddScoped<IDeeplink, Deeplink>();

@@ -9,5 +9,7 @@ namespace NetDream.Modules.Book.Entities
         
         public int Id { get; set; }
         public string Content { get; set; } = string.Empty;
+
+        public ChapterEntity? Chapter { get; set; }
     }
 }

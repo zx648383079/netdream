@@ -9,7 +9,7 @@ namespace NetDream.Modules.OnlineDisk.Migrations
         public void Configure(EntityTypeBuilder<FileEntity> builder)
         {
             builder.ToTable("disk_file", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100);
             builder.Property(table => table.Extension).HasColumnName("extension").HasMaxLength(20);

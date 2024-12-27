@@ -9,7 +9,7 @@ namespace NetDream.Modules.OpenPlatform.Migrations
         public void Configure(EntityTypeBuilder<UserTokenEntity> builder)
         {
             builder.ToTable("open_user_token", table => table.HasComment("用户授权平台令牌"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.PlatformId).HasColumnName("platform_id");

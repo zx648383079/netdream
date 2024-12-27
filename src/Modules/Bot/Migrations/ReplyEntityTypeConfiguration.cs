@@ -9,7 +9,7 @@ namespace NetDream.Modules.Bot.Migrations
         public void Configure(EntityTypeBuilder<ReplyEntity> builder)
         {
             builder.ToTable("bot_reply", table => table.HasComment("微信回复"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.BotId).HasColumnName("bot_id").HasComment("所属微信公众号ID");
             builder.Property(table => table.Event).HasColumnName("event").HasMaxLength(20).HasComment("事件");

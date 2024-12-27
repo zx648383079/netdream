@@ -10,7 +10,7 @@ namespace NetDream.Modules.CMS.Migrations
         public void Configure(EntityTypeBuilder<SiteEntity> builder)
         {
             builder.ToTable("Site", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Title).HasColumnName("title");
             builder.Property(table => table.Keywords).HasColumnName("keywords").HasDefaultValue(string.Empty);

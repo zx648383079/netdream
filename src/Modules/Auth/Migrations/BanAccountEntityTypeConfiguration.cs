@@ -9,7 +9,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<BanAccountEntity> builder)
         {
             builder.ToTable("user_ban_account", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id").HasDefaultValue(0);
             builder.Property(table => table.ItemKey).HasColumnName("item_key").HasMaxLength(100);

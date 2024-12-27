@@ -9,7 +9,7 @@ namespace NetDream.Modules.Trade.Migrations
         public void Configure(EntityTypeBuilder<RefundEntity> builder)
         {
             builder.ToTable("trade_refund", table => table.HasComment("支付退款系统"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.TradeId).HasColumnName("trade_id");
             builder.Property(table => table.OutRequestNo).HasColumnName("out_request_no").HasMaxLength(64).HasComment("标识一次退款请求，同一笔交易多次退款需要保证唯一，如需部分退款，则此参数必传");

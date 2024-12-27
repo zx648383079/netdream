@@ -10,7 +10,7 @@ namespace NetDream.Modules.AdSense.Migrations
         public void Configure(EntityTypeBuilder<AdEntity> builder)
         {
             builder.ToTable("ad");
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(30);
             builder.Property(table => table.PositionId).HasColumnName("position_id");

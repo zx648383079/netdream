@@ -9,7 +9,7 @@ namespace NetDream.Modules.Bot.Migrations
         public void Configure(EntityTypeBuilder<MenuEntity> builder)
         {
             builder.ToTable("bot_menu", table => table.HasComment("微信菜单"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.BotId).HasColumnName("bot_id").HasComment("所属微信公众号ID");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100).HasComment("菜单名称");

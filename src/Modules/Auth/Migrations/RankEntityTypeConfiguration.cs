@@ -9,7 +9,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<RankEntity> builder)
         {
             builder.ToTable("rank", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
         }
     }
 }

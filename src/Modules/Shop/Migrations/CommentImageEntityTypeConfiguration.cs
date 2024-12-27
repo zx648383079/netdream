@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<CommentImageEntity> builder)
         {
             builder.ToTable("CommentImage", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.CommentId).HasColumnName("comment_id");
             builder.Property(table => table.Image).HasColumnName("image");

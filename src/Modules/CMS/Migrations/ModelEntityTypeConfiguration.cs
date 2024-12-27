@@ -9,7 +9,7 @@ namespace NetDream.Modules.CMS.Migrations
         public void Configure(EntityTypeBuilder<ModelEntity> builder)
         {
             builder.ToTable("Model", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100);
             builder.Property(table => table.Table).HasColumnName("table").HasMaxLength(100);

@@ -9,7 +9,7 @@ namespace NetDream.Shared.Providers.Migrations
         public void Configure(EntityTypeBuilder<FileQuoteEntity> builder)
         {
             builder.ToTable("base_file_quote", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.FileId).HasColumnName("file_id");
             builder.Property(table => table.ItemType).HasColumnName("item_type").HasMaxLength(1).HasDefaultValue(0);

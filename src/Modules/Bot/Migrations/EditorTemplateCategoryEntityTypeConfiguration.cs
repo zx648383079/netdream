@@ -9,7 +9,7 @@ namespace NetDream.Modules.Bot.Migrations
         public void Configure(EntityTypeBuilder<EditorTemplateCategoryEntity> builder)
         {
             builder.ToTable("bot_editor_template_category", table => table.HasComment("微信图文模板分类"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20).HasComment("模板标题");
             builder.Property(table => table.ParentId).HasColumnName("parent_id").HasDefaultValue(0);

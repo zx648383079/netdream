@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<AffiliateLogEntity> builder)
         {
             builder.ToTable("AffiliateLog", table => table.HasComment("用户分销记录表"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.ItemType).HasColumnName("item_type").HasMaxLength(1).HasDefaultValue(0).HasComment("类型: 0 用户 1 订单");

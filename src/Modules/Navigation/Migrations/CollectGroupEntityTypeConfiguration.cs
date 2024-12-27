@@ -9,7 +9,7 @@ namespace NetDream.Modules.Navigation.Migrations
         public void Configure(EntityTypeBuilder<CollectGroupEntity> builder)
         {
             builder.ToTable("search_collect_group", table => table.HasComment("收藏分组表"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20);
             builder.Property(table => table.UserId).HasColumnName("user_id").HasDefaultValue(0);

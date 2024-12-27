@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<InvoiceTitleEntity> builder)
         {
             builder.ToTable("InvoiceTitle", table => table.HasComment("用户发票抬头"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.TitleType).HasColumnName("title_type").HasMaxLength(1).HasDefaultValue(0).HasComment("发票抬头类型");
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(1).HasDefaultValue(0).HasComment("发票类型");

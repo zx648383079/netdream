@@ -1,4 +1,6 @@
+using NetDream.Shared.Converters;
 using NetDream.Shared.Interfaces.Entities;
+using System.Text.Json.Serialization;
 
 namespace NetDream.Modules.Contact.Entities
 {
@@ -15,9 +17,9 @@ namespace NetDream.Modules.Contact.Entities
         public int Status { get; set; }
         
         public int UserId { get; set; }
-        
+        [JsonConverter(typeof(TimestampConverter))]
         public int UpdatedAt { get; set; }
-        
+        [JsonConverter(typeof(TimestampConverter))]
         public int CreatedAt { get; set; }
     }
 }

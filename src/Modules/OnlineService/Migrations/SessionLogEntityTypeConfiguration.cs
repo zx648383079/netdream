@@ -9,7 +9,7 @@ namespace NetDream.Modules.OnlineService.Migrations
         public void Configure(EntityTypeBuilder<SessionLogEntity> builder)
         {
             builder.ToTable("service_session_log", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.SessionId).HasColumnName("session_id");

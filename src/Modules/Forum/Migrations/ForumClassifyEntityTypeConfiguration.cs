@@ -9,7 +9,7 @@ namespace NetDream.Modules.Forum.Migrations
         public void Configure(EntityTypeBuilder<ForumClassifyEntity> builder)
         {
             builder.ToTable("bbs_forum_classify", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20);
             builder.Property(table => table.Icon).HasColumnName("icon").HasMaxLength(100).HasDefaultValue(string.Empty);

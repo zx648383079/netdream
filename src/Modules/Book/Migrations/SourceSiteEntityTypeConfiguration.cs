@@ -9,7 +9,7 @@ namespace NetDream.Modules.Book.Migrations
         public void Configure(EntityTypeBuilder<SourceSiteEntity> builder)
         {
             builder.ToTable("book_source_site", table => table.HasComment("小说来源站点"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(30).HasComment("站点名");
             builder.Property(table => table.Url).HasColumnName("url").HasMaxLength(100).HasComment("网址");

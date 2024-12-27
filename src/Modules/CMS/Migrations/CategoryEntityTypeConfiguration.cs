@@ -9,7 +9,7 @@ namespace NetDream.Modules.CMS.Migrations
         public void Configure(EntityTypeBuilder<CategoryEntity> builder)
         {
             builder.ToTable("Category", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
         }
     }
 }

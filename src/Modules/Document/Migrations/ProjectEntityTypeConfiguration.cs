@@ -9,7 +9,7 @@ namespace NetDream.Modules.Document.Migrations
         public void Configure(EntityTypeBuilder<ProjectEntity> builder)
         {
             builder.ToTable("doc_project", table => table.HasComment("ÏîÄ¿±í"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.CatId).HasColumnName("cat_id").HasDefaultValue(0);

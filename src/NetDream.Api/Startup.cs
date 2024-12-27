@@ -162,18 +162,29 @@ namespace NetDream.Api
             });
 #endif
             var serverVersion = ServerVersion.AutoDetect(connectString); //new MySqlServerVersion(new Version(8, 0, 29));
-            services.AddDbContext<AuthContext>(
-                options => options.UseMySql(connectString, serverVersion)
-#if DEBUG
-                .LogTo(Console.WriteLine, LogLevel.Information)
-                .EnableSensitiveDataLogging()
-                .EnableDetailedErrors()
-#endif
-            );
+            AddContext<AuthContext>(services, connectString, serverVersion);
+            AddContext<SEOContext>(services, connectString, serverVersion);
+            AddContext<BlogContext>(services, connectString, serverVersion);
+            AddContext<ContactContext>(services, connectString, serverVersion);
+            AddContext<OpenContext>(services, connectString, serverVersion);
+            AddContext<NoteContext>(services, connectString, serverVersion);
             var contextOptions = new DbContextOptionsBuilder<SEOContext>().UseMySql(connectString, serverVersion)
                 .Options;
             RegisterGlobeRepositories(services, contextOptions);
             RegisterRepositories(services);
+        }
+
+        private static void AddContext<TContext>(IServiceCollection services, string connectString, ServerVersion serverVersion)
+            where TContext : DbContext
+        {
+            services.AddDbContext<TContext>(
+                            options => options.UseMySql(connectString, serverVersion)
+#if DEBUG
+                            .LogTo(Console.WriteLine, LogLevel.Information)
+                            .EnableSensitiveDataLogging()
+                            .EnableDetailedErrors()
+#endif
+                        );
         }
 
         private void RegisterGlobeRepositories(IServiceCollection services, DbContextOptions<SEOContext> options)

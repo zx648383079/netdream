@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<WarehouseLogEntity> builder)
         {
             builder.ToTable("WarehouseLog", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.WarehouseId).HasColumnName("warehouse_id");
             builder.Property(table => table.UserId).HasColumnName("user_id");

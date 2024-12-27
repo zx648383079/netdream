@@ -9,7 +9,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<ApplyLogEntity> builder)
         {
             builder.ToTable("user_apply_log", table => table.HasComment("ÓÃ»§ÉêÇë¼ÇÂ¼"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(1).HasDefaultValue(0);

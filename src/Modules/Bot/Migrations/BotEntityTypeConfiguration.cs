@@ -10,7 +10,7 @@ namespace NetDream.Modules.Bot.Migrations
         public void Configure(EntityTypeBuilder<BotEntity> builder)
         {
             builder.ToTable("bot", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.PlatformType).HasColumnName("platform_type").HasMaxLength(1)

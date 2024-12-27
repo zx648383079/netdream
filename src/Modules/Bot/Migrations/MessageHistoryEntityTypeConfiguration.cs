@@ -9,7 +9,7 @@ namespace NetDream.Modules.Bot.Migrations
         public void Configure(EntityTypeBuilder<MessageHistoryEntity> builder)
         {
             builder.ToTable("bot_message_history", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.BotId).HasColumnName("bot_id").HasComment("所属微信公众号ID");
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(1).HasDefaultValue(0).HasComment("消息类型");

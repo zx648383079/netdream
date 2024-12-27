@@ -9,7 +9,7 @@ namespace NetDream.Modules.Document.Migrations
         public void Configure(EntityTypeBuilder<PageEntity> builder)
         {
             builder.ToTable("doc_page", table => table.HasComment("项目普通文档页"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(35).HasComment("文档");
             builder.Property(table => table.ProjectId).HasColumnName("project_id").HasComment("项目");

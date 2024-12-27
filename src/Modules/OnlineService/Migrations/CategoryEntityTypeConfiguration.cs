@@ -9,7 +9,7 @@ namespace NetDream.Modules.OnlineService.Migrations
         public void Configure(EntityTypeBuilder<CategoryEntity> builder)
         {
             builder.ToTable("service_category", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name");
 

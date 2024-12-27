@@ -9,7 +9,7 @@ namespace NetDream.Modules.Navigation.Migrations
         public void Configure(EntityTypeBuilder<SiteEntity> builder)
         {
             builder.ToTable("search_site", table => table.HasComment("Õ¾µã±í"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Schema).HasColumnName("schema").HasMaxLength(10).HasDefaultValue("https");
             builder.Property(table => table.Domain).HasColumnName("domain").HasMaxLength(100);

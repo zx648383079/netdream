@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<CertificationEntity> builder)
         {
             builder.ToTable("Certification", table => table.HasComment("用户实名表"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20).HasComment("真实姓名");

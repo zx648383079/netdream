@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<CouponLogEntity> builder)
         {
             builder.ToTable("CouponLog", table => table.HasComment("ÓÅ»ÝÈ¯¼ÇÂ¼"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.CouponId).HasColumnName("coupon_id");
             builder.Property(table => table.SerialNumber).HasColumnName("serial_number").HasMaxLength(30).HasDefaultValue(string.Empty);

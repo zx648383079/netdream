@@ -9,7 +9,7 @@ namespace NetDream.Modules.Contact.Migrations
         public void Configure(EntityTypeBuilder<ReportEntity> builder)
         {
             builder.ToTable("cif_report", table => table.HasComment("举报和投诉"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Email).HasColumnName("email").HasMaxLength(50).HasDefaultValue(string.Empty);
             builder.Property(table => table.ItemType).HasColumnName("item_type").HasMaxLength(1).HasDefaultValue(0);

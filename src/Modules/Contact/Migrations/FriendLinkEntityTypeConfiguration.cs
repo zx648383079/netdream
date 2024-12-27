@@ -9,7 +9,7 @@ namespace NetDream.Modules.Contact.Migrations
         public void Configure(EntityTypeBuilder<FriendLinkEntity> builder)
         {
             builder.ToTable("cif_friend_link", table => table.HasComment("ÓÑÇéÁ´½Ó"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20);
             builder.Property(table => table.Url).HasColumnName("url").HasMaxLength(50);

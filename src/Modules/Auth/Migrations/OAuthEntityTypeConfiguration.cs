@@ -10,7 +10,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<OauthEntity> builder)
         {
             builder.ToTable("user_oauth");
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.PlatformId).HasColumnName("platform_id").HasDefaultValue(0).HasComment("ƽ̨id");

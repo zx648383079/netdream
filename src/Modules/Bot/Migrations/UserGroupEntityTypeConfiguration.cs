@@ -9,7 +9,7 @@ namespace NetDream.Modules.Bot.Migrations
         public void Configure(EntityTypeBuilder<UserGroupEntity> builder)
         {
             builder.ToTable("bot_user_group", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id").HasComment("分组");
             builder.Property(table => table.BotId).HasColumnName("bot_id").HasComment("所属微信公众号ID");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20).HasComment("名称");

@@ -9,7 +9,7 @@ namespace NetDream.Modules.Chat.Migrations
         public void Configure(EntityTypeBuilder<GroupUserEntity> builder)
         {
             builder.ToTable("chat_group_user", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.GroupId).HasColumnName("group_id").HasComment("»∫");
             builder.Property(table => table.UserId).HasColumnName("user_id").HasComment("”√ªß");

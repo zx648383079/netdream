@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<OrderEntity> builder)
         {
             builder.ToTable("Order", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.SeriesNumber).HasColumnName("series_number").HasMaxLength(100);
             builder.Property(table => table.UserId).HasColumnName("user_id");

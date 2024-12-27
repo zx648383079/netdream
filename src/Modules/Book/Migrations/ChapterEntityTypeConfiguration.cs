@@ -10,7 +10,7 @@ namespace NetDream.Modules.Book.Migrations
         public void Configure(EntityTypeBuilder<ChapterEntity> builder)
         {
             builder.ToTable("book_chapter", table => table.HasComment("小说章节"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.BookId).HasColumnName("book_id");
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(1).HasDefaultValue(ChapterRepository.TYPE_FREE_CHAPTER).HasComment("章节类型，是分卷还是章节");
@@ -24,6 +24,9 @@ namespace NetDream.Modules.Book.Migrations
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
 
+            builder.HasOne(i => i.Body)
+                .WithOne(p => p.Chapter)
+                .HasForeignKey<ChapterEntity>();
         }
     }
 }

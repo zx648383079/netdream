@@ -9,7 +9,7 @@ namespace NetDream.Modules.Navigation.Migrations
         public void Configure(EntityTypeBuilder<PageEntity> builder)
         {
             builder.ToTable("search_page", table => table.HasComment("ÍøÒ³±í"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Title).HasColumnName("title").HasMaxLength(30);
             builder.Property(table => table.Description).HasColumnName("description").HasDefaultValue(string.Empty);

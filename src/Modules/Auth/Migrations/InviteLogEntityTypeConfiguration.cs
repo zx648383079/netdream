@@ -9,7 +9,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<InviteLogEntity> builder)
         {
             builder.ToTable("user_invite_log", table => table.HasComment("ÑûÇë¼ÇÂ¼"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.ParentId).HasColumnName("parent_id").HasDefaultValue(0);

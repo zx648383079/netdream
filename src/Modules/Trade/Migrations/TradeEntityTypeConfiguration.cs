@@ -9,7 +9,7 @@ namespace NetDream.Modules.Trade.Migrations
         public void Configure(EntityTypeBuilder<TradeEntity> builder)
         {
             builder.ToTable("trade", table => table.HasComment("支付系统"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.OpenId).HasColumnName("open_id");
             builder.Property(table => table.BuyerId).HasColumnName("buyer_id").HasComment("买家");

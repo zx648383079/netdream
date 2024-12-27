@@ -9,7 +9,7 @@ namespace NetDream.Modules.SEO.Migrations
         public void Configure(EntityTypeBuilder<BlackWordEntity> builder)
         {
             builder.ToTable("seo_black_word", table => table.HasComment("Î¥½û´Ê"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Words).HasColumnName("words");
             builder.Property(table => table.ReplaceWords).HasColumnName("replace_words").HasDefaultValue(string.Empty);

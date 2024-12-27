@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<ArticleCategoryEntity> builder)
         {
             builder.ToTable("ArticleCategory", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100).HasComment("文章分类名");
             builder.Property(table => table.Keywords).HasColumnName("keywords").HasMaxLength(200).HasDefaultValue(string.Empty).HasComment("关键字");

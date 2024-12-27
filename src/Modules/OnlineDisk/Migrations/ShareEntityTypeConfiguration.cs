@@ -10,7 +10,7 @@ namespace NetDream.Modules.OnlineDisk.Migrations
         public void Configure(EntityTypeBuilder<ShareEntity> builder)
         {
             builder.ToTable("disk_share", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100);
             builder.Property(table => table.Mode).HasColumnName("mode").HasMaxLength(2).HasDefaultValue(DiskRepository.SHARE_PUBLIC);

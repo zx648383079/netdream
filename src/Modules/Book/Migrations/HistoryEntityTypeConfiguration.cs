@@ -9,7 +9,7 @@ namespace NetDream.Modules.Book.Migrations
         public void Configure(EntityTypeBuilder<HistoryEntity> builder)
         {
             builder.ToTable("book_history", table => table.HasComment("小说阅读历史"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.BookId).HasColumnName("book_id");

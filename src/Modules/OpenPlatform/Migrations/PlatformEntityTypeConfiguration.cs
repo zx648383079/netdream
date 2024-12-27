@@ -9,14 +9,14 @@ namespace NetDream.Modules.OpenPlatform.Migrations
         public void Configure(EntityTypeBuilder<PlatformEntity> builder)
         {
             builder.ToTable("open_platform", table => table.HasComment("第三方授权信息"));
-            builder.HasKey("id");
+            builder.HasKey(table => table.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20);
             builder.Property(table => table.Description).HasColumnName("description").HasDefaultValue(string.Empty).HasComment("说明");
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(1).HasDefaultValue(0);
             builder.Property(table => table.Domain).HasColumnName("domain").HasMaxLength(50);
-            builder.HasIndex("appid").IsUnique();
+            builder.HasIndex(table => table.Appid).IsUnique();
             builder.Property(table => table.Appid).HasColumnName("appid").HasMaxLength(12);
             builder.Property(table => table.Secret).HasColumnName("secret").HasMaxLength(32);
             builder.Property(table => table.SignType).HasColumnName("sign_type").HasMaxLength(1).HasDefaultValue(0).HasComment("签名方式");

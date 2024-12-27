@@ -9,7 +9,7 @@ namespace NetDream.Shared.Providers.Migrations
         public void Configure(EntityTypeBuilder<TagEntity> builder)
         {
             builder.ToTable(prefix + "_tag", table => table.HasComment("±êÇ©"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20);
         }

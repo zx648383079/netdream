@@ -9,7 +9,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<UserEquityCardEntity> builder)
         {
             builder.ToTable("user_equity_card", table => table.HasComment("用户的权益卡"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.CardId).HasColumnName("card_id");

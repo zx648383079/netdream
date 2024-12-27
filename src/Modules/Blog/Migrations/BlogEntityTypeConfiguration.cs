@@ -10,7 +10,7 @@ namespace NetDream.Modules.Blog.Migrations
         public void Configure(EntityTypeBuilder<BlogEntity> builder)
         {
             builder.ToTable("blog", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Title).HasColumnName("title").HasMaxLength(200);
             builder.Property(table => table.Description).HasColumnName("description").HasDefaultValue(string.Empty);

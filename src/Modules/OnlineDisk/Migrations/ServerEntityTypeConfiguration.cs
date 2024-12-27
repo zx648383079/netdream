@@ -9,7 +9,7 @@ namespace NetDream.Modules.OnlineDisk.Migrations
         public void Configure(EntityTypeBuilder<ServerEntity> builder)
         {
             builder.ToTable("disk_server", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Token).HasColumnName("token");
             builder.Property(table => table.Ip).HasColumnName("ip").HasMaxLength(120);

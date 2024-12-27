@@ -9,7 +9,7 @@ namespace NetDream.Modules.Document.Migrations
         public void Configure(EntityTypeBuilder<ApiEntity> builder)
         {
             builder.ToTable("doc_api", table => table.HasComment("项目接口表"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(35).HasComment("接口名");
             builder.Property(table => table.Type).HasColumnName("type").HasDefaultValue(0).HasComment("是否有内容,0为有内容");

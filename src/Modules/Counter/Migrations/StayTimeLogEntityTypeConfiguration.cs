@@ -9,7 +9,7 @@ namespace NetDream.Modules.Counter.Migrations
         public void Configure(EntityTypeBuilder<StayTimeLogEntity> builder)
         {
             builder.ToTable("ctr_stay_time_log", table => table.HasComment("Ò³ÃæÍ£ÁôÊ±¼ä"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Url).HasColumnName("url");
             builder.Property(table => table.Ip).HasColumnName("ip").HasMaxLength(120);

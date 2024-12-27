@@ -9,7 +9,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<EquityCardEntity> builder)
         {
             builder.ToTable("equity_card", table => table.HasComment("有期限的权益卡"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(32);
             builder.Property(table => table.Icon).HasColumnName("icon");

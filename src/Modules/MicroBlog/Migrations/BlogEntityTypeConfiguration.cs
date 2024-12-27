@@ -9,7 +9,7 @@ namespace NetDream.Modules.MicroBlog.Migrations
         public void Configure(EntityTypeBuilder<BlogEntity> builder)
         {
             builder.ToTable("micro_blog", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.Content).HasColumnName("content").HasMaxLength(140);

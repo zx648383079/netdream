@@ -9,7 +9,7 @@ namespace NetDream.Modules.SEO.Migrations
         public void Configure(EntityTypeBuilder<EmojiEntity> builder)
         {
             builder.ToTable("seo_emoji", table => table.HasComment("ฑํว้"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.CatId).HasColumnName("cat_id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(30);

@@ -9,7 +9,7 @@ namespace NetDream.Modules.Counter.Migrations
         public void Configure(EntityTypeBuilder<LogEntity> builder)
         {
             builder.ToTable("ctr_log", table => table.HasComment("·ÃÎÊ¼ÇÂ¼"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Ip).HasColumnName("ip").HasMaxLength(120);
             builder.Property(table => table.Browser).HasColumnName("browser").HasMaxLength(40).HasDefaultValue(string.Empty).HasComment("ä¯ÀÀÆ÷");

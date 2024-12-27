@@ -10,7 +10,7 @@ namespace NetDream.Modules.MessageService.Migrations
         public void Configure(EntityTypeBuilder<TemplateEntity> builder)
         {
             builder.ToTable("ms_template", table => table.HasComment("消息模板"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Title).HasColumnName("title").HasMaxLength(100).HasComment("标题");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(20).HasComment("调用代码");

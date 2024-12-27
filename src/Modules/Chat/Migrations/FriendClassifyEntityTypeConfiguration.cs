@@ -9,7 +9,7 @@ namespace NetDream.Modules.Chat.Migrations
         public void Configure(EntityTypeBuilder<FriendClassifyEntity> builder)
         {
             builder.ToTable("chat_friend_classify", table => table.HasComment(""));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100).HasComment("分组名");
             builder.Property(table => table.UserId).HasColumnName("user_id").HasComment("用户");

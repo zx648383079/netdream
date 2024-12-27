@@ -9,7 +9,7 @@ namespace NetDream.Modules.Book.Migrations
         public void Configure(EntityTypeBuilder<ChapterBodyEntity> builder)
         {
             builder.ToTable("book_chapter_body", table => table.HasComment("小说章节内容"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Content).HasColumnName("content").HasComment("内容");
         }

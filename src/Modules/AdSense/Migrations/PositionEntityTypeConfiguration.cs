@@ -9,8 +9,8 @@ namespace NetDream.Modules.AdSense.Migrations
         public void Configure(EntityTypeBuilder<PositionEntity> builder)
         {
             builder.ToTable("ad_position");
-            builder.HasKey("id");
-            builder.HasIndex("code").IsUnique();
+            builder.HasKey(i => i.Id);
+            builder.HasIndex(table => table.Code).IsUnique();
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(30);
             builder.Property(table => table.Code).HasColumnName("code").HasMaxLength(20).HasComment("调用广告位的代码");

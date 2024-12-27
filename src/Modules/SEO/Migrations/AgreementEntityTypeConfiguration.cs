@@ -9,7 +9,7 @@ namespace NetDream.Modules.SEO.Migrations
         public void Configure(EntityTypeBuilder<AgreementEntity> builder)
         {
             builder.ToTable("seo_agreement", table => table.HasComment("服务协议"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(50);
             builder.Property(table => table.Title).HasColumnName("title").HasMaxLength(100);

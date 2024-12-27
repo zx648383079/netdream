@@ -9,7 +9,7 @@ namespace NetDream.Modules.Counter.Migrations
         public void Configure(EntityTypeBuilder<ClickLogEntity> builder)
         {
             builder.ToTable("ctr_click_log", table => table.HasComment("Ò³Ãæµã»÷¼ÇÂ¼"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Url).HasColumnName("url");
             builder.Property(table => table.Ip).HasColumnName("ip").HasMaxLength(120);

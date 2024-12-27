@@ -9,7 +9,7 @@ namespace NetDream.Modules.Document.Migrations
         public void Configure(EntityTypeBuilder<FieldEntity> builder)
         {
             builder.ToTable("doc_field", table => table.HasComment("项目字段表"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(50).HasComment("接口名称");
             builder.Property(table => table.Title).HasColumnName("title").HasMaxLength(50).HasDefaultValue(string.Empty).HasComment("接口标题");

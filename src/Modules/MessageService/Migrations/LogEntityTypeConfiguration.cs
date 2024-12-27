@@ -10,7 +10,7 @@ namespace NetDream.Modules.MessageService.Migrations
         public void Configure(EntityTypeBuilder<LogEntity> builder)
         {
             builder.ToTable("ms_log", table => table.HasComment("短信发送记录"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.TemplateId).HasColumnName("template_id").HasDefaultValue(0).HasComment("模板id");
             builder.Property(table => table.TargetType).HasColumnName("target_type").HasMaxLength(1).HasComment("接受者类型");

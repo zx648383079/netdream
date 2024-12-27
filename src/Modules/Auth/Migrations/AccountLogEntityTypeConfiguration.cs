@@ -9,7 +9,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<AccountLogEntity> builder)
         {
             builder.ToTable("user_account_log", table => table.HasComment("账户资金变动表"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id").HasDefaultValue(0);
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(1).HasDefaultValue(99);

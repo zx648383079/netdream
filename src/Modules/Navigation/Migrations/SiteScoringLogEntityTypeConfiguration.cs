@@ -9,7 +9,7 @@ namespace NetDream.Modules.Navigation.Migrations
         public void Configure(EntityTypeBuilder<SiteScoringLogEntity> builder)
         {
             builder.ToTable("search_site_scoring_log", table => table.HasComment("站点评分记录表"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.SiteId).HasColumnName("site_id");
             builder.Property(table => table.UserId).HasColumnName("user_id");

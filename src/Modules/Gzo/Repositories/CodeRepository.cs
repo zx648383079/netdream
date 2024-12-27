@@ -213,7 +213,7 @@ namespace NetDream.Modules.Gzo.Repositories
                .AppendLine($"        public void Configure(EntityTypeBuilder<{item}Entity> builder)")
                .AppendLine("        {")
                .AppendLine($"            builder.ToTable(\"{item}\", table => table.HasComment(\"\"));")
-               .AppendLine($"            builder.HasKey(\"id\");")
+               .AppendLine($"            builder.HasKey(table => table.Id);")
                 .AppendLine("        }")
                 .AppendLine("    }")
                 .AppendLine("}");

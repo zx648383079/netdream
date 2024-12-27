@@ -9,7 +9,7 @@ namespace NetDream.Modules.Shop.Migrations
         public void Configure(EntityTypeBuilder<PluginEntity> builder)
         {
             builder.ToTable("Plugin", table => table.HasComment("插件列表及配置文件"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Code).HasColumnName("code").HasMaxLength(20).HasComment("插件别名");
             builder.Property(table => table.Setting).HasColumnName("setting").HasComment("配置信息");

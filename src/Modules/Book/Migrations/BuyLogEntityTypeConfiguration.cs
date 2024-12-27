@@ -9,7 +9,7 @@ namespace NetDream.Modules.Book.Migrations
         public void Configure(EntityTypeBuilder<BuyLogEntity> builder)
         {
             builder.ToTable("book_buy_log", table => table.HasComment("Ð¡Ëµ¹ºÂò¼ÇÂ¼"));
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.BookId).HasColumnName("book_id");
             builder.Property(table => table.ChapterId).HasColumnName("chapter_id");

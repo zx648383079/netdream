@@ -9,9 +9,9 @@ namespace NetDream.Modules.Book.Migrations
         public void Configure(EntityTypeBuilder<CategoryEntity> builder)
         {
             builder.ToTable("book_category", table => table.HasComment("小说分类"));
-            builder.HasKey("id");
+            builder.HasKey(table => table.Id);
             builder.Property(table => table.Id).HasColumnName("id");
-            builder.HasIndex("name").IsUnique();
+            builder.HasIndex(table => table.Name).IsUnique();
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100).HasComment("分类名");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
 

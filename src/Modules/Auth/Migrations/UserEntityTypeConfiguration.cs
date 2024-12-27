@@ -12,7 +12,7 @@ namespace NetDream.Modules.Auth.Migrations
         public void Configure(EntityTypeBuilder<UserEntity> builder)
         {
             builder.ToTable("User");
-            builder.HasKey("id");
+            builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100);
             builder.Property(table => table.Email).HasColumnName("email").HasMaxLength(200).HasDefaultValue(string.Empty);
