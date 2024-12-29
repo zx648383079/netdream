@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Contact.Entities;
 using NetDream.Modules.Contact.Forms;
+using NetDream.Modules.Contact.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Providers;
 using System.Linq;
@@ -11,9 +12,9 @@ namespace NetDream.Modules.Contact.Repositories
         IClientContext environment,
         ISystemBulletin bulletin)
     {
-        public FriendLinkEntity[] FriendLinks()
+        public FriendLink[] FriendLinks()
         {
-            return db.FriendLinks.Where(i => i.Status == 1).ToArray();
+            return db.FriendLinks.Where(i => i.Status == 1).Select(i => new FriendLink(i)).ToArray();
         }
 
         public FeedbackEntity SaveFeedback(FeedbackForm data)

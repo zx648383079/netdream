@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using NetDream.Api.Base.Http;
 using NetDream.Api.Models;
+using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Models;
+using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.OpenPlatform.Models;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,10 +18,20 @@ namespace NetDream.Api.Controllers.Auth
 {
     [ApiController]
     [Route("open/[controller]")]
-    public class AuthController(IOptions<JwtSettings> _jwtSettingsAccessor) : ControllerBase
+    public class AuthController(IOptions<JwtSettings> _jwtSettingsAccessor, AuthRepository repository) : JsonController
     {
         //获取JwtSettings对象信息
         private readonly JwtSettings _jwtSettings = _jwtSettingsAccessor.Value;
+
+        public IActionResult Login([FromBody] SignInForm form)
+        {
+            var res = repository.Login(form.GetContext());
+            if (res.Succeeded)
+            {
+                return Render(res.Result);
+            }
+            return RenderFailure(res.Message, res.FailureReason);
+        }
 
         [Authorize]
         [Route("get_user_info")]
@@ -33,10 +46,13 @@ namespace NetDream.Api.Controllers.Auth
             return Ok(user.Identity);
         }
 
+
+
         /// <summary>
         /// 获取 token
         /// </summary>
         /// <param name="user"></param>
+        [NonAction]
         private object Token(UserModel user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();

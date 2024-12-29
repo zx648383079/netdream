@@ -62,10 +62,12 @@ namespace NetDream.Modules.Auth.Repositories
                 return null;
             }
             var model = db.Users.Where(i => i.Id == client.UserId).Single();
-
             return new UserProfile()
             {
-
+                Id = model.Id,
+                Name = model.Name,
+                Avatar = model.Avatar,
+                BulletinCount = GetBulletinCount(model.Id)
             };
         }
 

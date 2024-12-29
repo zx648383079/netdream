@@ -62,12 +62,17 @@ namespace NetDream.Modules.SEO.Repositories
 
         public IDictionary<string, object> GetOpenList()
         {
-            var data = new Dictionary<string, object?>();
+            var data = new Dictionary<string, object>();
             var items = db.Options.Where(item => item.Visibility > 1)
                 .OrderByDescending(item => item.Position).ToArray();
             foreach (var item in items)
             {
-                data.TryAdd(item.Code, FormatOptionValue(item));
+                var val = FormatOptionValue(item);
+                if (val is null)
+                {
+                    continue;
+                }
+                data.TryAdd(item.Code, val);
             }
             return data;
         }

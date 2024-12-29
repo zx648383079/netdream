@@ -1,6 +1,8 @@
-﻿namespace NetDream.Shared.Models
+﻿using NetDream.Shared.Interfaces.Forms;
+
+namespace NetDream.Shared.Models
 {
-    public class PaginationForm
+    public class PaginationForm: IPaginationForm
     {
         public int Page { get; set; } = 1;
 
@@ -17,4 +19,13 @@
             PerPage = perPage;
         }
     }
+
+    public class QueryForm: PaginationForm, IQueryForm
+    {
+        public string Keywords { get; set; } = string.Empty;
+
+        public string Sort { get; set; } = string.Empty;
+
+        public string Order { get; set; } = string.Empty;
+    } 
 }

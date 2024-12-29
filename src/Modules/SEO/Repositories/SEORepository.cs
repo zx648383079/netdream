@@ -7,8 +7,10 @@ using System.Linq;
 
 namespace NetDream.Modules.SEO.Repositories
 {
-    public class SEORepository(SEOContext db, ExplorerRepository explorer)
+    public class SEORepository(SEOContext db, 
+        ExplorerRepository explorer)
     {
+
         public IList<OptionItem<string>> StoreItems()
         {
             return [new("默认", "default"), 
@@ -89,5 +91,7 @@ namespace NetDream.Modules.SEO.Repositories
                 // cache().Store(item).Flush();
             }
         }
+
+        
     }
 }

@@ -27,11 +27,11 @@ namespace NetDream.Modules.Note.Repositories
                 .When(user > 0, i => i.UserId == user).OrderByDescending(i => i.Id)
                 .ToPage(page);
         }
-
-        public IPage<NoteModel> GetList(string keywords = "", int user = 0, 
-            int id = 0, bool notice = false, int page = 1)
+        public IPage<NoteModel> GetList(QueryForm form,
+            int user = 0,
+            int id = 0, bool notice = false)
         {
-            var query = db.Notes.Search(keywords, "content")
+            var query = db.Notes.Search(form.Keywords, "content")
                 .When(id > 0, i => i.Id == id)
                 .When(notice, i => i.IsNotice == 1)
                 .When(user > 0, i => i.UserId == user);
@@ -42,7 +42,7 @@ namespace NetDream.Modules.Note.Repositories
             {
                 query = query.Where(i => i.Status == STATUS_VISIBLE);
             }
-            var items = query.OrderByDescending(i => i.Id).ToPage(page)
+            var items = query.OrderByDescending(i => i.Id).ToPage(form)
                 .CopyTo<NoteEntity, NoteModel>();
             userStore.WithUser(items.Items);
             return items;

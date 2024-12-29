@@ -6,6 +6,7 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Entities;
 using System.Linq;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Blog.Repositories
 {
@@ -14,6 +15,14 @@ namespace NetDream.Modules.Blog.Repositories
         public IPage<BlogModel> GetPage(int page)
         {
             return db.Blogs.ToPage(page).CopyTo<BlogEntity, BlogModel>();
+        }
+
+        public IPage<BlogModel> GetList(QueryForm form)
+        {
+            SearchHelper.CheckSortOrder(form, ["id", "created_at"]);
+            return db.Blogs.Search(form.Keywords, "Title")
+                .OrderBy<BlogEntity, int>(form.Sort, form.Order)
+                .ToPage(form).CopyTo<BlogEntity, BlogModel>();
         }
 
         public BlogEntity[] GetNewBlogs(int count = 8)

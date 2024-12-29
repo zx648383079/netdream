@@ -1,12 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using NetDream.Modules.Auth.Models;
-using NetDream.Modules.Contact.Entities;
+﻿using Microsoft.AspNetCore.Mvc;
+using NetDream.Api.Base.Http;
+using NetDream.Modules.Contact.Models;
 using NetDream.Modules.Contact.Repositories;
 using NetDream.Modules.OpenPlatform.Models;
-using NetDream.Web.Base.Http;
 
 namespace NetDream.Api.Controllers.Contact
 {
@@ -17,7 +13,7 @@ namespace NetDream.Api.Controllers.Contact
 
         [HttpGet]
         [Route("friend_link")]
-        [ProducesResponseType(typeof(DataResponse<FriendLinkEntity>), 200)]
+        [ProducesResponseType(typeof(DataResponse<FriendLink>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index()
         {

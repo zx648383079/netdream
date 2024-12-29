@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using NetDream.Shared.Models;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Shared.Helpers
@@ -38,6 +39,11 @@ namespace NetDream.Shared.Helpers
                 input = input.Replace(item, string.Empty);
             }
             return Split(input);
+        }
+
+        public static void CheckSortOrder(QueryForm form, string[] sortItems, string defaultOrder = "desc")
+        {
+            (form.Sort, form.Order) = CheckSortOrder(form.Sort, form.Order, sortItems, defaultOrder);
         }
 
         public static (string, string) CheckSortOrder(string sort,

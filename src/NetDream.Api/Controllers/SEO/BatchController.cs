@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NetDream.Api.Base.Http;
 using NetDream.Modules.SEO.Forms;
-using NetDream.Web.Base.Http;
 
 namespace NetDream.Api.Controllers.SEO
 {

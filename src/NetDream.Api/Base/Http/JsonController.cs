@@ -4,7 +4,7 @@ using NetDream.Shared.Http;
 using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Shared.Interfaces;
 
-namespace NetDream.Web.Base.Http
+namespace NetDream.Api.Base.Http
 {
     public abstract class JsonController : ControllerBase
     {
