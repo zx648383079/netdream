@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Auth.Models
 {
-    public class UserModel
+    public class UserModel : UserProfileModel, IUserToken
     {
-
-        public int Id { get; set; }
 
         public string Token { get; set; } = string.Empty;
     }

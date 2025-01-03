@@ -9,6 +9,7 @@ using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Models;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Shared.Interfaces.Entities;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -26,11 +27,16 @@ namespace NetDream.Api.Controllers.Auth
         public IActionResult Login([FromBody] SignInForm form)
         {
             var res = repository.Login(form.GetContext());
-            if (res.Succeeded)
+            if (!res.Succeeded)
             {
-                return Render(res.Result);
+                return RenderFailure(res.Message, res.FailureReason);
             }
-            return RenderFailure(res.Message, res.FailureReason);
+            var token = Token(res.Result);
+            if (res.Result is IUserToken u)
+            {
+                u.Token = token;
+            }
+            return Render(res.Result);
         }
 
         [Authorize]
@@ -53,7 +59,7 @@ namespace NetDream.Api.Controllers.Auth
         /// </summary>
         /// <param name="user"></param>
         [NonAction]
-        private object Token(UserModel user)
+        private string Token(IUser user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
