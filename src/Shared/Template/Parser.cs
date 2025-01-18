@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetDream.Shared.Template
 {
-    internal class Parser
+    public class Parser
     {
     }
 }

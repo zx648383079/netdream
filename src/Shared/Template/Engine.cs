@@ -8,5 +8,10 @@ namespace NetDream.Shared.Template
         {
             throw new NotImplementedException();
         }
+
+        public ITemplate Load(string content)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

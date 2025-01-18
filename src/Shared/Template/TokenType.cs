@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetDream.Shared.Template
+﻿namespace NetDream.Shared.Template
 {
     public enum TokenType
     {
@@ -12,22 +6,21 @@ namespace NetDream.Shared.Template
         /// None
         /// </summary>
         None,
-        /// <summary>
-        /// The text.
-        /// </summary>
-        Text,
-        /// <summary>
-        /// tag
-        /// </summary>
-        Tag,
-        /// <summary>
-        /// Start tag ${
-        /// </summary>
-        TagStart,
-        /// <summary>
-        /// End tag }
-        /// </summary>
-        TagEnd,
+
+        /// <summary>Token "{{"</summary>
+        CodeEnter,
+
+        /// <summary>Token "{%"</summary>
+        LiquidTagEnter,
+
+        /// <summary>Token "}}"</summary>
+        CodeExit,
+
+        /// <summary>Token "%}"</summary>
+        LiquidTagExit,
+
+        Raw,
+
         /// <summary>
         /// string.
         /// </summary>
@@ -36,6 +29,17 @@ namespace NetDream.Shared.Template
         /// number
         /// </summary>
         Number,
+
+        /// <summary>
+        /// An identifier starting by a $
+        /// </summary>
+        IdentifierSpecial,
+
+        /// <summary>
+        /// An identifier
+        /// </summary>
+        Identifier,
+
         /// <summary>
         /// Left Bracket [
         /// </summary>
@@ -81,10 +85,6 @@ namespace NetDream.Shared.Template
         /// </summary>
         Space,
         /// <summary>
-        /// Punctuation (,:...)
-        /// </summary>
-        Punctuation,
-        /// <summary>
         /// Operator (+,-,*,/,%..)
         /// </summary>
         Operator,
@@ -92,10 +92,11 @@ namespace NetDream.Shared.Template
         /// <![CDATA[Logic Operator (>,>=,==,!=,<,<=,||,&&)]]> 
         /// </summary>
         Logic,
-        /// <summary>
-        /// Arithmetic Operator (+,-,*,/,%..)
-        /// </summary>
-        Arithmetic,
+        /// <summary>Token ";"</summary>
+        SemiColon,
+
+        Assign,
+
         /// <summary>
         /// Comma (,)
         /// </summary>
@@ -104,6 +105,8 @@ namespace NetDream.Shared.Template
         /// Colon (:)
         /// </summary>
         Colon,
+
+        Regex,
         /// <summary>
         /// Comment ($* comment *$)
         /// </summary>
@@ -111,6 +114,7 @@ namespace NetDream.Shared.Template
         /// <summary>
         /// eof
         /// </summary>
-        EOF
+        Eof,
+        
     }
 }
