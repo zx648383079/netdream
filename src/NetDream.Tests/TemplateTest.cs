@@ -1,7 +1,7 @@
 using NetDream.Shared.Template;
 using System;
 using System.Collections.Generic;
-using System.Reflection.PortableExecutable;
+using System.Diagnostics;
 
 namespace NetDream.Tests
 {
@@ -10,7 +10,8 @@ namespace NetDream.Tests
     {
         [TestMethod]
         //[DataRow("{if:isset($keywords),$keywords}", 2)]
-        [DataRow("{contentPage:channel=>product_sample,product_id=>$data.id,field=>'id,cat_id,model_id,title,file',num=>5}\r\n{$content.title}\r\n{/contentPage}", 7)]
+        //[DataRow("{contentPage:channel=>product_sample,product_id=>$data.id,field=>'id,cat_id,model_id,title,file',num=>5}\r\n{$content.title}\r\n{/contentPage}", 7)]
+        [DataRow("{url:./aaa:$a:?query=:$b,false}", 4)]
         public void TestLexer(string template, int tokenCount)
         {
             var reader = new Lexer(template);
@@ -22,6 +23,7 @@ namespace NetDream.Tests
             while (true)
             {
                 token = reader.NextToken();
+                Debug.WriteLine(token);
                 items.Add(token);
                 if (token == Token.Eof)
                 {

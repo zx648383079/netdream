@@ -22,6 +22,7 @@ namespace NetDream.Shared.Template
         private CursorPosition _position = new();
         private readonly StringBuilder _buffer = new();
         private int _bufferOffset = 0;
+        private int _codeExitOffset = -1;
 
         public Token NextToken()
         {
@@ -41,8 +42,13 @@ namespace NetDream.Shared.Template
 
         protected Token ReadIfCodeToken()
         {
-            if (CurrentToken?.Type is not TokenType.Raw or TokenType.CodeExit or TokenType.LiquidTagExit)
+            if (CurrentToken is not null && CurrentToken?.Type is not TokenType.Raw and not TokenType.CodeExit and not TokenType.LiquidTagExit)
             {
+                if (NextIsCodeExit())
+                {
+                    ReadChar();
+                    return new Token(TokenType.CodeExit, "}", _position, _position);
+                }
                 return ReadToken();
             }
             var start = _position;
@@ -51,18 +57,99 @@ namespace NetDream.Shared.Template
             {
                 var previous = _position;
                 var codeInt = ReadChar();
-                if (codeInt == -1)
+                if (codeInt < 0)
                 {
+                    if (sb.Length > 0)
+                    {
+                        NextTokenQueue.Enqueue(new Token(TokenType.Raw, sb.ToString(), start, previous));
+                    }
+                    NextTokenQueue.Enqueue(Token.Eof);
+                    break;
+                }
+                if (IsHtmlComment(codeInt))
+                {
+                    if (sb.Length > 0)
+                    {
+                        NextTokenQueue.Enqueue(new Token(TokenType.Raw, sb.ToString(), start, previous));
+                    }
+                    NextTokenQueue.Enqueue(ReadCommentToken());
+                    break;
+                }
+                if (IsUnsafeScript(codeInt))
+                {
+                    if (sb.Length > 0)
+                    {
+                        NextTokenQueue.Enqueue(new Token(TokenType.Raw, sb.ToString(), start, previous));
+                    }
+                    NextTokenQueue.Enqueue(ReadUnsafeToken());
                     break;
                 }
                 if (IsCheckedCodeEnter(codeInt))
                 {
+                    if (sb.Length > 0)
+                    {
+                        NextTokenQueue.Enqueue(new Token(TokenType.Raw, sb.ToString(), start, previous));
+                    }
                     NextTokenQueue.Enqueue(new Token(TokenType.CodeEnter, "{", _position, _position));
-                    return new Token(TokenType.Raw, sb.ToString(), start, previous);
+                    return NextTokenQueue.Dequeue();
                 }
                 sb.Append(IsNewLine(codeInt) ? '\n' : (char)codeInt);
             }
-            return new Token(TokenType.Raw, start, _position);
+            return NextTokenQueue.Dequeue();
+        }
+
+        private Token ReadUnsafeToken()
+        {
+            return ReadTokenUntil(TokenType.Unsafe, "?>", 2);
+        }
+
+        private Token ReadCommentToken()
+        {
+            return ReadTokenUntil(TokenType.Comment, "-->", 4);
+        }
+
+        private Token ReadTokenUntil(TokenType type, string end, int offset = 0)
+        {
+            var start = _position;
+            MoveInlineOffset(offset - 1);
+            return new Token(type, ReadUntilEndTag(end), start, _position);
+        }
+
+        private string ReadUntilEndTag(string end)
+        {
+            var sb = new StringBuilder();
+            while (true)
+            {
+                var codeInt = ReadChar();
+                if (codeInt < 0)
+                {
+                    break;
+                }
+                if (Is(end))
+                {
+                    MoveInlineOffset(end.Length - 1);
+                    break;
+                }
+                sb.Append((char)codeInt);
+            }
+            return sb.ToString();
+        }
+
+        private void MoveInlineOffset(int offset)
+        {
+            if (offset == 0)
+            {
+                return;
+            }
+            if (offset < 0)
+            {
+                offset = -Math.Min(_bufferOffset, -offset);
+            } else if (offset > 0)
+            {
+                offset = Math.Min(_buffer.Length - _bufferOffset - 1, offset);
+            }
+            _bufferOffset += offset;
+            _position.NextColumn(offset);
         }
 
         protected void ReadLine()
@@ -70,6 +157,7 @@ namespace NetDream.Shared.Template
             var lastEnd = _buffer.Length > 0 ? _buffer[^1] : -1;
             _buffer.Clear();
             _bufferOffset = 0;
+            _codeExitOffset = -1;
             while (true)
             {
                 var codeInt = Reader.Read();
@@ -89,6 +177,48 @@ namespace NetDream.Shared.Template
             }
         }
 
+        /// <summary>
+        /// 获取当前行的下一个字符, 不移动  
+        /// </summary>
+        /// <returns></returns>
+        protected int ReadLineNextChar(int offset = 1)
+        {
+            var pos = _bufferOffset + offset;
+            if (pos < 0 || pos >= _buffer.Length)
+            {
+                return -1;
+            }
+            return _buffer[pos];
+        }
+
+        protected bool NextIsCodeExit(int offset = 1)
+        {
+            return _bufferOffset + offset == _codeExitOffset;
+        }
+
+        /// <summary>
+        /// 判断是否是字符
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        protected bool Is(string tag, int offset = 0)
+        {
+            var pos = _bufferOffset + offset;
+            if (pos + tag.Length >  _buffer.Length)
+            {
+                return false;
+            }
+            for (var i = 0; i < tag.Length; i++)
+            {
+                if (_buffer[pos + i] != tag[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         protected int ReadChar()
         {
             _bufferOffset++;
@@ -97,7 +227,7 @@ namespace NetDream.Shared.Template
                 ReadLine();
             }
             var current = _buffer.Length == 0 ? -1 : _buffer[_bufferOffset];
-            if (current == -1)
+            if (current < 0)
             {
                 return current;
             }
@@ -118,7 +248,7 @@ namespace NetDream.Shared.Template
         /// <returns></returns>
         protected bool IsCheckedCodeEnter(int code)
         {
-            if (IsCodeEnter(code))
+            if (!IsCodeEnter(code))
             {
                 return false;
             }
@@ -129,12 +259,25 @@ namespace NetDream.Shared.Template
                 {
                     return false;
                 }
-                if (IsCodeExit(c) && i - _bufferOffset > 2)
+                if (IsCodeExit(c) && i - _bufferOffset > 1)
                 {
+                    _codeExitOffset = i;
                     return true;
                 }
             }
             return false;
+        }
+
+        protected bool IsHtmlComment(int code)
+        {
+            // <!--     -->
+            return Is("<!--");
+        }
+
+        protected bool IsUnsafeScript(int code)
+        {
+            // <?     ?>
+            return Is("<?");
         }
 
         protected int IndexOf(char code)
@@ -144,13 +287,9 @@ namespace NetDream.Shared.Template
 
         protected int IndexOfAny(params char[] items)
         {
-            for (var i = _bufferOffset + 1; i < _buffer.Length; i++)
+            for (var i = _bufferOffset + 1; i < _codeExitOffset; i++)
             {
                 var c = _buffer[i];
-                if (IsCodeExit(c))
-                {
-                    break;
-                }
                 if (items.Contains(c))
                 {
                     return i;
@@ -161,13 +300,9 @@ namespace NetDream.Shared.Template
 
         protected int FirstOfAny(params char[] items)
         {
-            for (var i = _bufferOffset + 1; i < _buffer.Length; i++)
+            for (var i = _bufferOffset + 1; i < _codeExitOffset; i++)
             {
                 var c = _buffer[i];
-                if (IsCodeExit(c))
-                {
-                    break;
-                }
                 var j = Array.FindIndex(items, i => i == c);
                 if (j >= 0)
                 {
@@ -189,7 +324,7 @@ namespace NetDream.Shared.Template
 
         protected bool IsCodeEnter(int code)
         {
-            return code != '{';
+            return code == '{';
         }
 
 
@@ -262,6 +397,15 @@ namespace NetDream.Shared.Template
         protected bool IsAlphabet(int code)
         {
             return IsUpperAlphabet(code) || IsLowerAlphabet(code);
+        }
+
+        protected bool IsWord(int code)
+        {
+            if (code > 127)
+            {
+                return true;
+            }
+            return IsUpperAlphabet(code) || IsLowerAlphabet(code) || code is '_';
         }
 
         /// <summary>

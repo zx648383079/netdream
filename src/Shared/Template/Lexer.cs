@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 namespace NetDream.Shared.Template
@@ -19,27 +20,26 @@ namespace NetDream.Shared.Template
 
         protected Token ReadToken()
         {
-            while (true)
+            var start = _position;
+            var last = CurrentToken;
+            while (!NextIsCodeExit())
             {
                 var codeInt = ReadChar();
                 if (codeInt == -1)
                 {
                     return Token.Eof;
                 }
-                if (IsCodeExit(codeInt))
-                {
-                    return new Token(TokenType.CodeExit, "}", _position, _position);
-                }
                 var code = (char)codeInt;
                 if (IsWhiteSpace(code))
                 {
+                    start = _position;
                     continue;
                 }
                 if (code is '\'' or '"')
                 {
                     return GetStringToken(code);
                 }
-                if (code is '/' or '#' && IndexOf(code) > 0)
+                if (last?.Type != TokenType.CodeEnter && code is '/' or '#' && IndexOf(code) > 0)
                 {
                     return GetRegexToken(code);
                 }
@@ -60,30 +60,41 @@ namespace NetDream.Shared.Template
                     var next = ReadChar();
                     if (next == '/')
                     {
-                        return new Token(TokenType.Logic, "./", _position, _position);
+                        return new Token(TokenType.Logic, "./", start, _position);
                     }
                     if (next == '.')
                     {
                         next = ReadChar();
                         if (next == '/')
                         {
-                            return new Token(TokenType.Logic, "../", _position, _position);
+                            return new Token(TokenType.Logic, "../", start, _position);
                         }
                         MoveBackChar();
-                        return new Token(TokenType.Logic, "..", _position, _position);
+                        return new Token(TokenType.Logic, "..", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Dot, code.ToString(), _position, _position);
                 }
                 if (code == ':')
                 {
+                    if (last?.Type == TokenType.Identifier && !NextIsCodeExit())
+                    {
+                        var next = ReadChar();
+                        if (next == '$' || IsWhiteSpace(next))
+                        {
+                            MoveBackChar();
+                        } else
+                        {
+                            GetFormatStringToken();
+                        }
+                    }
                     return new Token(TokenType.Colon, code.ToString(), _position, _position);
                 }
                 if (code == ',')
                 {
                     return new Token(TokenType.Comma, code.ToString(), _position, _position);
                 }
-                if (IsAlphabet(code) || code == '_' || code == '$')
+                if (IsAlphabet(code) || code is '_' or '$')
                 {
                     return GetNameToken(code);
                 }
@@ -96,17 +107,17 @@ namespace NetDream.Shared.Template
                     var next = ReadChar();
                     if (next == '>')
                     {
-                        return new Token(TokenType.Assign, "=>", _position, _position);
+                        return new Token(TokenType.Assign, "=>", start, _position);
                     }
                     if (next == '=')
                     {
                         next = ReadChar();
                         if (next == '=')
                         {
-                            return new Token(TokenType.Logic, "===", _position, _position);
+                            return new Token(TokenType.Logic, "===", start, _position);
                         }
                         MoveBackChar();
-                        return new Token(TokenType.Logic, "==", _position, _position);
+                        return new Token(TokenType.Logic, "==", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Assign, code.ToString(), _position, _position);
@@ -114,9 +125,18 @@ namespace NetDream.Shared.Template
                 if (code == '/')
                 {
                     var next = ReadChar();
+                    if (next is '*' or '/')
+                    {
+                        return GetCommentToken(next is '*', start);
+                    }
+                    if (last?.Type == TokenType.CodeEnter)
+                    {
+                        MoveBackChar();
+                        return new Token(TokenType.BlockExit, GetUntilCodeExit(), start, _position);
+                    }
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "/=", _position, _position);
+                        return new Token(TokenType.Logic, "/=", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
@@ -126,7 +146,7 @@ namespace NetDream.Shared.Template
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "!=", _position, _position);
+                        return new Token(TokenType.Logic, "!=", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
@@ -136,65 +156,83 @@ namespace NetDream.Shared.Template
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "<=", _position, _position);
+                        return new Token(TokenType.Logic, "<=", start, _position);
                     }
                     if (next == '>')
                     {
-                        return new Token(TokenType.Logic, "<>", _position, _position);
+                        return new Token(TokenType.Logic, "<>", start, _position);
                     }
                     if (next == '<')
                     {
-                        return new Token(TokenType.Logic, "<<", _position, _position);
+                        return new Token(TokenType.Logic, "<<", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
                 }
                 if (code == '>')
                 {
+                    if (last?.Type == TokenType.CodeEnter)
+                    {
+                        return new Token(TokenType.BlockEnter, code.ToString(), start, _position);
+                    }
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, ">=", _position, _position);
+                        return new Token(TokenType.Logic, ">=", start, _position);
                     }
                     if (next == '>')
                     {
-                        return new Token(TokenType.Logic, ">>", _position, _position);
-                    }
-                    MoveBackChar();
-                    return new Token(TokenType.Operator, code.ToString(), _position, _position);
-                }
-                if (code == '>')
-                {
-                    var next = ReadChar();
-                    if (next == '=')
-                    {
-                        return new Token(TokenType.Logic, ">=", _position, _position);
+                        return new Token(TokenType.Logic, ">>", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
                 }
                 if (code == '@')
                 {
-                    var next = ReadChar();
-                    MoveBackChar();
+                    if (last?.Type == TokenType.CodeEnter)
+                    {
+                        start = _position;
+                        return new Token(TokenType.AssetImport, GetUntilCodeExit(), start, _position);
+                    }
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
                 }
                 if (code == '+')
                 {
+                    if (last?.Type == TokenType.CodeEnter)
+                    {
+                        if (NextIsCodeExit())
+                        {
+                            return new Token(TokenType.BlockEnter, "else", _position, _position);
+
+                        }
+                        return new Token(TokenType.BlockEnter, "elseif", _position, _position);
+                    }
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "+=", _position, _position);
+                        return new Token(TokenType.Logic, "+=", start, _position);
+                    }
+                    if (next == '+')
+                    {
+                        return new Token(TokenType.Logic, "++", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
                 }
                 if (code == '-')
                 {
+                    if (last?.Type == TokenType.CodeEnter)
+                    {
+                        return new Token(TokenType.BlockExit, "if", _position, _position);
+                    }
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "-=", _position, _position);
+                        return new Token(TokenType.Logic, "-=", start, _position);
+                    }
+                    if (next == '-')
+                    {
+                        return new Token(TokenType.Logic, "--", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
@@ -204,17 +242,7 @@ namespace NetDream.Shared.Template
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "*=", _position, _position);
-                    }
-                    MoveBackChar();
-                    return new Token(TokenType.Operator, code.ToString(), _position, _position);
-                }
-                if (code == '/')
-                {
-                    var next = ReadChar();
-                    if (next == '=')
-                    {
-                        return new Token(TokenType.Logic, "/=", _position, _position);
+                        return new Token(TokenType.Logic, "*=", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
@@ -224,7 +252,7 @@ namespace NetDream.Shared.Template
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "%=", _position, _position);
+                        return new Token(TokenType.Logic, "%=", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
@@ -234,11 +262,11 @@ namespace NetDream.Shared.Template
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "^=", _position, _position);
+                        return new Token(TokenType.Logic, "^=", start, _position);
                     }
                     if (next == '^')
                     {
-                        return new Token(TokenType.Logic, "^^", _position, _position);
+                        return new Token(TokenType.Logic, "^^", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
@@ -248,11 +276,11 @@ namespace NetDream.Shared.Template
                     var next = ReadChar();
                     if (next == '&')
                     {
-                        return new Token(TokenType.Logic, "&&", _position, _position);
+                        return new Token(TokenType.Logic, "&&", start, _position);
                     }
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "&=", _position, _position);
+                        return new Token(TokenType.Logic, "&=", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
@@ -262,29 +290,96 @@ namespace NetDream.Shared.Template
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "?=", _position, _position);
+                        return new Token(TokenType.Logic, "?=", start, _position);
                     }
                     if (next == '?')
                     {
-                        return new Token(TokenType.Logic, "??", _position, _position);
+                        return new Token(TokenType.Logic, "??", start, _position);
+                    }
+                    if (next == ':')
+                    {
+                        return new Token(TokenType.Logic, "?:", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
                 }
                 if (code == '|')
                 {
+                    if (last?.Type == TokenType.CodeEnter)
+                    {
+                        return new Token(TokenType.BlockEnter, "if", _position, _position);
+                    }
                     var next = ReadChar();
                     if (next == '=')
                     {
-                        return new Token(TokenType.Logic, "|=", _position, _position);
+                        return new Token(TokenType.Logic, "|=", start, _position);
                     }
                     if (next == '|')
                     {
-                        return new Token(TokenType.Logic, "||", _position, _position);
+                        return new Token(TokenType.Logic, "||", start, _position);
                     }
                     MoveBackChar();
                     return new Token(TokenType.Operator, code.ToString(), _position, _position);
                 }
+                if (code == '~')
+                {
+                    if (last?.Type == TokenType.CodeEnter)
+                    {
+                        return new Token(TokenType.BlockEnter, "for", _position, _position);
+                    }
+                    return new Token(TokenType.Operator, code.ToString(), _position, _position);
+                }
+                return new Token(TokenType.Unknown, code.ToString(), _position, _position);
+            }
+            return new Token(TokenType.Unknown, start, _position);
+        }
+
+        private Token GetCommentToken(bool isBlock, CursorPosition start)
+        {
+            if (!isBlock)
+            {
+                return new Token(TokenType.Comment, GetUntilCodeExit(), start, _position);
+            }
+            return new Token(TokenType.Comment, GetUntilCodeExit("*/"), start, _position);
+        }
+
+        private void GetFormatStringToken()
+        {
+            var sb = new StringBuilder();
+            var start = _position;
+            // sb.Append(code);
+            while (true)
+            {
+                var codeInt = ReadChar();
+                if (codeInt < 0)
+                {
+                    break;
+                }
+                if (IsCodeExit(codeInt) || codeInt == ',' || Is("=>"))
+                {
+                    MoveBackChar();
+                    break;
+                }
+                if (codeInt == ':')
+                {
+                    if (sb.Length > 0 && ReadLineNextChar() == '$')
+                    {
+                        NextTokenQueue.Enqueue(new Token(TokenType.String, sb.ToString(), start, _position.NextColumn(-1)));
+                        NextTokenQueue.Enqueue(new Token(TokenType.Operator, "+", _position, _position));
+                        NextTokenQueue.Enqueue(GetNameToken((char)ReadChar()));
+                        sb.Clear();
+                        start = _position;
+                        continue;
+                    }
+                    NextTokenQueue.Enqueue(new Token(TokenType.Operator, "+", _position, _position));
+                    start = _position;
+                    continue;
+                }
+                sb.Append((char)codeInt);
+            }
+            if (sb.Length > 0)
+            {
+                NextTokenQueue.Enqueue(new Token(TokenType.String, sb.ToString(), start, _position));
             }
         }
 
@@ -293,7 +388,7 @@ namespace NetDream.Shared.Template
             var start = _position;
             var sb = new StringBuilder();
             sb.Append(code);
-            while (true)
+            while (!NextIsCodeExit())
             {
                 var codeInt = ReadChar();
                 if (codeInt < 0)
@@ -311,7 +406,7 @@ namespace NetDream.Shared.Template
                     MoveBackChar();
                     break;
                 }
-                if (!(IsNumeric(codeInt) || IsAlphabet(codeInt)) || codeInt > 127)
+                if (!IsWord(codeInt))
                 {
                     MoveBackChar();
                     break;
@@ -385,11 +480,46 @@ namespace NetDream.Shared.Template
             var start = _position;
             return new Token(TokenType.Regex, GetStringBlock(end), start, _position);
         }
+
+        private string GetUntilCodeExit(string end)
+        {
+            var sb = new StringBuilder();
+            while (!NextIsCodeExit())
+            {
+                var codeInt = ReadChar();
+                if (codeInt < 0)
+                {
+                    break;
+                }
+                if (Is(end))
+                {
+                    MoveInlineOffset(end.Length - 1);
+                    break;
+                }
+                sb.Append((char)codeInt);
+            }
+            return sb.ToString();
+        }
+
+        private string GetUntilCodeExit()
+        {
+            var sb = new StringBuilder();
+            while (!NextIsCodeExit())
+            {
+                var codeInt = ReadChar();
+                if (codeInt < 0)
+                {
+                    break;
+                }
+                sb.Append((char)codeInt);
+            }
+            return sb.ToString();
+        }
         private string GetStringBlock(char end)
         {
             var reverseCount = 0;
             var sb = new StringBuilder();
-            while (true)
+            while (!NextIsCodeExit())
             {
                 var codeInt = ReadChar();
                 if (codeInt < 0)

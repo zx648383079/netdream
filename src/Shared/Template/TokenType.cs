@@ -2,10 +2,7 @@
 {
     public enum TokenType
     {
-        /// <summary>
-        /// None
-        /// </summary>
-        None,
+        Unknown,
 
         /// <summary>Token "{{"</summary>
         CodeEnter,
@@ -39,6 +36,9 @@
         /// An identifier
         /// </summary>
         Identifier,
+
+        BlockEnter,
+        BlockExit,
 
         /// <summary>
         /// Left Bracket [
@@ -111,6 +111,12 @@
         /// Comment ($* comment *$)
         /// </summary>
         Comment,
+
+        Unsafe,
+
+        AssetImport,
+        TemplateImport,
+
         /// <summary>
         /// eof
         /// </summary>
