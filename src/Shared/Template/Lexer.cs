@@ -80,7 +80,7 @@ namespace NetDream.Shared.Template
                     if (last?.Type == TokenType.Identifier && !NextIsCodeExit())
                     {
                         var next = ReadChar();
-                        if (next == '$' || IsWhiteSpace(next))
+                        if (next is '$' or '\'' or '"'  || IsWhiteSpace(next))
                         {
                             MoveBackChar();
                         } else
