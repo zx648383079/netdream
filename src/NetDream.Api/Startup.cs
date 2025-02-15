@@ -1,4 +1,3 @@
-using IdentityModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,6 +30,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using System.Data.Common;
+using Duende.IdentityModel;
 
 namespace NetDream.Api
 {

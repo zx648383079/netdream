@@ -85,6 +85,7 @@ namespace NetDream.Shared.Template
                             MoveBackChar();
                         } else
                         {
+                            MoveBackChar();
                             GetFormatStringToken();
                         }
                     }

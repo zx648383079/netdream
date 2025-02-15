@@ -4,23 +4,24 @@ using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Repositories;
 using NetDream.Web.Base.Extensions;
 using NetDream.Web.Base.Http;
+using NetDream.Shared.Models;
 
 namespace NetDream.Web.Areas.Note.Controllers
 {
     [Area("Note")]
     public class HomeController(NoteRepository repository, IClientContext environment) : JsonController
     {
-        public IActionResult Index(string keywords = "", int id = 0, int user = 0, int page = 1)
+        public IActionResult Index([FromQuery] QueryForm form, int id = 0, int user = 0)
         {
             ViewData["isGuest"] = environment.UserId == 0;
-            ViewData["items"] = repository.GetList(keywords, user, id, false, page);
+            ViewData["items"] = repository.GetList(form, user, id, false);
             return View();
         }
 
-        public IActionResult Page(string keywords = "", int id = 0, int user = 0, int page = 1)
+        public IActionResult Page([FromQuery] QueryForm form, int id = 0, int user = 0)
         {
             ViewData["isGuest"] = environment.UserId == 0;
-            var items = repository.GetList(keywords, user, id, false, page);
+            var items = repository.GetList(form, user, id, false);
             ViewData["items"] = items;
             return RenderData(new {
                 Html = View().ToHtml(HttpContext),
