@@ -21,7 +21,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public IUser? Get(int userId)
         {
-            return db.Users.Where(i => i.Id == userId).Select(i => new UserSimpleModel()
+            return db.Users.Where(i => i.Id == userId).Select(i => new UserListItem()
             {
                 Id = i.Id,
                 Name = i.Name,
@@ -46,7 +46,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public IEnumerable<IUser> Get(params int[] userItems)
         {
-            return db.Users.Where(i => userItems.Contains(i.Id)).Select(i => new UserSimpleModel()
+            return db.Users.Where(i => userItems.Contains(i.Id)).Select(i => new UserListItem()
             {
                 Id = i.Id,
                 Name = i.Name,
@@ -61,7 +61,7 @@ namespace NetDream.Modules.Auth.Repositories
         /// <returns></returns>
         public IEnumerable<IUser> Get(params string[] userItems)
         {
-            return db.Users.Where(i => userItems.Contains(i.Name)).Select(i => new UserSimpleModel()
+            return db.Users.Where(i => userItems.Contains(i.Name)).Select(i => new UserListItem()
             {
                 Id = i.Id,
                 Name = i.Name,
@@ -84,12 +84,12 @@ namespace NetDream.Modules.Auth.Repositories
                     query = query.Where(i => items.Contains(i.Id));
                 }
             }
-            return query.Select(i => new UserSimpleModel()
+            return query.Select(i => new UserListItem()
             {
                 Id = i.Id,
                 Name = i.Name,
                 Avatar = i.Avatar
-            }).ToPage(page).ConvertTo<UserSimpleModel, IUser>();
+            }).ToPage(page).ConvertTo<UserListItem, IUser>();
         }
 
         public int[] SearchUserId(string keywords, IList<int>? userIds = null, bool checkEmpty = false)

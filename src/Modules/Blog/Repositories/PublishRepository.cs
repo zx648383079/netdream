@@ -35,7 +35,7 @@ namespace NetDream.Modules.Blog.Repositories
         public const byte OPEN_PASSWORD = 5; // 需要密码
         public const byte OPEN_BUY = 6; // 需要购买
 
-        public IPage<BlogModel> GetList(string keywords = "", 
+        public IPage<BlogListItem> GetList(string keywords = "", 
             int category = 0, int status = 0, 
             int type = 0, string language = "", 
             int page = 1)
@@ -46,18 +46,8 @@ namespace NetDream.Modules.Blog.Repositories
                 .When(status > 0, i => i.PublishStatus == status - 1, i => i.PublishStatus == PUBLISH_STATUS_AUTO_SAVE)
                 .When(language, i => i.Language == language)
                 .OrderByDescending(i => i.Id)
-                .ToPage(page, query => query.Select<BlogEntity, object>("id", "title", "description", "user_id", "type",
-                    "thumb",
-                    "language",
-                    "programming_language",
-                    "term_id",
-                    "parent_id",
-                    "open_type",
-                    "comment_count",
-                    "publish_status",
-                    "click_count", "recommend_count", "created_at"))
-                .CopyTo<BlogEntity, BlogModel>();
-            WithCategory(items.Items);
+                .ToPage(page, query => query.Select<BlogEntity, BlogListItem>());
+            CategoryRepository.WithCategory(db, items.Items);
             foreach (var item in items.Items)
             {
                 var isLocal = item.ParentId > 0;
@@ -70,30 +60,6 @@ namespace NetDream.Modules.Blog.Repositories
             return items;
         }
 
-        private void WithCategory(IEnumerable<BlogModel> items)
-        {
-            var idItems = items.Select(item => item.TermId);
-            if (!idItems.Any())
-            {
-                return;
-            }
-            var data = db.Categories.Where(i => idItems.Contains(i.Id)).ToArray();
-            if (!data.Any())
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                foreach (var it in data)
-                {
-                    if (item.TermId == it.Id)
-                    {
-                        item.Term = it;
-                        break;
-                    }
-                }
-            }
-        }
 
         public IOperationResult<BlogModel> Get(int id = 0, string language = "")
         {

@@ -30,3 +30,28 @@ cd src
 
 dotnet run
 ```
+
+## 使用规范
+
+### 文件夹规范
+
+每个模块
+
+
+> Entities 定义数据表的字段
+> Migrations 定义数据表创建字段相关信息
+> Models 定义跟前端交互的数据结构
+> Repositories 定义翻译查询数据库的数据
+> Forms 定义接收前端传的参数
+
+
+### 命名规范
+
+1. 数据表对应的实体 `<表名>Entity`，放在 `Entities` 文件夹中
+2. 创建数据表的 `<表名>EntityTypeConfiguration`，放在 `Migrations`
+3. 定义当前模块连接数据库实体 `<模块>Context`，放在模块根目录
+4. 对数据库进行读写的操作 `<>Repository`，放在 `Repositories`
+5. 注册服务包括 `Repository` 全写在模块根目录下 `Extension.Provide<模块>Repositories` 拓展`IServiceCollection`的方法中
+6. 响应列表数据 `<>ListItem`，每一项数据可能带一些标签，转成 `ListLabelItem{Id, Name}`
+7. 响应单篇完整数据 `<>Model`
+8. 批量处理接口，接收用 `<模块>BatchForm`，响应用 `<模块>BatchResult`

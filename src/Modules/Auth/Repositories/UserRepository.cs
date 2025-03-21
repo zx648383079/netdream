@@ -152,11 +152,11 @@ namespace NetDream.Modules.Auth.Repositories
                 .ToPage(page);
         }
 
-        public IPage<UserSimpleModel> SearchUser(string keywords = "", int page = 1)
+        public IPage<UserListItem> SearchUser(string keywords = "", int page = 1)
         {
             return db.Users.Search(keywords, "name")
                 .OrderByDescending(i => i.Id)
-                .Select(i => new UserSimpleModel()
+                .Select(i => new UserListItem()
                 {
                     Id = i.Id,
                     Name = i.Name,

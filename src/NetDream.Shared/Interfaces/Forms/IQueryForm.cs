@@ -2,10 +2,10 @@
 {
     public interface IQueryForm: IPaginationForm
     {
-        public string Keywords { get; }
+        public string? Keywords { get; }
 
-        public string Sort { get; }
+        public string? Sort { get; }
 
-        public string Order { get; }
+        public string? Order { get; }
     }
 }

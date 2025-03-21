@@ -2,7 +2,7 @@
 
 namespace NetDream.Modules.Auth.Models
 {
-    public class UserProfileModel : UserSimpleModel, IUserProfile
+    public class UserProfileModel : UserListItem, IUserProfile
     {
         public int BulletinCount { get; set; }
     }

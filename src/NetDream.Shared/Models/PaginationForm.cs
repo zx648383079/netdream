@@ -22,10 +22,11 @@ namespace NetDream.Shared.Models
 
     public class QueryForm: PaginationForm, IQueryForm
     {
-        public string Keywords { get; set; } = string.Empty;
+        
+        public string? Keywords { get; set; } = string.Empty;
 
-        public string Sort { get; set; } = string.Empty;
+        public string? Sort { get; set; } = string.Empty;
 
-        public string Order { get; set; } = string.Empty;
+        public string? Order { get; set; } = string.Empty;
     } 
 }

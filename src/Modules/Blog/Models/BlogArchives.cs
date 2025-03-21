@@ -1,5 +1,4 @@
-﻿using NetDream.Modules.Blog.Entities;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace NetDream.Modules.Blog.Models
 {
@@ -7,7 +6,7 @@ namespace NetDream.Modules.Blog.Models
     {
         public int Year { get; set; }
 
-        public List<BlogEntity> Items = [];
+        public List<BlogListItem> Items = [];
 
     }
 }

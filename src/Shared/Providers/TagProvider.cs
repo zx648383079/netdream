@@ -100,6 +100,41 @@ namespace NetDream.Shared.Providers
             return db.Tags.Where(i => tagId.Contains(i.Id)).ToArray();
         }
 
+        /// <summary>
+        /// 根据关联的id 找出所有其他管理的id
+        /// </summary>
+        /// <param name="sourceId"></param>
+        /// <returns></returns>
+        public int[] GetRelationList(int sourceId)
+        {
+            var tagId = db.TagLinks.Where(i => i.TargetId == sourceId)
+                .Select(i => i.TagId).ToArray();
+            if (tagId.Length == 0)
+            {
+                return [];
+            }
+            return db.TagLinks.Where(i => tagId.Contains(i.TagId) && i.TargetId != sourceId).Select(i => i.TargetId).ToArray();
+        }
+        /// <summary>
+        /// 根据标签id 找出所有关联的id
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <returns></returns>
+        public int[] GetTagRelationList(int tagId)
+        {
+            return db.TagLinks.Where(i => i.TagId == tagId).Select(i => i.TargetId).ToArray();
+        }
+
+        public int[] GetTagRelationList(string tag)
+        {
+            var tagId = db.Tags.Where(i => i.Name == tag).Select(i => i.Id).FirstOrDefault();
+            if (tagId <= 0)
+            {
+                return [];
+            }
+            return db.TagLinks.Where(i => i.TagId == tagId).Select(i => i.TargetId).ToArray();
+        }
+
         public IDictionary<int, IList<TagEntity>> GetManyTags(int[] target) {
             var data = db.TagLinks.Where(i => target.Contains(i.TargetId)).ToArray();
             var res = new Dictionary<int, IList<TagEntity>>();
@@ -185,5 +220,7 @@ namespace NetDream.Shared.Providers
         {
             db.TagLinks.Where(i => i.TargetId == target).ExecuteDelete();
         }
+
+        
     }
 }

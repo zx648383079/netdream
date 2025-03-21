@@ -24,7 +24,7 @@ namespace NetDream.Modules.Blog.Repositories
         ISystemFeedback feedback,
         LogRepository logStore)
     {
-        public IPage<CommentModel> GetList(int blogId, int parentId = 0, 
+        public IPage<CommentListItem> GetList(int blogId, int parentId = 0, 
             bool isHot = false, 
             string sort = "created_at", 
             string order = "desc", int page = 1)
@@ -41,7 +41,7 @@ namespace NetDream.Modules.Blog.Repositories
             {
                 query = query.OrderBy<CommentEntity, int>(sort, order);
             }
-            var items = query.ToPage(page).CopyTo<CommentEntity, CommentModel>();
+            var items = query.ToPage(page, i => i.Select<CommentEntity, CommentListItem>());
             userStore.WithUser(items.Items);
             if (parentId == 0)
             {
@@ -50,14 +50,15 @@ namespace NetDream.Modules.Blog.Repositories
             return items;
         }
 
-        private void WithReply(IEnumerable<CommentModel> items)
+        private void WithReply(IEnumerable<CommentListItem> items)
         {
             var idItems = items.Select(item => item.Id);
             if (!idItems.Any())
             {
                 return;
             }
-            var data = db.Comments.Where(i => idItems.Contains(i.ParentId)).Select<CommentEntity, CommentModel>().ToArray();
+            var data = db.Comments.Where(i => idItems.Contains(i.ParentId))
+                .Select<CommentEntity, CommentListItem>().ToArray();
             if (!data.Any())
             {
                 return;
@@ -69,14 +70,19 @@ namespace NetDream.Modules.Blog.Repositories
             }
         }
 
-        private void WithBlog(IEnumerable<CommentModel> items)
+        private void WithBlog(IEnumerable<CommentListItem> items)
         {
             var idItems = items.Select(item => item.BlogId);
             if (!idItems.Any())
             {
                 return;
             }
-            var data = db.Blogs.Where(i => idItems.Contains(i.Id)).ToArray();
+            var data = db.Blogs.Where(i => idItems.Contains(i.Id))
+                .Select(i => new ListLabelItem()
+                {
+                    Id = i.Id,
+                    Name = i.Title,
+                }).ToArray();
             if (!data.Any())
             {
                 return;
@@ -219,11 +225,11 @@ namespace NetDream.Modules.Blog.Repositories
             return rules;
         }
 
-        public CommentModel[] GetHot(int blogId, int limit = 4)
+        public CommentListItem[] GetHot(int blogId, int limit = 4)
         {
             var items = db.Comments.Where(i => i.BlogId == blogId && i.ParentId == 0 && i.AgreeCount > 0)
                 .OrderByDescending(i => i.AgreeCount)
-                .Take(limit).Select<CommentEntity, CommentModel>().ToArray();
+                .Take(limit).Select<CommentEntity, CommentListItem>().ToArray();
             userStore.WithUser(items);
             return items;
         }
@@ -235,7 +241,7 @@ namespace NetDream.Modules.Blog.Repositories
          * @param string email
          * @param string name
          */
-        public IPage<CommentModel> CommentList(int blog = 0, 
+        public IPage<CommentListItem> CommentList(int blog = 0, 
             string keywords = "", 
             string email = "", 
             string name = "",
@@ -245,7 +251,7 @@ namespace NetDream.Modules.Blog.Repositories
                 .When(email, i => i.Email == email)
                 .Search(keywords, "content")
                 .Search(name, "name")
-                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<CommentEntity, CommentModel>();
+                .OrderByDescending(i => i.Id).ToPage(page, i => i.Select<CommentEntity, CommentListItem>());
             userStore.WithUser(items.Items);
             WithBlog(items.Items);
             return items;
@@ -287,11 +293,11 @@ namespace NetDream.Modules.Blog.Repositories
             return db.Blogs.Where(i => i.Id == blogId && i.UserId == client.UserId).Any();
         }
 
-        public CommentModel[] NewList()
+        public CommentListItem[] NewList()
         {
             var items = db.Comments.Where(i => i.Approved == 1)
                 .OrderByDescending(i => i.CreatedAt)
-                .Take(4).Select<CommentEntity, CommentModel>().ToArray();
+                .Take(4).Select<CommentEntity, CommentListItem>().ToArray();
             WithBlog(items);
             return items;
         }

@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Api.Models;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.SEO.Repositories;
-using System.Collections.Generic;
 
 namespace NetDream.Api.Controllers
 {
@@ -17,14 +15,14 @@ namespace NetDream.Api.Controllers
         [HttpPost]
         public IActionResult Index([FromBody] BatchForm form)
         {
-            var res = new Dictionary<string, object?>();
+            var res = new BatchResult();
             if (form.SeoConfigs is not null)
             {
-                res.Add("seo_configs", seo.GetOpenList());
+                res.SeoConfigs = seo.GetOpenList();
             }
             if (form.AuthProfile is not null)
             {
-                res.Add("auth_profile", auth.GetCurrentProfile());
+                res.AuthProfile = auth.GetCurrentProfile();
             }
             return Render(res);
         }

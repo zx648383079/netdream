@@ -1,12 +1,11 @@
-﻿using NetDream.Modules.Blog;
-using NetDream.Modules.Blog.Entities;
+﻿using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Models;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NetDream.Modules.Book.Repositories
+namespace NetDream.Modules.Blog.Repositories
 {
     public class CategoryRepository(BlogContext db, 
         LocalizeRepository localize)
@@ -62,5 +61,35 @@ namespace NetDream.Modules.Book.Repositories
             return data;
         }
 
+
+        internal static void WithCategory(BlogContext db, IEnumerable<IWithCategoryModel> items)
+        {
+            var idItems = items.Select(item => item.TermId);
+            if (!idItems.Any())
+            {
+                return;
+            }
+            var data = db.Categories.Where(i => idItems.Contains(i.Id))
+                .Select(i => new CategoryListItem()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                }).ToArray();
+            if (!data.Any())
+            {
+                return;
+            }
+            foreach (var item in items)
+            {
+                foreach (var it in data)
+                {
+                    if (item.TermId == it.Id)
+                    {
+                        item.Term = it;
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

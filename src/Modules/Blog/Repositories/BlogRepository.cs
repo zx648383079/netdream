@@ -7,28 +7,42 @@ using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Entities;
 using System.Linq;
 using NetDream.Shared.Models;
+using NetDream.Shared.Providers.Models;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class BlogRepository(BlogContext db)
+    public class BlogRepository(BlogContext db, IUserRepository userStore)
     {
-        public IPage<BlogModel> GetPage(int page)
+        public TagProvider Tag()
         {
-            return db.Blogs.ToPage(page).CopyTo<BlogEntity, BlogModel>();
+            return new TagProvider(db);
+        }
+        public IPage<BlogListItem> GetPage(int page)
+        {
+            var items = db.Blogs.Select<BlogEntity, BlogListItem>().ToPage(page);
+            userStore.WithUser(items.Items);
+            CategoryRepository.WithCategory(db, items.Items);
+            return items;
         }
 
-        public IPage<BlogModel> GetList(QueryForm form)
+        
+
+        public IPage<BlogListItem> GetList(QueryForm form)
         {
             SearchHelper.CheckSortOrder(form, ["id", "created_at"]);
-            return db.Blogs.Search(form.Keywords, "Title")
+            var items = db.Blogs.Search(form.Keywords, "Title")
                 .OrderBy<BlogEntity, int>(form.Sort, form.Order)
-                .ToPage(form).CopyTo<BlogEntity, BlogModel>();
+                .Select<BlogEntity, BlogListItem>()
+                .ToPage(form);
+            userStore.WithUser(items.Items);
+            CategoryRepository.WithCategory(db, items.Items);
+            return items;
         }
 
-        public BlogEntity[] GetNewBlogs(int count = 8)
+        public BlogListItem[] GetNewBlogs(int count = 8)
         {
             return db.Blogs.OrderByDescending(i => i.CreatedAt)
-                .Select(i => new BlogEntity()
+                .Select(i => new BlogListItem()
                 {
                     Id = i.Id,
                     Title = i.Title,
@@ -37,17 +51,38 @@ namespace NetDream.Modules.Blog.Repositories
                 }).Take(count).ToArray();
         }
 
-        public TagModel[] GetTags()
+        public BlogListItem[] GetRelationBlogs(int sourceId)
         {
-            return db.Tags.Select<TagEntity, TagModel>().ToArray();
+            var provider = Tag();
+            var items = provider.GetRelationList(sourceId); ;
+            if (items.Length == 0)
+            {
+                return [];
+            }
+            return db.Blogs.Where(i => items.Contains(i.Id) &&
+            i.PublishStatus == PublishRepository.PUBLISH_STATUS_POSTED)
+                .OrderByDescending(i => i.CreatedAt)
+                .Take(5)
+                .Select(i => new BlogListItem()
+                {
+                    Id = i.Id,
+                    Title = i.Title,
+                    Description = i.Description,
+                    CreatedAt = i.CreatedAt
+                }).ToArray();
         }
 
-        public CategoryModel[] Categories()
+        public TagListItem[] GetTags()
         {
-            return db.Categories.Select<CategoryEntity, CategoryModel>().ToArray();
+            return db.Tags.Select<TagEntity, TagListItem>().ToArray();
         }
 
-        public BlogModel GetBlog(int id)
+        public CategoryListItem[] Categories()
+        {
+            return db.Categories.Select<CategoryEntity, CategoryListItem>().ToArray();
+        }
+
+        public BlogModel GetBlog(int id, string? openKey = null)
         {
             return db.Blogs.Where(i => i.Id == id).Single().CopyTo<BlogModel>();
         }
@@ -55,7 +90,7 @@ namespace NetDream.Modules.Blog.Repositories
         public List<BlogArchives> GetArchives()
         {
             var data = db.Blogs.OrderByDescending(i => i.CreatedAt)
-                .Select(i => new BlogEntity()
+                .Select(i => new BlogListItem()
                 {
                     Id = i.Id,
                     Title = i.Title,

@@ -2,7 +2,7 @@
 
 namespace NetDream.Modules.Auth.Models
 {
-    public class UserSimpleModel : IUser
+    public class UserListItem : IUser
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

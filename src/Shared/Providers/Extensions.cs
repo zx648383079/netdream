@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace NetDream.Shared.Providers
 {
@@ -97,7 +98,7 @@ namespace NetDream.Shared.Providers
             }
         }
 
-        public static IQueryable<TSource> Select<TSource, TProperty>(this IQueryable<TSource> source, [MinLength(1)] params string[] keys)
+        public static IQueryable<TSource> Select<TSource, TProperty>(this IQueryable<TSource> source, string[] keys)
         {
             var type = typeof(TSource);
             var thisArg = Expression.Parameter(type);
@@ -115,19 +116,20 @@ namespace NetDream.Shared.Providers
         }
 
         public static IQueryable<TTarget> Select<TSource, TTarget>(this IQueryable<TSource> source)
-            where TTarget : class, TSource
+            where TTarget : class
         {
             var type = typeof(TSource);
             var target = typeof(TTarget);
+            var srcKeys = type.GetProperties().ToDictionary(i => i.Name, i => i); 
             var thisArg = Expression.Parameter(type);
             var lambda = Expression.Lambda<Func<TSource, TTarget>>(Expression.MemberInit(
                     Expression.New(target.GetConstructor([])),
-                    type.GetProperties()
-                    .Where(i => !i.GetType().IsArray && !i.GetType().IsClass)
+                    target.GetProperties()
+                    .Where(i => srcKeys.ContainsKey(i.Name))
                     .Select(i => {
                         return Expression.Bind(
                             i,
-                            Expression.Property(thisArg, i)
+                            Expression.Property(thisArg, srcKeys[i.Name])
                         );
                     })
                 ), thisArg);
@@ -150,8 +152,12 @@ namespace NetDream.Shared.Providers
             }
             var thisArg = Expression.Parameter(type);
             var lambda = Expression.Lambda<Func<TSource, TProperty>>(Expression.Property(thisArg, memberProperty), thisArg);
-            var method = typeof(Queryable).GetMethod(methodName)!;
-            return (IOrderedQueryable<TSource>)method.Invoke(null, [source, lambda])!;
+            var methodInfo = typeof(Queryable)
+                .GetMethods()
+                .First(m => m.Name == methodName && m.GetParameters().Length == 2);
+            var method = methodInfo.MakeGenericMethod(type, memberProperty.PropertyType);
+            var res = method.Invoke(null, [source, lambda]);
+            return (IOrderedQueryable<TSource>)res!;
         }
 
         public static IQueryable<TSource> Search<TSource>(this IQueryable<TSource> source, string keywords, [MinLength(1)] params string[] keys)
@@ -242,7 +248,7 @@ namespace NetDream.Shared.Providers
         {
             return source.ToPage(new PaginationForm(page));
         }
-        public static IPage<TSource> ToPage<TSource>(this IQueryable<TSource> source, int page, Func<IQueryable<TSource>, IQueryable<TSource>> cb)
+        public static IPage<TTarget> ToPage<TSource, TTarget>(this IQueryable<TSource> source, int page, Func<IQueryable<TSource>, IQueryable<TTarget>> cb)
         {
             return source.ToPage(new PaginationForm(page), cb);
         }
@@ -258,9 +264,9 @@ namespace NetDream.Shared.Providers
             return res;
         }
 
-        public static IPage<TSource> ToPage<TSource>(this IQueryable<TSource> source, PaginationForm pagination, Func<IQueryable<TSource>, IQueryable<TSource>> cb)
+        public static IPage<TTarget> ToPage<TSource, TTarget>(this IQueryable<TSource> source, PaginationForm pagination, Func<IQueryable<TSource>, IQueryable<TTarget>> cb)
         {
-            var res = new Page<TSource>(source.Count(), pagination);
+            var res = new Page<TTarget>(source.Count(), pagination);
             if (!res.IsEmpty)
             {
                 res.Items = cb.Invoke(source).Skip(res.ItemsOffset).Take(res.ItemsPerPage)
