@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace NetDream.Shared.Providers
 {
@@ -43,7 +42,7 @@ namespace NetDream.Shared.Providers
             where FSource : class
             where TSource : class, new()
         {
-            return new Page<TSource>(data.TotalItems, data.CurrentPage, data.ItemsPerPage)
+            return new Page<TSource>(data)
             {
                 Items = data.Items.Select(i => i.CopyTo<TSource>()).ToArray()
             };
@@ -52,7 +51,7 @@ namespace NetDream.Shared.Providers
         public static IPage<TSource> ConvertTo<FSource, TSource>(this IPage<FSource> data)
             where FSource : TSource
         {
-            return new Page<TSource>(data.TotalItems, data.CurrentPage, data.ItemsPerPage)
+            return new Page<TSource>(data)
             {
                 Items = Array.ConvertAll(data.Items, i => (TSource)i)
             };

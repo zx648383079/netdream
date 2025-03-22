@@ -34,6 +34,12 @@ namespace NetDream.Shared.Models
             TotalItems = Items.Length;
         }
 
+        public Page(IPagination source)
+            : this(source.TotalItems, source.CurrentPage, source.ItemsPerPage)
+        {
+            
+        }
+
         public Page(int total, int page, int perPage)
         {
             TotalItems = total;

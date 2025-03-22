@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using NetDream.Shared.Providers;
 using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.Data.SqlClient;
+using NetDream.Modules.Auth.Entities;
 
 namespace NetDream.Modules.Auth.Repositories
 {
@@ -16,27 +20,40 @@ namespace NetDream.Modules.Auth.Repositories
     {
         public bool Exist(int userId)
         {
+            if (userId <= 0)
+            {
+                return false;
+            }
             return db.Users.Where(i => i.Id == userId).Any();
         }
 
         public IUser? Get(int userId)
         {
+
+            if (userId <= 0)
+            {
+                return null;
+            }
             return db.Users.Where(i => i.Id == userId).Select(i => new UserListItem()
             {
                 Id = i.Id,
                 Name = i.Name,
                 Avatar = i.Avatar
-            }).Single();
+            }).SingleOrDefault();
         }
 
         public IUser? GetProfile(int userId)
         {
+            if (userId <= 0)
+            {
+                return null;
+            }
             var model = db.Users.Where(i => i.Id == userId).Select(i => new UserProfileModel()
             {
                 Id = i.Id,
                 Name = i.Name,
                 Avatar = i.Avatar
-            }).Single();
+            }).SingleOrDefault();
             if (model is not null)
             {
                 model.BulletinCount = db.BulletinUsers.Where(i => i.UserId == userId && i.Status == 0).Count();
@@ -46,12 +63,20 @@ namespace NetDream.Modules.Auth.Repositories
 
         public IEnumerable<IUser> Get(params int[] userItems)
         {
-            return db.Users.Where(i => userItems.Contains(i.Id)).Select(i => new UserListItem()
+            userItems = [.. userItems.Where(i => i > 0).Distinct()];
+            if (userItems.Length == 0)
             {
-                Id = i.Id,
-                Name = i.Name,
-                Avatar = i.Avatar
-            }).ToArray();
+                return [];
+            }
+            
+            return db.Users.Where(i => userItems.Contains(i.Id))
+                .Select(i => new UserListItem()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Avatar = i.Avatar
+                })
+                .ToArray();
         }
 
         /// <summary>
@@ -61,12 +86,18 @@ namespace NetDream.Modules.Auth.Repositories
         /// <returns></returns>
         public IEnumerable<IUser> Get(params string[] userItems)
         {
-            return db.Users.Where(i => userItems.Contains(i.Name)).Select(i => new UserListItem()
+            userItems = [.. userItems.Where(i => !string.IsNullOrWhiteSpace(i)).Distinct()];
+            if (userItems.Length == 0)
             {
-                Id = i.Id,
-                Name = i.Name,
-                Avatar = i.Avatar
-            }).ToArray();
+                return [];
+            }
+            return db.Users.Where(i => userItems.Contains(i.Name))
+                .Select(i => new UserListItem()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Avatar = i.Avatar
+                }).ToArray();
         }
 
         public IPage<IUser> Search(string keywords, int page, 

@@ -1,15 +1,16 @@
-﻿using NetDream.Shared.Helpers;
-using NetDream.Shared.Interfaces;
-using NetDream.Shared.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Note.Entities;
 using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Models;
-using System.Collections.Generic;
-using System;
-using NetDream.Modules.Note.Entities;
-using NetDream.Shared.Providers;
-using System.Linq;
+using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 
 namespace NetDream.Modules.Note.Repositories
 {
@@ -27,7 +28,7 @@ namespace NetDream.Modules.Note.Repositories
                 .When(user > 0, i => i.UserId == user).OrderByDescending(i => i.Id)
                 .ToPage(page);
         }
-        public IPage<NoteModel> GetList(QueryForm form,
+        public IPage<NoteListItem> GetList(QueryForm form,
             int user = 0,
             int id = 0, bool notice = false)
         {
@@ -42,10 +43,13 @@ namespace NetDream.Modules.Note.Repositories
             {
                 query = query.Where(i => i.Status == STATUS_VISIBLE);
             }
-            var items = query.OrderByDescending(i => i.Id).ToPage(form)
-                .CopyTo<NoteEntity, NoteModel>();
-            userStore.WithUser(items.Items);
-            return items;
+            var items = query.OrderByDescending(i => i.Id).ToPage(form);
+            var res = new Page<NoteListItem>(items)
+            {
+                Items = items.Items.Select(i => new NoteListItem(i)).ToArray()
+            };
+            userStore.WithUser(res.Items);
+            return res;
         }
 
         public NoteModel? Get(int id)
@@ -127,6 +131,14 @@ namespace NetDream.Modules.Note.Repositories
             }
             db.SaveChanges();
             return res;
+        }
+
+        internal static string RenderHtml(string content)
+        {
+            var res = WebUtility.HtmlEncode(content).Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                .Replace(" ", "&nbsp;");
+            return string.Join("", res.Split('\n').Where(i => !string.IsNullOrWhiteSpace(i))
+                .Select(i => $"<p>{i}</p>"));
         }
     }
 }

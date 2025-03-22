@@ -178,7 +178,11 @@ namespace NetDream.Api
             where TContext : DbContext
         {
             services.AddDbContext<TContext>(
-                            options => options.UseMySql(connectString, serverVersion)
+                            options => options.UseMySql(connectString, serverVersion, builder =>
+                            {
+                                // 允许主键使用 in 查询
+                                builder.TranslateParameterizedCollectionsToConstants();
+                            })
 #if DEBUG
                             .LogTo(Console.WriteLine, LogLevel.Information)
                             .EnableSensitiveDataLogging()

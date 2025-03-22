@@ -1,12 +1,16 @@
 ﻿namespace NetDream.Shared.Interfaces
 {
-    public interface IPage<T>
+    public interface IPagination
     {
-        public T[] Items { get; }
-
         public int ItemsPerPage { get; }
         public int CurrentPage { get; }
         public int TotalItems { get; }
         public int TotalPages { get; }
     }
+    public interface IPage<T> : IPagination
+    {
+        public T[] Items { get; }
+    }
+
+ 
 }
