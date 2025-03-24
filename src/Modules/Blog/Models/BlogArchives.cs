@@ -6,7 +6,7 @@ namespace NetDream.Modules.Blog.Models
     {
         public int Year { get; set; }
 
-        public List<BlogListItem> Items = [];
+        public List<BlogListItem> Children { get; set; } = [];
 
     }
 }

@@ -34,7 +34,7 @@ namespace NetDream.Shared.Converters
                     {
                         continue;
                     }
-                    MetaConverter<T>.ReadObject(ref reader, res, propertyName, options);
+                    ReadObject(ref reader, res, propertyName, options);
                 }
             }
             return (T)res;
@@ -43,13 +43,13 @@ namespace NetDream.Shared.Converters
         private static void ReadObject(ref Utf8JsonReader reader, object instance, string propertyName, JsonSerializerOptions options)
         {
             var type = instance.GetType();
-            var field = type.GetField(propertyName);
+            var field = type.GetProperty(propertyName);
             if (field is not null && field?.GetCustomAttribute<JsonMetaAttribute>() is null)
             {
-                field?.SetValue(instance, JsonSerializer.Deserialize(ref reader, field.FieldType, options));
+                field?.SetValue(instance, JsonSerializer.Deserialize(ref reader, field.PropertyType, options));
                 return;
             }
-            foreach (var item in type.GetFields())
+            foreach (var item in type.GetProperties())
             {
                 if (item.GetCustomAttribute<JsonMetaAttribute>() is null)
                 {
@@ -58,14 +58,14 @@ namespace NetDream.Shared.Converters
                 var meta = item.GetValue(instance);
                 if (meta is null)
                 {
-                    meta = Activator.CreateInstance(item.FieldType);
+                    meta = Activator.CreateInstance(item.PropertyType);
                     item.SetValue(instance, meta);
                 }
                 if (meta is null)
                 {
                     continue;
                 }
-                MetaConverter<T>.ReadObject(ref reader, meta, propertyName, options);
+                ReadObject(ref reader, meta, propertyName, options);
                 return;
             }
         }
@@ -73,24 +73,53 @@ namespace NetDream.Shared.Converters
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            MetaConverter<T>.WriteObject(writer, value, options);
+            WriteObject(writer, value, options);
             writer.WriteEndObject();
         }
 
         private static void WriteObject(Utf8JsonWriter writer, object instance, JsonSerializerOptions options)
         {
             var type = instance.GetType();
-            object? meta;
-            foreach (var item in type.GetFields())
+            var enumeratorFn = type.GetMethod("GetEnumerator");
+            if (enumeratorFn is not null)
             {
-                if (item.GetCustomAttribute<JsonMetaAttribute>() is null)
+                var enumerator = enumeratorFn.Invoke(instance, null);
+                var enumeratorType = enumerator?.GetType();
+                var nextFn = enumeratorType?.GetMethod("MoveNext");
+                var currentProperty = enumeratorType?.GetProperty("Current");
+                if (currentProperty is not null && nextFn is not null)
+                {
+                    while ((bool)nextFn.Invoke(enumerator, null))
+                    {
+                        var current = currentProperty.GetValue(enumerator);
+                        if (current is null)
+                        {
+                            continue;
+                        }
+                        var keyValuePairType = current.GetType();
+                        var keyProperty = keyValuePairType.GetProperty("Key");
+                        var valueProperty = keyValuePairType.GetProperty("Value");
+                        var val = valueProperty?.GetValue(current);
+                        if (val is null)
+                        {
+                            continue;
+                        }
+                        writer.WritePropertyName((string)keyProperty.GetValue(current));
+                        JsonSerializer.Serialize(writer, val, options);
+                    }
+                }
+            }
+            object? meta;
+            foreach (var item in type.GetProperties())
+            {
+                if (item.GetCustomAttribute<JsonMetaAttribute>() is not null)
                 {
                     meta = item.GetValue(instance);
                     if (meta is null)
                     {
                         continue;
                     }
-                    MetaConverter<T>.WriteObject(writer, meta, options);
+                    WriteObject(writer, meta, options);
                     continue;
                 }
                 if (item.GetCustomAttribute<JsonIgnoreAttribute>() is not null)
@@ -103,12 +132,17 @@ namespace NetDream.Shared.Converters
                     continue;
                 }
                 var column = item.GetCustomAttribute<ColumnAttribute>();
-                writer.WritePropertyName(column is null || string.IsNullOrEmpty(column.Name) ? item.Name : column.Name);
+                var key = column is null || string.IsNullOrEmpty(column.Name) ? item.Name : column.Name;
+                writer.WritePropertyName(
+                    options.PropertyNamingPolicy?.ConvertName(key) ?? key
+                    );
                 JsonSerializer.Serialize(writer, val, options);
             }
         }
     }
-
+    /// <summary>
+    /// 实现附加合并
+    /// </summary>
     public class JsonMetaAttribute : JsonAttribute
     {
 

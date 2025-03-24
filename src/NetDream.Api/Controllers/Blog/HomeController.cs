@@ -14,5 +14,10 @@ namespace NetDream.Api.Controllers.Blog
         {
             return RenderPage(repository.GetList(form));
         }
+        [Route("archives")]
+        public IActionResult Archives()
+        {
+            return RenderData(repository.GetArchives());
+        }
     }
 }

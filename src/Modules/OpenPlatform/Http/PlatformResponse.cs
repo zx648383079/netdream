@@ -2,6 +2,7 @@
 using NetDream.Modules.OpenPlatform.Entities;
 using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Shared.Interfaces;
+using System;
 
 namespace NetDream.Modules.OpenPlatform.Http
 {
@@ -12,7 +13,15 @@ namespace NetDream.Modules.OpenPlatform.Http
 
         public object Render(object data)
         {
-            return data;
+            if (data is BaseResponse)
+            {
+                return data;
+            }
+            return new MetaResponse(data) 
+            {
+                Appid = Platform?.Appid,
+                Timestamp = DateTime.Now.ToString()
+            };
         }
 
         public object RenderData<T>(T data)
@@ -20,6 +29,7 @@ namespace NetDream.Modules.OpenPlatform.Http
             return Render(new DataOneResponse<T>(data)
             {
                 Appid = Platform?.Appid,
+                Timestamp = DateTime.Now.ToString()
             });
         }
 
@@ -28,6 +38,7 @@ namespace NetDream.Modules.OpenPlatform.Http
             return Render(new DataOneResponse<T>(data)
             {
                 Appid = Platform?.Appid,
+                Timestamp = DateTime.Now.ToString(),
                 Message = message
             });
         }
@@ -54,7 +65,11 @@ namespace NetDream.Modules.OpenPlatform.Http
         public object RenderPage<T>(IPage<T> page)
         {
 
-            return Render(new PageResponse<T>(page));
+            return Render(new PageResponse<T>(page)
+            {
+                Appid = Platform?.Appid,
+                Timestamp = DateTime.Now.ToString()
+            });
         }
     }
 }

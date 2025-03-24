@@ -31,6 +31,7 @@ using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using System.Data.Common;
 using Duende.IdentityModel;
+using NetDream.Modules.OpenPlatform.Models;
 
 namespace NetDream.Api
 {
@@ -129,6 +130,7 @@ namespace NetDream.Api
             services.AddControllers().AddJsonOptions(options => {
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
                 options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
+                options.JsonSerializerOptions.Converters.Add(new MetaConverter<MetaResponse>());
             });
             services.AddMemoryCache();
             services.AddHttpContextAccessor();

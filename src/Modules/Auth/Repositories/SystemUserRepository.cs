@@ -5,10 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NetDream.Shared.Providers;
 using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Microsoft.Data.SqlClient;
-using NetDream.Modules.Auth.Entities;
 
 namespace NetDream.Modules.Auth.Repositories
 {

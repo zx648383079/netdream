@@ -35,7 +35,7 @@
                     <div class="time-year">@archives.Year</div>
                 </div>
                 <div class="time-items">
-                    @foreach (var item in archives.Items)
+                    @foreach (var item in archives.Children)
                     {
                         <a class="time-item" href="@Url.Action("Detail", "Home", new { id=item.Id})">
                             <div class="title">@item.Title</div>

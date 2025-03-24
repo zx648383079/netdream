@@ -1,17 +1,22 @@
-﻿using NetDream.Shared.Helpers;
+﻿using Markdig;
 using NetDream.Modules.Blog.Entities;
+using NetDream.Modules.Blog.Markdown;
 using NetDream.Modules.Blog.Models;
-using System.Collections.Generic;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Entities;
-using System.Linq;
-using NetDream.Shared.Models;
 using NetDream.Shared.Providers.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class BlogRepository(BlogContext db, IUserRepository userStore)
+    public class BlogRepository(
+        BlogContext db, 
+        IUserRepository userStore, 
+        IDeeplink deeplink)
     {
         public TagProvider Tag()
         {
@@ -37,6 +42,27 @@ namespace NetDream.Modules.Blog.Repositories
             userStore.WithUser(items.Items);
             CategoryRepository.WithCategory(db, items.Items);
             return items;
+        }
+
+        public BlogListItem[] GetList(int[] items)
+        {
+            if (items.Length == 0)
+            {
+                return [];
+            }
+            var data = db.Blogs.Where(i => items.Contains(i.Id))
+                .Select(i => new BlogListItem()
+                {
+                    Id = i.Id,
+                    Title = i.Title,
+                    CreatedAt = i.CreatedAt,
+                    Description = i.Description,
+                }).ToArray();
+            foreach (var item in data)
+            {
+                item.Url = deeplink.Encode($"blog/{item.Id}");
+            }
+            return data;
         }
 
         public BlogListItem[] GetNewBlogs(int count = 8)
@@ -82,12 +108,42 @@ namespace NetDream.Modules.Blog.Repositories
             return db.Categories.Select<CategoryEntity, CategoryListItem>().ToArray();
         }
 
-        public BlogModel GetBlog(int id, string? openKey = null)
+        public BlogModel? GetBlog(int id, string? openKey = null)
         {
-            return db.Blogs.Where(i => i.Id == id).Single().CopyTo<BlogModel>();
+            if (id <= 0)
+            {
+                return null;
+            }
+            var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
+            if (model is null)
+            {
+                return null;
+            }
+            var pipeline = new MarkdownPipelineBuilder()
+                    .UseAdvancedExtensions()
+                    .UseNetDreamExtensions(this) // 添加自定义代码块渲染器
+                    .Build();
+            return new BlogModel()
+            {
+                Id = model.Id,
+                Title = model.Title,
+                Description = model.Description,
+                Content = Markdig.Markdown.ToHtml(model.Content, pipeline),
+                ClickCount = model.ClickCount,
+                RecommendCount = model.RecommendCount,
+                CommentCount = model.CommentCount,
+                CreatedAt = model.CreatedAt,
+                User = userStore.Get(model.Id),
+                Term = db.Categories.Where(i => i.Id == model.TermId)
+                    .Select(i => new CategoryListItem()
+                    {
+                        Id = i.Id,
+                        Name = i.Name,
+                    }).SingleOrDefault()
+            };
         }
 
-        public List<BlogArchives> GetArchives()
+        public BlogArchives[] GetArchives()
         {
             var data = db.Blogs.OrderByDescending(i => i.CreatedAt)
                 .Select(i => new BlogListItem()
@@ -95,7 +151,7 @@ namespace NetDream.Modules.Blog.Repositories
                     Id = i.Id,
                     Title = i.Title,
                     CreatedAt = i.CreatedAt
-                });
+                }).ToArray();
             var items = new List<BlogArchives>();
             BlogArchives? last = null;
             foreach (var item in data)
@@ -103,17 +159,17 @@ namespace NetDream.Modules.Blog.Repositories
                 var date = TimeHelper.TimestampTo(item.CreatedAt);
                 if (last != null && last.Year == date.Year)
                 {
-                    last.Items.Add(item);
+                    last.Children.Add(item);
                     continue;
                 }
                 last = new BlogArchives
                 {
                     Year = date.Year
                 };
-                last.Items.Add(item);
+                last.Children.Add(item);
                 items.Add(last);
             }
-            return items;
+            return [..items];
         }
 
    

@@ -1,5 +1,4 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Blog.Models
 {
@@ -26,9 +25,13 @@ namespace NetDream.Modules.Blog.Models
         public int ClickCount { get; set; }
         public int CreatedAt { get; set; }
 
+
+
         public IListLabelItem? Term { get; set; }
         public IUser? User { get; set; }
 
         public bool IsLocalization { get; set; }
+
+        public string Url { get; set; } = string.Empty;
     }
 }
