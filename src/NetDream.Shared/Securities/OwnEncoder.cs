@@ -6,25 +6,24 @@ using System.Text.RegularExpressions;
 
 namespace NetDream.Shared.Securities
 {
-    public class Encryptor : ISecurity
+    public class OwnEncoder(DateTime time) : ISecurity
     {
+        private readonly int[] _keyItems = CreateKeys(time);
 
         public string Encrypt(string data)
         {
-            var keyItems = CreateKeys(DateTime.Now);
             var sb = new StringBuilder();
             var buff = Encoding.UTF8.GetBytes(data);
             var bs = Convert.ToBase64String(buff);
             for (int i = 0; i < bs.Length; i++)
             {
-                sb.Append(DictionaryCode(bs[i] - keyItems[i % keyItems.Length]));
+                sb.Append(DictionaryCode(bs[i] - _keyItems[i % _keyItems.Length]));
             }
             return sb.ToString();
         }
 
         public string Decrypt(string data)
         {
-            var keyItems = CreateKeys(DateTime.Now);
             var i = 0;
             var j = 0;
             var sb = new StringBuilder();
@@ -35,8 +34,8 @@ namespace NetDream.Shared.Securities
                 {
                     step++;
                 }
-                sb.Append(Convert.ToChar(DictionaryKey(
-                    data.Substring(i, i + step) + keyItems[j % keyItems.Length])));
+                sb.Append((char)(DictionaryKey(
+                    data.Substring(i, step)) + _keyItems[j % _keyItems.Length]));
                 i += step;
                 j++;
             }
@@ -57,17 +56,17 @@ namespace NetDream.Shared.Securities
             return CreateKeys(DateTime.Now);
         }
 
-        private int[] CreateKeys(DateTime date)
+        private static int[] CreateKeys(DateTime date)
         {
             return CreateKeys(TimeHelper.TimestampFrom(date));
         }
 
-        private int[] CreateKeys(int timestamp)
+        private static int[] CreateKeys(int timestamp)
         {
             return CreateKeysFromTimestamp(timestamp.ToString());
         }
 
-        private int[] CreateKeysFromTimestamp(string timestamp)
+        private static int[] CreateKeysFromTimestamp(string timestamp)
         {
             var items = new int[10];
             for (var i = 0; i < items.Length; i++)
@@ -88,7 +87,8 @@ namespace NetDream.Shared.Securities
             return items;
         }
 
-        private int DictionaryLength() {
+        private int DictionaryLength() 
+        {
             return 51;
         }
 

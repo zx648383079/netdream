@@ -7,13 +7,19 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System;
 
 namespace NetDream.Api.Base.Middleware
 {
     public class ResponseMiddleware(RequestDelegate next)
     {
-        public Task InvokeAsync(HttpContext context, OpenRepository repository)
+        public Task InvokeAsync(HttpContext context, OpenRepository repository, IJsonResponse response)
         {
+            if (context.Request.Query.TryGetValue("timestamp", out var query) 
+                && DateTime.TryParse(query.ToString(), out var timestamp)) 
+            {
+                response.ClientTime = timestamp;
+            }
             var uriPath = context.Request.Path.HasValue ? context.Request.Path.Value : string.Empty;
 #if DEBUG
             if (uriPath.StartsWith("/openapi/"))
@@ -21,24 +27,23 @@ namespace NetDream.Api.Base.Middleware
                 return next.Invoke(context);
             }
 #endif
-            var res = new PlatformResponse();
-            if (!context.Request.Query.TryGetValue("appid", out var val))
+            if (!context.Request.Query.TryGetValue("appid", out query))
             {
-                return JsonAsync(context, res.RenderFailure("APP ID error"), 404);
+                return JsonAsync(context, response.RenderFailure("APP ID error"), 404);
             }
-            var appId = val.ToString();
+            var appId = query.ToString();
             if (string.IsNullOrWhiteSpace(appId))
             {
-                return JsonAsync(context, res.RenderFailure("APP ID error"), 404);
+                return JsonAsync(context, response.RenderFailure("APP ID error"), 404);
             }
             var model = repository.GetByAppId(appId);
             if (model == null)
             {
-                return JsonAsync(context, res.RenderFailure("APP ID error"), 404);
+                return JsonAsync(context, response.RenderFailure("APP ID error"), 404);
             }
             if (!model.VerifyRule(uriPath))
             {
-                return JsonAsync(context, res.RenderFailure("The URL you requested was disabled"), 404);
+                return JsonAsync(context, response.RenderFailure("The URL you requested was disabled"), 404);
             }
 #if !DEBUG
             if (!VerifyRest(model, context))
@@ -46,9 +51,11 @@ namespace NetDream.Api.Base.Middleware
                 return JsonAsync(context, res.RenderFailure("sign or encrypt error"), 404);
             }
 #endif
-
-            res.Platform = model;
-            context.Features.Set<IJsonResponse>(res);
+            if (response is PlatformResponse p)
+            {
+                p.Platform = model;
+            }
+            context.Features.Set(response);
             return next.Invoke(context);
         }
 

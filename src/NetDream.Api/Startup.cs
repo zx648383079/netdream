@@ -125,8 +125,8 @@ namespace NetDream.Api
             #region db
             RegisterDbContext(services);
             #endregion
-            services.AddTransient<ISecurity, Encryptor>();
-            services.AddTransient<IJsonResponse, PlatformResponse>();
+
+            services.AddScoped<IJsonResponse, PlatformResponse>();
             services.AddControllers().AddJsonOptions(options => {
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
                 options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());

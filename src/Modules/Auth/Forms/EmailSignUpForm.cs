@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Auth.Entities;
-using NetDream.Shared.Helpers;
+using NetDream.Modules.Auth.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
@@ -50,7 +50,8 @@ namespace NetDream.Modules.Auth.Forms
 
                 Password = BCrypt.Net.BCrypt.HashPassword(Password),
             };
-            return OperationResult<IUser>.Ok(user);
+            // TODO save
+            return OperationResult<IUser>.Ok(new UserModel(user));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using NetDream.Shared.Helpers;
+﻿using NetDream.Modules.Auth.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
@@ -25,7 +25,7 @@ namespace NetDream.Modules.Auth.Forms
             {
                 return OperationResult<IUser>.Fail(FailureReasons.ValidateError, "email or password is empty");
             }
-            var user = db.Users.Where(i => i.Email == Email).Single();
+            var user = db.Users.Where(i => i.Email == Email).SingleOrDefault();
             if (user is null)
             {
                 return OperationResult<IUser>.Fail(FailureReasons.ValidateError, "email is not sign in");
@@ -34,7 +34,7 @@ namespace NetDream.Modules.Auth.Forms
             {
                 return OperationResult<IUser>.Fail(FailureReasons.ValidateError, new ArgumentException("password is error"));
             }
-            return OperationResult<IUser>.Ok(user);
+            return OperationResult<IUser>.Ok(new UserModel(user));
         }
     }
 }

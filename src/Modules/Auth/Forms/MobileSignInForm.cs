@@ -5,6 +5,7 @@ using NetDream.Modules.Auth.Entities;
 using System;
 using NetDream.Shared.Models;
 using System.Linq;
+using NetDream.Modules.Auth.Models;
 
 namespace NetDream.Modules.Auth.Forms
 {
@@ -22,12 +23,12 @@ namespace NetDream.Modules.Auth.Forms
             {
                 throw new ArgumentNullException("mobile or password is empty");
             }
-            var user = db.Users.Where(i => i.Mobile == Mobile).Single() ?? throw new ArgumentException("email is not sign in");
+            var user = db.Users.Where(i => i.Mobile == Mobile).SingleOrDefault() ?? throw new ArgumentException("email is not sign in");
             if (!BCrypt.Net.BCrypt.Verify(Password, user.Password))
             {
                 throw new ArgumentException("password is error");
             }
-            return OperationResult<IUser>.Ok(user);
+            return OperationResult<IUser>.Ok(new UserModel(user));
         }
     }
 }

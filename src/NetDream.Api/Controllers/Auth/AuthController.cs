@@ -24,8 +24,14 @@ namespace NetDream.Api.Controllers.Auth
         //获取JwtSettings对象信息
         private readonly JwtSettings _jwtSettings = _jwtSettingsAccessor.Value;
 
+        [Route("[action]")]
+        [HttpPost]
         public IActionResult Login([FromBody] SignInForm form)
         {
+            if (!string.IsNullOrEmpty(form.Password))
+            {
+                form.Password = JsonResponse.Decoder.Decrypt(form.Password);
+            }
             var res = repository.Login(form.GetContext());
             if (!res.Succeeded)
             {

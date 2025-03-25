@@ -1,10 +1,22 @@
 ﻿using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Securities;
+using System;
 
 namespace NetDream.Web.Base.Http
 {
     public class JsonResponse : IJsonResponse
     {
+        public DateTime ClientTime { get; set; }
+        public DateTime ServerTime { get; set; }
+        /// <summary>
+        /// 编码服务端响应
+        /// </summary>
+        public ISecurity Encoder { get; } = new NoneEncoder();
+        /// <summary>
+        /// 解码接收客户端
+        /// </summary>
+        public ISecurity Decoder { get; } = new NoneEncoder();
         public object Render(object data)
         {
             return data;
