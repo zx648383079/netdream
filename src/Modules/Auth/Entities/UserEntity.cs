@@ -1,4 +1,5 @@
 using NetDream.Shared.Interfaces.Entities;
+using System;
 
 namespace NetDream.Modules.Auth.Entities
 {
@@ -13,7 +14,7 @@ namespace NetDream.Modules.Auth.Entities
         public string Password { get; set; } = string.Empty;
         public int Sex { get; set; }
         public string Avatar { get; set; } = string.Empty;
-        public string Birthday { get; set; } = string.Empty;
+        public DateTime Birthday { get; set; }
         public int Money { get; set; }
         public int Credits { get; set; }
         

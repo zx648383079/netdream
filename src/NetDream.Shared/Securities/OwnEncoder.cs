@@ -34,8 +34,7 @@ namespace NetDream.Shared.Securities
                 {
                     step++;
                 }
-                sb.Append((char)(DictionaryKey(
-                    data.Substring(i, step)) + _keyItems[j % _keyItems.Length]));
+                sb.Append((char)(DictionaryKey(data.Substring(i, step)) + _keyItems[j % _keyItems.Length]));
                 i += step;
                 j++;
             }

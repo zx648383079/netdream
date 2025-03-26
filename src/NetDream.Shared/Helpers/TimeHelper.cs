@@ -57,10 +57,7 @@ namespace NetDream.Shared.Helpers
         /// <returns></returns>
         public static DateTime TimestampTo(int timestamp)
         {
-            var dateTimeStart = TimeZoneInfo.ConvertTimeToUtc(new DateTime(1970, 1, 1, 0, 0, 0, 0));
-            var lTime = long.Parse(timestamp + "0000000");
-            var toNow = new TimeSpan(lTime);
-            return dateTimeStart.Add(toNow);
+            return DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
         }
 
         public static int TimestampFrom(string time)
@@ -78,8 +75,7 @@ namespace NetDream.Shared.Helpers
         /// <returns></returns>
         public static int TimestampFrom(DateTime time)
         {
-            var dateTimeStart = TimeZoneInfo.ConvertTimeToUtc(new DateTime(1970, 1, 1, 0, 0, 0, 0));
-            return Convert.ToInt32((time.Ticks - dateTimeStart.Ticks) / 10000000);
+            return (int)new DateTimeOffset(time).ToUnixTimeSeconds();
         }
 
         public static int TimestampNow()
