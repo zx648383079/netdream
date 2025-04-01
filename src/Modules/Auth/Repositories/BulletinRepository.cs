@@ -1,4 +1,5 @@
-﻿using NetDream.Modules.Auth.Entities;
+﻿using MediatR;
+using NetDream.Modules.Auth.Entities;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
@@ -102,6 +103,11 @@ namespace NetDream.Modules.Auth.Repositories
             db.Bulletins.Add(bulletin);
             db.SaveChanges();
             return bulletin.Id;
+        }
+
+        public static int UnReadCount(AuthContext db, int user)
+        {
+            return db.BulletinUsers.Where(i => i.UserId == user && i.Status == 0).Count();
         }
     }
 }

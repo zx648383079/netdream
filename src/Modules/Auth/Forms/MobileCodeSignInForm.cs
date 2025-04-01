@@ -1,7 +1,6 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Forms;
-using NetDream.Modules.Auth.Entities;
 using NetDream.Shared.Models;
 using System;
 using System.Linq;
@@ -25,7 +24,10 @@ namespace NetDream.Modules.Auth.Forms
             }
             var user = db.Users.Where(i => i.Mobile == Mobile).SingleOrDefault() ?? throw new ArgumentException("email is not sign in");
             // TODO 验证
-            return OperationResult<IUser>.Ok(new UserModel(user));
+            return OperationResult<IUser>.Ok(new UserModel(user)
+            {
+                IsOnline = true,
+            });
         }
     }
 }

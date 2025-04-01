@@ -34,7 +34,10 @@ namespace NetDream.Modules.Auth.Forms
             {
                 return OperationResult<IUser>.Fail(FailureReasons.ValidateError, new ArgumentException("password is error"));
             }
-            return OperationResult<IUser>.Ok(new UserModel(user));
+            return OperationResult<IUser>.Ok(new UserModel(user)
+            {
+                IsOnline = true,
+            });
         }
     }
 }

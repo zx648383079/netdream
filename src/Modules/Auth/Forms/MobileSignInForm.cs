@@ -1,7 +1,6 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Forms;
-using NetDream.Modules.Auth.Entities;
 using System;
 using NetDream.Shared.Models;
 using System.Linq;
@@ -28,7 +27,10 @@ namespace NetDream.Modules.Auth.Forms
             {
                 throw new ArgumentException("password is error");
             }
-            return OperationResult<IUser>.Ok(new UserModel(user));
+            return OperationResult<IUser>.Ok(new UserModel(user)
+            {
+                IsOnline = true,
+            });
         }
     }
 }

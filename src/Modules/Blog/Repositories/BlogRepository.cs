@@ -8,6 +8,7 @@ using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Entities;
 using NetDream.Shared.Providers.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -172,7 +173,11 @@ namespace NetDream.Modules.Blog.Repositories
             return [..items];
         }
 
-   
-
+        internal static int PublishCount(BlogContext db, int userId)
+        {
+            return db.Blogs.Where(i => i.UserId == userId && 
+            i.ParentId == 0 && i.PublishStatus == PublishRepository.PUBLISH_STATUS_POSTED)
+                .Count();
+        }
     }
 }

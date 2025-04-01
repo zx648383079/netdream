@@ -62,12 +62,15 @@ namespace NetDream.Modules.Auth.Repositories
                 return null;
             }
             var model = db.Users.Where(i => i.Id == client.UserId).Single();
+            var openItems = new UserOpenStatistics(model.Id, extra.Split(','));
+            mediator.Publish(openItems).GetAwaiter().GetResult();
             return new UserProfile()
             {
                 Id = model.Id,
                 Name = model.Name,
                 Avatar = model.Avatar,
-                BulletinCount = GetBulletinCount(model.Id)
+                IsOnline = true,
+                MetaItems = openItems.Result,
             };
         }
 
@@ -83,60 +86,37 @@ namespace NetDream.Modules.Auth.Repositories
                     Sex = i.Sex,
                     Status = i.Status,
                     CreatedAt = i.CreatedAt
-                }).Single();
+                }).SingleOrDefault();
             if (model is null)
             {
                 return null;
             }
+            var openItems = new UserOpenStatistics(model.Id, extra.Split(','));
+            mediator.Publish(openItems).GetAwaiter().GetResult();
             return new UserProfile()
             {
-
+                Id = model.Id,
+                Name = model.Name,
+                Avatar = model.Avatar,
+                MetaItems = openItems.Result,
             };
         }
 
-        public string GetLastIp(int user)
+        public static string GetLastIp(AuthContext db, int user)
         {
             var ip = db.LoginLogs
                 .Where(i => i.UserId == user && i.Status == 1)
                 .OrderByDescending(i => i.CreatedAt)
                 .Select(i => i.Ip)
-                .Single();
-            if (ip is null)
+                .Take(1)
+                .SingleOrDefault();
+            if (string.IsNullOrWhiteSpace(ip))
             {
                 return string.Empty;
             }
             return StrHelper.HideIp(ip);
         }
 
-        public UserEquityCard[] GetCardItems(int user)
-        {
-            return new CardRepository(db, client).GetUserCard(user);
-        }
-
-        public int GetBulletinCount(int user)
-        {
-            return db.BulletinUsers.Where(i => i.UserId == user && i.Status == 0).Count();
-        }
-
-        public int GetPostCount(int user)
-        {
-            return 0; // BlogRepository.GetPostCount(user);
-        }
-
-        public int GetFollowingCount(int user)
-        {
-            return new RelationshipRepository(db, client).FollowingCount(user);
-        }
-
-        public int GetFollowerCount(int user)
-        {
-            return new RelationshipRepository(db, client).FollowerCount(user);
-        }
-
-        public bool GetTodayCheckIn(int user)
-        {
-            return false; //CheckinRepository.TodayIsChecked(user);
-        }
 
         public IPage<UserEntity> GetAll(string keywords = "", 
             string sort = "id", string order = "desc",
@@ -176,13 +156,12 @@ namespace NetDream.Modules.Auth.Repositories
                 .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, status));
         }
 
-        /**
-         * 保存用户
-         * @param array data
-         * @param array roles
-         * @return UserModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 保存用户
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="roles"></param>
+        /// <returns></returns>
         public IOperationResult<UserEntity> Save(UserForm data, int[] roles)
         {
             if (data.Password != data.ConfirmPassword)
@@ -242,12 +221,11 @@ namespace NetDream.Modules.Auth.Repositories
             mediator.Publish(ManageAction.Create(client, "user_remove", user.Name, ModuleModelType.TYPE_USER_UPDATE, user.Id));
         }
 
-        /**
-         * 缓存用户的权限
-         * @param int user
-         * @return array [role => array, roles => string[], permissions => string[]]
-         * @throws Exception
-         */
+        /// <summary>
+        /// 缓存用户的权限
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public UserRole RolePermission(int user)
         {
             return new RoleRepository(db, client, mediator).UserRolePermission(user);

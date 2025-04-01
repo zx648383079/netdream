@@ -52,7 +52,10 @@ namespace NetDream.Modules.Auth.Repositories
             }).SingleOrDefault();
             if (model is not null)
             {
-                model.BulletinCount = db.BulletinUsers.Where(i => i.UserId == userId && i.Status == 0).Count();
+                model.MetaItems = new()
+                {
+                    {"bulletin_count", BulletinRepository.UnReadCount(db, userId) }
+                };
             }
             return model;
         }

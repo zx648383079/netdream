@@ -10,7 +10,6 @@ using NetDream.Api.Base.Middleware;
 using NetDream.Api.Models;
 using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Securities;
 using NetDream.Modules.Auth;
 using NetDream.Modules.Blog;
 using NetDream.Modules.Contact;
@@ -145,10 +144,11 @@ namespace NetDream.Api
             {
                 app.MapOpenApi();
             }
-            //app.UseAuthentication();
-            //app.UseAuthorization();
+    
             app.UseCors();
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseMiddleware<ResponseMiddleware>();
             app.MapControllers();
         }

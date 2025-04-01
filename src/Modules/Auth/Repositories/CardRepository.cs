@@ -151,7 +151,7 @@ namespace NetDream.Modules.Auth.Repositories
             return log;
         }
 
-        public UserEquityCard[] GetUserCard(int user)
+        public static UserEquityCard[] GetUserCard(AuthContext db, int user)
         {
             var now = TimeHelper.TimestampNow();
             var items = db.UserEquityCards

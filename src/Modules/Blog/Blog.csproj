@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
     <ProjectReference Include="..\..\Shared\Providers\Providers.csproj" />
     <ProjectReference Include="..\..\Shared\Repositories\Repositories.csproj" />
+    <ProjectReference Include="..\Auth\Auth.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.SEO.Repositories;
 
@@ -9,7 +8,6 @@ namespace NetDream.Api.Controllers.SEO
     [ApiController]
     public class HomeController(OptionRepository repository) : JsonController
     {
-
         public IActionResult Index()
         {
             return Render(repository.GetOpenList());

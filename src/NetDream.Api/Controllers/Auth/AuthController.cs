@@ -19,13 +19,16 @@ namespace NetDream.Api.Controllers.Auth
 {
     [ApiController]
     [Route("open/[controller]")]
-    public class AuthController(IOptions<JwtSettings> _jwtSettingsAccessor, AuthRepository repository) : JsonController
+    public class AuthController(IOptions<JwtSettings> _jwtSettingsAccessor, 
+        AuthRepository repository) : JsonController
     {
         //获取JwtSettings对象信息
         private readonly JwtSettings _jwtSettings = _jwtSettingsAccessor.Value;
 
         [Route("[action]")]
         [HttpPost]
+        [ProducesResponseType(typeof(UserModel), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Login([FromBody] SignInForm form)
         {
             if (!string.IsNullOrEmpty(form.Password))
@@ -43,19 +46,6 @@ namespace NetDream.Api.Controllers.Auth
                 u.Token = token;
             }
             return Render(res.Result);
-        }
-
-        [Authorize]
-        [Route("get_user_info")]
-        [HttpPost]
-        [ProducesResponseType(typeof(UserModel), 200)]
-        [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult GetUserInfo()
-        {
-            //获取当前请求用户的信息，包含 token信息
-            var user = HttpContext.User;
-            // user.Identity.Name;
-            return Ok(user.Identity);
         }
 
 

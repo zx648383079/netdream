@@ -31,12 +31,12 @@ namespace NetDream.Modules.Auth.Repositories
             return db.Relationships.Where(i => i.UserId == user && i.Type == type).Count();
         }
 
-        public int FollowingCount(int user)
+        public static int FollowingCount(AuthContext db, int user)
         {
-            return Count(user, TYPE_FOLLOWING);
+            return db.Relationships.Where(i => i.UserId == user && i.Type == TYPE_FOLLOWING).Count();
         }
 
-        public int FollowerCount(int user)
+        public static int FollowerCount(AuthContext db, int user)
         {
             return db.Relationships.Where(i => i.LinkId == user && i.Type == TYPE_FOLLOWING).Count();
         }

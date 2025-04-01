@@ -51,7 +51,10 @@ namespace NetDream.Modules.Auth.Forms
                 Password = BCrypt.Net.BCrypt.HashPassword(Password),
             };
             // TODO save
-            return OperationResult<IUser>.Ok(new UserModel(user));
+            return OperationResult<IUser>.Ok(new UserModel(user)
+            {
+                IsOnline = true,
+            });
         }
     }
 }

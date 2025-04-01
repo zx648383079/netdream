@@ -6,6 +6,7 @@ using NetDream.Shared.Providers;
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.SEO.Forms;
 using NetDream.Shared.Models;
+using NetDream.Modules.SEO.Models;
 
 namespace NetDream.Modules.SEO.Repositories
 {
@@ -69,18 +70,18 @@ namespace NetDream.Modules.SEO.Repositories
             return OperationResult.Ok(model);
         }
 
-        public IOperationResult<AgreementEntity> GetByName(string name)
+        public IOperationResult<AgreementModel> GetByName(string name)
         {
             var model = localize.GetByKey(
                 db.Agreements.Where(i => i.Status == 1),
                 "name",
                 name
-            ).Single();
+            ).Take(1).SingleOrDefault();
             if (model is null)
             {
-                return OperationResult.Fail<AgreementEntity>("Service agreement does not exist");
+                return OperationResult.Fail<AgreementModel>("Service agreement does not exist");
             }
-            return OperationResult.Ok(model);
+            return OperationResult.Ok(new AgreementModel(model));
         }
 
         protected void AfterSave(int id, AgreementEntity data)

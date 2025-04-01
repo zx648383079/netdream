@@ -5,10 +5,12 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace NetDream.Shared.Providers
 {
@@ -151,12 +153,25 @@ namespace NetDream.Shared.Providers
             }
             var thisArg = Expression.Parameter(type);
             var lambda = Expression.Lambda<Func<TSource, TProperty>>(Expression.Property(thisArg, memberProperty), thisArg);
-            var methodInfo = typeof(Queryable)
-                .GetMethods()
-                .First(m => m.Name == methodName && m.GetParameters().Length == 2);
-            var method = methodInfo.MakeGenericMethod(type, memberProperty.PropertyType);
-            var res = method.Invoke(null, [source, lambda]);
+            var method = GetTMethod(typeof(Queryable), methodName, 2, type, memberProperty.PropertyType);
+            var res = method?.Invoke(null, [source, lambda]);
             return (IOrderedQueryable<TSource>)res!;
+        }
+        /// <summary>
+        /// 获取泛型方法
+        /// </summary>
+        /// <param name="type">类</param>
+        /// <param name="methodName">方法的名字</param>
+        /// <param name="parameterCount">方法参数的个数</param>
+        /// <param name="argsT">方法泛型的每个类型</param>
+        /// <returns></returns>
+        private static MethodInfo? GetTMethod(Type type, string methodName,
+            int parameterCount, params Type[] argsT)
+        {
+            var methodInfo = type
+                .GetMethods()
+                .First(m => m.Name == methodName && m.GetParameters().Length == parameterCount);
+            return methodInfo?.MakeGenericMethod(argsT);
         }
 
         public static IQueryable<TSource> Search<TSource>(this IQueryable<TSource> source, string keywords, [MinLength(1)] params string[] keys)
@@ -221,8 +236,8 @@ namespace NetDream.Shared.Providers
                 return source;
             }
             var propertyEx = Expression.Property(thisArg, property);
-            var func = typeof(Enumerable).GetMethod("Contains");
-            var lambda = Expression.Lambda<Func<TSource, bool>>(Expression.Call(Expression.Constant(items), func, propertyEx), thisArg);
+            var func = GetTMethod(typeof(Enumerable), "Contains", 2, property.PropertyType);
+            var lambda = Expression.Lambda<Func<TSource, bool>>(Expression.Call(null, func, Expression.Constant(items), propertyEx), thisArg);
             return source.Where(lambda);
         }
         public static IQueryable<TSource> When<TSource>(this IQueryable<TSource> source, bool isTure, Expression<Func<TSource, bool>> predicate)

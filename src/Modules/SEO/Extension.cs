@@ -20,6 +20,7 @@ namespace NetDream.Modules.SEO
             service.AddScoped<LocalizeRepository>();
             service.AddScoped<IDeeplink, Deeplink>();
             service.AddScoped<ILinkRuler, LinkRuler>();
+            service.AddScoped<AgreementRepository>();
         }
     }
 }
