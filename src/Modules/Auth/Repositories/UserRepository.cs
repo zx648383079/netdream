@@ -217,6 +217,7 @@ namespace NetDream.Modules.Auth.Repositories
             }
             var user = db.Users.Where(i => i.Id == id).Single();
             db.Users.Remove(user);
+            db.SaveChanges();
             mediator.Publish(new CancelAccount(user, client.Now));
             mediator.Publish(ManageAction.Create(client, "user_remove", user.Name, ModuleModelType.TYPE_USER_UPDATE, user.Id));
         }
@@ -236,5 +237,16 @@ namespace NetDream.Modules.Auth.Repositories
             return db.Users.Where(i => i.Id == id).Select(i => i.Name).Single();
         }
 
+
+        public StatisticsItem[] Statistics()
+        {
+            if (client.UserId <= 0)
+            {
+                return [];
+            }
+            var data = new UserStatistics(client.UserId);
+            mediator.Publish(data).GetAwaiter().GetResult();
+            return [..data.Result];
+        }
     }
 }

@@ -39,10 +39,7 @@ namespace NetDream.Modules.SEO.Models
             Status = entity.Status;
             UpdatedAt = TimeHelper.TimestampTo(entity.UpdatedAt);
             CreatedAt = TimeHelper.TimestampTo(entity.CreatedAt);
-            Content = JsonSerializer.Deserialize<List<AgreementGroupItem>>(entity.Content, new JsonSerializerOptions()
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-            }) ?? [];
+            Content = JsonSerializer.Deserialize<List<AgreementGroupItem>>(entity.Content, LinkRule.SerializeOptions) ?? [];
         }
     }
 

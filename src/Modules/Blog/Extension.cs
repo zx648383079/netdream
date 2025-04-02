@@ -3,8 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Auth.Events;
 using NetDream.Modules.Blog.Listeners;
 using NetDream.Modules.Blog.Repositories;
-using NetDream.Shared.Models;
-using System.Collections.Generic;
 
 namespace NetDream.Modules.Blog
 {
@@ -19,7 +17,7 @@ namespace NetDream.Modules.Blog
             service.AddScoped<MetaRepository>();
             service.AddScoped<PublishRepository>();
 
-            service.AddTransient<IRequestHandler<UserStatistics, IEnumerable<StatisticsItem>>, UserStatisticsHandler>();
+            service.AddTransient<INotificationHandler<UserStatistics>, UserStatisticsHandler>();
             service.AddTransient<INotificationHandler<UserOpenStatistics>, UserOpenStatisticsHandler>();
         }
     }

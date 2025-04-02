@@ -8,6 +8,11 @@ namespace NetDream.Shared.Helpers
 {
     public class LinkRule(IDeeplink deeplink)
     {
+        public static JsonSerializerOptions SerializeOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        };
+
         public string Render(string content, string rules)
         {
             if (string.IsNullOrEmpty(content) || string.IsNullOrWhiteSpace(rules))

@@ -13,14 +13,21 @@ namespace NetDream.Modules.Auth.Repositories
         public const byte TYPE_FOLLOWING = 1; // 关注
         public const byte TYPE_BLOCKING = 5; // 屏蔽用户
 
-        /**
-         * 判断关系是
-         * @param int me
-         * @param int user
-         * @param int type
-         * @return bool
-         */
+
+        /// <summary>
+        /// 判断关系是
+        /// </summary>
+        /// <param name="me"></param>
+        /// <param name="user"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public bool Is(int me, int user, int type)
+        {
+            return db.Relationships.Where(i => i.UserId == me && i.LinkId == user && i.Type == type)
+                .Any();
+        }
+
+        public static bool Is(AuthContext db, int me, int user, int type)
         {
             return db.Relationships.Where(i => i.UserId == me && i.LinkId == user && i.Type == type)
                 .Any();

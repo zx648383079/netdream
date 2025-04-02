@@ -11,14 +11,39 @@ namespace NetDream.Modules.Auth.Events
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="includeTags"></param>
-    public class UserStatistics(int userId, string[]? includeTags = null) : IRequest<IEnumerable<StatisticsItem>>
+    public class UserStatistics(int userId, string[]? includeTags = null) : INotification
     {
 
         public int UserId => userId;
 
+        public IList<StatisticsItem> Result { get; private set; } = [];
+
         public bool IsInclude(string tag)
         {
             return includeTags is null || includeTags.Contains(tag);
+        }
+
+        public void Add(StatisticsItem item)
+        {
+            Result.Add(item);
+        }
+
+        public void Add(string name, int count, string unit)
+        {
+            Add(new StatisticsItem(name, count, unit));
+        }
+
+        public void Add(string name, int count)
+        {
+            Add(new StatisticsItem(name, count));
+        }
+
+        public void TryAdd(string tag, Func<StatisticsItem> cb)
+        {
+            if (IsInclude(tag))
+            {
+                Result.Add(cb.Invoke());
+            }
         }
     }
 

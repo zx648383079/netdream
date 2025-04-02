@@ -9,7 +9,7 @@ namespace NetDream.Api.Controllers.Auth
 {
     [Route("open/auth/[controller]")]
     [ApiController]
-    public class UserController(UserRepository auth) : JsonController
+    public class AccountController(UserRepository auth) : JsonController
     {
         [HttpGet]
         [Authorize]
@@ -20,12 +20,5 @@ namespace NetDream.Api.Controllers.Auth
             return Render(auth.GetCurrentProfile(extra));
         }
 
-        [Route("[action]")]
-        [HttpGet]
-        [Authorize]
-        public IActionResult Statistics()
-        {
-            return RenderData(auth.Statistics());
-        }
     }
 }

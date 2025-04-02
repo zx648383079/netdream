@@ -108,6 +108,7 @@ namespace NetDream.Shared.Converters
                         JsonSerializer.Serialize(writer, val, options);
                     }
                 }
+                return;
             }
             object? meta;
             foreach (var item in type.GetProperties())
