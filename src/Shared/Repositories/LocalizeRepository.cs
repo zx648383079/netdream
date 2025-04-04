@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories.Models;
 using System;
@@ -167,6 +168,11 @@ namespace NetDream.Shared.Repositories
                 data.Add(new LanguageFormatted(item.Value, item.Key));
             }
             return data;
+        }
+
+        public OptionItem<string>[] LanguageOptionItems()
+        {
+            return LANGUAGE_MAP.Select(i => new OptionItem<string>(i.Value, i.Key)).ToArray();
         }
     }
 }
