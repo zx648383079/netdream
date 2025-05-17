@@ -73,6 +73,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Drawing", "Shared\Drawing\D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trade", "Modules\Trade\Trade.csproj", "{37D9239F-2910-400D-B18A-6B77996CD92A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeTracker", "Modules\TradeTracker\TradeTracker.csproj", "{B67914A6-4D29-44EF-92A0-575E432F745B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -211,6 +213,10 @@ Global
 		{37D9239F-2910-400D-B18A-6B77996CD92A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37D9239F-2910-400D-B18A-6B77996CD92A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37D9239F-2910-400D-B18A-6B77996CD92A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B67914A6-4D29-44EF-92A0-575E432F745B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B67914A6-4D29-44EF-92A0-575E432F745B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B67914A6-4D29-44EF-92A0-575E432F745B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B67914A6-4D29-44EF-92A0-575E432F745B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -243,6 +249,7 @@ Global
 		{EB230CEE-BF28-4292-9ADF-469AF6E7A217} = {D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}
 		{C517C038-A7D7-45F8-BCDA-270688574AFC} = {D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}
 		{37D9239F-2910-400D-B18A-6B77996CD92A} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
+		{B67914A6-4D29-44EF-92A0-575E432F745B} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {137970B0-B381-4D3F-AD18-F22A2B0365E6}

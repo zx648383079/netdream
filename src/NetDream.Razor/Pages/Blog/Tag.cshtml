@@ -24,7 +24,7 @@
         </div>
         @foreach (var item in Model.Items)
         {
-            <a class="tag-item" href="" style="font-size: @item.FontSize">@item.Name</a>
+            <a class="tag-item" href="" style="font-size: @(item.TargetCount + 12) px">@item.Name</a>
         }
     </div>
 

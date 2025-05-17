@@ -79,13 +79,13 @@ namespace NetDream.Cli
             var items = LoadModuleFolder();
             foreach (var item in items)
             {
-                Console.WriteLine(string.Format("{0}. {1}/Entities", ++i, Path.GetFileName(item)));
+                Console.WriteLine(string.Format("{0}. {1}", ++i, Path.GetFileName(item)));
             }
             Console.Write("input number or folder:");
             var workspace = Console.ReadLine();
             if (int.TryParse(workspace, out index) && index > 0 && index <= items.Count)
             {
-                workspace = Path.Combine(items[index - 1], "Entities");
+                workspace = items[index - 1];
             }
             if (string.IsNullOrWhiteSpace(workspace))
             {
@@ -136,7 +136,7 @@ namespace NetDream.Cli
                 Schema = connectString
             };
             Console.WriteLine($"schema: {repository.Schema}");
-            repository.BatchGenerateModel(dbPrefix, workspace);
+            repository.BatchGenerateModel(dbPrefix, workspace, Path.GetFileName(workspace));
             Console.WriteLine("Generate Model Finished");
         }
     }

@@ -15,9 +15,9 @@ namespace NetDream.Razor.Pages.Blog
             _repository = repository;
         }
 
-        public IPage<BlogModel> Items;
-        public NetDream.Modules.Blog.Models.CategoryModel[] Categories;
-        public BlogEntity[] NewItems;
+        public IPage<BlogListItem> Items;
+        public CategoryListItem[] Categories;
+        public BlogListItem[] NewItems;
         public string FullUrl;
         public int PageIndex;
 

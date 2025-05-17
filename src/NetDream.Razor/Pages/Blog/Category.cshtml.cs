@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using NetDream.Modules.Blog.Models;
 using NetDream.Modules.Blog.Repositories;
 
 namespace NetDream.Razor.Pages.Blog
@@ -12,7 +13,7 @@ namespace NetDream.Razor.Pages.Blog
             _repository = repository;
         }
 
-        public Modules.Blog.Models.CategoryModel[] Items;
+        public CategoryListItem[] Items;
 
         public void OnGet()
         {

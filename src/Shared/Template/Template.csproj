@@ -3,7 +3,7 @@
   <PropertyGroup>
 	  <TargetFramework>net9.0</TargetFramework>
 	  <Nullable>enable</Nullable>
-	  <LangVersion>12</LangVersion>
+	  <LangVersion>13</LangVersion>
 	  <AssemblyName>NetDream.Shared.$(MSBuildProjectName)</AssemblyName>
 	  <RootNamespace>NetDream.Shared.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>

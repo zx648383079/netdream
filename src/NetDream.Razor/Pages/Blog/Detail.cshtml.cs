@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NetDream.Modules.Blog.Entities;
+using NetDream.Modules.Blog.Models;
 using NetDream.Modules.Blog.Repositories;
 
 namespace NetDream.Razor.Pages.Blog
@@ -13,8 +13,8 @@ namespace NetDream.Razor.Pages.Blog
             _repository = repository;
         }
 
-        public BlogEntity Data;
-        public NetDream.Modules.Blog.Models.CategoryModel[] Categories;
+        public BlogModel Data;
+        public CategoryListItem[] Categories;
         public string FullUrl;
 
         public void OnGet(int id)

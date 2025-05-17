@@ -21,7 +21,7 @@ namespace NetDream.Api.Controllers.Blog
         [Authorize]
         public IActionResult Option()
         {
-            return RenderPage(repository.GetList(form));
+            return Render(null);
         }
     }
 }

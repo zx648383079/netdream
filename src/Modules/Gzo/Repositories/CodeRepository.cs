@@ -1,21 +1,20 @@
 ﻿using NetDream.Shared.Helpers;
-using NetDream.Modules.Gzo.Writers;
 using System;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
+using NetDream.Modules.Gzo.Storage;
 
 namespace NetDream.Modules.Gzo.Repositories
 {
     public class CodeRepository
     {
 
-        public IWriter Exchange(string content, string source = "", string target = "")
+        public IStorage Exchange(string content, string source = "", string target = "")
         {
-            var writer = new MemoryWriter();
+            var writer = new MemoryStorage();
             writer.Write(target, PhpToCSharp(content));
             return writer;
         }
