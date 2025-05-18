@@ -7,7 +7,7 @@ namespace NetDream.Shared.Models
 {
     public class Page<T> : IPage<T>
     {
-        public T[] Items { get; set; } = Array.Empty<T>();
+        public T[] Items { get; set; } = [];
 
         public int ItemsPerPage { get; } = 20;
         public int CurrentPage { get; } = 1;
@@ -30,7 +30,7 @@ namespace NetDream.Shared.Models
 
         public Page(IEnumerable<T> items)
         {
-            Items = items.ToArray();
+            Items = [.. items];
             TotalItems = Items.Length;
         }
 

@@ -37,7 +37,7 @@ namespace NetDream.Shared.Providers
             where FSource : class
             where TSource : class, new()
         {
-            return data.Select(i => i.CopyTo<TSource>()).ToArray();
+            return [.. data.Select(i => i.CopyTo<TSource>())];
         }
 
         public static IPage<TSource> CopyTo<FSource, TSource>(this IPage<FSource> data)

@@ -1,6 +1,8 @@
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.TradeTracker.Entities
 {
-    public class ChannelEntity
+    public class ChannelEntity : IIdEntity, ITimestampEntity
     {
         public int Id { get; set; }
         public string ShortName { get; set; } = string.Empty;
