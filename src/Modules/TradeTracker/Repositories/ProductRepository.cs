@@ -101,6 +101,36 @@ namespace NetDream.Modules.TradeTracker.Repositories
                 .Where(i => i.ParentId == 0).Select(i => i.Name).ToArray();
         }
 
+        internal static void WithProduct(TrackerContext db, IWithProductModel[] items)
+        {
+            var idItems = items.Select(item => item.ProductId);
+            if (!idItems.Any())
+            {
+                return;
+            }
+            var data = db.Products.Where(i => idItems.Contains(i.Id))
+                .Select(i => new ListLabelItem()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                }).ToArray();
+            if (!data.Any())
+            {
+                return;
+            }
+            foreach (var item in items)
+            {
+                foreach (var it in data)
+                {
+                    if (item.ProductId == it.Id)
+                    {
+                        item.Product = it;
+                        break;
+                    }
+                }
+            }
+        }
+
         internal static void WithChannel(TrackerContext db, IWithChannelModel[] items)
         {
             var idItems = items.Select(item => item.ChannelId);

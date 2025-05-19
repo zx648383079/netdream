@@ -65,39 +65,11 @@ namespace NetDream.Modules.TradeTracker.Repositories
                 ).OrderByDescending(i => i.CreatedAt).Skip(res.ItemsOffset)
                 .Take(res.ItemsPerPage).ToArray().CopyTo<TradeEntity, TradeListItem>();
             ProductRepository.WithChannel(db, res.Items);
-            WithProduct(res.Items);
+            ProductRepository.WithProduct(db, res.Items);
             return res;
         }
 
-        private void WithProduct(IWithProductModel[] items)
-        {
-            var idItems = items.Select(item => item.ProductId);
-            if (!idItems.Any())
-            {
-                return;
-            }
-            var data = db.Products.Where(i => idItems.Contains(i.Id))
-                .Select(i => new ListLabelItem()
-                {
-                    Id = i.Id,
-                    Name = i.Name,
-                }).ToArray();
-            if (!data.Any())
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                foreach (var it in data)
-                {
-                    if (item.ProductId == it.Id)
-                    {
-                        item.Product = it;
-                        break;
-                    }
-                }
-            }
-        }
+        
 
         
 
