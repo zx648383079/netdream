@@ -12,7 +12,14 @@ namespace NetDream.Modules.Gzo.Templates
 
         public static void Context(ICodeWriter writer, string module, TableEntity[] tables)
         {
-            writer.WriteFormat("namespace NetDream.Modules.{0};", module)
+            writer.Write("using Microsoft.EntityFrameworkCore;")
+                .WriteLine(true)
+                .WriteFormat("using NetDream.Modules.{0}.Entities;", module)
+                .WriteLine(true)
+                .WriteFormat("using NetDream.Modules.{0}.Migrations;", module)
+                .WriteLine(true)
+                .WriteLine(true)
+                .WriteFormat("namespace NetDream.Modules.{0};", module)
                 .WriteLine(true)
                 .WriteFormat("public class {0}Context(DbContextOptions<{0}Context> options) : DbContext(options)", module)
                 .WriteLine(true)
@@ -33,7 +40,7 @@ namespace NetDream.Modules.Gzo.Templates
             foreach (var table in tables)
             {
                 writer.WriteFormat("modelBuilder.ApplyConfiguration(new {0}EntityTypeConfiguration());", FormatTableName(table))
-                    .Write(true);
+                    .WriteLine(true);
             }
 
 

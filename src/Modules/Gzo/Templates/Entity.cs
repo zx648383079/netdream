@@ -16,9 +16,16 @@ namespace NetDream.Modules.Gzo.Templates
 
         public static void Entity(ICodeWriter writer, string module, TableEntity table, ColumnEntity[] columns)
         {
+            var impl = FormatImplement(columns);
+            if (!string.IsNullOrWhiteSpace(impl))
+            {
+                writer.Write("using NetDream.Shared.Interfaces.Entities;")
+                .WriteLine(true)
+                .WriteLine(true);
+            }
             writer.WriteFormat("namespace NetDream.Modules.{0}.Entities;", module)
                 .WriteLine(true)
-                .WriteFormat("public class {0}Entity{1}", FormatTableName(table), FormatImplement(columns))
+                .WriteFormat("public class {0}Entity{1}", FormatTableName(table), impl)
                 .WriteLine(true)
                 .Write('{')
                 .WriteIndentLine();
@@ -42,6 +49,8 @@ namespace NetDream.Modules.Gzo.Templates
                 "char" or "varchar" or "text" or "mediumtext" or "longtext" or "enum" => "string",
                 "date" => "string",
                 "time" => "TimeSpan",
+                "datetime" => "DateTime",
+                "decimal" => "float",
                 _ => data.Type,
             };
         }

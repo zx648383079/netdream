@@ -1,6 +1,7 @@
 ﻿using NetDream.Modules.Gzo.Entities;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Template;
+using System;
 using System.Linq;
 
 namespace NetDream.Modules.Gzo.Templates
@@ -14,7 +15,15 @@ namespace NetDream.Modules.Gzo.Templates
 
         public static void Migration(ICodeWriter writer, string module, TableEntity table, ColumnEntity[] columns)
         {
-            writer.WriteFormat("namespace NetDream.Modules.{0}.Migrations;", module)
+            writer
+                .Write("using Microsoft.EntityFrameworkCore;")
+                .WriteLine(true)
+                .Write("using Microsoft.EntityFrameworkCore.Metadata.Builders;")
+                .WriteLine(true)
+                .WriteFormat("using NetDream.Modules.{0}.Entities;", module)
+                .WriteLine(true)
+                .WriteLine(true)
+                .WriteFormat("namespace NetDream.Modules.{0}.Migrations;", module)
                 .WriteLine(true)
                 .WriteFormat("public class {0}EntityTypeConfiguration : IEntityTypeConfiguration<{0}Entity>", FormatTableName(table))
                 .WriteLine(true)
@@ -28,7 +37,7 @@ namespace NetDream.Modules.Gzo.Templates
 
                 .WriteFormat("builder.ToTable(\"{0}\", table => table.HasComment(\"{1}\"));", table.Name, table.Comment)
                 .WriteLine(true);
-            if (columns.Where(i => i.Name.Equals("id", System.StringComparison.OrdinalIgnoreCase)).Any())
+            if (columns.Where(i => i.Name.Equals("id", StringComparison.OrdinalIgnoreCase)).Any())
             {
                 writer.WriteFormat("builder.HasKey(table => table.Id);")
                     .WriteLine(true);
@@ -36,14 +45,22 @@ namespace NetDream.Modules.Gzo.Templates
             foreach (var column in columns)
             {
                 writer.WriteFormat("builder.Property(table => table.{0}).HasColumnName(\"{1}\")", StrHelper.Studly(column.Name), column.Name);
-                if (column.Length > 0)
+                if (column.Length > 0 && !column.Type.Contains("text") && column.Type != "tinyint")
                 {
                     writer.WriteFormat(".HasMaxLength({0})", column.Length);
                 }
-                if (column.Default is not null)
+                if (!string.IsNullOrWhiteSpace(column.Default) && column.Default != "NULL" && column.Default != "''")
                 {
-                    writer.WriteFormat(".HasDefaultValue({0})", column.Default);
+                    if (column.Default.StartsWith('\''))
+                    {
+                        writer.WriteFormat(".HasDefaultValue(\"{0}\")", column.Default[1..^1]);
+                    }
+                    else
+                    {
+                        writer.WriteFormat(".HasDefaultValue({0})", column.Default);
+                    }
                 }
+                
                 if (!string.IsNullOrWhiteSpace(column.Comment))
                 {
                     writer.WriteFormat(".HasComment(\"{0}\")", column.Comment);

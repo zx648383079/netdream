@@ -67,15 +67,14 @@ namespace NetDream.Modules.Gzo.Repositories
             while (reader.Read())
             {
                 var type = reader.GetString(1);
-                var isText = type is "char" or "varchar" or "text" or "mediumtext" or "longtext";
                 var key = reader.GetString(2);
                 data.Add(new()
                 {
                     Name = reader.GetString(0),
                     Type = type,
-                    Length = reader.GetInt32(isText ? 3 : 4),
-                    Default = reader.GetString(5),
-                    Comment = reader.GetString(6),
+                    Length = !reader.IsDBNull(3) ? reader.GetInt32(3) : (!reader.IsDBNull(4) ? reader.GetInt32(4) : 0),
+                    Default = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
+                    Comment = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
                     IsPrimaryKey = key == "PRI",
                     IsUnique = key == "UNI"
                 });
