@@ -17,6 +17,10 @@ namespace NetDream.Shared.Providers
     public static class QueryExtensions
     {
 
+        [DbFunction("DATE_FORMAT", "")]
+        public static string DateFormat(DateTime date, string format)
+            => throw new NotSupportedException();
+
         public static T CopyTo<T>(this object data)
             where T : class, new()
         {

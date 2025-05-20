@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace NetDream.Shared.Helpers
 {
@@ -142,8 +143,12 @@ namespace NetDream.Shared.Helpers
         /// <returns></returns>
         public static int MonthMaxDay(DateTime date)
         {
-            var d = new DateTime(date.Year, date.Month, 1);
-            return d.AddMonths(1).AddDays(-1).Day;
+            return DateTime.DaysInMonth(date.Year, date.Month);
+        }
+
+        public static int WeekOfYear(DateTime date)
+        {
+            return CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         }
 
         public static (int, int) WeekRange(DateTime date)

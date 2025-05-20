@@ -1,7 +1,8 @@
-﻿using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Modules.Finance.Models;
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Finance.Entities;
-public class BudgetEntity : IIdEntity, ITimestampEntity
+public class BudgetEntity : IIdEntity, ITimestampEntity, IBudget
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
