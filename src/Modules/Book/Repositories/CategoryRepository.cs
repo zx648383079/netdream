@@ -11,11 +11,11 @@ namespace NetDream.Modules.Book.Repositories
 {
     public class CategoryRepository(BookContext db)
     {
-        public IPage<CategoryEntity> GetMangeList(string keywords = "", int page = 1)
+        public IPage<CategoryEntity> GetMangeList(QueryForm form)
         {
-            return db.Categories.Search(keywords, "name")
+            return db.Categories.Search(form.Keywords, "name")
                 .OrderByDescending(i => i.Id)
-                .ToPage(page);
+                .ToPage(form);
         }
 
         public CategoryEntity? Get(int id)

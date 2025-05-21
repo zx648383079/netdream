@@ -21,7 +21,7 @@ namespace NetDream.Modules.Catering.Repositories
                 .When(user > 0, i => i.UserId == user)
                 .OrderByDescending(i => i.Id)
                 .ToPage(form).CopyTo<StoreEntity, StoreListItem>();
-            userStore.WithUser(res.Items);
+            userStore.Include(res.Items);
             return res;
         }
 
@@ -33,7 +33,7 @@ namespace NetDream.Modules.Catering.Repositories
                 return OperationResult<StoreListItem>.Fail("note error");
             }
             var res = model.CopyTo<StoreListItem>();
-            userStore.WithUser(res);
+            userStore.Include(res);
             return OperationResult.Ok(res);
         }
 

@@ -25,7 +25,7 @@ namespace NetDream.Modules.Chat.Repositories
             var items = db.Applies.Where(i => i.ItemType == 1 && i.ItemId == id)
                 .OrderBy(i => i.Status)
                 .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 
@@ -34,7 +34,7 @@ namespace NetDream.Modules.Chat.Repositories
             var items = db.Applies.Where(i => i.ItemType == 0 && i.ItemId == client.UserId)
                 .OrderBy(i => i.Status)
                 .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 

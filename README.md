@@ -52,6 +52,7 @@ dotnet run
 3. 定义当前模块连接数据库实体 `<模块>Context`，放在模块根目录
 4. 对数据库进行读写的操作 `<>Repository`，放在 `Repositories`
 5. 注册服务包括 `Repository` 全写在模块根目录下 `Extension.Provide<模块>Repositories` 拓展`IServiceCollection`的方法中
-6. 响应列表数据 `<>ListItem`，每一项数据可能带一些标签，转成 `ListLabelItem{Id, Name}`
-7. 响应单篇完整数据 `<>Model`
+6. 响应列表数据 `<实体>ListItem`，每一项数据可能带一些标签，转成 `ListLabelItem{Id, Name}`
+7. 响应单篇完整数据 `<实体>Model`
 8. 批量处理接口，接收用 `<模块>BatchForm`，响应用 `<模块>BatchResult`
+9. 需要手动根据ID关联其他数据的，需要继承 `IWith<实体>Model`，在 `Repository` 中实现方法 `Include(IWith<实体>Model[] items)` 或 `Include<实体>(IWith<实体>Model[] items)`

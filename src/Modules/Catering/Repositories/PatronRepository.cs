@@ -19,7 +19,7 @@ namespace NetDream.Modules.Catering.Repositories
                 .When(group > 0, i => i.GroupId == group)
                 .OrderByDescending(i => i.UserId)
                 .ToPage(form).CopyTo<StorePatronEntity, PatronListItem>();
-            userStore.WithUser(res.Items);
+            userStore.Include(res.Items);
             return res;
         }
 

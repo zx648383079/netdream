@@ -47,7 +47,7 @@ namespace NetDream.Modules.Blog.Repositories
                 .When(language, i => i.Language == language)
                 .OrderByDescending(i => i.Id)
                 .ToPage(page, query => query.Select<BlogEntity, BlogListItem>());
-            CategoryRepository.WithCategory(db, items.Items);
+            CategoryRepository.Include(db, items.Items);
             foreach (var item in items.Items)
             {
                 var isLocal = item.ParentId > 0;

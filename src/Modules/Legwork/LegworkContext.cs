@@ -5,7 +5,7 @@ using NetDream.Modules.Legwork.Migrations;
 namespace NetDream.Modules.Legwork;
 public class LegworkContext(DbContextOptions<LegworkContext> options) : DbContext(options)
 {
-    public DbSet<CategoryEntity> Category { get; set; }
+    public DbSet<CategoryEntity> Categories { get; set; }
     public DbSet<CategoryProviderEntity> CategoryProvider { get; set; }
     public DbSet<OrderEntity> Order { get; set; }
     public DbSet<OrderLogEntity> OrderLog { get; set; }

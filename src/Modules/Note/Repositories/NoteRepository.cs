@@ -48,7 +48,7 @@ namespace NetDream.Modules.Note.Repositories
             {
                 Items = items.Items.Select(i => new NoteListItem(i)).ToArray()
             };
-            userStore.WithUser(res.Items);
+            userStore.Include(res.Items);
             return res;
         }
 
@@ -118,7 +118,7 @@ namespace NetDream.Modules.Note.Repositories
             var items = db.Notes.Where(i => i.IsNotice == notice)
                 .OrderByDescending(i => i.Id).Take(limit > 0 ? limit : 5)
                 .ToArray().Select(i => i.CopyTo<NoteModel>()).ToArray();
-            userStore.WithUser(items);
+            userStore.Include(items);
             return items;
         }
 

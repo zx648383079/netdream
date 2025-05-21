@@ -1,7 +1,7 @@
 ﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Forms;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NetDream.Shared.Models
 {
@@ -53,7 +53,7 @@ namespace NetDream.Shared.Models
             
         }
 
-        public Page(int total, PaginationForm form)
+        public Page(int total, IPaginationForm form)
             : this (total, form.Page, form.PerPage)
         {
         }

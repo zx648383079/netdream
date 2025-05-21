@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -272,7 +273,7 @@ namespace NetDream.Shared.Providers
             return source.ToPage(new PaginationForm(page), cb);
         }
 
-        public static IPage<TSource> ToPage<TSource>(this IQueryable<TSource> source, PaginationForm pagination)
+        public static IPage<TSource> ToPage<TSource>(this IQueryable<TSource> source, IPaginationForm pagination)
         {
             var res = new Page<TSource>(source.Count(), pagination);
             if (!res.IsEmpty)

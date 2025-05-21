@@ -25,12 +25,12 @@ namespace NetDream.Modules.Forum.Repositories
                 .When(forum_id > 0, i => i.ForumId == forum_id)
                 .OrderByDescending(i => i.UpdatedAt)
                 .ToPage(page).CopyTo<ThreadEntity, ThreadModel>();
-            userStore.WithUser(items.Items);
-            WithForum(items.Items);
+            userStore.Include(items.Items);
+            IncludeForum(items.Items);
             return items;
         }
 
-        private void WithForum(IEnumerable<ThreadModel> items)
+        private void IncludeForum(IEnumerable<ThreadModel> items)
         {
             var idItems = items.Select(item => item.ForumId).Where(i => i > 0).Distinct();
             if (!idItems.Any())
@@ -54,7 +54,7 @@ namespace NetDream.Modules.Forum.Repositories
                 }
             }
         }
-        private void WithClassify(IEnumerable<ThreadModel> items)
+        private void IncludeClassify(IEnumerable<ThreadModel> items)
         {
             var idItems = items.Select(item => item.ClassifyId).Where(i => i > 0).Distinct();
             if (!idItems.Any())
@@ -166,8 +166,8 @@ namespace NetDream.Modules.Forum.Repositories
             var items = query.When(user > 0, i => i.UserId == user)
                 .OrderBy<ThreadEntity, int>(sort, order)
                 .ToPage(page).CopyTo<ThreadEntity, ThreadModel>();
-            userStore.WithUser(items.Items);
-            WithClassify(items.Items);
+            userStore.Include(items.Items);
+            IncludeClassify(items.Items);
             foreach (var item in items.Items)
             {
                 item.LastPost = LastPost(item.Id);
@@ -187,8 +187,8 @@ namespace NetDream.Modules.Forum.Repositories
                 .Search(keywords, "title")
                 .OrderBy<ThreadEntity, int>(sort, order)
                 .ToPage(page).CopyTo<ThreadEntity, ThreadModel>();
-            WithClassify(items.Items);
-            WithForum(items.Items);
+            IncludeClassify(items.Items);
+            IncludeForum(items.Items);
             return items;
         }
 
@@ -198,8 +198,8 @@ namespace NetDream.Modules.Forum.Repositories
                 .OrderByDescending(i => i.TopType)
                 .OrderByDescending(i => i.Id)
                 .ToArray().CopyTo<ThreadEntity, ThreadModel>();
-            userStore.WithUser(data);
-            WithClassify(data);
+            userStore.Include(data);
+            IncludeClassify(data);
             foreach (var item in data)
             {
                 item.LastPost = LastPost(item.Id);
@@ -704,7 +704,7 @@ namespace NetDream.Modules.Forum.Repositories
         {
             var items = db.ThreadLogs.Where(i => i.ItemType == item_type && i.ItemId == item_id && i.Action == LogRepository.ACTION_REWARD)
                 .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ThreadLogEntity, ThreadLogModel>();
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 

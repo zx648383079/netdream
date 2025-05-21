@@ -58,7 +58,7 @@ namespace NetDream.Modules.OnlineService.Repositories
             {
                 var res = db.CategoryUsers.When(category > 0, i=> i.CatId == category).ToPage(page)
                     .CopyTo<CategoryUserEntity, CategoryUserModel>();
-                userStore.WithUser(res.Items);
+                userStore.Include(res.Items);
                 return res;
             }
             var userId = db.CategoryUsers.When(category > 0, i => i.CatId == category)
@@ -71,7 +71,7 @@ namespace NetDream.Modules.OnlineService.Repositories
             var items = db.CategoryUsers.When(category > 0, i => i.CatId == category)
                 .Where(i => userId.Contains(i.UserId)).ToPage(page)
                 .CopyTo<CategoryUserEntity, CategoryUserModel>();
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 

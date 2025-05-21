@@ -32,7 +32,7 @@ namespace NetDream.Modules.OnlineService.Repositories
                     .OrderBy(i => i.CreatedAt);
             }
             var data = query.ToArray().CopyTo<MessageEntity, MessageModel>();
-            userStore.WithUser(data);
+            userStore.Include(data);
             var guest = new GuestUser();
             foreach (var item in data)
             {

@@ -62,7 +62,7 @@ namespace NetDream.Modules.Blog.Repositories
         }
 
 
-        internal static void WithCategory(BlogContext db, IEnumerable<IWithCategoryModel> items)
+        internal static void Include(BlogContext db, IEnumerable<IWithCategoryModel> items)
         {
             var idItems = items.Select(item => item.TermId);
             if (!idItems.Any())

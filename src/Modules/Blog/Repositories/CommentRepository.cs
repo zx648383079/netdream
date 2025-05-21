@@ -42,15 +42,15 @@ namespace NetDream.Modules.Blog.Repositories
                 query = query.OrderBy<CommentEntity, int>(sort, order);
             }
             var items = query.ToPage(page, i => i.Select<CommentEntity, CommentListItem>());
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             if (parentId == 0)
             {
-                WithReply(items.Items);
+                IncludeReply(items.Items);
             }
             return items;
         }
 
-        private void WithReply(IEnumerable<CommentListItem> items)
+        private void IncludeReply(IEnumerable<CommentListItem> items)
         {
             var idItems = items.Select(item => item.Id);
             if (!idItems.Any())
@@ -63,7 +63,7 @@ namespace NetDream.Modules.Blog.Repositories
             {
                 return;
             }
-            userStore.WithUser(data);
+            userStore.Include(data);
             foreach (var item in items)
             {
                 item.Replies = [..data.Where(i => i.ParentId == item.Id)];

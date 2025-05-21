@@ -22,7 +22,7 @@ namespace NetDream.Modules.Catering.Repositories
                 .When(role > 0, i => i.RoleId == role)
                 .OrderByDescending(i => i.UserId)
                 .ToPage(form).CopyTo<StoreStaffEntity, StaffListItem>();
-            userStore.WithUser(res.Items);
+            userStore.Include(res.Items);
             return res;
         }
 

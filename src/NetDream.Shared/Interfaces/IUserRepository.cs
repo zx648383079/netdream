@@ -1,4 +1,5 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces.Forms;
 using System.Collections.Generic;
 
 namespace NetDream.Shared.Interfaces
@@ -31,13 +32,14 @@ namespace NetDream.Shared.Interfaces
         /// </summary>
         /// <param name="userItems"></param>
         /// <returns></returns>
-        public IEnumerable<IUser> Get(params int[] userItems);
+        public IUser[] Get(params int[] userItems);
+        public IDictionary<int, IUser> GetDictionary(int[] userItems);
         /// <summary>
         /// 根据用户名获取
         /// </summary>
         /// <param name="userItems"></param>
         /// <returns></returns>
-        public IEnumerable<IUser> Get(params string[] userItems);
+        public IUser[] Get(params string[] userItems);
         /// <summary>
         /// 搜索用户
         /// </summary>
@@ -46,7 +48,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="items">已知的用户</param>
         /// <param name="itemsIsExclude">是排除已知用户还是仅限已知用户</param>
         /// <returns></returns>
-        public IPage<IUser> Search(string keywords, int page, int[]? items = null, bool itemsIsExclude = true);
+        public IPage<IUser> Search(IQueryForm form, int[]? items = null, bool itemsIsExclude = true);
 
         /// <summary>
         /// 搜索获取用户的id
@@ -55,9 +57,17 @@ namespace NetDream.Shared.Interfaces
         /// <param name="userIds">限制搜索范围</param>
         /// <param name="checkEmpty">true 为先判断 userIds 是否为空</param>
         /// <returns></returns>
-        public int[] SearchUserId(string keywords, IList<int>? userIds = null, bool checkEmpty = false);
+        public int[] SearchUserId(string keywords, int[]? userIds = null, bool checkEmpty = false);
 
-        public void WithUser(IWithUserModel model);
-        public void WithUser(IEnumerable<IWithUserModel> items);
+        /// <summary>
+        /// 获取用户信息
+        /// </summary>
+        /// <param name="model"></param>
+        public void Include(IWithUserModel model);
+        /// <summary>
+        /// 获取用户信息
+        /// </summary>
+        /// <param name="items"></param>
+        public void Include(IEnumerable<IWithUserModel> items);
     }
 }

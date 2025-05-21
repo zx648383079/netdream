@@ -25,7 +25,7 @@ namespace NetDream.Modules.Contact.Repositories
                 .OrderByDescending(i => i.Id)
                 .ToPage(page).CopyTo<ReportEntity, ReportModel>();
 
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 

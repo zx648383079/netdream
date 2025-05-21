@@ -44,8 +44,8 @@ namespace NetDream.Modules.Chat.Repositories
                 messages = db.Messages.When(time > 0, i => i.CreatedAt >= time)
                     .When(type > 0, i => i.GroupId == id, i => i.GroupId == 0 && i.ReceiveId == client.UserId && i.UserId == id)
                     .ToArray().CopyTo<MessageEntity, MessageModel>();
-                userStore.WithUser(messages);
-                WithReceive(messages);
+                userStore.Include(messages);
+                IncludeReceive(messages);
             }
             time = client.Now + 1;
             return new Dictionary<string, object>()
@@ -64,7 +64,7 @@ namespace NetDream.Modules.Chat.Repositories
             };
         }
 
-        private void WithReceive(IEnumerable<MessageModel> items)
+        private void IncludeReceive(IEnumerable<MessageModel> items)
         {
             var idItems = items.Select(item => item.ReceiveId).Where(i => i > 0).Distinct();
             if (!idItems.Any())
@@ -263,8 +263,8 @@ namespace NetDream.Modules.Chat.Repositories
                     .When(itemType > 0, i => i.GroupId == id, i => i.GroupId == 0 && i.ReceiveId == client.UserId && i.UserId == id)
                     .OrderBy(i => i.CreatedAt).ToArray().CopyTo<MessageEntity, MessageModel>(); ;
             }
-            userStore.WithUser(data);
-            WithReceive(data);
+            userStore.Include(data);
+            IncludeReceive(data);
             var next_time = client.Now + 1;
             if (data.Length == 0 || itemType == 0) {
                 return new {

@@ -49,7 +49,7 @@ namespace NetDream.Modules.Chat.Repositories
             var items = db.GroupUsers.Search(keywords, "name")
                 .Where(i => i.GroupId == id).ToPage(page)
                 .CopyTo<GroupUserEntity, GroupUserModel>();
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 
@@ -133,7 +133,7 @@ namespace NetDream.Modules.Chat.Repositories
             var items = db.Applies.Where(i => i.ItemType == 1 && i.ItemId == id)
                 .OrderBy(i => i.Status)
                 .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 

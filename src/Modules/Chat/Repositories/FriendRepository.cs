@@ -24,7 +24,7 @@ namespace NetDream.Modules.Chat.Repositories
             var items = db.Friends.Where(i => i.BelongId == client.UserId)
                 .Search(keywords, "name").When(group >= 0, i =>i.ClassifyId == group)
                 .ToPage(page).CopyTo<FriendEntity, FriendModel>();
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 
@@ -41,7 +41,7 @@ namespace NetDream.Modules.Chat.Repositories
             data.Add(0, new(0, "黑名单"));
             var items = db.Friends.Where(i => i.BelongId == client.UserId)
                 .ToArray().CopyTo<FriendEntity, FriendModel>();
-            userStore.WithUser(items);
+            userStore.Include(items);
             foreach (var item in items) {
                 if (!data.TryGetValue(item.ClassifyId, out var group))
                 {
@@ -52,12 +52,12 @@ namespace NetDream.Modules.Chat.Repositories
             return data.Values.ToArray();
         }
 
-        public IPage<IUser> Search(string keywords = "", int page = 1) {
+        public IPage<IUser> Search(QueryForm form) {
             var exclude = db.Friends.Where(i => i.BelongId == client.UserId)
                 .Select(i => i.UserId)
                 .ToList();
             exclude.Add(client.UserId);
-            return userStore.Search(keywords, page, [..exclude], true);
+            return userStore.Search(form, [..exclude], true);
         }
 
 
@@ -241,7 +241,7 @@ namespace NetDream.Modules.Chat.Repositories
             var items = db.Applies.Where(i => i.ItemType == 0 && i.ItemId == client.UserId)
                 .OrderBy(i => i.Status)
                 .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
         

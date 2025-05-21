@@ -1,10 +1,11 @@
-﻿using NetDream.Shared.Interfaces;
+﻿using NetDream.Modules.Auth.Models;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
-using NetDream.Modules.Auth.Models;
-using System.Collections.Generic;
-using System.Linq;
+using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Providers;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Modules.Auth.Repositories
 {
@@ -60,7 +61,7 @@ namespace NetDream.Modules.Auth.Repositories
             return model;
         }
 
-        public IEnumerable<IUser> Get(params int[] userItems)
+        public IUser[] Get(params int[] userItems)
         {
             userItems = [.. userItems.Where(i => i > 0).Distinct()];
             if (userItems.Length == 0)
@@ -78,12 +79,17 @@ namespace NetDream.Modules.Auth.Repositories
                 .ToArray();
         }
 
+        public IDictionary<int, IUser> GetDictionary(int[] userItems)
+        {
+            return Get(userItems).ToDictionary(i => i.Id);
+        }
+
         /// <summary>
         /// 根据用户名获取
         /// </summary>
         /// <param name="userItems"></param>
         /// <returns></returns>
-        public IEnumerable<IUser> Get(params string[] userItems)
+        public IUser[] Get(params string[] userItems)
         {
             userItems = [.. userItems.Where(i => !string.IsNullOrWhiteSpace(i)).Distinct()];
             if (userItems.Length == 0)
@@ -99,11 +105,11 @@ namespace NetDream.Modules.Auth.Repositories
                 }).ToArray();
         }
 
-        public IPage<IUser> Search(string keywords, int page, 
+        public IPage<IUser> Search(IQueryForm form, 
             int[]? items = null, 
             bool itemsIsExclude = true)
         {
-            var query = db.Users.Search(keywords, "name");
+            var query = db.Users.Search(form.Keywords, "name");
             if (items is not null)
             {
                 if (itemsIsExclude)
@@ -119,49 +125,46 @@ namespace NetDream.Modules.Auth.Repositories
                 Id = i.Id,
                 Name = i.Name,
                 Avatar = i.Avatar
-            }).ToPage(page).ConvertTo<UserListItem, IUser>();
+            }).ToPage(form).ConvertTo<UserListItem, IUser>();
         }
 
-        public int[] SearchUserId(string keywords, IList<int>? userIds = null, bool checkEmpty = false)
+        public int[] SearchUserId(string keywords, int[]? userIds = null, bool checkEmpty = false)
         {
             if (string.IsNullOrWhiteSpace(keywords))
             {
                 return userIds is null ? [] : [..userIds];
             }
-            if (checkEmpty && (userIds is null || userIds.Count == 0))
+            if (checkEmpty && (userIds is null || userIds.Length == 0))
             {
                 return [];
             }
             return db.Users.Search(keywords, "name")
-                .When(userIds is not null && userIds.Count > 0, i => userIds!.Contains(i.Id))
+                .When(userIds is not null && userIds.Length > 0, i => userIds!.Contains(i.Id))
                 .Select(i => i.Id).ToArray();
         }
 
-        public void WithUser(IWithUserModel model)
+        public void Include(IWithUserModel model)
         {
             model.User = Get(model.UserId);
         }
-        public void WithUser(IEnumerable<IWithUserModel> items)
+        public void Include(IEnumerable<IWithUserModel> items)
         {
-            var idItems = items.Select(item => item.UserId).Where(i => i > 0).Distinct();
-            if (!idItems.Any())
+            var idItems = items.Select(item => item.UserId).Where(i => i > 0)
+                .Distinct().ToArray();
+            if (idItems.Length == 0)
             {
                 return;
             }
-            var data = Get(idItems.ToArray());
-            if (!data.Any())
+            var data = GetDictionary(idItems);
+            if (data.Count == 0)
             {
                 return;
             }
             foreach (var item in items)
             {
-                foreach (var it in data)
+                if (item.UserId > 0 && data.TryGetValue(item.UserId, out var user))
                 {
-                    if (item.UserId == it.Id)
-                    {
-                        item.User = it;
-                        break;
-                    }
+                    item.User = user;
                 }
             }
         }

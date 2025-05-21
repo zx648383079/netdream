@@ -26,8 +26,8 @@ namespace NetDream.Modules.Blog.Repositories
         public IPage<BlogListItem> GetPage(int page)
         {
             var items = db.Blogs.Select<BlogEntity, BlogListItem>().ToPage(page);
-            userStore.WithUser(items.Items);
-            CategoryRepository.WithCategory(db, items.Items);
+            userStore.Include(items.Items);
+            CategoryRepository.Include(db, items.Items);
             return items;
         }
 
@@ -40,8 +40,8 @@ namespace NetDream.Modules.Blog.Repositories
                 .OrderBy<BlogEntity, int>(form.Sort, form.Order)
                 .Select<BlogEntity, BlogListItem>()
                 .ToPage(form);
-            userStore.WithUser(items.Items);
-            CategoryRepository.WithCategory(db, items.Items);
+            userStore.Include(items.Items);
+            CategoryRepository.Include(db, items.Items);
             return items;
         }
 

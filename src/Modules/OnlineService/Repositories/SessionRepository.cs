@@ -16,7 +16,7 @@ namespace NetDream.Modules.OnlineService.Repositories
             var items = db.Sessions.Search(keywords, "name", "ip")
                 .When(status > 0, i => i.Status == status - 1)
                 .OrderByDescending(i => i.Id).ToPage(page).CopyTo<SessionEntity, SessionModel>();
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 
@@ -25,7 +25,7 @@ namespace NetDream.Modules.OnlineService.Repositories
             var data = db.Sessions.Where(i => (i.Status == 0 && i.UpdatedAt> client.Now - 3600) 
                 || (i.Status > 0 && i.ServiceId == client.UserId && i.UpdatedAt > client.Now - 86400))
                 .OrderByDescending(i => i.Id).ToArray().CopyTo<SessionEntity, SessionModel>();
-            userStore.WithUser(data);
+            userStore.Include(data);
             var guest = new GuestUser();
             foreach (var item in data)
             {
