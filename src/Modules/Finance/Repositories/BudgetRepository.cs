@@ -57,6 +57,19 @@ namespace NetDream.Modules.Finance.Repositories
             db.SaveChanges();
         }
 
+        public void RefreshSpent(int id)
+        {
+            var model = db.Budget.Where(i => i.UserId == client.UserId && i.Id == id)
+                .FirstOrDefault();
+            if (model is null)
+            {
+                return;
+            }
+            RefreshSpent(model);
+            db.Budget.Save(model, client.Now);
+            db.SaveChanges();
+        }
+
         public void RefreshSpent(BudgetEntity budget)
         {
             var time = budget.UpdatedAt;

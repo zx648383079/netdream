@@ -5,7 +5,6 @@ namespace NetDream.Modules.Finance.Entities;
 public class LogEntity : IIdEntity, ITimestampEntity
 {
     public int Id { get; set; }
-    public int ParentId { get; set; }
     public byte Type { get; set; }
     public float Money { get; set; }
     public float FrozenMoney { get; set; }

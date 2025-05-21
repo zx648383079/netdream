@@ -5,7 +5,6 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -20,6 +19,8 @@ namespace NetDream.Shared.Providers
         [DbFunction("DATE_FORMAT", "")]
         public static string DateFormat(DateTime date, string format)
             => throw new NotSupportedException();
+
+        
 
         public static T CopyTo<T>(this object data)
             where T : class, new()

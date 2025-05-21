@@ -10,7 +10,7 @@ public class StoreMetaEntityTypeConfiguration : IEntityTypeConfiguration<StoreMe
         builder.ToTable("eat_store_meta", table => table.HasComment(""));
         builder.HasKey(table => table.Id);
         builder.Property(table => table.Id).HasColumnName("id").HasMaxLength(10);
-        builder.Property(table => table.StoreId).HasColumnName("store_id").HasMaxLength(10);
+        builder.Property(table => table.ItemId).HasColumnName("item_id").HasMaxLength(10);
         builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100);
         builder.Property(table => table.Content).HasColumnName("content");
         

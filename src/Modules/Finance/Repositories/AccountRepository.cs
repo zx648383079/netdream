@@ -12,7 +12,7 @@ namespace NetDream.Modules.Finance.Repositories
     {
         public ListLabelItem[] GetItems()
         {
-            return db.MoneyAccount.Where(i => i.UserId == client.UserId)
+            return db.Account.Where(i => i.UserId == client.UserId)
                 .OrderBy(i => i.Id)
                 .Select(i => new ListLabelItem(i.Id, i.Name)).ToArray();
         }
@@ -22,7 +22,7 @@ namespace NetDream.Modules.Finance.Repositories
          */
         public MoneyAccountEntity[] All()
         {
-            return db.MoneyAccount.Where(i => i.UserId == client.UserId)
+            return db.Account.Where(i => i.UserId == client.UserId)
                 .OrderByDescending(i => i.Id).ToArray();
         }
 
@@ -34,7 +34,7 @@ namespace NetDream.Modules.Finance.Repositories
          */
         public IOperationResult<MoneyAccountEntity> Get(int id)
         {
-            var model = db.MoneyAccount.Where(i => i.UserId == client.UserId && i.Id == id)
+            var model = db.Account.Where(i => i.UserId == client.UserId && i.Id == id)
                 .FirstOrDefault();
             if (model == null)
             {
@@ -54,7 +54,7 @@ namespace NetDream.Modules.Finance.Repositories
             MoneyAccountEntity? model;
             if (data.Id > 0)
             {
-                model = db.MoneyAccount.Where(i => i.UserId == client.UserId && i.Id == data.Id)
+                model = db.Account.Where(i => i.UserId == client.UserId && i.Id == data.Id)
                 .FirstOrDefault();
             }
             else
@@ -70,7 +70,7 @@ namespace NetDream.Modules.Finance.Repositories
             model.Money = data.Money;
             model.FrozenMoney = data.FrozenMoney;
             model.UserId = client.UserId;
-            db.MoneyAccount.Save(model, client.Now);
+            db.Account.Save(model, client.Now);
             db.SaveChanges();
             return OperationResult.Ok(model);
         }
@@ -82,14 +82,14 @@ namespace NetDream.Modules.Finance.Repositories
          */
         public void SoftDelete(int id)
         {
-            db.MoneyAccount.Where(i => i.UserId == client.UserId && i.Id == id)
+            db.Account.Where(i => i.UserId == client.UserId && i.Id == id)
                 .ExecuteUpdate(setters => setters.SetProperty(i => i.DeletedAt, client.Now));
             db.SaveChanges();
         }
 
         public void Remove(int id)
         {
-            db.MoneyAccount.Where(i => i.UserId == client.UserId && i.Id == id).ExecuteDelete();
+            db.Account.Where(i => i.UserId == client.UserId && i.Id == id).ExecuteDelete();
             db.SaveChanges();
         }
 
@@ -101,14 +101,14 @@ namespace NetDream.Modules.Finance.Repositories
          */
         public IOperationResult<MoneyAccountEntity> Change(int id)
         {
-            var model = db.MoneyAccount.Where(i => i.UserId == client.UserId && i.Id == id)
+            var model = db.Account.Where(i => i.UserId == client.UserId && i.Id == id)
                 .FirstOrDefault();
             if (model == null)
             {
                 return OperationResult.Fail<MoneyAccountEntity>("账户不存在");
             }
             model.Status = (byte)(model.Status > 0 ? 0 : 1);
-            db.MoneyAccount.Save(model, client.Now);
+            db.Account.Save(model, client.Now);
             db.SaveChanges();
             return OperationResult.Ok(model);
         }

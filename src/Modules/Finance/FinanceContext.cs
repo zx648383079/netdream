@@ -6,11 +6,11 @@ namespace NetDream.Modules.Finance;
 public class FinanceContext(DbContextOptions<FinanceContext> options) : DbContext(options)
 {
     public DbSet<BudgetEntity> Budget { get; set; }
-    public DbSet<ConsumptionChannelEntity> ConsumptionChannel { get; set; }
-    public DbSet<FinancialProductEntity> FinancialProduct { get; set; }
-    public DbSet<FinancialProjectEntity> FinancialProject { get; set; }
+    public DbSet<ConsumptionChannelEntity> Channel { get; set; }
+    public DbSet<FinancialProductEntity> Product { get; set; }
+    public DbSet<FinancialProjectEntity> Project { get; set; }
     public DbSet<LogEntity> Log { get; set; }
-    public DbSet<MoneyAccountEntity> MoneyAccount { get; set; }
+    public DbSet<MoneyAccountEntity> Account { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new BudgetEntityTypeConfiguration());
