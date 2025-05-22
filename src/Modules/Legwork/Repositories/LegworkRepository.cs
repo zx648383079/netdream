@@ -7,6 +7,9 @@ namespace NetDream.Modules.Legwork.Repositories
 {
     public class LegworkRepository(LegworkContext db, IClientContext client)
     {
+        public const byte STATUS_NONE = 0;
+        public const byte STATUS_ALLOW = 1;
+        public const byte STATUS_DISALLOW = 2;
         public RoleStatus Role()
         {
             var user_id = client.UserId;

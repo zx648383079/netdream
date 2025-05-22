@@ -5,6 +5,7 @@ using NetDream.Modules.Legwork.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -46,7 +47,7 @@ namespace NetDream.Modules.Legwork.Repositories
             db.SaveChanges();
         }
 
-        public IPage<ProviderListItem> ProviderList(int id, QueryForm form, int status = 0)
+        public IPage<UserListItem> ProviderList(int id, QueryForm form, int status = 0)
         {
             var links = db.CategoryProvider
                 .Where(i => i.CatId == id)
@@ -54,13 +55,13 @@ namespace NetDream.Modules.Legwork.Repositories
                 .Select(i => new KeyValuePair<int, byte>(i.UserId, i.Status)).ToDictionary();
             if (links.Count == 0)
             {
-                return new Page<ProviderListItem>(0, form);
+                return new Page<UserListItem>(0, form);
             }
             var data = userStore.Search(form, links.Keys.ToArray(), false);
 
-            return new Page<ProviderListItem>(data)
+            return new Page<UserListItem>(data)
             {
-                Items = data.Items.Select(i => new ProviderListItem()
+                Items = data.Items.Select(i => new UserListItem()
                 {
                     Id = i.Id,
                     Name = i.Name,
@@ -74,6 +75,30 @@ namespace NetDream.Modules.Legwork.Repositories
         public ListLabelItem[] All()
         {
             return db.Categories.Select(i => new ListLabelItem(i.Id, i.Name)).ToArray();
+        }
+
+        internal static void Include(LegworkContext db, IWithCategoryModel[] items)
+        {
+            var idItems = items.Select(item => item.CatId).Where(i => i > 0)
+                .Distinct().ToArray();
+            if (idItems.Length == 0)
+            {
+                return;
+            }
+            var data = db.Categories.Where(i => idItems.Contains(i.Id))
+                .Select(i => new ListLabelItem(i.Id, i.Name))
+                .ToDictionary(i => i.Id);
+            if (data.Count == 0)
+            {
+                return;
+            }
+            foreach (var item in items)
+            {
+                if (item.CatId > 0 && data.TryGetValue(item.CatId, out var res))
+                {
+                    item.Category = res;
+                }
+            }
         }
     }
 }

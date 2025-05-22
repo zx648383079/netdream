@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NetDream.Modules.Shop.Entities;
+using NetDream.Modules.Trade.Entities;
 
-namespace NetDream.Modules.Shop.Migrations
+namespace NetDream.Modules.Trade.Migrations
 {
     public class PaymentEntityTypeConfiguration : IEntityTypeConfiguration<PaymentEntity>
     {
         public void Configure(EntityTypeBuilder<PaymentEntity> builder)
         {
-            builder.ToTable("Payment", table => table.HasComment(""));
+            builder.ToTable("trade_payment", table => table.HasComment("Ö§¸¶·½Ê½"));
             builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(30);

@@ -40,6 +40,9 @@
         public const byte TYPE_APP_STORE = 50;
         public const byte TYPE_RESOURCE_STORE = 55;
 
+        public const byte TYPE_LEGWORK = 69;
+
+
         public const byte TYPE_SYSTEM = 80;
 
         public const byte TYPE_ROLE = 83;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -100,6 +101,26 @@ namespace NetDream.Shared.Helpers
             }
             return (add, same, remove);
         }
-
+        /// <summary>
+        /// 获取两个数组之间的差集
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="exclude"></param>
+        /// <returns></returns>
+        public static T[] Diff<T>(IEnumerable<T> items, T[] exclude)
+        {
+            return [.. items.Where(i => !exclude.Contains(i)).Distinct()];
+        }
+        /// <summary>
+        /// 获取两个数组之间的差集
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="exclude"></param>
+        /// <returns></returns>
+        public static int[] Diff(IEnumerable<int> items, int[] exclude)
+        {
+            return [.. items.Where(i => i > 0 && !exclude.Contains(i)).Distinct()];
+        }
     }
 }

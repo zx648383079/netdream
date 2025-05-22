@@ -1,5 +1,5 @@
 
-namespace NetDream.Modules.Shop.Entities
+namespace NetDream.Modules.Trade.Entities
 {
     
     public class PayLogEntity
