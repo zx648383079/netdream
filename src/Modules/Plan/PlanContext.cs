@@ -5,11 +5,13 @@ using NetDream.Modules.Plan.Migrations;
 namespace NetDream.Modules.Plan;
 public class PlanContext(DbContextOptions<PlanContext> options) : DbContext(options)
 {
-    public DbSet<CommentEntity> Comment { get; set; }
-    public DbSet<DayEntity> Day { get; set; }
-    public DbSet<LogEntity> Log { get; set; }
-    public DbSet<ShareEntity> Share { get; set; }
-    public DbSet<ShareUserEntity> ShareUser { get; set; }
+    public DbSet<CommentEntity> Comments { get; set; }
+    public DbSet<DayEntity> Days { get; set; }
+    public DbSet<TaskEntity> Tasks { get; set; }
+    public DbSet<LogEntity> Logs { get; set; }
+    public DbSet<ShareEntity> Shares { get; set; }
+    public DbSet<PlanEntity> Plans { get; set; }
+    public DbSet<ShareUserEntity> ShareUsers { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new CommentEntityTypeConfiguration());

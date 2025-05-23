@@ -57,5 +57,6 @@ namespace NetDream.Shared.Models
             : this (total, form.Page, form.PerPage)
         {
         }
+
     }
 }

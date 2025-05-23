@@ -17,9 +17,6 @@ namespace NetDream.Cli
                 RunWidthArgs(args);
                 return;
             }
-            // var items = new string[] { "h", "g" };
-            // Expression<Func<ConnectionString, ConnectionString>> b = c => new ConnectionString { Default = c.Default };
-            // Console.WriteLine("-g Generate Database Entities");
             Console.WriteLine("Please select mode:");
             Console.WriteLine("1. Generate Database Entities");
             Console.WriteLine("2. Update Database Entities");

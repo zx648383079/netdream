@@ -9,4 +9,11 @@
 
         public string Name { get; set; }
     }
+
+    public interface IListArticleItem
+    {
+        public int Id { get; set; }
+
+        public string Title { get; set; }
+    }
 }

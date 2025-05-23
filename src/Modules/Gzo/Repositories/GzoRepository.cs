@@ -94,10 +94,18 @@ namespace NetDream.Modules.Gzo.Repositories
                 BatchGenerateModel(folder, module, AllTableNames());
                 return;
             }
+            var name = prefix;
+            if (prefix.EndsWith('_'))
+            {
+                name = prefix[..^1];
+            } else
+            {
+                prefix += '_';
+            }
             BatchGenerateModel(
                 folder, module,
                 AllTableNames()
-                .Where(table => table.Name.StartsWith(prefix)).ToArray());
+                .Where(table => table.Name == name || table.Name.StartsWith(prefix)).ToArray());
         }
 
         public void BatchGenerateModel(string folder, string module, TableEntity[] tables)

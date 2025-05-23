@@ -24,7 +24,8 @@ namespace NetDream.Shared.Providers
         /// <param name="name"></param>
         /// <param name="append"></param>
         /// <returns></returns>
-        public int[] Save(string[] name, IDictionary<string, object> append) {
+        public int[] Save(string[] name, 
+            IDictionary<string, object>? append) {
             //var items = [];
             //idItems = [];
             //foreach ((array)name as item) {
@@ -191,7 +192,8 @@ namespace NetDream.Shared.Providers
         /// <param name="tags"></param>
         /// <param name="append"></param>
         /// <param name="afterBind"></param>
-        public void BindTag(int target, string[] tags, IDictionary<string, object> append, Action<int[], int[], int[]>? afterBind = null) {
+        public void BindTag(int target, string[] tags, 
+            IDictionary<string, object>? append, Action<int[], int[], int[]>? afterBind = null) {
             var tagId = Save(tags, append);
             if (tagId.Length == 0) {
                 return;
