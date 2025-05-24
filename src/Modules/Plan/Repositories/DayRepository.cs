@@ -10,13 +10,11 @@ namespace NetDream.Modules.Plan.Repositories
 {
     public class DayRepository(PlanContext db, IClientContext client)
     {
-        public const byte STATUS_NONE = 5;
-        public const byte STATUS_RUNNING = 9;
-        public const byte STATUS_PAUSE = 8;
         public IPage<DayListItem> GetList(string day, QueryForm form)
         {
+            var dayFormat = DateOnly.Parse(day);
             var res = db.Days.Where(i => i.UserId == client.UserId && i.Amount > 0
-            && i.Today == day)
+            && i.Today == dayFormat)
                 .OrderByDescending(i => i.Status)
                 .OrderBy(i => i.Id).ToPage<DayEntity, DayListItem>(form);
             TaskRepository.Include(db, res.Items);
@@ -65,7 +63,7 @@ namespace NetDream.Modules.Plan.Repositories
         public IOperationResult<DayEntity> Add(TaskEntity task,
             byte amount = 1)
         {
-            var day = DateTime.Now.ToString("yyyy-MM-dd");
+            var day = DateOnly.FromDateTime(DateTime.Now);
             var model = db.Days.Where(i => i.TaskId == task.Id && i.Today == day)
                 .FirstOrDefault();
             if (model is not null)
@@ -81,7 +79,7 @@ namespace NetDream.Modules.Plan.Repositories
                 TaskId = task.Id,
                 Today = day,
                 Amount = amount,
-                Status = STATUS_NONE
+                Status = TaskRepository.STATUS_NONE
             };
             db.Days.Save(model, client.Now);
             db.SaveChanges();

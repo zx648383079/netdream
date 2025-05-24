@@ -20,7 +20,7 @@ namespace NetDream.Modules.Plan.Repositories
                 return new Page<CommentListItem>();
             }
             if (model.UserId != client.UserId &&
-                !ShareRepository.IsShareUser([model.Id, model.ParentId], client.UserId))
+                !ShareRepository.IsShareUser(db, [model.Id, model.ParentId], client.UserId))
             {
                 return new Page<CommentListItem>();
                 // throw new \Exception("无权限查看评论");
@@ -42,7 +42,7 @@ namespace NetDream.Modules.Plan.Repositories
                 return OperationResult<CommentEntity>.Fail("任务错误");
             }
             if (task.UserId != client.UserId &&
-                !ShareRepository.IsShareUser([task.Id, task.ParentId], client.UserId))
+                !ShareRepository.IsShareUser(db, [task.Id, task.ParentId], client.UserId))
             {
                 return OperationResult<CommentEntity>.Fail("无权限评论");
             }
