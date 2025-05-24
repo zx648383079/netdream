@@ -7,14 +7,15 @@ using NetDream.Shared.Providers.Migrations;
 
 namespace NetDream.Modules.Document
 {
-    public class DocumentContext(DbContextOptions<DocumentContext> options): DbContext(options), ICommentContext
+    public class DocumentContext(DbContextOptions<DocumentContext> options): 
+        DbContext(options), ICommentContext, ILogContext
     {
-        public DbSet<ApiEntity> Api {get; set; }
+        public DbSet<ApiEntity> Apies {get; set; }
         public DbSet<CategoryEntity> Categories {get; set; }
         public DbSet<FieldEntity> Fields {get; set; }
         public DbSet<PageEntity> Pages {get; set; }
         public DbSet<ProjectEntity> Projects {get; set; }
-        public DbSet<ProjectVersionEntity> ProjectVersions {get; set; }
+        public DbSet<ProjectVersionEntity> Versions {get; set; }
         public DbSet<LogEntity> Logs { get; set; }
         public DbSet<CommentEntity> Comments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

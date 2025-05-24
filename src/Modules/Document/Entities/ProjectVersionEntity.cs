@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Document.Entities
 {
     
-    public class ProjectVersionEntity
+    public class ProjectVersionEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

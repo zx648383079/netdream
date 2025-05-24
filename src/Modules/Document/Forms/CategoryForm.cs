@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NetDream.Modules.ResourceStore.Forms
+namespace NetDream.Modules.Document.Forms
 {
     public class CategoryForm
     {
