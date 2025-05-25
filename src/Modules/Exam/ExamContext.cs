@@ -5,21 +5,21 @@ using NetDream.Modules.Exam.Migrations;
 namespace NetDream.Modules.Exam;
 public class ExamContext(DbContextOptions<ExamContext> options) : DbContext(options)
 {
-    public DbSet<CourseEntity> Course { get; set; }
-    public DbSet<CourseGradeEntity> CourseGrade { get; set; }
-    public DbSet<CourseLinkEntity> CourseLink { get; set; }
-    public DbSet<PageEntity> Page { get; set; }
-    public DbSet<PageEvaluateEntity> PageEvaluate { get; set; }
-    public DbSet<PageQuestionEntity> PageQuestion { get; set; }
-    public DbSet<QuestionEntity> Question { get; set; }
+    public DbSet<CourseEntity> Courses { get; set; }
+    public DbSet<CourseGradeEntity> CourseGrades { get; set; }
+    public DbSet<CourseLinkEntity> CourseLinks { get; set; }
+    public DbSet<PageEntity> Pages { get; set; }
+    public DbSet<PageEvaluateEntity> PageEvaluates { get; set; }
+    public DbSet<PageQuestionEntity> PageQuestions { get; set; }
+    public DbSet<QuestionEntity> Questions { get; set; }
     public DbSet<QuestionAnalysisEntity> QuestionAnalysis { get; set; }
-    public DbSet<QuestionAnswerEntity> QuestionAnswer { get; set; }
-    public DbSet<QuestionMaterialEntity> QuestionMaterial { get; set; }
-    public DbSet<QuestionOptionEntity> QuestionOption { get; set; }
-    public DbSet<QuestionWrongEntity> QuestionWrong { get; set; }
-    public DbSet<UpgradeEntity> Upgrade { get; set; }
-    public DbSet<UpgradePathEntity> UpgradePath { get; set; }
-    public DbSet<UpgradeUserEntity> UpgradeUser { get; set; }
+    public DbSet<QuestionAnswerEntity> QuestionAnswers { get; set; }
+    public DbSet<QuestionMaterialEntity> QuestionMaterials { get; set; }
+    public DbSet<QuestionOptionEntity> QuestionOptions { get; set; }
+    public DbSet<QuestionWrongEntity> QuestionWrongs { get; set; }
+    public DbSet<UpgradeEntity> Upgrades { get; set; }
+    public DbSet<UpgradePathEntity> UpgradePaths { get; set; }
+    public DbSet<UpgradeUserEntity> UpgradeUsers { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new CourseEntityTypeConfiguration());

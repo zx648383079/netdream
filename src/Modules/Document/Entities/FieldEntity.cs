@@ -10,7 +10,7 @@ namespace NetDream.Modules.Document.Entities
         public string Name { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         
-        public int IsRequired { get; set; }
+        public bool IsRequired { get; set; }
         
         public string DefaultValue { get; set; } = string.Empty;
         public string Mock { get; set; } = string.Empty;

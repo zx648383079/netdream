@@ -120,5 +120,15 @@ namespace NetDream.Shared.Helpers
         private static partial Regex IPv4Regex();
         [GeneratedRegex(@"^::|^::1|^([a-fA-F0-9]{1,4}::?){1,7}([a-fA-F0-9]{1,4})$")]
         private static partial Regex IPv6Regex();
+
+        public static bool IsBoolean(string content)
+        {
+            return content.ToLower() is "true" or "false";
+        }
+
+        public static bool IsDouble(string content)
+        {
+            return double.TryParse(content, out var _);
+        }
     }
 }
