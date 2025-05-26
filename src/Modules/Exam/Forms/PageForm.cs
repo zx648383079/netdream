@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using NetDream.Modules.Exam.Models;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Nodes;
 
 namespace NetDream.Modules.Exam.Forms
 {
@@ -8,7 +10,7 @@ namespace NetDream.Modules.Exam.Forms
         [Required]
         public string Name { get; set; } = string.Empty;
         public byte RuleType { get; set; }
-        public string RuleValue { get; set; } = string.Empty;
+        public JsonArray RuleValue { get; set; }
         public int StartAt { get; set; }
         public int EndAt { get; set; }
         public int LimitTime { get; set; }
@@ -16,5 +18,7 @@ namespace NetDream.Modules.Exam.Forms
         public int QuestionCount { get; set; }
         public int CourseId { get; set; }
         public int CourseGrade { get; set; }
+
+        public QuestionForm[]? QuestionItems { get; set; }
     }
 }

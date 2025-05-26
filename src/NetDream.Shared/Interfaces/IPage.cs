@@ -10,6 +10,8 @@
     public interface IPage<T> : IPagination
     {
         public T[] Items { get; }
+
+        public IPage<K> Cast<K>();
     }
 
  

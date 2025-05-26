@@ -5,6 +5,9 @@ public class PageEntity : IIdEntity, ITimestampEntity
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    /// <summary>
+    /// 0 随机选题 1 固定题
+    /// </summary>
     public byte RuleType { get; set; }
     public string RuleValue { get; set; } = string.Empty;
     public int StartAt { get; set; }

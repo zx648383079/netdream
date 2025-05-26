@@ -2,6 +2,7 @@
 using NetDream.Shared.Interfaces.Forms;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Shared.Models
 {
@@ -58,5 +59,12 @@ namespace NetDream.Shared.Models
         {
         }
 
+        public IPage<K> Cast<K>()
+        {
+            return new Page<K>(this)
+            {
+                Items = [.. Items.Cast<K>()],
+            };
+        }
     }
 }

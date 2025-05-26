@@ -4,7 +4,7 @@ using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Exam.Models
 {
-    public class QuestionModel : QuestionEntity, IQuestionModel
+    public class QuestionModel : QuestionEntity, IQuestionModel, IRuleQuestion
     {
         public ListLabelItem? Course { get; set; }
 
@@ -19,5 +19,8 @@ namespace NetDream.Modules.Exam.Models
         public QuestionAnalysisEntity[]? AnalysisItems { get; set; }
 
         public bool Editable { get; set; }
+        public QuestionModel[] Children { get; set; }
+
+        public byte Score { get; set; }
     }
 }

@@ -7,6 +7,7 @@ public class QuestionEntity : IIdEntity, ITimestampEntity
     public string Title { get; set; } = string.Empty;
     public string Image { get; set; } = string.Empty;
     public int CourseId { get; set; }
+    public int CourseGrade { get; set; }
     public int MaterialId { get; set; }
     public int ParentId { get; set; }
     public byte Type { get; set; }
@@ -18,6 +19,6 @@ public class QuestionEntity : IIdEntity, ITimestampEntity
     public byte Status { get; set; }
     public int UpdatedAt { get; set; }
     public int CreatedAt { get; set; }
-    public int CourseGrade { get; set; }
+
     
 }

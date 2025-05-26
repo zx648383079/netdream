@@ -308,6 +308,19 @@ namespace NetDream.Shared.Providers
             return res;
         }
 
+        public static TResult[] Pluck<TSource, TResult>(
+            this IQueryable<TSource> source,
+            Expression<Func<TSource, TResult>> selector)
+        {
+            return source.Select(selector).ToArray();
+        }
+        public static TResult? Value<TSource, TResult>(
+            this IQueryable<TSource> source,
+            Expression<Func<TSource, TResult>> selector)
+        {
+            return source.Select(selector).FirstOrDefault();
+        }
+
         /// <summary>
         /// 批量更改数据
         /// </summary>

@@ -3,7 +3,7 @@ using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Exam.Models
 {
-    public class QuestionListItem : IQuestionModel
+    public class QuestionListItem : IRuleQuestion, IQuestionModel
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
@@ -21,6 +21,6 @@ namespace NetDream.Modules.Exam.Models
 
         public string CourseGradeFormat { get; set; }
 
-
+        public byte Score { get; set; }
     }
 }
