@@ -23,5 +23,5 @@ public class MovieEntity : IIdEntity, ITimestampEntity
     public byte Status { get; set; }
     public int UpdatedAt { get; set; }
     public int CreatedAt { get; set; }
-    
+
 }
