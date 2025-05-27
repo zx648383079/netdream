@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class WarehouseLogEntity
+    public class WarehouseLogEntity : IIdEntity, ICreatedEntity
     {
         
         public int Id { get; set; }

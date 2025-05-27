@@ -9,7 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
+    <Compile Remove="Models\**" />
+    <EmbeddedResource Remove="Models\**" />
+    <None Remove="Models\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +22,16 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
+		<ProjectReference Include="..\..\Shared\Providers\Providers.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Market\Forms\" />
+	  <Folder Include="Market\Models\" />
+	  <Folder Include="Market\Repositories\" />
+	  <Folder Include="Merchant\Forms\" />
+	  <Folder Include="Merchant\Models\" />
+	  <Folder Include="Merchant\Repositories\" />
 	</ItemGroup>
 
 </Project>
