@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class OrderEntity
+    public class OrderEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -10,7 +11,7 @@ namespace NetDream.Modules.Shop.Entities
         public string SeriesNumber { get; set; } = string.Empty;
         
         public int UserId { get; set; }
-        public int Status { get; set; }
+        public byte Status { get; set; }
         
         public int PaymentId { get; set; }
         
@@ -22,14 +23,14 @@ namespace NetDream.Modules.Shop.Entities
         
         public string ShippingName { get; set; } = string.Empty;
         
-        public decimal GoodsAmount { get; set; }
+        public float GoodsAmount { get; set; }
         
-        public decimal OrderAmount { get; set; }
-        public decimal Discount { get; set; }
+        public float OrderAmount { get; set; }
+        public float Discount { get; set; }
         
-        public decimal ShippingFee { get; set; }
+        public float ShippingFee { get; set; }
         
-        public decimal PayFee { get; set; }
+        public float PayFee { get; set; }
         
         public int PayAt { get; set; }
         

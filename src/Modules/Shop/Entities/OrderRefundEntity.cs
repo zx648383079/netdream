@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class OrderRefundEntity
+    public class OrderRefundEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -18,15 +19,15 @@ namespace NetDream.Modules.Shop.Entities
         public int ProductId { get; set; }
         public string Title { get; set; } = string.Empty;
         public int Amount { get; set; }
-        public int Type { get; set; }
-        public int Status { get; set; }
+        public byte Type { get; set; }
+        public byte Status { get; set; }
         public string Reason { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Evidence { get; set; } = string.Empty;
         public string Explanation { get; set; } = string.Empty;
-        public decimal Money { get; set; }
+        public float Money { get; set; }
         
-        public decimal OrderPrice { get; set; }
+        public float OrderPrice { get; set; }
         public int Freight { get; set; }
         
         public int UpdatedAt { get; set; }
