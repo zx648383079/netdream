@@ -24,6 +24,11 @@ namespace NetDream.Shared.Helpers
             group.Children.Add(item);
         }
 
+        /// <summary>
+        /// 建立树形结构
+        /// </summary>
+        /// <param name="items"></param>
+        /// <returns></returns>
         public static ITreeItem[] Create(IList<ITreeItem> items)
         {
             return Create(items, 0, 0);
@@ -62,7 +67,12 @@ namespace NetDream.Shared.Helpers
             }
             return data;
         }
-
+        /// <summary>
+        /// 树形结构组成单列，添加 level 深度属性
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <returns></returns>
         public static T[] Sort<T>(IList<T> items)
             where T : ILevelItem
         {

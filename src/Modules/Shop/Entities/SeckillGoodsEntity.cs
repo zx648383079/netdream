@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class SeckillGoodsEntity
+    public class SecKillGoodsEntity : IIdEntity
     {
         
         public int Id { get; set; }
@@ -12,7 +13,7 @@ namespace NetDream.Modules.Shop.Entities
         public int TimeId { get; set; }
         
         public int GoodsId { get; set; }
-        public decimal Price { get; set; }
+        public float Price { get; set; }
         public int Amount { get; set; }
         
         public int EveryAmount { get; set; }

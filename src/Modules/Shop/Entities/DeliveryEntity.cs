@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class DeliveryEntity
+    public class DeliveryEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -16,7 +17,7 @@ namespace NetDream.Modules.Shop.Entities
         
         public string ShippingName { get; set; } = string.Empty;
         
-        public decimal ShippingFee { get; set; }
+        public float ShippingFee { get; set; }
         
         public string LogisticsNumber { get; set; } = string.Empty;
         

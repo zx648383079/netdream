@@ -53,7 +53,7 @@ namespace NetDream.Modules.Shop
         public DbSet<PresaleLogEntity> PresaleLogs {get; set; }
         public DbSet<ProductEntity> Products {get; set; }
         public DbSet<RegionEntity> Regions {get; set; }
-        public DbSet<SeckillGoodsEntity> SecKillGoods {get; set; }
+        public DbSet<SecKillGoodsEntity> SecKillGoods {get; set; }
         public DbSet<ShippingEntity> Shipping {get; set; }
         public DbSet<ShippingGroupEntity> ShippingGroups {get; set; }
         public DbSet<ShippingRegionEntity> ShippingRegions {get; set; }

@@ -1,25 +1,21 @@
-using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Shared.Models;
 
-namespace NetDream.Modules.Shop.Entities
+namespace NetDream.Modules.Shop.Backend.Models
 {
-    
-    public class ArticleEntity : IIdEntity, ITimestampEntity
+    public class ArticleListItem
     {
-        
         public int Id { get; set; }
-        
+
         public int CatId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Keywords { get; set; } = string.Empty;
         public string Thumb { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string Brief { get; set; } = string.Empty;
-        public string Url { get; set; } = string.Empty;
-        public string File { get; set; } = string.Empty;
-        public string Content { get; set; } = string.Empty;
-        
+
         public int UpdatedAt { get; set; }
-        
+
         public int CreatedAt { get; set; }
+
+        public ListLabelItem? Category { get; set; }
     }
 }

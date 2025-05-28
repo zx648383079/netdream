@@ -1,6 +1,6 @@
-﻿namespace NetDream.Modules.Shop.Repositories
+﻿namespace NetDream.Modules.Shop.Models
 {
-    public class ActivityRepository
+    public static class ActivityType
     {
         public const int TYPE_AUCTION = 1; // 拍卖
         public const int TYPE_SEC_KILL = 2; // 秒杀

@@ -4,9 +4,9 @@ using NetDream.Modules.Shop.Entities;
 
 namespace NetDream.Modules.Shop.Migrations
 {
-    public class SeckillGoodsEntityTypeConfiguration : IEntityTypeConfiguration<SeckillGoodsEntity>
+    public class SeckillGoodsEntityTypeConfiguration : IEntityTypeConfiguration<SecKillGoodsEntity>
     {
-        public void Configure(EntityTypeBuilder<SeckillGoodsEntity> builder)
+        public void Configure(EntityTypeBuilder<SecKillGoodsEntity> builder)
         {
             builder.ToTable("SeckillGoods", table => table.HasComment(""));
             builder.HasKey(i => i.Id);

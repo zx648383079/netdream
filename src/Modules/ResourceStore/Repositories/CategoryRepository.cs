@@ -44,6 +44,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
         public void Remove(int id)
         {
             db.Categories.Where(i => i.Id == id).ExecuteDelete();
+            db.SaveChanges();
         }
 
         public CategoryEntity[] GetChildren(int parent = 0)

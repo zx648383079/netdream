@@ -1,16 +1,18 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class AttributeGroupEntity
+    public class AttributeGroupEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         
-        public int UpdatedAt { get; set; }
-        
-        public int CreatedAt { get; set; }
         public string PropertyGroups { get; set; } = string.Empty;
+
+        public int UpdatedAt { get; set; }
+
+        public int CreatedAt { get; set; }
     }
 }

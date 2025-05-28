@@ -1,29 +1,23 @@
+﻿using System.ComponentModel.DataAnnotations;
 
-using NetDream.Shared.Interfaces.Entities;
-
-namespace NetDream.Modules.Shop.Entities
+namespace NetDream.Modules.Shop.Backend.Forms
 {
-    
-    public class ActivityEntity : IIdEntity, ITimestampEntity
+    public class ActivityForm
     {
-        
         public int Id { get; set; }
+        [Required]
         public string Name { get; set; } = string.Empty;
         public string Thumb { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Type { get; set; }
-        
+
         public int ScopeType { get; set; }
+        /// <summary>
+        /// , 连接的 int[]
+        /// </summary>
         public string Scope { get; set; } = string.Empty;
         public string Configure { get; set; } = string.Empty;
-        public int Status { get; set; }
-        
         public int StartAt { get; set; }
-        
+
         public int EndAt { get; set; }
-        
-        public int UpdatedAt { get; set; }
-        
-        public int CreatedAt { get; set; }
     }
 }

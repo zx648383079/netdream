@@ -17,7 +17,7 @@ namespace NetDream.Modules.Shop.Migrations
             builder.Property(table => table.Bid).HasColumnName("bid").HasMaxLength(8).HasDefaultValue(0)
                 .HasComment("出价");
             builder.Property(table => table.Amount).HasColumnName("amount").HasDefaultValue(1).HasComment("出价数量");
-            builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(1).HasDefaultValue(ActivityRepository.STATUS_NONE);
+            builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(1).HasDefaultValue(ActivityType.STATUS_NONE);
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
         }
     }
