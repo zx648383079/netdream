@@ -87,6 +87,10 @@ namespace NetDream.Shared.Helpers
         public static string RandomNumber(int length)
         {
             var rand = new Random();
+            return RandomNumber(rand, length);
+        }
+        public static string RandomNumber(Random rand, int length)
+        {
             var code = string.Empty;
             for (var i = 0; i < length; i++)
             {

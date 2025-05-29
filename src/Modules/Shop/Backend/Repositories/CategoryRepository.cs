@@ -100,5 +100,29 @@ namespace NetDream.Modules.Shop.Backend.Repositories
             db.SaveChanges();
             return model.Id;
         }
+
+        internal static void Include(ShopContext db, IWithCategoryModel[] items)
+        {
+            var idItems = items.Select(item => item.CatId).Where(i => i > 0)
+                .Distinct().ToArray();
+            if (idItems.Length == 0)
+            {
+                return;
+            }
+            var data = db.Categories.Where(i => idItems.Contains(i.Id))
+                .Select(i => new ListLabelItem(i.Id, i.Name))
+                .ToDictionary(i => i.Id);
+            if (data.Count == 0)
+            {
+                return;
+            }
+            foreach (var item in items)
+            {
+                if (item.CatId > 0 && data.TryGetValue(item.CatId, out var res))
+                {
+                    item.Category = res;
+                }
+            }
+        }
     }
 }

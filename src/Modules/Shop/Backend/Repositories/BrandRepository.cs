@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Shop.Backend.Forms;
+using NetDream.Modules.Shop.Backend.Models;
 using NetDream.Modules.Shop.Entities;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
@@ -95,6 +96,30 @@ namespace NetDream.Modules.Shop.Backend.Repositories
             db.Brands.Add(model);
             db.SaveChanges();
             return model.Id;
+        }
+
+        internal static void Include(ShopContext db, IWithBrandModel[] items)
+        {
+            var idItems = items.Select(item => item.BrandId).Where(i => i > 0)
+                .Distinct().ToArray();
+            if (idItems.Length == 0)
+            {
+                return;
+            }
+            var data = db.Categories.Where(i => idItems.Contains(i.Id))
+                .Select(i => new ListLabelItem(i.Id, i.Name))
+                .ToDictionary(i => i.Id);
+            if (data.Count == 0)
+            {
+                return;
+            }
+            foreach (var item in items)
+            {
+                if (item.BrandId > 0 && data.TryGetValue(item.BrandId, out var res))
+                {
+                    item.Brand = res;
+                }
+            }
         }
     }
 }

@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class GoodsGalleryEntity
+    public class GoodsGalleryEntity : IIdEntity
     {
         
         public int Id { get; set; }
