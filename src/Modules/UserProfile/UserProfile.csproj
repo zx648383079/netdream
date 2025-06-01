@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<LangVersion>13</LangVersion>
+		<Description>包括用户现实资料</Description>
+		<AssemblyName>NetDream.Modules.$(MSBuildProjectName)</AssemblyName>
+		<RootNamespace>NetDream.Modules.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.5" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
+		<ProjectReference Include="..\..\Shared\Providers\Providers.csproj" />
+	</ItemGroup>
+
+</Project>

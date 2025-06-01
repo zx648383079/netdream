@@ -21,8 +21,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Market\Forms\" />
-	  <Folder Include="Market\Models\" />
-	  <Folder Include="Market\Repositories\" />
 	  <Folder Include="Merchant\Forms\" />
 	  <Folder Include="Merchant\Models\" />
 	  <Folder Include="Merchant\Repositories\" />

@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class RegionEntity
+    public class RegionEntity : IIdEntity
     {
         
         public int Id { get; set; }

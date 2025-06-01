@@ -8,22 +8,20 @@ namespace NetDream.Modules.Shop
     {
         public DbSet<ActivityEntity> Activities {get; set; }
         public DbSet<ActivityTimeEntity> ActivityTimes {get; set; }
-        public DbSet<AddressEntity> Address {get; set; }
-        public DbSet<AdEntity> Ads {get; set; }
-        public DbSet<AdPositionEntity> AdPositions {get; set; }
+
         public DbSet<AffiliateLogEntity> AffiliateLogs {get; set; }
         public DbSet<ArticleCategoryEntity> ArticleCategories {get; set; }
         public DbSet<ArticleEntity> Articles {get; set; }
         public DbSet<AttributeEntity> Attributes {get; set; }
         public DbSet<AttributeGroupEntity> AttributeGroups {get; set; }
         public DbSet<AuctionLogEntity> AuctionLogs {get; set; }
-        public DbSet<BankCardEntity> BankCards {get; set; }
+
         public DbSet<BargainLogEntity> BargainLogs {get; set; }
         public DbSet<BargainUserEntity> BargainUsers {get; set; }
         public DbSet<BrandEntity> Brands {get; set; }
         public DbSet<CartEntity> Carts {get; set; }
         public DbSet<CategoryEntity> Categories {get; set; }
-        public DbSet<CertificationEntity> Certifications {get; set; }
+      
         public DbSet<CollectEntity> Collects {get; set; }
         public DbSet<CommentEntity> Comments {get; set; }
         public DbSet<CommentImageEntity> CommentImages {get; set; }
@@ -67,22 +65,17 @@ namespace NetDream.Modules.Shop
         {
             modelBuilder.ApplyConfiguration(new ActivityEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ActivityTimeEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new AddressEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new AdEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new AdPositionEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AffiliateLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ArticleCategoryEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ArticleEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AttributeEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AttributeGroupEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AuctionLogEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new BankCardEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new BargainLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new BargainUserEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new BrandEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CartEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new CertificationEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CollectEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CommentEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CommentImageEntityTypeConfiguration());

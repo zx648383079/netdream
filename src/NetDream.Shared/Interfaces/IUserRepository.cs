@@ -24,7 +24,7 @@ namespace NetDream.Shared.Interfaces
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public IUser? GetProfile(int userId);
+        public IUserProfile? GetProfile(int userId);
 
 
         /// <summary>
@@ -69,17 +69,6 @@ namespace NetDream.Shared.Interfaces
         /// </summary>
         /// <param name="items"></param>
         public void Include(IEnumerable<IWithUserModel> items);
-        /// <summary>
-        /// 判断是否是角色
-        /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
-        public bool IsRole(int user, string role);
-        /// <summary>
-        /// 判断是否有权限
-        /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
-        public bool HasPermission(int user, string permission);
+
     }
 }

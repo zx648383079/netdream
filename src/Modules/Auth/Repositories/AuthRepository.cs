@@ -1,15 +1,16 @@
-﻿using NetDream.Shared.Helpers;
+﻿using NetDream.Modules.Auth.Entities;
+using NetDream.Modules.Auth.Forms;
+using NetDream.Modules.Auth.Models;
+using NetDream.Modules.UserAccount.Entities;
+using NetDream.Modules.UserAccount.Models;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
-using NetDream.Modules.Auth.Entities;
-using NetDream.Modules.Auth.Models;
-using System.Text.RegularExpressions;
+using NetDream.Shared.Models;
 using System;
 using System.Linq;
-using NetDream.Modules.Auth.Forms;
-using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using System.Text.RegularExpressions;
 
 namespace NetDream.Modules.Auth.Repositories
 {
@@ -222,6 +223,21 @@ namespace NetDream.Modules.Auth.Repositories
                 CreatedAt = client.Now
             });
             db.SaveChanges();
+        }
+
+        public static string GetLastIp(AuthContext db, int user)
+        {
+            var ip = db.LoginLogs
+                .Where(i => i.UserId == user && i.Status == 1)
+                .OrderByDescending(i => i.CreatedAt)
+                .Select(i => i.Ip)
+                .Take(1)
+                .SingleOrDefault();
+            if (string.IsNullOrWhiteSpace(ip))
+            {
+                return string.Empty;
+            }
+            return StrHelper.HideIp(ip);
         }
 
         [GeneratedRegex("^zreno_\\d{11}@zodream\\.cn$")]

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Auth.Entities;
+using NetDream.Modules.UserAccount.Repositories;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Providers;
 using System;
@@ -8,7 +9,10 @@ using System.Linq;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class BanRepository(AuthContext db, IClientContext client)
+    public class BanRepository(
+        AuthContext db, 
+        IClientContext client,
+        IUserRepository userStore)
     {
         private readonly Dictionary<string, byte> OAUTH_TYPE_MAPS = new() {
             {AuthRepository.OAUTH_TYPE_QQ, AuthRepository.ACCOUNT_TYPE_OAUTH_QQ },
@@ -26,11 +30,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 throw new Exception("不能拉黑自己");
             }
-            var user = db.Users.Where(i => i.Id == userId).Select(i => new UserEntity()
-            {
-                Email = i.Email,
-                Mobile = i.Mobile
-            }).Single();
+            var user = userStore.GetProfile(userId);
             if (user is null)
             {
                 return;
@@ -131,11 +131,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public void RemoveUser(int userId)
         {
-            var user = db.Users.Where(i => i.Id == userId).Select(i => new UserEntity()
-            {
-                Email = i.Email,
-                Mobile = i.Mobile
-            }).Single();
+            var user = userStore.GetProfile(userId);
             if (user is null)
             {
                 return;

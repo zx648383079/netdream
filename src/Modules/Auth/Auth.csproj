@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
 	  <LangVersion>13</LangVersion>
+	  <Description>包括用户注册登录</Description>
 	  <AssemblyName>NetDream.Modules.$(MSBuildProjectName)</AssemblyName>
 	  <RootNamespace>NetDream.Modules.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
@@ -20,7 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
     <ProjectReference Include="..\..\Shared\Drawing\Drawing.csproj" />
-    <ProjectReference Include="..\..\Shared\Repositories\Repositories.csproj" />
+    <ProjectReference Include="..\UserAccount\UserAccount.csproj" />
   </ItemGroup>
 
 </Project>
