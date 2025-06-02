@@ -37,7 +37,7 @@ namespace NetDream.Modules.UserAccount.Listeners
             request.TryAdd("bulletin_count", () => BulletinRepository.UnReadCount(db, request.UserId));
             request.TryAdd("following_count", () => RelationshipRepository.FollowingCount(db, request.UserId));
             request.TryAdd("follower_count", () => RelationshipRepository.FollowerCount(db, request.UserId));
-            request.TryAdd("last_ip", () => UserRepository.GetLastIp(db, request.UserId));
+            // request.TryAdd("last_ip", () => UserRepository.GetLastIp(db, request.UserId));
             // request.TryAdd("card_items", () => CardRepository.GetUserCard(db, request.UserId));
             return Task.CompletedTask;
         }

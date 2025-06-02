@@ -22,6 +22,6 @@ namespace NetDream.Shared.Interfaces
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public bool TryGetUser([NotNullWhen(true)] out IUser? user);
+        public bool TryGetUser([NotNullWhen(true)] out IUserProfile? user);
     }
 }

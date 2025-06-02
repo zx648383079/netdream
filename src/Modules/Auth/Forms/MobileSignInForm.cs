@@ -1,36 +1,29 @@
-﻿using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Modules.Auth.Repositories;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
-using System;
 using NetDream.Shared.Models;
-using System.Linq;
-using NetDream.Modules.Auth.Models;
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace NetDream.Modules.Auth.Forms
 {
     public class MobileSignInForm: ISignInForm, IContextForm
     {
+        [Required]
         public string Mobile { get; set; } = string.Empty;
-
+        [Required]
         public string Password { get; set; } = string.Empty;
 
         public string Account => Mobile;
 
-        public IOperationResult<IUser> Verify(AuthContext db)
+        public IOperationResult<IUserProfile> Verify(IContextRepository db)
         {
             if (string.IsNullOrWhiteSpace(Mobile) || string.IsNullOrWhiteSpace(Password))
             {
-                throw new ArgumentNullException("mobile or password is empty");
+                return OperationResult<IUserProfile>.Fail("mobile or password is empty");
             }
-            var user = db.Users.Where(i => i.Mobile == Mobile).SingleOrDefault() ?? throw new ArgumentException("email is not sign in");
-            if (!BCrypt.Net.BCrypt.Verify(Password, user.Password))
-            {
-                throw new ArgumentException("password is error");
-            }
-            return OperationResult<IUser>.Ok(new UserModel(user)
-            {
-                IsOnline = true,
-            });
+            return db.Find(i => i.Mobile == Mobile, Password);
         }
     }
 }

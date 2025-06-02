@@ -25,7 +25,7 @@ namespace NetDream.Modules.UserAccount.Repositories
             return db.Users.Where(i => i.Id == userId).Any();
         }
 
-        public IUser? Get(int userId)
+        public IUserSource? Get(int userId)
         {
 
             if (userId <= 0)
@@ -50,19 +50,17 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 Id = i.Id,
                 Name = i.Name,
-                Avatar = i.Avatar
+                Mobile = i.Mobile,
+                Email = i.Email,
+                Sex = i.Sex,
+                Birthday = i.Birthday,
+                Avatar = i.Avatar,
+                CreatedAt = i.CreatedAt,
             }).SingleOrDefault();
-            if (model is not null)
-            {
-                model.MetaItems = new()
-                {
-                    {"bulletin_count", BulletinRepository.UnReadCount(db, userId) }
-                };
-            }
             return model;
         }
 
-        public IUser[] Get(params int[] userItems)
+        public IUserSource[] Get(params int[] userItems)
         {
             userItems = [.. userItems.Where(i => i > 0).Distinct()];
             if (userItems.Length == 0)
@@ -80,7 +78,7 @@ namespace NetDream.Modules.UserAccount.Repositories
                 .ToArray();
         }
 
-        public IDictionary<int, IUser> GetDictionary(int[] userItems)
+        public IDictionary<int, IUserSource> GetDictionary(int[] userItems)
         {
             return Get(userItems).ToDictionary(i => i.Id);
         }
@@ -90,7 +88,7 @@ namespace NetDream.Modules.UserAccount.Repositories
         /// </summary>
         /// <param name="userItems"></param>
         /// <returns></returns>
-        public IUser[] Get(params string[] userItems)
+        public IUserSource[] Get(params string[] userItems)
         {
             userItems = [.. userItems.Where(i => !string.IsNullOrWhiteSpace(i)).Distinct()];
             if (userItems.Length == 0)
@@ -108,7 +106,7 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         
 
-        public IPage<IUser> Search(IQueryForm form, 
+        public IPage<IUserSource> Search(IQueryForm form, 
             int[]? items = null, 
             bool itemsIsExclude = true)
         {
@@ -128,7 +126,7 @@ namespace NetDream.Modules.UserAccount.Repositories
                 Id = i.Id,
                 Name = i.Name,
                 Avatar = i.Avatar
-            }).ToPage(form).ConvertTo<UserListItem, IUser>();
+            }).ToPage(form).ConvertTo<UserListItem, IUserSource>();
         }
 
         public int[] SearchUserId(string keywords, int[]? userIds = null, bool checkEmpty = false)

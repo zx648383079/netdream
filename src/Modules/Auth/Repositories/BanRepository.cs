@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Auth.Entities;
+using NetDream.Modules.UserAccount;
 using NetDream.Modules.UserAccount.Repositories;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Providers;
@@ -10,6 +11,7 @@ using System.Linq;
 namespace NetDream.Modules.Auth.Repositories
 {
     public class BanRepository(
+        UserContext userDB,
         AuthContext db, 
         IClientContext client,
         IUserRepository userStore)
@@ -44,7 +46,7 @@ namespace NetDream.Modules.Auth.Repositories
                 Ban(item.Identity, type, item.PlatformId);
                 Ban(item.Unionid, type, item.PlatformId);
             }
-            db.Users.Where(i => i.Id == userId && i.Status >= UserRepository.STATUS_ACTIVE)
+            userDB.Users.Where(i => i.Id == userId && i.Status >= UserRepository.STATUS_ACTIVE)
                 .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, UserRepository.STATUS_FROZEN));
         
         }
@@ -145,7 +147,7 @@ namespace NetDream.Modules.Auth.Repositories
                 Unban(item.Identity, type, item.PlatformId);
                 Unban(item.Unionid, type, item.PlatformId);
             }
-            db.Users.Where(i => i.Id == userId && i.Status < UserRepository.STATUS_ACTIVE)
+            userDB.Users.Where(i => i.Id == userId && i.Status < UserRepository.STATUS_ACTIVE)
                 .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, UserRepository.STATUS_ACTIVE));
    
         }

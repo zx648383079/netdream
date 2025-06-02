@@ -9,6 +9,7 @@ using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Models;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.UserAccount.Models;
 using NetDream.Shared.Interfaces.Entities;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -27,7 +28,7 @@ namespace NetDream.Api.Controllers.Auth
 
         [Route("[action]")]
         [HttpPost]
-        [ProducesResponseType(typeof(UserModel), 200)]
+        [ProducesResponseType(typeof(UserProfileModel), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Login([FromBody] SignInForm form)
         {

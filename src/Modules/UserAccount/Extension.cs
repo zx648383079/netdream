@@ -1,9 +1,9 @@
 ﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using NetDream.Modules.UserAccount.Events;
 using NetDream.Modules.UserAccount.Listeners;
 using NetDream.Modules.UserAccount.Repositories;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Notifications;
 
 namespace NetDream.Modules.UserAccount
 {

@@ -9,19 +9,21 @@ namespace NetDream.Shared.Interfaces.Entities
         public string Name { get; }
 
         public string Avatar { get; }
-
+    }
+    /// <summary>
+    /// 用于其他引用
+    /// </summary>
+    public interface IUserSource : IUser
+    {
         public bool IsOnline { get; }
     }
-
-    public interface IUserProfile
+    /// <summary>
+    /// 用于内部当前用户
+    /// </summary>
+    public interface IUserProfile : IUser
     {
-        public int Id { get; }
-
-        public string Name { get; }
         public string Email { get; }
         public string Mobile { get; }
-
-        public string Avatar { get; }
 
         public int Sex { get; }
         public DateOnly Birthday { get; }

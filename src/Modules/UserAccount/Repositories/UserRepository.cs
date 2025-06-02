@@ -55,7 +55,7 @@ namespace NetDream.Modules.UserAccount.Repositories
             return status >= STATUS_ACTIVE;
         }
 
-        public UserProfile? GetCurrentProfile(string extra = "")
+        public UserProfileModel? GetCurrentProfile(string extra = "")
         {
             if (client.UserId <= 0)
             {
@@ -64,12 +64,11 @@ namespace NetDream.Modules.UserAccount.Repositories
             var model = db.Users.Where(i => i.Id == client.UserId).Single();
             var openItems = new UserOpenStatistics(model.Id, extra.Split(','));
             mediator.Publish(openItems).GetAwaiter().GetResult();
-            return new UserProfile()
+            return new UserProfileModel()
             {
                 Id = model.Id,
                 Name = model.Name,
                 Avatar = model.Avatar,
-                IsOnline = true,
                 MetaItems = openItems.Result,
             };
         }
@@ -98,7 +97,6 @@ namespace NetDream.Modules.UserAccount.Repositories
                 Id = model.Id,
                 Name = model.Name,
                 Avatar = model.Avatar,
-                MetaItems = openItems.Result,
             };
         }
 

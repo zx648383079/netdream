@@ -18,7 +18,7 @@ namespace NetDream.Shared.Interfaces
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public IUser? Get(int userId);
+        public IUserSource? Get(int userId);
         /// <summary>
         /// web 内部调用
         /// </summary>
@@ -32,14 +32,14 @@ namespace NetDream.Shared.Interfaces
         /// </summary>
         /// <param name="userItems"></param>
         /// <returns></returns>
-        public IUser[] Get(params int[] userItems);
-        public IDictionary<int, IUser> GetDictionary(int[] userItems);
+        public IUserSource[] Get(params int[] userItems);
+        public IDictionary<int, IUserSource> GetDictionary(int[] userItems);
         /// <summary>
         /// 根据用户名获取
         /// </summary>
         /// <param name="userItems"></param>
         /// <returns></returns>
-        public IUser[] Get(params string[] userItems);
+        public IUserSource[] Get(params string[] userItems);
         /// <summary>
         /// 搜索用户
         /// </summary>
@@ -48,7 +48,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="items">已知的用户</param>
         /// <param name="itemsIsExclude">是排除已知用户还是仅限已知用户</param>
         /// <returns></returns>
-        public IPage<IUser> Search(IQueryForm form, int[]? items = null, bool itemsIsExclude = true);
+        public IPage<IUserSource> Search(IQueryForm form, int[]? items = null, bool itemsIsExclude = true);
 
         /// <summary>
         /// 搜索获取用户的id

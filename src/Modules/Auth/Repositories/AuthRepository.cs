@@ -1,20 +1,28 @@
 ﻿using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Models;
+using NetDream.Modules.UserAccount;
 using NetDream.Modules.UserAccount.Entities;
 using NetDream.Modules.UserAccount.Models;
+using NetDream.Modules.UserAccount.Repositories;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public partial class AuthRepository(AuthContext db, IGlobeOption option, IClientContext client)
+    public partial class AuthRepository(
+        UserContext userDB,
+        AuthContext db, 
+        IGlobeOption option, 
+        IClientContext client) : IContextRepository
     {
         internal const byte ACCOUNT_TYPE_NAME = 1;
         internal const byte ACCOUNT_TYPE_EMAIL = 2;
@@ -101,13 +109,13 @@ namespace NetDream.Modules.Auth.Repositories
         }
 
 
-        public IOperationResult<IUser> Login(ISignInForm data)
+        public IOperationResult<IUserProfile> Login(ISignInForm data)
         {
             if (data is not IContextForm form)
             {
-                return OperationResult.Fail<IUser>("form is error");
+                return OperationResult.Fail<IUserProfile>("form is error");
             }
-            var res = form.Verify(db);
+            var res = form.Verify(this);
             if (!string.IsNullOrWhiteSpace(data.Account) || res.Succeeded)
             {
                 LogLogin(data.Account, res.Result?.Id ?? 0, res.Succeeded);
@@ -158,15 +166,14 @@ namespace NetDream.Modules.Auth.Repositories
                     : BCrypt.Net.BCrypt.HashPassword(data.Password),
                     CreatedAt = client.Now
                 };
-                db.Users.Add(model);
+                userDB.Users.Add(model);
                 db.SaveChanges();
                 return model;
             });
             return new UserModel();
         }
 
-        public T CheckInviteCode<T>(string code, Func<int, T> func)
-            where T : UserEntity
+        public IOperationResult<UserEntity> CheckInviteCode(string code, Func<int, UserEntity> func)
         {
             InviteCodeEntity? log = null;
             if (!string.IsNullOrWhiteSpace(code))
@@ -179,9 +186,9 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 if (RegisterType == AuthRegisterType.InviteCode)
                 {
-                    throw new ArgumentException("必须输入邀请码");
+                    return OperationResult.Fail<UserEntity>("必须输入邀请码");
                 }
-                return func.Invoke(0);
+                return OperationResult.Ok(func.Invoke(0));
             }
             var user = func.Invoke(log.UserId);
             log.InviteCount++;
@@ -198,17 +205,17 @@ namespace NetDream.Modules.Auth.Repositories
                 CreatedAt = client.Now,
             });
             db.SaveChanges();
-            return user;
+            return OperationResult.Ok(user);
         }
 
         public bool IsExist(string value, string name = "email")
         {
-            return db.Users.Where(name, value).Any();
+            return userDB.Users.Where(name, value).Any();
         }
 
         public bool IsBan(string account)
         {
-            return false;
+            return db.BanAccounts.Where(i => i.ItemKey == account).Any();
         }
 
         public void LogLogin(string account, int userId = 0, bool status = false)
@@ -238,6 +245,71 @@ namespace NetDream.Modules.Auth.Repositories
                 return string.Empty;
             }
             return StrHelper.HideIp(ip);
+        }
+
+        public IOperationResult<IUserProfile> Create(UserEntity user, string inviteCode = "")
+        {
+            if (string.IsNullOrWhiteSpace(user.Name))
+            {
+                user.Name = $"zre_{client.Now}";
+            }
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                user.Email = EmptyEmail;
+                user.Status = UserRepository.STATUS_ACTIVE;
+            } 
+            else
+            {
+                user.Status = UserRepository.STATUS_UN_CONFIRM;
+            }
+            if (string.IsNullOrWhiteSpace(user.Password))
+            {
+                user.Password = UNSET_PASSWORD;
+            }
+            var res = CheckInviteCode(inviteCode, parentId => {
+                userDB.Users.Add(user);
+                userDB.SaveChanges();
+                return user;
+            });
+            if (!res.Succeeded)
+            {
+                return OperationResult<IUserProfile>.Fail(res);
+            }
+            return OperationResult.Ok<IUserProfile>(user);
+        }
+
+        public bool Exists(Expression<Func<UserEntity, bool>> where)
+        {
+            return userDB.Users.Where(where).Any();
+        }
+
+        public IOperationResult<IUserProfile> Find(Expression<Func<UserEntity, bool>> where)
+        {
+            var model = userDB.Users.Where(where).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult.Fail<IUserProfile>("account is error");
+            }
+            return OperationResult.Ok<IUserProfile>(new UserProfileModel(model));
+        }
+
+        public IOperationResult<IUserProfile> Find(Expression<Func<UserEntity, bool>> where, string password)
+        {
+            var model = userDB.Users.Where(where).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult.Fail<IUserProfile>("account is error");
+            }
+            if (!BCrypt.Net.BCrypt.Verify(password, model.Password))
+            {
+                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "password is error");
+            }
+            return OperationResult.Ok<IUserProfile>(new UserProfileModel(model));
+        }
+
+        public bool VerifyCode(string target, string code)
+        {
+            throw new NotImplementedException();
         }
 
         [GeneratedRegex("^zreno_\\d{11}@zodream\\.cn$")]

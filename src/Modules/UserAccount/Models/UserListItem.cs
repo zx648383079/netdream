@@ -2,7 +2,7 @@
 
 namespace NetDream.Modules.UserAccount.Models
 {
-    public class UserListItem : IUser
+    public class UserListItem : IUserSource
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

@@ -1,5 +1,6 @@
-﻿using NetDream.Modules.Auth.Entities;
-using NetDream.Modules.Auth.Models;
+﻿using NetDream.Modules.Auth.Repositories;
+using NetDream.Modules.UserAccount;
+using NetDream.Modules.UserAccount.Entities;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
@@ -24,36 +25,29 @@ namespace NetDream.Modules.Auth.Forms
 
         public string Account => Email;
 
-        public IOperationResult<IUser> Verify(AuthContext db)
+        public IOperationResult<IUserProfile> Verify(IContextRepository db)
         {
             if (!Agree)
             {
-                return OperationResult<IUser>.Fail(FailureReasons.ValidateError, "Agreement is not confirm");
+                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "Agreement is not confirm");
             }
             if (Shared.Helpers.Validator.IsEmail(Email) || string.IsNullOrWhiteSpace(Password)) 
             {
-                return OperationResult<IUser>.Fail(FailureReasons.ValidateError, "email or password is empty");
+                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "email or password is empty");
             }
             if (Password != ConfirmPassword)
             {
-                return OperationResult<IUser>.Fail(FailureReasons.ValidateError, "password is not confirm");
+                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "password is not confirm");
             }
-            var isExist = db.Users.Where(i => i.Email == Email).Any();
-            if (isExist)
+            if (db.Exists(i => i.Email == Email))
             {
-                return OperationResult<IUser>.Fail(FailureReasons.ValidateError, "email is sign in");
+                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "email is sign in");
             }
-            var user = new UserEntity()
+            return db.Create(new UserEntity()
             {
                 Name = Name,
                 Email = Email,
-
                 Password = BCrypt.Net.BCrypt.HashPassword(Password),
-            };
-            // TODO save
-            return OperationResult<IUser>.Ok(new UserModel(user)
-            {
-                IsOnline = true,
             });
         }
     }
