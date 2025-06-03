@@ -1,6 +1,6 @@
 using NetDream.Shared.Interfaces.Entities;
 
-namespace NetDream.Modules.Shop.Entities
+namespace NetDream.Modules.UserProfile.Entities
 {
     
     public class RegionEntity : IIdEntity

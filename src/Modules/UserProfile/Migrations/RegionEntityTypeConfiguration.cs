@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NetDream.Modules.Shop.Entities;
+using NetDream.Modules.UserProfile.Entities;
 
-namespace NetDream.Modules.Shop.Migrations
+namespace NetDream.Modules.UserProfile.Migrations
 {
     public class RegionEntityTypeConfiguration : IEntityTypeConfiguration<RegionEntity>
     {
         public void Configure(EntityTypeBuilder<RegionEntity> builder)
         {
-            builder.ToTable("Region", table => table.HasComment(""));
+            builder.ToTable("base_region", table => table.HasComment("ÇøÓòµØÍ¼"));
             builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(30);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NetDream.Modules.Shop.Backend.Forms;
-using NetDream.Modules.Shop.Entities;
+using NetDream.Modules.UserProfile.Entities;
+using NetDream.Modules.UserProfile.Forms;
+using NetDream.Modules.UserProfile.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
@@ -9,9 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 
-namespace NetDream.Modules.Shop.Backend.Repositories
+namespace NetDream.Modules.UserProfile.Repositories
 {
-    public class RegionRepository(ShopContext db, IClientContext client)
+    public class RegionRepository(ProfileContext db, IClientContext client)
     {
         public IPage<RegionEntity> GetMangeList(QueryForm form, int parent = 0)
         {
@@ -112,6 +113,29 @@ namespace NetDream.Modules.Shop.Backend.Repositories
                             });
                         }
                     }
+                }
+            }
+        }
+
+        public static void Include(ProfileContext db, IWithRegionModel[] items)
+        {
+            var idItems = items.Select(item => item.RegionId).Where(i => i > 0)
+                .Distinct().ToArray();
+            if (idItems.Length == 0)
+            {
+                return;
+            }
+            var data = db.Regions.Where(i => idItems.Contains(i.Id))
+                .ToDictionary(i => i.Id);
+            if (data.Count == 0)
+            {
+                return;
+            }
+            foreach (var item in items)
+            {
+                if (item.RegionId > 0 && data.TryGetValue(item.RegionId, out var res))
+                {
+                    item.Region = res;
                 }
             }
         }

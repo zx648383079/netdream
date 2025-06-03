@@ -1,4 +1,5 @@
-﻿using NetDream.Modules.Shop.Entities;
+﻿using NetDream.Modules.UserProfile;
+using NetDream.Modules.UserProfile.Entities;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
@@ -7,7 +8,7 @@ using System.Linq;
 
 namespace NetDream.Modules.Shop.Market.Repositories
 {
-    public class RegionRepository(ShopContext db)
+    public class RegionRepository(ProfileContext db)
     {
         public RegionEntity[] GetList(QueryForm form, int parent = 0)
         {

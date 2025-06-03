@@ -50,7 +50,7 @@ namespace NetDream.Modules.Shop
         public DbSet<PluginEntity> Plugins {get; set; }
         public DbSet<PresaleLogEntity> PresaleLogs {get; set; }
         public DbSet<ProductEntity> Products {get; set; }
-        public DbSet<RegionEntity> Regions {get; set; }
+ 
         public DbSet<SecKillGoodsEntity> SecKillGoods {get; set; }
         public DbSet<ShippingEntity> Shipping {get; set; }
         public DbSet<ShippingGroupEntity> ShippingGroups {get; set; }
@@ -104,7 +104,6 @@ namespace NetDream.Modules.Shop
             modelBuilder.ApplyConfiguration(new PluginEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PresaleLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ProductEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new RegionEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SeckillGoodsEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ShippingEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ShippingGroupEntityTypeConfiguration());

@@ -1,6 +1,6 @@
 ﻿using NetDream.Shared.Models;
 
-namespace NetDream.Modules.Shop.Backend.Models
+namespace NetDream.Modules.Shop.Models
 {
     public class ArticleListItem
     {

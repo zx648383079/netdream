@@ -70,5 +70,32 @@ namespace NetDream.Shared.Interfaces
         /// <param name="items"></param>
         public void Include(IEnumerable<IWithUserModel> items);
 
+        /// <summary>
+        /// 附加项
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public void Attach(int user, string key, string value);
+        /// <summary>
+        /// 获取附加项
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public string? GetAttached(int user, string key);
+
+        /// <summary>
+        /// 判断是否是角色
+        /// </summary>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        public bool IsRole(int user, string role);
+        /// <summary>
+        /// 判断是否有权限
+        /// </summary>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        public bool HasPermission(int user, string permission);
     }
 }

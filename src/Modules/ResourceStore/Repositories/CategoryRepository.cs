@@ -29,7 +29,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
         public IOperationResult<CategoryEntity> Save(CategoryForm data)
         {
             var model = data.Id > 0 ? db.Categories.Where(i => i.Id == data.Id)
-                .Single() :
+                .SingleOrDefault() :
                 new CategoryEntity();
             if (model is null)
             {

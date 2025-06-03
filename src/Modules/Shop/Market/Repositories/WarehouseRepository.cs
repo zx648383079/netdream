@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Shop.Market.Models;
+using NetDream.Modules.UserProfile;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
@@ -9,7 +10,7 @@ using System.Linq;
 
 namespace NetDream.Modules.Shop.Market.Repositories
 {
-    public class WarehouseRepository(ShopContext db)
+    public class WarehouseRepository(ShopContext db, ProfileContext regionStore)
     {
         public IOperationResult<WarehouseModel> GetByRegion(
             int regionId, 
@@ -20,7 +21,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
             {
                 return OperationResult<WarehouseModel>.Fail("地址不能为空");
             }
-            var regionIds = new RegionRepository(db).GetPathId(regionId);
+            var regionIds = new RegionRepository(regionStore).GetPathId(regionId);
             var idItems = db.WarehouseRegions.Where(i => regionIds.Contains(i.RegionId))
                 .Pluck(i => i.WarehouseId);
             if (idItems.Length == 0)
@@ -53,7 +54,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
             {
                 return 0;
             }
-            var regionIds = new RegionRepository(db).GetPathId(regionId);
+            var regionIds = new RegionRepository(regionStore).GetPathId(regionId);
             var idItems = db.WarehouseRegions.Where(i => regionIds.Contains(i.RegionId))
                 .Pluck(i => i.WarehouseId);
             if (idItems.Length == 0)
@@ -73,7 +74,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
             {
                 return false;
             }
-            var regionIds = new RegionRepository(db).GetPathId(regionId);
+            var regionIds = new RegionRepository(regionStore).GetPathId(regionId);
             var idItems = db.WarehouseRegions.Where(i => regionIds.Contains(i.RegionId))
                 .Pluck(i => i.WarehouseId);
             if (idItems.Length == 0)

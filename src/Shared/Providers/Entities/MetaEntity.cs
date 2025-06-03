@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Shared.Providers.Entities
 {
     
-    public class MetaEntity
+    public class MetaEntity : IIdEntity
     {
         
         public int Id { get; set; }

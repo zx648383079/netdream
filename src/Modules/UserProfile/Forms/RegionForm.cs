@@ -1,4 +1,4 @@
-﻿namespace NetDream.Modules.Shop.Backend.Forms
+﻿namespace NetDream.Modules.UserProfile.Forms
 {
     public class RegionForm
     {

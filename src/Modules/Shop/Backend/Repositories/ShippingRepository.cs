@@ -2,6 +2,7 @@
 using NetDream.Modules.Shop.Backend.Forms;
 using NetDream.Modules.Shop.Backend.Models;
 using NetDream.Modules.Shop.Entities;
+using NetDream.Modules.UserProfile;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
@@ -12,7 +13,9 @@ using System.Linq;
 
 namespace NetDream.Modules.Shop.Backend.Repositories
 {
-    public class ShippingRepository(ShopContext db, IClientContext client)
+    public class ShippingRepository(ShopContext db, 
+        IClientContext client,
+        ProfileContext regionStore)
     {
         public IPage<ShippingEntity> GetList(QueryForm form)
         {
@@ -51,7 +54,7 @@ namespace NetDream.Modules.Shop.Backend.Repositories
                 return;
             }
             var linkId = linkItems.Select(i => i.RegionId).ToArray();
-            var data = db.Regions.Where(i => linkId.Contains(i.Id)).Select(i => new ListLabelItem(i.Id, i.Name))
+            var data = regionStore.Regions.Where(i => linkId.Contains(i.Id)).Select(i => new ListLabelItem(i.Id, i.Name))
                 .ToDictionary(i => i.Id);
             if (data.Count == 0)
             {

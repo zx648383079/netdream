@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.Shop.Entities;
-using NetDream.Modules.Shop.Repositories;
+using NetDream.Modules.Shop.Models;
 
 namespace NetDream.Modules.Shop.Migrations
 {

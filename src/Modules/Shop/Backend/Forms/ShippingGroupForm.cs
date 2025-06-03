@@ -1,4 +1,6 @@
-﻿namespace NetDream.Modules.Shop.Backend.Forms
+﻿using NetDream.Modules.UserProfile.Forms;
+
+namespace NetDream.Modules.Shop.Backend.Forms
 {
     public class ShippingGroupForm
     {

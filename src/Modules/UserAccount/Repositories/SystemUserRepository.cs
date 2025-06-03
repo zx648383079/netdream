@@ -169,5 +169,41 @@ namespace NetDream.Modules.UserAccount.Repositories
                 }
             }
         }
+
+        public void Attach(int user, string key, string value)
+        {
+            var data = db.Metas.Where(i => i.ItemId == user && i.Name == key).FirstOrDefault();
+            if (data != null)
+            {
+                data.Content = value;
+            } else
+            {
+                data = new Shared.Providers.Entities.MetaEntity()
+                {
+                    ItemId = user,
+                    Name = key,
+                    Content = value
+                };
+            }
+            db.Metas.Save(data);
+            db.SaveChanges();
+        }
+
+        public string? GetAttached(int user, string key)
+        {
+            return db.Metas.Where(i => i.ItemId == user && i.Name == key).Value(i => i.Content);
+        }
+
+        public bool IsRole(int user, string role)
+        {
+            // TODO
+            return false;
+        }
+
+        public bool HasPermission(int user, string permission)
+        {
+            // TODO
+            return false;
+        }
     }
 }

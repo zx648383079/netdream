@@ -2,6 +2,7 @@
 using NetDream.Modules.Shop.Backend.Forms;
 using NetDream.Modules.Shop.Backend.Models;
 using NetDream.Modules.Shop.Entities;
+using NetDream.Modules.Shop.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
@@ -32,33 +33,11 @@ namespace NetDream.Modules.Shop.Backend.Repositories
                     CreatedAt = i.CreatedAt,
                     UpdatedAt = i.UpdatedAt,
                 }));
-            IncludeCategory(res.Items);
+            Extension.IncludeCategory(db, res.Items);
             return res;
         }
 
-        private void IncludeCategory(ArticleListItem[] items)
-        {
-            var idItems = items.Select(item => item.CatId).Where(i => i > 0)
-                .Distinct().ToArray();
-            if (idItems.Length == 0)
-            {
-                return;
-            }
-            var data = db.ArticleCategories.Where(i => idItems.Contains(i.Id))
-                .Select(i => new ListLabelItem(i.Id, i.Name))
-                .ToDictionary(i => i.Id);
-            if (data.Count == 0)
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                if (item.CatId > 0 && data.TryGetValue(item.CatId, out var res))
-                {
-                    item.Category = res;
-                }
-            }
-        }
+        
 
         public IOperationResult<ArticleEntity> Get(int id)
         {
