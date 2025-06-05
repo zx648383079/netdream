@@ -4,7 +4,8 @@ using NetDream.Modules.Shop.Migrations;
 
 namespace NetDream.Modules.Shop
 {
-    public class ShopContext(DbContextOptions<ShopContext> options): DbContext(options)
+    public class ShopContext(DbContextOptions<ShopContext> options)
+        : DbContext(options)
     {
         public DbSet<ActivityEntity> Activities {get; set; }
         public DbSet<ActivityTimeEntity> ActivityTimes {get; set; }

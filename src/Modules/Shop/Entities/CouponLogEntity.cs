@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class CouponLogEntity
+    public class CouponLogEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

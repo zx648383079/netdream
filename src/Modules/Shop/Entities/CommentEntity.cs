@@ -15,7 +15,7 @@ namespace NetDream.Modules.Shop.Entities
         public int ItemId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
-        public int Rank { get; set; }
+        public byte Rank { get; set; }
         
         public int UpdatedAt { get; set; }
         

@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class GoodsIssueEntity
+    public class GoodsIssueEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -14,7 +15,7 @@ namespace NetDream.Modules.Shop.Entities
         public int AskId { get; set; }
         
         public int AnswerId { get; set; }
-        public int Status { get; set; }
+        public byte Status { get; set; }
         
         public int UpdatedAt { get; set; }
         

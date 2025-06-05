@@ -103,7 +103,7 @@ namespace NetDream.Shared.Helpers
         /// <param name="selfId"></param>
         /// <param name="includeSelf"></param>
         /// <returns></returns>
-        public static int[] GetChildren<T>(IList<T> items, int selfId, bool includeSelf = false) where T : ITreeLinkItem
+        public static int[] GetChildren<T>(IEnumerable<T> items, int selfId, bool includeSelf = false) where T : ITreeLinkItem
         {
             var res = new List<int>();
             if (includeSelf)
@@ -125,6 +125,73 @@ namespace NetDream.Shared.Helpers
                 matches = [.. next];
                 next.Clear();
             }
+            return [..res];
+        }
+        /// <summary>
+        /// 获取后代id
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="selfId">必须出现在第一级</param>
+        /// <param name="includeSelf"></param>
+        /// <returns></returns>
+        public static int[] GetChildren(ITreeItem[] items, int selfId, bool includeSelf = false)
+        {
+            var res = new List<int>();
+            if (includeSelf)
+            {
+                res.Add(selfId);
+            }
+            void AddChild(IEnumerable<ITreeItem> data)
+            {
+                foreach (var item in data)
+                {
+                    res.Add(item.Id);
+                    if (item.Children?.Count > 0)
+                    {
+                        AddChild(item.Children);
+                    }
+                }
+            }
+            foreach (var item in items)
+            {
+                if (item.Id == selfId)
+                {
+                    AddChild(item.Children);
+                    break;
+                }
+            }
+            return [.. res];
+        }
+        /// <summary>
+        /// 获取父级路径
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="selfId"></param>
+        /// <param name="includeSelf"></param>
+        /// <returns></returns>
+        public static int[] GetParent<T>(IEnumerable<T> items, int selfId, bool includeSelf = false) where T : ITreeLinkItem
+        {
+            var res = new List<int>();
+            if (includeSelf)
+            {
+                res.Add(selfId);
+            }
+            var current = selfId;
+            var maps = items.Select(i => new KeyValuePair<int, int>(i.Id, i.ParentId)).ToDictionary();
+            while (current > 0)
+            {
+                if (!maps.TryGetValue(current, out var next))
+                {
+                    break;
+                }
+                current = next;
+                if (next == 0)
+                {
+                    break;
+                }
+                res.Add(next);
+            }
+            res.Reverse();
             return [..res];
         }
     }

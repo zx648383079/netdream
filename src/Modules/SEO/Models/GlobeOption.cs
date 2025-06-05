@@ -2,12 +2,13 @@
 using NetDream.Shared.Interfaces.Entities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NetDream.Modules.SEO.Models
 {
     public class GlobeOption : IGlobeOption
     {
-        private readonly Dictionary<string, object> data = new();
+        private readonly Dictionary<string, object> data = [];
 
         public T? Get<T>(string key)
         {
@@ -16,6 +17,17 @@ namespace NetDream.Modules.SEO.Models
                 return (T?)val;
             }
             return default;
+        }
+
+        public bool TryGet<T>(string key, [NotNullWhen(true)] out T? value)
+        {
+            if (data.TryGetValue(key, out var val))
+            {
+                value = (T?)val;
+                return value is not null;
+            }
+            value = default;
+            return false;
         }
 
         public void Add(string key, object value)
