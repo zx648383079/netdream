@@ -1,9 +1,10 @@
+using NetDream.Modules.Shop.Market.Models;
 using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class GoodsEntity : IIdEntity, ITimestampEntity
+    public class GoodsEntity : IIdEntity, ITimestampEntity, IGoodsSource
     {
         
         public int Id { get; set; }

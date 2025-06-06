@@ -18,7 +18,7 @@ namespace NetDream.Modules.Shop.Backend.Repositories
         IClientContext client,
         IUserRepository userStore)
     {
-        const char ATTRIBUTE_LINK = ',';
+        
         public IPage<GoodsListItem> GetList(QueryForm form, int[] idItems, 
             int category = 0, int brand = 0, 
             bool trash = false)
@@ -101,7 +101,7 @@ namespace NetDream.Modules.Shop.Backend.Repositories
             foreach (var item in data)
             {
                 var attributes = new List<int>();
-                foreach (var label in item.Attributes.Split(ATTRIBUTE_LINK))
+                foreach (var label in item.Attributes.Split(GoodsStatus.ATTRIBUTE_LINK))
                 {
                     var attrId = db.GoodsAttributes.Where(i => i.Value == label && i.GoodsId == goodsId)
                         .Value(i => i.Id);
@@ -111,7 +111,7 @@ namespace NetDream.Modules.Shop.Backend.Repositories
                     }
                     attributes.Add(attrId);
                 }
-                item.Attributes = string.Join(ATTRIBUTE_LINK, attributes.Order());
+                item.Attributes = string.Join(GoodsStatus.ATTRIBUTE_LINK, attributes.Order());
                 item.GoodsId = goodsId;
                 var r = ProductSave(item);
                 if (r.Succeeded)

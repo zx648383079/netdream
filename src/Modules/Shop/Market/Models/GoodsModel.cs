@@ -1,4 +1,6 @@
 ﻿using NetDream.Modules.Shop.Entities;
+using NetDream.Modules.Shop.Models;
+using NetDream.Shared.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,5 +47,21 @@ namespace NetDream.Modules.Shop.Market.Models
         public int UpdatedAt { get; set; }
 
         public int CreatedAt { get; set; }
+        public CategoryEntity? Category { get; internal set; }
+        public BrandEntity? Brand { get; internal set; }
+        public ProductEntity[] Products { get; internal set; }
+        public bool IsCollect { get; internal set; }
+        public GoodsGalleryEntity[] Gallery { get; internal set; }
+        public ProductCountdown Countdown { get; internal set; }
+        public ActivityLabelItem[] Promotes { get; internal set; }
+        public CouponEntity[] Coupons { get; internal set; }
+        public float FavorableRate { get; internal set; }
+        public string[] Services { get; internal set; }
+
+        public GoodsProperty[] Properties { get; internal set; }
+        public GoodsPropertyCollection[] StaticProperties { get; internal set; }
+
+        [JsonMeta]
+        public Dictionary<string, string>? MetaItems { get; set; }
     }
 }

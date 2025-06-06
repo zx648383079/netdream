@@ -7,12 +7,12 @@ using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Shop.Market.Repositories
 {
-    internal class GoodsRepository(ShopContext db)
+    internal class GoodsRepository(ShopContext db, 
+        IClientContext client,
+        IGlobeOption option)
     {
         public IPage<GoodsListItem> Search(
             QueryForm form,
@@ -26,7 +26,8 @@ namespace NetDream.Modules.Shop.Market.Repositories
                 .When(category > 0, i => i.CatId == category)
                 .When(brand > 0, i => i.BrandId == brand);
             new SearchRepository(db).FilterPrice(query, price);
-            return AsList(query.OrderBy<GoodsEntity, int>(sort, order)).ToPage(form);
+            return query.OrderBy<GoodsEntity, int>(sort, order)
+                .ToPage(form, AsList);
         }
 
         /**
@@ -49,39 +50,45 @@ namespace NetDream.Modules.Shop.Market.Repositories
                 return OperationResult.Fail<GoodsModel>("商品错误");
             }
             var res = model.CopyTo<GoodsModel>();
-            data = array_merge(data,
-                GoodsMetaModel.GetOrDefault(id),
-                AttributeRepository.BatchProperties(goods.AttributeGroupId, goods.Id)
-            );
-            unset(data["cost_price"]);
-            data["category"] = goods.Category;
-            data["brand"] = goods.Brand;
-            data["products"] = goods.Products;
-            data["is_collect"] = goods.IsCollect;
-            data["gallery"] = goods.Gallery;
+            //data = array_merge(data,
+            //    GoodsMetaModel.GetOrDefault(id),
+            //    AttributeRepository.BatchProperties(goods.AttributeGroupId, goods.Id)
+            //);
+            res.Category = db.Categories.Where(i => i.Id == model.CatId).SingleOrDefault();
+            res.Brand = db.Brands.Where(i => i.Id == model.BrandId).SingleOrDefault();
+            res.Products = db.Products.Where(i => i.GoodsId == model.Id).ToArray();
+            res.IsCollect = client.UserId > 0 ? 
+                db.Collects.Where(i => i.GoodsId == model.Id && i.UserId == client.UserId).Any() : false;
+            res.Gallery = db.GoodsGalleries.Where(i => i.GoodsId == model.Id).ToArray();
             if (full)
             {
-                data["countdown"] = self.GetCountdown(goods);
-                data["promotes"] = self.GetPromoteList(goods);
-                data["coupons"] = self.GetCoupon(goods);
-                data["favorable_rate"] = CommentRepository.FavorableRate(id);
-                data["services"] = [
+                res.Countdown = GetCountdown(model);
+                res.Promotes = GetPromoteList(model);
+                res.Coupons = GetCoupon(model);
+                res.FavorableRate = new CommentRepository(db, client, null)
+                    .FavorableRate(id);
+                res.Services = [
                     "48小时快速退款",
-                "支持30天无忧退换货",
-                "满88元免邮费",
-                "自营品牌",
-                "国内部分地区无法配送"
+                    "支持30天无忧退换货",
+                    "满88元免邮费",
+                    "自营品牌",
+                    "国内部分地区无法配送"
                 ];
             }
-            return data;
+            return OperationResult.Ok(res);
         }
 
-        public static Stock(int goodsId, int region = 0)
+        public IOperationResult<GoodsEntity> Stock(int goodsId, int region = 0)
         {
-            goods = GoodsModel.FindOrThrow(goodsId, "商品已下架");
+            var model = db.Goods.Where(i => i.Id == goodsId)
+                .SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult.Fail<GoodsEntity>("商品错误");
+            }
             // 判断库存
             // 判断快递是否支持
-            return goods.ToArray();
+            return OperationResult.Ok(model);
         }
 
         /**
@@ -92,50 +99,80 @@ namespace NetDream.Modules.Shop.Market.Repositories
          * @param int region
          * @return array
          */
-        public static array Price(int id, array properties = [], int amount = 1, int region = 0)
+        public PriceResult Price(int id, 
+            int[] properties, 
+            int amount = 1, int region = 0)
         {
-            goods = GoodsModel.Where("id", id).First("id", "price", "stock");
-            price = GoodsRepository.FinalPrice(goods, amount, properties);
-            box = AttributeRepository.GetProductAndPriceWithProperties(properties, id);
-            return [
-                "price" => price,
-            "total" => price * amount,
-            "stock" => !empty(box["product"]) ? box["product"].Stock : goods.Stock
-            ];
+            var model = db.Goods.Where(i => i.Id == id)
+                .Select(i => new GoodsEntity()
+                {
+                    Id = i.Id,
+                    Price = i.Price,
+                    Stock = i.Stock,
+                })
+                .SingleOrDefault();
+            var price = FinalPrice(model, amount, properties);
+            var box = new AttributeRepository(db).GetProductAndPriceWithProperties(
+                properties, id);
+            return new PriceResult()
+            {
+                Price = price,
+                Total = price * amount,
+                Stock = box.Product is not null ? box.Product.Stock : model.Stock
+            };
         }
 
-        public static FormatProperties(GoodsModel goods)
+        public GoodsModel FormatProperties(GoodsEntity model)
         {
-            data = goods.ToArray();
-            unset(data["cost_price"]);
-            data["properties"] = AttributeRepository.GetProperties(goods.AttributeGroupId, goods.Id);
-            return data;
+            var res = model.CopyTo<GoodsModel>();
+            res.Properties = new AttributeRepository(db)
+                .GetProperties(model.AttributeGroupId, model.Id);
+            return res;
         }
 
-        public static GetDialog(int goods)
+        public IOperationResult<GoodsModel> GetDialog(int goods)
         {
-            return FormatProperties(GoodsDialogModel.FindOrThrow(goods));
+            var model = db.Goods.Where(i => i.Id == goods).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult.Fail<GoodsModel>("商品错误");
+            }
+            return OperationResult.Ok(FormatProperties(model));
         }
 
-        public static GetCountdown(GoodsModel goods)
+        public ProductCountdown GetCountdown(GoodsEntity goods)
         {
-            return [
-                "end_at" => time() + 3000,
-                "name" => "秒杀",
-                "tip" => "距秒杀结束还剩"
-            ];
+            return new ProductCountdown()
+            {
+                EndAt = TimeHelper.TimestampNow() + 3000,
+                Name = "秒杀",
+                Tip = "距秒杀结束还剩"
+            };
         }
 
-        public static GetPromoteList(GoodsModel goods)
+        public ActivityLabelItem[] GetPromoteList(GoodsEntity goods)
         {
-            return ActivityRepository.GoodsJoin(goods);
+            return new ActivityRepository(db).GoodsJoin(goods);
         }
 
-        public static GetCoupon(GoodsModel goods)
+        public CouponEntity[] GetCoupon(GoodsEntity goods)
         {
-            return CouponRepository.GoodsCanReceive(goods);
+            return new CouponRepository(db, client).GoodsCanReceive(goods);
         }
 
+
+        public bool CanBuy(int goods, int amount = 1,
+            int[] properties = null)
+        {
+            var model = db.Goods.Where(i => i.Id == goods)
+                .Select(i => new GoodsEntity()
+                {
+                    Id = i.Id,
+                    Price = i.Price,
+                    Stock = i.Stock,
+                }).SingleOrDefault();
+            return CanBuy(model, amount, properties);
+        }
         /**
          * 判断是否能购买指定数量
          * @param GoodsModel|int goods
@@ -143,44 +180,53 @@ namespace NetDream.Modules.Shop.Market.Repositories
          * @param int[] properties
          * @return bool
          */
-        public static CanBuy(object goods, int amount = 1, array properties = [])
+        public bool CanBuy(GoodsEntity goods, int amount = 1, 
+            int[] properties = null)
         {
-            if (is_numeric(goods))
+            if (properties is null || properties.Length == 0)
             {
-                goods = GoodsModel.Query().Where("id", goods)
-                    .First("id", "price", "stock");
+                return CheckStock(goods, amount);
             }
-            if (empty(properties))
+            var box = new AttributeRepository(db)
+                .GetProductAndPriceWithProperties(properties, goods.Id);
+            if (box.Product is null)
             {
-                return static.CheckStock(goods, amount);
+                return CheckStock(goods, amount);
             }
-            box = AttributeRepository.GetProductAndPriceWithProperties(properties, goods.Id);
-            if (empty(box["product"]))
-            {
-                return static.CheckStock(goods, amount);
-            }
-            return static.CheckStock(box["product"], amount);
+            return CheckStock(box.Product, amount);
         }
-
-        public static bool CheckStock(ProductModel|GoodsEntity model, int amount = 0, int regionId = 0)
+        public bool CheckStock(ProductEntity model, int amount = 0, int regionId = 0)
         {
             if (amount < 1)
             {
                 return true;
             }
-            if (regionId < 1 || Option.Value("shop_warehouse", 0) < 1)
+            if (regionId < 1 || option.Get<int>("shop_warehouse") < 1)
             {
                 return model.Stock >= amount;
             }
-            goodsId = model.Id;
-            productId = 0;
-            if (model instanceof ProductModel) {
-                goodsId = model.GoodsId;
-                productId = model.Id;
-            }
-            return WarehouseRepository.GetStock(regionId, goodsId, productId) >= amount;
+            /// TODO ?
+            return new WarehouseRepository(db, null).GetStock(regionId, model.GoodsId, model.Id) >= amount;
         }
-
+        public bool CheckStock(GoodsEntity model, int amount = 0, int regionId = 0)
+        {
+            if (amount < 1)
+            {
+                return true;
+            }
+            if (regionId < 1 || option.Get<int>("shop_warehouse") < 1)
+            {
+                return model.Stock >= amount;
+            }
+            /// TODO ?
+            return new WarehouseRepository(db, null).GetStock(regionId, model.Id, 0) >= amount;
+        }
+        public float FinalPrice(int goods, int amount = 1,
+            int[] properties = null)
+        {
+            var model = CartRepository.GetGoods(goods);
+            return FinalPrice(model, amount, properties);
+        }
         /**
          * 获取最终价格
          * @param GoodsModel|int goods
@@ -188,28 +234,22 @@ namespace NetDream.Modules.Shop.Market.Repositories
          * @param array properties
          * @return float
          */
-        public static FinalPrice(GoodsModel|int goods, int amount = 1, array properties = [])
+        public float FinalPrice(GoodsEntity goods, int amount = 1, 
+            int[] properties = null)
         {
-            if (is_numeric(goods))
-            {
-                goods = CartRepository.GetGoods(intval(goods));
-            }
-            if (empty(properties))
+            if (properties is null || properties.Length == 0)
             {
                 return goods.Price;
             }
-            box = AttributeRepository.GetProductAndPriceWithProperties(properties, goods.Id);
-            if (empty(box["product"]))
+            var box = new AttributeRepository(db)
+                .GetProductAndPriceWithProperties(properties, goods.Id);
+            if (box.Product is null)
             {
-                return goods.Price + box["properties_price"];
+                return goods.Price + box.PropertiesPrice;
             }
-            return box["product"].Price + box["properties_price"];
+            return box.Product.Price + box.PropertiesPrice;
         }
 
-        public static Query GetRecommendQuery(string tag)
-        {
-            return GoodsSimpleModel.Where(tag, 1);
-        }
 
         /**
          * @param Query query
@@ -221,26 +261,26 @@ namespace NetDream.Modules.Shop.Market.Repositories
          * @return Page
          * @throws \Exception
          */
-        public static Page AppendSearch(Query query, int category = 0, int brand = 0, string keywords = string.Empty, int per_page = 20, array id = [])
+        public IPage<GoodsListItem> AppendSearch(IQueryable<GoodsEntity> query,
+            QueryForm form,
+            int category = 0, int brand = 0,
+            int[] idItems = null)
         {
-            return query.When(!empty(id), use(id)(Query query) {
-                query.WhereIn("id", array_map("intval", id));
-            })
-            .When(!empty(keywords), (Query query) {
-                GoodsEntity.SearchWhere(query, "name");
-            }).When(category > 0, use(category)(Query query) {
-                query.Where("cat_id", intval(category));
-            }).When(brand > 0, use(brand)(Query query) {
-                query.Where("brand_id", intval(brand));
-            }).Page(per_page);
+            return query.When(idItems.Length > 0, i => idItems.Contains(i.Id))
+                .Search(form.Keywords, "name")
+                .When(category > 0, i => i.CatId == category)
+                .When(brand > 0, i => i.BrandId == brand)
+                .ToPage(form, AsList);
         }
 
-        public static array HomeRecommend()
+        public HomeFloor HomeRecommend()
         {
-            hot_products = GoodsRepository.GetRecommendQuery("is_hot").All();
-            new_products = GoodsRepository.GetRecommendQuery("is_new").All();
-            best_products = GoodsRepository.GetRecommendQuery("is_best").All();
-            return compact("hot_products", "new_products", "best_products");
+            return new HomeFloor()
+            {
+                HotProducts = AsList(db.Goods.Where(i => i.IsHot == 1)).ToArray(),
+                NewProducts = AsList(db.Goods.Where(i => i.IsNew == 1)).ToArray(),
+                BestProducts = AsList(db.Goods.Where(i => i.IsBest == 1)).ToArray(),
+            };
         }
 
         public void PaintShareImage(int id)

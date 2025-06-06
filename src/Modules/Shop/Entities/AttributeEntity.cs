@@ -10,11 +10,11 @@ namespace NetDream.Modules.Shop.Entities
         public string Name { get; set; } = string.Empty;
         
         public int GroupId { get; set; }
-        public int Type { get; set; }
+        public byte Type { get; set; }
         
-        public int SearchType { get; set; }
+        public byte SearchType { get; set; }
         
-        public int InputType { get; set; }
+        public byte InputType { get; set; }
         
         public string DefaultValue { get; set; } = string.Empty;
         public int Position { get; set; }

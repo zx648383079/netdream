@@ -7,5 +7,7 @@
 
         public static byte FILE_TYPE_IMAGE = 0;
         public static byte FILE_TYPE_VIDEO = 1;
+
+        public const char ATTRIBUTE_LINK = ',';
     }
 }

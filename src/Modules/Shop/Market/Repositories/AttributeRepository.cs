@@ -1,482 +1,340 @@
-﻿using NetDream.Modules.Shop.Entities;
-using NetDream.Shared.Extensions;
+﻿using Microsoft.Extensions.Caching.Memory;
+using NetDream.Modules.Shop.Entities;
+using NetDream.Modules.Shop.Market.Models;
+using NetDream.Modules.Shop.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using System.Text.Json;
 
 namespace NetDream.Modules.Shop.Market.Repositories
 {
-    public class AttributeRepository(ShopContext db)
+    public class AttributeRepository(ShopContext db, IMemoryCache cache)
     {
-        /**
-     * 根据属性选择值获取货品和附加属性
-     * @param int[] properties
-     * @param int goods
-     * @return array{product_properties: array, properties: array, properties_price: float, properties_label: string, total_properties_price: float, product: ProductModel|null}
-     *     properties_price 未排除货品属性之后的价格
-     *     total_properties_price 全部选中属性的价格
-     */
-    public static array GetProductAndPriceWithProperties(array properties,int goods) {
-        return CartRepository.Cache().GetOrSet(implode(",", properties), goods,
-            use (properties, goods) () {
-                list(product_properties, properties, properties_price, properties_label, total_properties_price) = self.SplitProperties(properties);
-                product = empty(product_properties) ? null :
-                    self.GetProduct(product_properties, goods);
-                return compact("product_properties", "properties", "properties_price", "product", "properties_label", "total_properties_price");
-        });
-    }
-
-    /**
-     * 根据属性值获取货品
-     * @param array properties
-     * @param int goods
-     * @return ProductModel|null
-     */
-    private static  GetProduct(array properties,int goods) {
-        sort(properties);
-        attributes = implode(ProductModel.ATTRIBUTE_LINK, properties);
-        return ProductModel.Where("attributes", attributes).Where("goods_id", goods).First();
-    }
-
-    public static array FormatPostProperties(object properties) {
-        data = [];
-        if (empty(properties)) {
-            return data;
-        }
-        if (!is_array(properties)) {
-            properties = Json.Decode(properties);
-        }
-        foreach ((array)properties as item) {
-            args = explode(":", item);
-            value = intval(count(args) > 1 ? args[1] : args[0]);
-            if (value < 1 || in_array(value, data)) {
-                continue;
-            }
-            data[] = value;
-        }
-        sort(data);
-        return data;
-    }
-
-    /**
-     * 分离商品规格和附加属性
-     * @param int[] properties
-     * @return array [product: [], properties: [], properties_price: 0, properties_label: string.Empty, total_properties_price]
-     */
-    public static  SplitProperties(array properties) {
-        if (empty(properties)) {
-            return [[], [], 0, string.Empty, 0];
-        }
-        items = GoodsAttributeEntity.WhereIn("id", properties).Get("attribute_id", "id", "price", "value");
-        if (empty(data)) {
-            return [[], [], 0, string.Empty, 0];
+        /// <summary>
+        /// 根据属性选择值获取货品和附加属性
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <param name="goods"></param>
+        /// <returns></returns>
+        public AttributeResult GetProductAndPriceWithProperties(
+            int[] properties, int goods) {
+            return cache.GetOrCreate($"{goods}_{string.Join(',', properties)}", _ => {
+                var res = SplitProperties(properties);
+                if (res.ProductProperties?.Length > 0)
+                {
+                    res.Product = GetProduct(res.ProductProperties, goods);
+                }
+                return res;
+            });
         }
 
-        attrId = [];
-        data = [];
-        foreach (items as item) {
-            attrId[] = item["attribute_id"];
-            if (!isset(data[item["attribute_id"]])) {
-                data[item["attribute_id"]] = [
-                    "price" => 0,
-                    "items" => [],
-                    "label" => []
-                ];
-            }
-            data[item["attribute_id"]]["price"] += item["price"];
-            data[item["attribute_id"]]["items"][] = item["id"];
-            data[item["attribute_id"]]["label"][] = item["value"];
+        /// <summary>
+        /// 根据属性值获取货品
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <param name="goods"></param>
+        /// <returns></returns>
+        private ProductEntity? GetProduct(int[] properties, int goods) {
+            var attributes = string.Join(GoodsStatus.ATTRIBUTE_LINK, properties.Order().ToArray());
+            return db.Products.Where(i => i.Attributes == attributes
+                && i.GoodsId == goods).FirstOrDefault();
         }
-        properties_price = 0;
-        total_properties_price = 0;
-        properties_label = [];
-        attr_list = AttributeEntity.WhereIn("id", attrId).Get("id", "type", "name");
-        properties = product_properties = [];
-        foreach (attr_list as item) {
-            group = data[item["id"]];
-            total_properties_price += group["price"];
-            properties_label[] = sprintf("[%s]:%s", item["name"], implode(",", group["label"]));
-            if (item.Type == 2) {
-                properties = array_merge(properties, group["items"]);
-                properties_price += group["price"];
-                continue;
-            }
-            product_properties = array_merge(product_properties, group["items"]);
+        public static int[] FormatPostProperties(string properties)
+        {
+            return FormatPostProperties(JsonSerializer.Deserialize<string[]>(properties));
         }
-        return [product_properties, properties, properties_price, implode(";", properties_label), total_properties_price];
-    }
+        public static int[] FormatPostProperties(string[] properties) 
+        {
+            if (properties is null || properties.Length == 0) {
+                return [];
+            }
+            var data = new List<int>();
+            foreach (var item in properties) {
+                var args = item.Split(':');
+                var value = int.Parse(args.Length > 1 ? args[1] : args[0]);
+                if (value < 1 || data.Contains(value)) 
+                {
+                    continue;
+                }
+                data.Add(value);
+            }
+            return data.Order().ToArray();
+        }
 
-    public static array GetProperties(int group,int goods) {
-        if (group < 1) {
-            return [];
-        }
-        attr_list = AttributeModel.Where("group_id", group)
-            .Where("type", ">", 0).OrderBy("position asc").OrderBy("type asc")
-            .Get("id", "name", "type");
-        if (empty(attr_list)) {
-            return [];
-        }
-        return array_filter(Relation.Create(attr_list, [
-            "attr_items" => [
-                "query" => GoodsAttributeModel.Where("goods_id", goods),
-                "link" => ["id", "attribute_id"],
-            ]
-        ]),  (object item) {
-            return empty(item.AttrItems);
-        });
-    }
+        /// <summary>
+        /// 分离商品规格和附加属性
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <returns></returns>
+        public AttributeResult SplitProperties(int[] properties) 
+        {
+            if (properties is null || properties.Length == 0) 
+            {
+                return new();
+            }
+            var items = db.GoodsAttributes.Where(i => properties.Contains(i.Id))
+                .Select(i => new GoodsAttributeEntity()
+                {
+                    AttributeId = i.AttributeId,
+                    Id = i.Id,
+                    Price = i.Price,
+                    Value = i.Value
+                })
+                .ToArray();
+            if (items.Length == 0)
+            {
+                return new();
+            }
 
-    public static  GetStaticProperties(int group,int goods) {
-        if (group < 1) {
-            return [];
-        }
-        attr_list = AttributeUniqueModel.Where("group_id", group)
-            .Where("type", 0).OrderBy("position asc").OrderBy("type asc")
-            .Get("id", "name", "property_group");
-        if (empty(attr_list)) {
-            return [];
-        }
-        items = Relation.Create(attr_list, [
-            "attr_item" => [
-                "query" => GoodsAttributeModel.Where("goods_id", goods),
-                "link" => ["id", "attribute_id"],
-                "type" => Relation.TYPE_ONE
-            ]
-        ]);
-        data = [];
-        foreach (items as item) {
-            if (empty(item["attr_item"])) {
-                continue;
+            var attrId = new List<int>();
+            var data = new Dictionary<int, AttributeFormattedItem>();
+            foreach (var item in items) 
+            {
+                attrId.Add(item.AttributeId);
+                if (!data.TryGetValue(item.AttributeId, out var target)) 
+                {
+                    target = new AttributeFormattedItem();
+                    data.Add(item.AttributeId, target);
+                }
+                target.Price += item.Price;
+                target.Items.Add(item.Id);
+                target.Label.Add(item.Value);
             }
-            groupName = trim(item["property_group"]);
-            if (!isset(data[groupName])) {
-                data[groupName] = [
-                    "name" => groupName,
-                    "items" => []
-                ];
+            var propertiesPrice = 0f;
+            var totalPropertiesPrice = 0f;
+            var propertiesLabel = new List<string>();
+            var attr_list = db.Attributes.Where(i => attrId.Contains(i.Id))
+                .Select(i => new AttributeEntity()
+                {
+                    Id = i.Id,
+                    Type = i.Type,
+                    Name = i.Name
+                }).ToArray();
+            var formattedProperties = new List<int>();
+            var productProperties = new List<int>();
+            foreach (var item in attr_list) 
+            {
+                var group = data[item.Id];
+                totalPropertiesPrice += group.Price;
+                propertiesLabel.Add($"[{item.Name}]:{string.Join(',', group.Label)}");
+                if (item.Type == 2) {
+                    formattedProperties.AddRange(group.Items);
+                    propertiesPrice += group.Price;
+                    continue;
+                }
+                productProperties.AddRange(group.Items);
             }
-            data[groupName]["items"][] = item;
+            return new()
+            {
+                ProductProperties = productProperties.ToArray(),
+                Properties = formattedProperties.ToArray(),
+                PropertiesPrice = propertiesPrice,
+                TotalPropertiesPrice = totalPropertiesPrice,
+                PropertiesLabel = string.Join(';', propertiesLabel)
+            };
         }
-        return array_values(data);
-    }
 
-    /**
-     * 一次性获取属性及静态属性
-     * @param int group
-     * @param int goods
-     * @return array{properties: array, static_properties: array}
-     * @throws \Exception
-     */
-    public static array BatchProperties(int group,int goods) {
-        properties = [];
-        static_properties = [];
-        if (group < 1) {
-            return compact("properties", "static_properties");
-        }
-        attr_list = AttributeEntity.Where("group_id", group)
-            .OrderBy("position asc").OrderBy("type asc")
-            .Get("id", "name", "property_group", "type");
-        if (empty(attr_list)) {
-            return compact("properties", "static_properties");
-        }
-        attrId = [];
-        foreach (attr_list as item) {
-            attrId[] = item["id"];
-            if (item["type"] > 0) {
-                properties[item["id"]] = [
-                    "id" => item["id"],
-                    "name" => item["name"],
-                    "type" => intval(item["type"]),
-                    "attr_items" => []
-                ];
-                continue;
+        public GoodsProperty[] GetProperties(int group, int goods) 
+        {
+            if (group < 1) 
+            {
+                return [];
             }
-            groupName = trim(item["property_group"]);
-            if (!isset(static_properties[groupName])) {
-                static_properties[groupName] = [
-                    "name" => groupName,
-                    "items" => []
-                ];
+            var attr_list = db.Attributes.Where(i => i.GroupId == group && i.Type > 0)
+                .OrderBy(i => i.Position)
+                .Select(i => new AttributeEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    PropertyGroup = i.PropertyGroup
+                }).ToArray();
+            if (attr_list.Length == 0)
+            {
+                return [];
             }
-            static_properties[groupName]["items"][item["id"]] = [
-                "id" => item["id"],
-                "name" => item["name"],
-                "group" => groupName,
-                "attr_item" => null,
-            ];
-        }
-        items = GoodsAttributeModel.Where("goods_id", goods)
-            .WhereIn("attribute_id", attrId).Get();
-        foreach (items as item) {
-            attrId = intval(item["attribute_id"]);
-            if (isset(properties[attrId])) {
-                properties[item["attribute_id"]]["attr_items"][] = item;
-                continue;
+            var properties = new Dictionary<int, GoodsProperty>();
+            var attrId = new List<int>();
+            foreach (var item in attr_list)
+            {
+                attrId.Add(item.Id);
+                properties[item.Id] = new GoodsProperty()
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    Type = item.Type,
+                    AttrItems = []
+                };
             }
-            foreach (static_properties as n => group) {
-                if (isset(group["items"][attrId])) {
-                    static_properties[n]["items"][attrId]["attr_item"] = item;
+            var items = db.GoodsAttributes.Where(i => i.GoodsId == goods
+                && attrId.Contains(i.AttributeId)).ToArray();
+            foreach (var item in items)
+            {
+                if (properties.TryGetValue(item.AttributeId, out var target))
+                {
+                    target.AttrItems.Add(item);
+                    continue;
                 }
             }
+            return properties.Values.Where(i => i.AttrItems.Count > 0).ToArray();
         }
-        items = [];
-        foreach (properties as item) {
-            if (!empty(item["attr_items"])) {
-                items[] = item;
+
+        public GoodsPropertyCollection[] GetStaticProperties(int group, int goods) {
+            if (group < 1) {
+                return [];
             }
-        }
-        properties = items;
-        items = [];
-        foreach (static_properties as group) {
-            children = [];
-            foreach (group["items"] as item) {
-                if (!empty(item["attr_item"])) {
-                    children[] = item;
+            var attr_list = db.Attributes.Where(i => i.GroupId == group && i.Type == 0)
+                .OrderBy(i => i.Position)
+                .Select(i => new AttributeEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    PropertyGroup = i.PropertyGroup,
+                }).ToArray();
+            if (attr_list.Length == 0) 
+            {
+                return [];
+            }
+            var static_properties = new Dictionary<string, GoodsPropertyCollection>();
+
+            var attrId = new List<int>();
+            foreach (var item in attr_list)
+            {
+                attrId.Add(item.Id);
+                var groupName = item.PropertyGroup.Trim();
+                if (!static_properties.TryGetValue(groupName, out var collection))
+                {
+                    collection = new GoodsPropertyCollection()
+                    {
+                        Name = groupName,
+                        Items = []
+                    };
+                    static_properties.Add(groupName, collection);
+                }
+                if (collection.Items.Where(i => i.Id == item.Id).Any())
+                {
+                    continue;
+                }
+                collection.Items.Add(new()
+                {
+                    Name = item.Name,
+                    Group = groupName,
+                    Id = item.Id,
+                });
+            }
+            var items = db.GoodsAttributes.Where(i => i.GoodsId == goods
+                && attrId.Contains(i.AttributeId)).ToArray();
+            foreach (var item in items)
+            {
+                foreach (var g in static_properties)
+                {
+                    foreach (var it in g.Value.Items)
+                    {
+                        if (it.Id == item.AttributeId)
+                        {
+                            it.AttrItem = item;
+                            break;
+                        }
+                    }
                 }
             }
-            if (!empty(children)) {
-                group["items"] = children;
-                items[] = group;
-            }
-        }
-        static_properties = items;
-        return compact("properties", "static_properties");
-    }/**
-     * 根据属性选择值获取货品和附加属性
-     * @param int[] properties
-     * @param int goods
-     * @return array{product_properties: array, properties: array, properties_price: float, properties_label: string, total_properties_price: float, product: ProductModel|null}
-     *     properties_price 未排除货品属性之后的价格
-     *     total_properties_price 全部选中属性的价格
-     */
-    public static array GetProductAndPriceWithProperties(array properties,int goods) {
-        return CartRepository.Cache().GetOrSet(implode(",", properties), goods,
-            use (properties, goods) () {
-                list(product_properties, properties, properties_price, properties_label, total_properties_price) = self.SplitProperties(properties);
-                product = empty(product_properties) ? null :
-                    self.GetProduct(product_properties, goods);
-                return compact("product_properties", "properties", "properties_price", "product", "properties_label", "total_properties_price");
-        });
-    }
-
-    /**
-     * 根据属性值获取货品
-     * @param array properties
-     * @param int goods
-     * @return ProductModel|null
-     */
-    private static  GetProduct(array properties,int goods) {
-        sort(properties);
-        attributes = implode(ProductModel.ATTRIBUTE_LINK, properties);
-        return ProductModel.Where("attributes", attributes).Where("goods_id", goods).First();
-    }
-
-    public static array FormatPostProperties(object properties) {
-        data = [];
-        if (empty(properties)) {
-            return data;
-        }
-        if (!is_array(properties)) {
-            properties = Json.Decode(properties);
-        }
-        foreach ((array)properties as item) {
-            args = explode(":", item);
-            value = intval(count(args) > 1 ? args[1] : args[0]);
-            if (value < 1 || in_array(value, data)) {
-                continue;
-            }
-            data[] = value;
-        }
-        sort(data);
-        return data;
-    }
-
-    /**
-     * 分离商品规格和附加属性
-     * @param int[] properties
-     * @return array [product: [], properties: [], properties_price: 0, properties_label: string.Empty, total_properties_price]
-     */
-    public static  SplitProperties(array properties) {
-        if (empty(properties)) {
-            return [[], [], 0, string.Empty, 0];
-        }
-        items = GoodsAttributeEntity.WhereIn("id", properties).Get("attribute_id", "id", "price", "value");
-        if (empty(data)) {
-            return [[], [], 0, string.Empty, 0];
+            return static_properties.Values.Where(i => {
+                i.Items = i.Items.Where(j => j.AttrItem is not null).ToArray();
+                return i.Items.Count > 0;
+            }).ToArray();
         }
 
-        attrId = [];
-        data = [];
-        foreach (items as item) {
-            attrId[] = item["attribute_id"];
-            if (!isset(data[item["attribute_id"]])) {
-                data[item["attribute_id"]] = [
-                    "price" => 0,
-                    "items" => [],
-                    "label" => []
-                ];
+        /// <summary>
+        /// 一次性获取属性及静态属性
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="goods"></param>
+        /// <returns></returns>
+        public ProductPropertyResult BatchProperties(int group, int goods) {
+            if (group < 1)
+            {
+                return new();
             }
-            data[item["attribute_id"]]["price"] += item["price"];
-            data[item["attribute_id"]]["items"][] = item["id"];
-            data[item["attribute_id"]]["label"][] = item["value"];
-        }
-        properties_price = 0;
-        total_properties_price = 0;
-        properties_label = [];
-        attr_list = AttributeEntity.WhereIn("id", attrId).Get("id", "type", "name");
-        properties = product_properties = [];
-        foreach (attr_list as item) {
-            group = data[item["id"]];
-            total_properties_price += group["price"];
-            properties_label[] = sprintf("[%s]:%s", item["name"], implode(",", group["label"]));
-            if (item.Type == 2) {
-                properties = array_merge(properties, group["items"]);
-                properties_price += group["price"];
-                continue;
+            var attr_list = db.Attributes.Where(i => i.GroupId == group)
+                .OrderBy(i => i.Position)
+                .OrderBy(i => i.Type)
+                .Select(i => new AttributeEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    PropertyGroup = i.PropertyGroup,
+                    Type = i.Type
+                }).ToArray();
+            if (attr_list.Length == 0) 
+            {
+                return new();
             }
-            product_properties = array_merge(product_properties, group["items"]);
-        }
-        return [product_properties, properties, properties_price, implode(";", properties_label), total_properties_price];
-    }
+            var properties = new Dictionary<int, GoodsProperty>();
+            var static_properties = new Dictionary<string, GoodsPropertyCollection>();
 
-    public static array GetProperties(int group,int goods) {
-        if (group < 1) {
-            return [];
-        }
-        attr_list = AttributeModel.Where("group_id", group)
-            .Where("type", ">", 0).OrderBy("position asc").OrderBy("type asc")
-            .Get("id", "name", "type");
-        if (empty(attr_list)) {
-            return [];
-        }
-        return array_filter(Relation.Create(attr_list, [
-            "attr_items" => [
-                "query" => GoodsAttributeModel.Where("goods_id", goods),
-                "link" => ["id", "attribute_id"],
-            ]
-        ]),  (object item) {
-            return empty(item.AttrItems);
-        });
-    }
-
-    public static  GetStaticProperties(int group,int goods) {
-        if (group < 1) {
-            return [];
-        }
-        attr_list = AttributeUniqueModel.Where("group_id", group)
-            .Where("type", 0).OrderBy("position asc").OrderBy("type asc")
-            .Get("id", "name", "property_group");
-        if (empty(attr_list)) {
-            return [];
-        }
-        items = Relation.Create(attr_list, [
-            "attr_item" => [
-                "query" => GoodsAttributeModel.Where("goods_id", goods),
-                "link" => ["id", "attribute_id"],
-                "type" => Relation.TYPE_ONE
-            ]
-        ]);
-        data = [];
-        foreach (items as item) {
-            if (empty(item["attr_item"])) {
-                continue;
+            var attrId = new List<int>();
+            foreach (var item in attr_list) 
+            {
+                attrId.Add(item.Id);
+                if (item.Type > 0) {
+                    properties[item.Id] = new GoodsProperty()
+                    {
+                        Id = item.Id,
+                        Name = item.Name,
+                        Type = item.Type,
+                        AttrItems = []
+                    };
+                    continue;
+                }
+                var groupName = item.PropertyGroup.Trim();
+                if (!static_properties.TryGetValue(groupName, out var collection))
+                {
+                    collection = new GoodsPropertyCollection()
+                    {
+                        Name = groupName,
+                        Items = []
+                    };
+                    static_properties.Add(groupName, collection);
+                }
+                if (collection.Items.Where(i => i.Id == item.Id).Any())
+                {
+                    continue;
+                }
+                collection.Items.Add(new()
+                {
+                    Name = item.Name,
+                    Group = groupName,
+                    Id = item.Id,
+                });
             }
-            groupName = trim(item["property_group"]);
-            if (!isset(data[groupName])) {
-                data[groupName] = [
-                    "name" => groupName,
-                    "items" => []
-                ];
-            }
-            data[groupName]["items"][] = item;
-        }
-        return array_values(data);
-    }
-
-    /**
-     * 一次性获取属性及静态属性
-     * @param int group
-     * @param int goods
-     * @return array{properties: array, static_properties: array}
-     * @throws \Exception
-     */
-    public static array BatchProperties(int group,int goods) {
-        properties = [];
-        static_properties = [];
-        if (group < 1) {
-            return compact("properties", "static_properties");
-        }
-        attr_list = AttributeEntity.Where("group_id", group)
-            .OrderBy("position asc").OrderBy("type asc")
-            .Get("id", "name", "property_group", "type");
-        if (empty(attr_list)) {
-            return compact("properties", "static_properties");
-        }
-        attrId = [];
-        foreach (attr_list as item) {
-            attrId[] = item["id"];
-            if (item["type"] > 0) {
-                properties[item["id"]] = [
-                    "id" => item["id"],
-                    "name" => item["name"],
-                    "type" => intval(item["type"]),
-                    "attr_items" => []
-                ];
-                continue;
-            }
-            groupName = trim(item["property_group"]);
-            if (!isset(static_properties[groupName])) {
-                static_properties[groupName] = [
-                    "name" => groupName,
-                    "items" => []
-                ];
-            }
-            static_properties[groupName]["items"][item["id"]] = [
-                "id" => item["id"],
-                "name" => item["name"],
-                "group" => groupName,
-                "attr_item" => null,
-            ];
-        }
-        items = GoodsAttributeModel.Where("goods_id", goods)
-            .WhereIn("attribute_id", attrId).Get();
-        foreach (items as item) {
-            attrId = intval(item["attribute_id"]);
-            if (isset(properties[attrId])) {
-                properties[item["attribute_id"]]["attr_items"][] = item;
-                continue;
-            }
-            foreach (static_properties as n => group) {
-                if (isset(group["items"][attrId])) {
-                    static_properties[n]["items"][attrId]["attr_item"] = item;
+            var items = db.GoodsAttributes.Where(i => i.GoodsId == goods
+                && attrId.Contains(i.AttributeId)).ToArray();
+            foreach (var item in items)
+            {
+                if (properties.TryGetValue(item.AttributeId, out var target)) {
+                    target.AttrItems.Add(item);
+                    continue;
+                }
+                foreach (var g in static_properties) 
+                {
+                    foreach (var it in g.Value.Items)
+                    {
+                        if (it.Id == item.AttributeId)
+                        {
+                            it.AttrItem = item;
+                            break;
+                        }
+                    }
                 }
             }
+            return new ProductPropertyResult()
+            {
+                Properties = properties.Values.Where(i => i.AttrItems.Count > 0).ToArray(),
+                StaticProperties = static_properties.Values.Where(i => {
+                    i.Items = i.Items.Where(j => j.AttrItem is not null).ToArray();
+                    return i.Items.Count > 0;
+                }).ToArray()
+            };
         }
-        items = [];
-        foreach (properties as item) {
-            if (!empty(item["attr_items"])) {
-                items[] = item;
-            }
-        }
-        properties = items;
-        items = [];
-        foreach (static_properties as group) {
-            children = [];
-            foreach (group["items"] as item) {
-                if (!empty(item["attr_item"])) {
-                    children[] = item;
-                }
-            }
-            if (!empty(children)) {
-                group["items"] = children;
-                items[] = group;
-            }
-        }
-        static_properties = items;
-        return compact("properties", "static_properties");
-    }
     }
 }
