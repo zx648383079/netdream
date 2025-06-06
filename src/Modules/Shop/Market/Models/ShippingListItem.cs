@@ -11,5 +11,6 @@ namespace NetDream.Modules.Shop.Market.Models
         public string Icon { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public ShippingGroupEntity? Settings { get; internal set; }
+        public float ShippingFee { get; internal set; }
     }
 }

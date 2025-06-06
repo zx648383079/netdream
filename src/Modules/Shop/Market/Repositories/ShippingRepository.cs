@@ -77,8 +77,8 @@ namespace NetDream.Modules.Shop.Market.Repositories
          * @param ICartItem[] goods_list
          * @return float
          */
-        public float GetFee(ShippingEntity shipping, 
-            object settings, ICartItem[] goods_list)
+        public float GetFee(ShippingListItem shipping,
+            ShippingGroupEntity settings, ICartItem[] goods_list)
         {
             var amount = 0;
             var price = 0f;

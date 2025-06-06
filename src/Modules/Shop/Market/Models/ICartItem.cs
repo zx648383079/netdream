@@ -9,6 +9,7 @@
 
     public interface ICartItem
     {
+        public int Id { get; }
         public int GoodsId { get; }
         public int ProductId { get; }
         public int Amount { get; }
