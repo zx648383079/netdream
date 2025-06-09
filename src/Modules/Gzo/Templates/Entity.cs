@@ -50,7 +50,6 @@ namespace NetDream.Modules.Gzo.Templates
                 "date" => "string",
                 "time" => "TimeSpan",
                 "datetime" => "DateTime",
-                "decimal" => "float",
                 _ => data.Type,
             };
         }

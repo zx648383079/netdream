@@ -1,4 +1,6 @@
-﻿namespace NetDream.Modules.Shop.Market.Models
+﻿using System.Collections.Generic;
+
+namespace NetDream.Modules.Shop.Market.Models
 {
     public interface ICartSource
     {
@@ -7,26 +9,9 @@
         public void Save(ICartItem[] items);
     }
 
-    public interface ICartItem
-    {
-        public int Id { get; }
-        public int GoodsId { get; }
-        public int ProductId { get; }
-        public int Amount { get; }
+    
 
-        public float Price { get; }
+    
 
-        public float Total { get; }
-
-        public IGoodsSource Goods { get; }
- 
-    }
-
-    public interface IGoodsSource
-    {
-        public string Name { get; }
-        public float Price { get; }
-        public float MarketPrice { get; }
-        public float Weight { get; }
-    }
+  
 }

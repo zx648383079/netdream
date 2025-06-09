@@ -19,7 +19,7 @@ namespace NetDream.Modules.Shop.Market.Models
         public string AttributeId { get; internal set; }
         public string AttributeValue { get; internal set; }
 
-        public IGoodsSource Goods { get; set; }
+        public IProductSource Goods { get; set; }
 
     }
 }
