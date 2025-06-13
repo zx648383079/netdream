@@ -1,20 +1,19 @@
-﻿using NetDream.Modules.Shop.Backend.Models;
-using NetDream.Modules.Shop.Entities;
+﻿using NetDream.Modules.Shop.Entities;
 using NetDream.Modules.Shop.Market.Forms;
 using NetDream.Modules.Shop.Market.Models;
 using NetDream.Modules.Shop.Models;
+using NetDream.Modules.Trade.Models;
 using NetDream.Modules.UserProfile;
 using NetDream.Modules.UserProfile.Entities;
 using NetDream.Modules.UserProfile.Forms;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Shop.Market.Repositories
 {
@@ -24,6 +23,11 @@ namespace NetDream.Modules.Shop.Market.Repositories
         IGlobeOption option,
         ProfileContext profileDB)
     {
+        /// <summary>
+        /// 货到付款的 code
+        /// </summary>
+        public const string COD_CODE = "cod";
+
         public StockStore Store(int status = 0)
         {
             var store = new StockStore(db, option)
@@ -105,75 +109,101 @@ namespace NetDream.Modules.Shop.Market.Repositories
             return new CouponRepository(db, client).GetUserUseGoods(userId, goods_list);
         }
 
-        /**
-         * @param int userId
-         * @param array goods_list
-         * @param int address
-         * @param int shipping
-         * @param int payment
-         * @param int coupon
-         * @param bool isPreview // 如果只验证，则配送方式和支付方式可空
-         * @return OrderModel
-         * @throws Exception
-         */
-        public IOperationResult Preview(int userId, ICartItem[] goods_list, 
-            AddressEntity address, int shipping, int payment, int coupon = 0, 
-            string coupon_code = "", bool isPreview = true)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="goodsItems"></param>
+        /// <param name="address"></param>
+        /// <param name="shippingCode"></param>
+        /// <param name="paymentCode"></param>
+        /// <param name="coupon"></param>
+        /// <param name="couponCode"></param>
+        /// <param name="isPreview">如果只验证，则配送方式和支付方式可空</param>
+        /// <returns></returns>
+        public IOperationResult<OrderPreview> Preview(int userId, ICartItem[] goodsItems, 
+            AddressEntity address, string shippingCode, string paymentCode, int coupon = 0, 
+            string couponCode = "", bool isPreview = true)
         {
-            if (goods_list.Length == 0)
+            if (goodsItems.Length == 0)
             {
-                return OperationResult.Fail("请选择结算的商品");
+                return OperationResult<OrderPreview>.Fail("请选择结算的商品");
             }
-            order = OrderModel.Preview(goods_list);
-            if (empty(address))
+            var order = new OrderPreview(goodsItems);
+            if (address is null)
             {
-                return OperationResult.Fail("收货地址无效或不完整");
+                return OperationResult<OrderPreview>.Fail("收货地址无效或不完整");
             }
-            //address = FormatAddress(userId, address);
-            if (address is null || !order.SetAddress(address))
+            // var address = FormatAddress(userId, address);
+            order.Add(address);
+            var couponModel = FormatCoupon(userId, coupon, couponCode);
+            if (couponModel is not null && !new CouponRepository(db, client)
+                .CanUse(couponModel, goodsItems))
             {
-                return OperationResult.Fail("请选择收货地址");
-            }
-            coupon = FormatCoupon(userId, coupon, coupon_code);
-            if (!empty(coupon) && !CouponRepository.CanUse(coupon.Coupon, goods_list))
-            {
-                return OperationResult.Fail("优惠卷不能使用在此订单");
+                return OperationResult<OrderPreview>.Fail("优惠卷不能使用在此订单");
                 // TODO 减去优惠金额
             }
-            if (payment > 0 && !order.SetPayment(PaymentModel.Find(payment)) && !isPreview)
+            if (IsPayment(paymentCode, out var paymentModel))
             {
-                return OperationResult.Fail("请选择支付方式");
+                order.Add(paymentModel);
+            } else if (!isPreview)
+            {
+                return OperationResult<OrderPreview>.Fail("请选择支付方式");
             }
-            if (shipping > 0)
+            if (!string.IsNullOrEmpty(shippingCode))
             {
-                ship = ShippingModel.Find(shipping);
-                if (empty(ship))
+                var ship = db.Shipping.Where(i => i.Code == shippingCode)
+                    .SingleOrDefault()?.CopyTo<ShippingListItem>();
+                if (ship is null)
                 {
-                    return OperationResult.Fail("配送方式不存在");
+                    return OperationResult<OrderPreview>.Fail("配送方式不存在");
                 }
-                shipGroup = ShippingRepository.GetGroup(shipping, address.RegionId);
-                if (empty(shipGroup))
+                var shipGroup = new ShippingRepository(db, null)
+                    .GetGroup(ship.Id, address.RegionId);
+                if (shipGroup is null)
                 {
-                    return OperationResult.Fail("当前地址不支持此配送方式");
+                    return OperationResult<OrderPreview>.Fail("当前地址不支持此配送方式");
                 }
-                ship.Settings = shipGroup;
-                if (!order.SetShipping(ship) && !isPreview)
+                order.Add(ship, shipGroup);
+                order.ShippingFee = new ShippingRepository(db, profileDB).GetFee(ship, shipGroup, goodsItems);
+                if (!isPreview)
                 {
-                    return OperationResult.Fail("请选择配送方式");
+                    return OperationResult<OrderPreview>.Fail("请选择配送方式");
                 }
-                if (payment > 0 && !ship.CanUsePayment(order.Payment))
+                if (paymentCode == COD_CODE && !ship.CodEnabled)
                 {
-                    return OperationResult.Fail(
-                        $"当前配送方式不支持【{payment.Name}】支付方式"
+                    return OperationResult<OrderPreview>.Fail(
+                        "当前配送方式不支持【货到付款】支付方式"
                     );
                 }
             }
             else if(!isPreview) 
             {
-                return OperationResult.Fail("请选择配送方式");
+                return OperationResult<OrderPreview>.Fail("请选择配送方式");
             }
-            return order;
+            return OperationResult.Ok(order);
         }
+
+        private bool IsPayment(string code, [NotNullWhen(true)] out ICodeOptionItem? model)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                model = null;
+                return false;
+            }
+            if (code == COD_CODE)
+            {
+                model = new PaymentListItem()
+                {
+                    Name = "货到付款",
+                    Code = COD_CODE,
+                };
+                return true;
+            }
+            model = null;
+            return model is not null;
+        }
+
 
         /**
          * 结算
@@ -188,36 +218,79 @@ namespace NetDream.Modules.Shop.Market.Repositories
          * @return OrderModel
          * @throws Exception
          */
-        public IOperationResult Checkout(int userId,
-            ICartItem[] goods_list, object address, 
-            int shipping, int payment, int coupon = 0, 
+        public IOperationResult<OrderEntity> Checkout(int userId,
+            ICartItem[] goodsItems, AddressEntity address, 
+            string shippingCode, string paymentCode, int coupon = 0, 
             string coupon_code = "")
         {
             var store = Store(StockStore.STATUS_ORDER);
-            if (!store.Frozen(goods_list))
+            if (!store.Frozen(goodsItems))
             {
-                return OperationResult.Fail("库存不足！");
+                return OperationResult<OrderEntity>.Fail("库存不足！");
             }
             var success = false;
-            var order = Preview(userId, goods_list, address, shipping, payment, coupon, coupon_code, false);
-            if (order.CreateOrder(userId))
+            var res = Preview(userId, goodsItems, address, shippingCode, paymentCode, coupon, coupon_code, false);
+            if (!res.Succeeded)
             {
-                success = true;
-                store.Clear();
+                return OperationResult<OrderEntity>.Fail(res);
             }
-            else
+            var data = res.Result;
+            var model = new OrderEntity()
             {
-                order.Restore();
-            }
-            if (!success)
+                UserId = userId,
+                Status = OrderStatus.STATUS_UN_PAY,
+                SeriesNumber = client.Now.ToString(),
+                PaymentId = data.Payment!.Code,
+                PaymentName = data.Payment!.Name,
+                ShippingId = data.Shipping!.Code,
+                ShippingName = data.Shipping!.Name,
+                PayFee = data.PayFee,
+                ShippingFee = data.ShippingFee,
+                GoodsAmount = data.GoodsAmount,
+                OrderAmount = data.OrderAmount,
+                Discount = data.Discount,
+                UpdatedAt = client.Now,
+                CreatedAt = client.Now
+            };
+            db.Orders.Add(model);
+            db.SaveChanges();
+            if (model.Id == 0)
             {
-                return OperationResult.Fail("操作失败，请重试");
+                return OperationResult<OrderEntity>.Fail("操作失败，请重试");
             }
+            db.OrderAddress.Add(new OrderAddressEntity()
+            {
+                OrderId = model.Id,
+                Name = data.Address.Name,
+                Tel = data.Address.Tel,
+                RegionId = data.Address.RegionId,
+                RegionName = data.Address.RegionName,
+                Address = data.Address.Address,
+                BestTime = data.Address.BestTime,
+            });
+            foreach (var item in data.Goods)
+            {
+                db.OrderGoods.Add(new OrderGoodsEntity()
+                {
+                    OrderId = model.Id,
+                    UserId = model.UserId,
+                    GoodsId = item.GoodsId,
+                    ProductId = item.ProductId,
+                    Name = item.Name,
+                    Thumb = item.Thumb,
+                    SeriesNumber = item.SeriesNumber,
+                    Price = item.Price,
+                    Amount = item.Amount,
+                });
+            }
+            db.SaveChanges();
+            store.Clear();
+            
             //if (type < 1)
             //{
             //    CartRepository.Load().Remove(...goods_list);
             //}
-            return order;
+            return OperationResult.Ok(model);
         }
 
         /**

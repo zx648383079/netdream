@@ -70,19 +70,19 @@ namespace NetDream.Modules.Shop.Market.Repositories
                 .FirstOrDefault();
         }
 
-        /**
-         * 计算配送费
-         * @param ShippingModel shipping
-         * @param array settings
-         * @param ICartItem[] goods_list
-         * @return float
-         */
-        public float GetFee(ShippingListItem shipping,
+        /// <summary>
+        /// 计算配送费
+        /// </summary>
+        /// <param name="shipping"></param>
+        /// <param name="settings"></param>
+        /// <param name="goods_list"></param>
+        /// <returns></returns>
+        public decimal GetFee(ShippingListItem shipping,
             ShippingGroupEntity settings, ICartItem[] goods_list)
         {
             var amount = 0;
-            var price = 0f;
-            var weight = 0f;
+            decimal price = 0;
+            decimal weight = 0;
             foreach (var item in goods_list)
             {
                 amount += item.Amount;

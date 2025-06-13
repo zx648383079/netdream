@@ -3,11 +3,7 @@ using NetDream.Modules.Shop.Market.Models;
 using NetDream.Modules.Shop.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Shop.Market.Repositories
 {
@@ -164,11 +160,37 @@ namespace NetDream.Modules.Shop.Market.Repositories
 
         public ICartItem[] Load()
         {
-            return db.Carts.Where(i => i.UserId == client.UserId).ToArray();
+            var items = db.Carts.Where(i => i.UserId == client.UserId).ToArray();
+            if (items.Length == 0)
+            {
+                return [];
+            }
+            var idItems = items.Select(i => i.GoodsId).ToArray();
+            var data = db.Goods.Where(i => idItems.Contains(i.Id))
+                .Select(i => new GoodsEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Thumb = i.Thumb,
+                    Price = i.Price,
+                    Stock = i.Stock,
+                    MarketPrice = i.MarketPrice,
+                }).ToDictionary(i => i.Id);
+            return items.Select(i => new CartItem()
+            {
+                Id = i.Id,
+                Amount = i.Amount,
+                GoodsId = i.GoodsId,
+                ProductId = i.ProductId,
+                SelectedActivity = i.SelectedActivity,
+                IsChecked = i.IsChecked,
+                Goods = data[i.GoodsId]
+            }).ToArray();
         }
 
         public void Save(ICartItem[] items)
         {
+
         }
     }
 }

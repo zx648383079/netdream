@@ -14,6 +14,6 @@
     public class OrderShippingForm
     {
         public string LogisticsNumber { get; set; }
-        public int ShippingId { get; set; }
+        public string ShippingId { get; set; }
     }
 }

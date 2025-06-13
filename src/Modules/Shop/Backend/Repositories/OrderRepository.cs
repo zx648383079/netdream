@@ -90,10 +90,10 @@ namespace NetDream.Modules.Shop.Backend.Repositories
             {
                 return OperationResult.Fail("订单不存在");
             }
-            if (data.ShippingId > 0)
+            if (!string.IsNullOrEmpty(data.ShippingId))
             {
                 model.ShippingId = data.ShippingId;
-                model.ShippingName = db.Shipping.Where(i => i.Id == data.ShippingId).Value(i => i.Name);
+                model.ShippingName = db.Shipping.Where(i => i.Code == data.ShippingId).Value(i => i.Name);
             }
             var delivery = new DeliveryEntity()
             {
@@ -180,18 +180,18 @@ namespace NetDream.Modules.Shop.Backend.Repositories
         }
         public void OperateFee(OrderEntity order, OrderFeeForm data)
         {
-            var total = 0f;
+            decimal total = 0;
             if (data.PayFee is not null)
             {
-                var diff = order.PayFee - (float)data.PayFee;
-                order.PayFee = (float)data.PayFee;
+                var diff = order.PayFee - (decimal)data.PayFee;
+                order.PayFee = (decimal)data.PayFee;
                 order.OrderAmount -= diff;
                 total -= diff;
             }
             if (data.ShippingFee is not null)
             {
-                var diff = order.ShippingFee - (float)data.ShippingFee;
-                order.ShippingFee = (float)data.ShippingFee;
+                var diff = order.ShippingFee - (decimal)data.ShippingFee;
+                order.ShippingFee = (decimal)data.ShippingFee;
                 order.OrderAmount -= diff;
                 total -= diff;
             }

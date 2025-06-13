@@ -1,17 +1,14 @@
 ﻿using NetDream.Modules.Shop.Market.Models;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Shop.Market.Repositories
 {
     public class ShippingCart(ICartSource db) : List<ICartItem>, IList<ICartItem>
     {
 
-        public float Total => this.Sum(i => i.Total);
+        public decimal Total => this.Sum(i => i.Total);
 
         public int Amount => this.Sum(i => i.Amount);
 

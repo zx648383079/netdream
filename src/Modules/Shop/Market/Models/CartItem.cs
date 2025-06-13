@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetDream.Modules.Shop.Market.Models
+﻿namespace NetDream.Modules.Shop.Market.Models
 {
     public class CartItem : ICartItem
     {
+        public int Id { get; set; }
+
+        public int SelectedActivity { get; set; }
+
+        public bool IsChecked { get; set; }
+
+        public int ExpiredAt { get; set; }
         public int Amount {  get; set; }
 
-        public float Price { get; set; }
+        public decimal Price { get; set; }
 
-        public float Total => Amount * Price;
+        public decimal Total => Amount * Price;
 
         public int GoodsId { get; internal set; }
         public int ProductId { get; internal set; }
@@ -20,6 +21,7 @@ namespace NetDream.Modules.Shop.Market.Models
         public string AttributeValue { get; internal set; }
 
         public IProductSource Goods { get; set; }
+
 
     }
 }

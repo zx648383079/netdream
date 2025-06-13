@@ -16,6 +16,7 @@ namespace NetDream.Modules.Shop.Migrations
             builder.Property(table => table.Method).HasColumnName("method").HasMaxLength(2).HasDefaultValue(0).HasComment("计费方式");
             builder.Property(table => table.Icon).HasColumnName("icon").HasMaxLength(100).HasDefaultValue(string.Empty);
             builder.Property(table => table.Description).HasColumnName("description").HasDefaultValue(string.Empty);
+            builder.Property(table => table.CodEnabled).HasColumnName("cod_enabled");
             builder.Property(table => table.Position).HasColumnName("position").HasMaxLength(2).HasDefaultValue(50);
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");

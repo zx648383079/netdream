@@ -1,6 +1,6 @@
 ﻿namespace NetDream.Modules.Shop.Market
 {
-    public interface ICartItem
+    public interface ICartItem : IProductHost
     {
         public int Id { get; }
         public int GoodsId { get; }

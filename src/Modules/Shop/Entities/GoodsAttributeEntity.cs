@@ -12,6 +12,6 @@ namespace NetDream.Modules.Shop.Entities
         
         public int AttributeId { get; set; }
         public string Value { get; set; } = string.Empty;
-        public float Price { get; set; }
+        public decimal Price { get; set; }
     }
 }

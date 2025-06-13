@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class OrderLogEntity
+    public class OrderLogEntity : IIdEntity, ICreatedEntity
     {
         
         public int Id { get; set; }

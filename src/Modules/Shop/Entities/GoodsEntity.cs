@@ -1,10 +1,10 @@
-using NetDream.Modules.Shop.Market.Models;
+using NetDream.Modules.Shop.Market;
 using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Shop.Entities
 {
     
-    public class GoodsEntity : IIdEntity, ITimestampEntity, IGoodsSource
+    public class GoodsEntity : IIdEntity, ITimestampEntity, IProductSource
     {
         
         public int Id { get; set; }
@@ -21,13 +21,13 @@ namespace NetDream.Modules.Shop.Entities
         public string Description { get; set; } = string.Empty;
         public string Brief { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
-        public float Price { get; set; }
-        public float CostPrice { get; set; }
-        public float MarketPrice { get; set; }
+        public decimal Price { get; set; }
+        public decimal CostPrice { get; set; }
+        public decimal MarketPrice { get; set; }
         public int Stock { get; set; }
         
         public int AttributeGroupId { get; set; }
-        public float Weight { get; set; }
+        public decimal Weight { get; set; }
         
         public int ShippingId { get; set; }
         public byte Sales { get; set; }

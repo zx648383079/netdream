@@ -112,7 +112,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
                 })
                 .SingleOrDefault();
             var price = FinalPrice(model, amount, properties);
-            var box = new AttributeRepository(db).GetProductAndPriceWithProperties(
+            var box = new AttributeRepository(db, null).GetProductAndPriceWithProperties(
                 properties, id);
             return new PriceResult()
             {
@@ -125,7 +125,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
         public GoodsModel FormatProperties(GoodsEntity model)
         {
             var res = model.CopyTo<GoodsModel>();
-            res.Properties = new AttributeRepository(db)
+            res.Properties = new AttributeRepository(db, null)
                 .GetProperties(model.AttributeGroupId, model.Id);
             return res;
         }
@@ -187,7 +187,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
             {
                 return CheckStock(goods, amount);
             }
-            var box = new AttributeRepository(db)
+            var box = new AttributeRepository(db, null)
                 .GetProductAndPriceWithProperties(properties, goods.Id);
             if (box.Product is null)
             {
@@ -221,10 +221,10 @@ namespace NetDream.Modules.Shop.Market.Repositories
             /// TODO ?
             return new WarehouseRepository(db, null).GetStock(regionId, model.Id, 0) >= amount;
         }
-        public float FinalPrice(int goods, int amount = 1,
+        public decimal FinalPrice(int goods, int amount = 1,
             int[] properties = null)
         {
-            var model = CartRepository.GetGoods(goods);
+            var model = new CartRepository(db, client).GetGoods(goods);
             return FinalPrice(model, amount, properties);
         }
         /**
@@ -234,14 +234,14 @@ namespace NetDream.Modules.Shop.Market.Repositories
          * @param array properties
          * @return float
          */
-        public float FinalPrice(GoodsEntity goods, int amount = 1, 
+        public decimal FinalPrice(GoodsEntity goods, int amount = 1, 
             int[] properties = null)
         {
             if (properties is null || properties.Length == 0)
             {
                 return goods.Price;
             }
-            var box = new AttributeRepository(db)
+            var box = new AttributeRepository(db, null)
                 .GetProductAndPriceWithProperties(properties, goods.Id);
             if (box.Product is null)
             {

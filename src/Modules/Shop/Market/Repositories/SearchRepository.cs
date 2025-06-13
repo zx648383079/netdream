@@ -33,7 +33,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
             };
             if (priceRange is not null)
             {
-                res.Add(RenderPrice(priceRange.Min, priceRange.Max));
+                res.Add(RenderPrice((float)priceRange.Min, (float)priceRange.Max));
             }
             return res.Where(i => i is not null).ToArray();
         }
@@ -45,7 +45,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
             {
                 return builder;
             }
-            var args = price.Split('-').Select(i => float.Parse(i.Trim())).ToArray();
+            var args = price.Split('-').Select(i => decimal.Parse(i.Trim())).ToArray();
             if (args[0] > 0)
             {
                 builder = builder.Where(i => i.Price >= args[0]);
@@ -84,17 +84,17 @@ namespace NetDream.Modules.Shop.Market.Repositories
                 {
                     brandItems[item.CatId]++;
                 }
-                if (priceItems.TryAdd(item.Price, 1))
+                if (priceItems.TryAdd((float)item.Price, 1))
                 {
-                    priceItems[item.Price]++;
+                    priceItems[(float)item.Price]++;
                 }
-                if (minPrice <= 0 || item.Price < minPrice)
+                if (minPrice <= 0 || (float)item.Price < minPrice)
                 {
-                    minPrice = item.Price;
+                    minPrice = (float)item.Price;
                 }
-                if (maxPrice <= 0 || item.Price > maxPrice)
+                if (maxPrice <= 0 || (float)item.Price > maxPrice)
                 {
-                    maxPrice = item.Price;
+                    maxPrice = (float)item.Price;
                 }
             }
             var res = new List<IFilterGroup>()

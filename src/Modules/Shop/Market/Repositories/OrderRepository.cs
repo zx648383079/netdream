@@ -112,15 +112,15 @@ namespace NetDream.Modules.Shop.Market.Repositories
             ChangeStatus(model, OrderStatus.STATUS_CANCEL, string.Empty);
             if (oldStatus == OrderStatus.STATUS_PAID_UN_SHIP)
             {
-                var log = new PaymentRepository().GetPayedLog(model);
-                if (log is null)
-                {
-                    return OperationResult<OrderEntity>.Fail("未遭到您的支付记录，请联系商家");
-                }
-                bulletin.SendAdministrator($"订单【{model.SeriesNumber}】申请退款",
-                    $"订单{model.Id}【{model.SeriesNumber}】的支付流水号【{log.Id}】第三方流水号【{log.TradeNo}】,[马上查看]", 66, [
-                            bulletin.Ruler.FormatLink("[马上查看]", "b/order/" + model.Id)
-                    ]);
+                //var log = new PaymentRepository().GetPayedLog(model);
+                //if (log is null)
+                //{
+                //    return OperationResult<OrderEntity>.Fail("未遭到您的支付记录，请联系商家");
+                //}
+                //bulletin.SendAdministrator($"订单【{model.SeriesNumber}】申请退款",
+                //    $"订单{model.Id}【{model.SeriesNumber}】的支付流水号【{log.Id}】第三方流水号【{log.TradeNo}】,[马上查看]", 66, [
+                //            bulletin.Ruler.FormatLink("[马上查看]", "b/order/" + model.Id)
+                //    ]);
             }
             return OperationResult.Ok(model);
         }
@@ -132,10 +132,22 @@ namespace NetDream.Modules.Shop.Market.Repositories
             {
                 return OperationResult.Fail("订单不存在");
             }
-            var goods_list = db.OrderGoods
-                .Where("order_id", model.Id).ToArray();
-            var cartStore = new CartRepository(db);
-            return cartStore.AddGoods(goods_list);
+            var items = db.OrderGoods
+                .Where(i => i.OrderId == model.Id).ToArray();
+            var cartStore = new CartRepository(db, client);
+            foreach (var item in items)
+            {
+                var res = cartStore.CheckGoods(item.GoodsId, item.Amount);
+                if (!res.Succeeded)
+                {
+                    return res;
+                }
+            }
+            foreach (var item in items)
+            {
+                cartStore.AddGoods(item.GoodsId, item.Amount);
+            }
+            return OperationResult.Ok();
         }
 
         public OrderSubtotal GetSubtotal()
@@ -180,6 +192,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
             db.OrderActivities.Where(i => i.OrderId == model.Id).ExecuteDelete();
             db.OrderCoupons.Where(i => i.OrderId == model.Id).ExecuteDelete();
             db.SaveChanges();
+            return OperationResult.Ok();
         }
 
         public void ChangeStatus(OrderEntity order, byte status, string remark)

@@ -12,20 +12,20 @@ namespace NetDream.Modules.Shop.Market.Models
         /// <summary>
         /// 未排除货品属性之后的价格
         /// </summary>
-        public float PropertiesPrice { get; set; }
+        public decimal PropertiesPrice { get; set; }
 
         public string PropertiesLabel { get; set; } = string.Empty;
         /// <summary>
         /// 全部选中属性的价格
         /// </summary>
-        public float TotalPropertiesPrice { get; set; }
+        public decimal TotalPropertiesPrice { get; set; }
 
         public ProductEntity? Product { get; set; }
     }
 
     internal class AttributeFormattedItem
     {
-        public float Price { get; set; }
+        public decimal Price { get; set; }
 
         public IList<int> Items { get; set; } = [];
         public IList<string> Label { get; set; } = [];

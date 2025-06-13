@@ -101,8 +101,8 @@ namespace NetDream.Modules.Shop.Market.Repositories
                 target.Items.Add(item.Id);
                 target.Label.Add(item.Value);
             }
-            var propertiesPrice = 0f;
-            var totalPropertiesPrice = 0f;
+            decimal propertiesPrice = 0;
+            decimal totalPropertiesPrice = 0;
             var propertiesLabel = new List<string>();
             var attr_list = db.Attributes.Where(i => attrId.Contains(i.Id))
                 .Select(i => new AttributeEntity()

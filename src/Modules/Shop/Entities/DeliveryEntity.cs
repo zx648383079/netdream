@@ -13,11 +13,11 @@ namespace NetDream.Modules.Shop.Entities
         public int OrderId { get; set; }
         public int Status { get; set; }
         
-        public int ShippingId { get; set; }
-        
+        public string ShippingId { get; set; } = string.Empty;
+
         public string ShippingName { get; set; } = string.Empty;
         
-        public float ShippingFee { get; set; }
+        public decimal ShippingFee { get; set; }
         
         public string LogisticsNumber { get; set; } = string.Empty;
         

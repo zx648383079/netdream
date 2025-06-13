@@ -14,9 +14,9 @@ namespace NetDream.Modules.Shop.Migrations
             builder.Property(table => table.SeriesNumber).HasColumnName("series_number").HasMaxLength(100);
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.Status).HasColumnName("status").HasDefaultValue(0);
-            builder.Property(table => table.PaymentId).HasColumnName("payment_id").HasDefaultValue(0);
+            builder.Property(table => table.PaymentId).HasColumnName("payment_id").HasDefaultValue(string.Empty).HasComment("支付 code");
             builder.Property(table => table.PaymentName).HasColumnName("payment_name").HasMaxLength(30).HasDefaultValue(0);
-            builder.Property(table => table.ShippingId).HasColumnName("shipping_id").HasDefaultValue(0);
+            builder.Property(table => table.ShippingId).HasColumnName("shipping_id").HasDefaultValue(string.Empty).HasComment("物流 code");
             builder.Property(table => table.InvoiceId).HasColumnName("invoice_id").HasDefaultValue(0).HasComment("发票");
             builder.Property(table => table.ShippingName).HasColumnName("shipping_name").HasMaxLength(30).HasDefaultValue(0);
             builder.Property(table => table.GoodsAmount).HasColumnName("goods_amount").HasMaxLength(8).HasDefaultValue(0);

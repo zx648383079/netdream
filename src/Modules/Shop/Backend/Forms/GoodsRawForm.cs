@@ -14,7 +14,7 @@ namespace NetDream.Modules.Shop.Backend.Forms
         public string Description { get; set; } = string.Empty;
 
         public string Content { get; set; } = string.Empty;
-        public float Price { get; set; }
+        public decimal Price { get; set; }
 
         public string[] Images { get; set; }
     }

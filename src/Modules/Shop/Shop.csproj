@@ -9,14 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.6" />
   </ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
 		<ProjectReference Include="..\..\Shared\Providers\Providers.csproj" />
+		<ProjectReference Include="..\Trade\Trade.csproj" />
 		<ProjectReference Include="..\UserProfile\UserProfile.csproj" />
 	</ItemGroup>
 

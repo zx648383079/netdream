@@ -12,7 +12,7 @@ namespace NetDream.Modules.Shop.Market.Models
         public string Name { get; set; } = string.Empty;
         public string Thumb { get; set; } = string.Empty;
         public string Brief { get; set; } = string.Empty;
-        public float Price { get; set; }
-        public float MarketPrice { get; set; }
+        public decimal Price { get; set; }
+        public decimal MarketPrice { get; set; }
     }
 }

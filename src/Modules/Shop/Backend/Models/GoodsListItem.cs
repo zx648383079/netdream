@@ -15,9 +15,9 @@ namespace NetDream.Modules.Shop.Backend.Models
         public string SeriesNumber { get; set; } = string.Empty;
         public string Thumb { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public float Price { get; set; }
+        public decimal Price { get; set; }
 
-        public float MarketPrice { get; set; }
+        public decimal MarketPrice { get; set; }
         public int Stock { get; set; }
 
         public int Sales { get; set; }

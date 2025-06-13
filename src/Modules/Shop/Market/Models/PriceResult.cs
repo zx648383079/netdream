@@ -2,8 +2,8 @@
 {
     public class PriceResult
     {
-        public float Price { get; set; }
-        public float Total { get; set; }
+        public decimal Price { get; set; }
+        public decimal Total { get; set; }
         public int Stock { get; set; }
     }
 }

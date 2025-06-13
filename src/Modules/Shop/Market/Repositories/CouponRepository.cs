@@ -34,12 +34,12 @@ namespace NetDream.Modules.Shop.Market.Repositories
                 .When(status < 1, i => i.EndAt > time).ToPage(form);
         }
 
-        public CouponEntity[] GetMyUseGoods(object[] goods_list)
+        public CouponEntity[] GetMyUseGoods(IProductHost[] goods_list)
         {
             return GetUserUseGoods(client.UserId, goods_list);
         }
 
-        public CouponEntity[] GetUserUseGoods(int userId, object[] goods_list)
+        public CouponEntity[] GetUserUseGoods(int userId, IProductHost[] goods_list)
         {
             if (goods_list.Length == 0)
             {
@@ -94,13 +94,21 @@ namespace NetDream.Modules.Shop.Market.Repositories
             return !db.CouponLogs.Where(i => i.UserId == client.UserId && i.CouponId == id)
                 .Any();
         }
-
+        public bool CanUse(CouponLogEntity item, IProductHost[] goods_list)
+        {
+            var coupon = db.Coupons.Where(i => i.Id == item.CouponId).SingleOrDefault();
+            if (coupon is null)
+            {
+                return false;
+            }
+            return CanUse(coupon, goods_list);
+        }
         /**
          * @param CouponEntity item
          * @param CartModel[] goods_list
          * @return bool
          */
-        public bool CanUse(CouponEntity item, object[] goods_list)
+        public bool CanUse(CouponEntity item, IProductHost[] goods_list)
         {
             var time = client.Now;
             if (item.StartAt > time || item.EndAt < time)
@@ -156,7 +164,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
          * @param GoodsModel goods
          * @return bool
          */
-        private bool CanUseCheckGoods(byte rule, string[] range, GoodsEntity goods)
+        private bool CanUseCheckGoods(byte rule, string[] range, IProductSource goods)
         {
             if (rule == CouponType.RULE_GOODS)
             {

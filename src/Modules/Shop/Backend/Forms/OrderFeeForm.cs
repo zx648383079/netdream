@@ -2,8 +2,8 @@
 {
     public class OrderFeeForm
     {
-        public float? ShippingFee { get; set; }
+        public decimal? ShippingFee { get; set; }
 
-        public float? PayFee { get; set; }
+        public decimal? PayFee { get; set; }
     }
 }

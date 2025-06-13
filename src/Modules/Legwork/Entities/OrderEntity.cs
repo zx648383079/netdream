@@ -9,7 +9,7 @@ public class OrderEntity : IIdEntity, ITimestampEntity
     public int ServiceId { get; set; }
     public int Amount { get; set; }
     public string Remark { get; set; } = string.Empty;
-    public float OrderAmount { get; set; }
+    public decimal OrderAmount { get; set; }
     public int WaiterId { get; set; }
     public byte Status { get; set; }
     public byte ServiceScore { get; set; }
