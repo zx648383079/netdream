@@ -129,7 +129,7 @@ namespace NetDream.Modules.Chat.Repositories
             return db.Friends.Where(i => ids.Contains(i.UserId) && i.BelongId == client.UserId).ToDictionary(i => i.UserId);
         }
 
-        protected Dictionary<int, IUser> GetUsers(params int[] ids)
+        protected Dictionary<int, IUserSource> GetUsers(params int[] ids)
         {
             if (ids.Length == 0)
             {

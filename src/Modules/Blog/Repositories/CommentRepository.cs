@@ -230,7 +230,7 @@ namespace NetDream.Modules.Blog.Repositories
             var items = db.Comments.Where(i => i.BlogId == blogId && i.ParentId == 0 && i.AgreeCount > 0)
                 .OrderByDescending(i => i.AgreeCount)
                 .Take(limit).Select<CommentEntity, CommentListItem>().ToArray();
-            userStore.WithUser(items);
+            userStore.Include(items);
             return items;
         }
 
@@ -252,7 +252,7 @@ namespace NetDream.Modules.Blog.Repositories
                 .Search(keywords, "content")
                 .Search(name, "name")
                 .OrderByDescending(i => i.Id).ToPage(page, i => i.Select<CommentEntity, CommentListItem>());
-            userStore.WithUser(items.Items);
+            userStore.Include(items.Items);
             WithBlog(items.Items);
             return items;
         }

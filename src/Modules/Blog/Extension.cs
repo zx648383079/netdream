@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Auth.Events;
 using NetDream.Modules.Blog.Listeners;
 using NetDream.Modules.Blog.Repositories;
+using NetDream.Shared.Notifications;
 
 namespace NetDream.Modules.Blog
 {

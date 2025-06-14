@@ -12,7 +12,7 @@ namespace NetDream.Api.Base.Http
     public class ClientContext(IHttpContextAccessor contextAccessor, IUserRepository userStore) : IClientContext
     {
         private readonly HttpContext? _context = contextAccessor.HttpContext;
-        private IUser? _currentUser;
+        private IUserProfile? _currentUser;
         public string Ip {
             get {
                 if (_context is null)
@@ -64,7 +64,7 @@ namespace NetDream.Api.Base.Http
 
         public int Now { get; private set; } = TimeHelper.TimestampNow();
 
-        public bool TryGetUser([NotNullWhen(true)] out IUser? user)
+        public bool TryGetUser([NotNullWhen(true)] out IUserProfile? user)
         {
             var userId = UserId;
             if (userId <= 0)
@@ -77,7 +77,7 @@ namespace NetDream.Api.Base.Http
                 user = _currentUser;
                 return true;
             }
-            user = _currentUser = userStore.Get(userId);
+            user = _currentUser = userStore.GetProfile(userId);
             return user is not null;
         }
     }

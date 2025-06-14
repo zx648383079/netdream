@@ -18,7 +18,7 @@ namespace NetDream.Web.Areas.Gzo.Controllers
             {
                 return RenderData(new
                 {
-                    code = repository.Generate(table)
+                    code = repository.PreviewEntity(table)
                 });
             }
             return RenderFailure("未实现");

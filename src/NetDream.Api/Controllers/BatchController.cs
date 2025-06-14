@@ -3,6 +3,7 @@ using NetDream.Api.Base.Http;
 using NetDream.Api.Models;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.SEO.Repositories;
+using NetDream.Modules.UserAccount.Repositories;
 
 namespace NetDream.Api.Controllers
 {

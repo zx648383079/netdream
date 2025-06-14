@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using NetDream.Modules.Auth.Events;
 using NetDream.Modules.Blog.Repositories;
+using NetDream.Shared.Notifications;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;

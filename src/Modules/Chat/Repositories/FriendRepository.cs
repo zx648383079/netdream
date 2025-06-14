@@ -52,7 +52,7 @@ namespace NetDream.Modules.Chat.Repositories
             return data.Values.ToArray();
         }
 
-        public IPage<IUser> Search(QueryForm form) {
+        public IPage<IUserSource> Search(QueryForm form) {
             var exclude = db.Friends.Where(i => i.BelongId == client.UserId)
                 .Select(i => i.UserId)
                 .ToList();

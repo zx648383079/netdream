@@ -9,7 +9,7 @@ namespace NetDream.Modules.Chat.Models
 
         public string Avatar => User?.Avatar ?? string.Empty;
 
-        public bool IsOnline => User?.IsOnline ?? false;
+        public bool IsOnline => User is IUserSource u && u.IsOnline;
 
         public GroupUserModel()
         {

@@ -1,4 +1,3 @@
-
 using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Chat.Entities

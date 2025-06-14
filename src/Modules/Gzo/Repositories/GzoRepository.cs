@@ -2,6 +2,8 @@
 using NetDream.Modules.Gzo.Entities;
 using NetDream.Modules.Gzo.Storage;
 using NetDream.Modules.Gzo.Templates;
+using NetDream.Shared.Template;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
@@ -139,6 +141,17 @@ namespace NetDream.Modules.Gzo.Repositories
                 }
             }
             
+        }
+
+        public string PreviewEntity(string table)
+        {
+            var columns = GetColumns(table);
+            using var writer = new CodeWriter();
+            Template.Entity(writer, "Home", new TableEntity()
+            {
+                Name = table,
+            }, columns);
+            return writer.ToString();
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Auth.Models;
-using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.UserAccount.Models;
+using NetDream.Modules.UserAccount.Repositories;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 

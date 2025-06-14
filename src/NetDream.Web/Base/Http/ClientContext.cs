@@ -15,7 +15,7 @@ namespace NetDream.Web.Base.Http
     ) : IClientContext
     {
         private readonly HttpContext? _context = contextAccessor.HttpContext;
-        private IUser? _currentUser;
+        private IUserProfile? _currentUser;
 
         public string Ip 
         { 
@@ -73,7 +73,7 @@ namespace NetDream.Web.Base.Http
 
         public int Now { get; private set; } = TimeHelper.TimestampNow();
 
-        public bool TryGetUser([NotNullWhen(true)] out IUser? user)
+        public bool TryGetUser([NotNullWhen(true)] out IUserProfile? user)
         {
             var userId = UserId;
             if (userId <= 0)

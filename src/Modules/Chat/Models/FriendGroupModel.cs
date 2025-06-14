@@ -1,9 +1,8 @@
 ﻿using NetDream.Modules.Chat.Entities;
+using NetDream.Shared.Interfaces.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetDream.Modules.Chat.Models
 {
@@ -31,7 +30,7 @@ namespace NetDream.Modules.Chat.Models
 
         public string Name { get; set; } = string.Empty;
 
-        public int Online => Users.Where(i => i.User is not null && i.User.IsOnline).Count();
+        public int Online => Users.Where(i => i.User is IUserSource u && u.IsOnline).Count();
 
         public int Count => Users.Count;
 

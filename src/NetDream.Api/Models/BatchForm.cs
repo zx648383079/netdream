@@ -1,5 +1,5 @@
-﻿using NetDream.Modules.Auth.Models;
-using NetDream.Modules.Blog.Models;
+﻿using NetDream.Modules.Blog.Models;
+using NetDream.Modules.UserAccount.Models;
 using System.Collections.Generic;
 
 namespace NetDream.Api.Models
@@ -13,7 +13,7 @@ namespace NetDream.Api.Models
 
     public class BatchResult
     {
-        public UserProfile? AuthProfile { get; set; }
+        public UserProfileModel? AuthProfile { get; set; }
         public IDictionary<string, object>? SeoConfigs { get; set; }
         public CategoryModel[]? BlogCategories { get; set; }
     }
