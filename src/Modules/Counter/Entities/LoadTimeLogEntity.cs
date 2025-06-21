@@ -1,8 +1,10 @@
+using NetDream.Modules.Counter.Models;
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Counter.Entities
 {
     
-    public class LoadTimeLogEntity
+    public class LoadTimeLogEntity : IIdEntity, ICreatedEntity, IUserAgent
     {
         
         public int Id { get; set; }

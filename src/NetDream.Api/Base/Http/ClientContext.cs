@@ -38,6 +38,8 @@ namespace NetDream.Api.Base.Http
 
         public string UserAgent => _context?.Request.Headers.UserAgent.ToString() ?? string.Empty;
 
+        public string Host => _context?.Request.Host.Host ?? string.Empty;
+
         public int PlatformId {
             get {
                 var res = _context?.Features.Get<IJsonResponse>();

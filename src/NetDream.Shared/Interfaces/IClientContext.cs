@@ -8,6 +8,8 @@ namespace NetDream.Shared.Interfaces
         public string Ip { get; }
         public string UserAgent { get; }
 
+        public string Host { get; }
+
         public string Language { get; }
 
         public int PlatformId { get; }

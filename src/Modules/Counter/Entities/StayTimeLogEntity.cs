@@ -1,8 +1,10 @@
+using NetDream.Modules.Counter.Models;
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Counter.Entities
 {
     
-    public class StayTimeLogEntity
+    public class StayTimeLogEntity : IIdEntity, IUserAgent
     {
         
         public int Id { get; set; }

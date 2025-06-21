@@ -1,13 +1,14 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Counter.Entities
 {
     
-    public class VisitorLogEntity
+    public class VisitorLogEntity : IIdEntity
     {
         
         public int Id { get; set; }
         
-        public string UserId { get; set; } = string.Empty;
+        public int UserId { get; set; }
         public string Ip { get; set; } = string.Empty;
         
         public int FirstAt { get; set; }
