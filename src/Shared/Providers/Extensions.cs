@@ -143,19 +143,19 @@ namespace NetDream.Shared.Providers
             return source.Select(lambda);
         }
 
-        public static IQueryable<TSource> OrderBy<TSource, TProperty>(this IQueryable<TSource> source, string sort, string desc)
+        public static IOrderedQueryable<TSource> OrderBy<TSource, TProperty>(this IQueryable<TSource> source, string sort, string desc)
         {
             return source.OrderBy<TSource, TProperty>(sort, desc.Equals("desc", StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public static IQueryable<TSource> OrderBy<TSource, TProperty>(this IQueryable<TSource> source, string sort, bool isDesc)
+        public static IOrderedQueryable<TSource> OrderBy<TSource, TProperty>(this IQueryable<TSource> source, string sort, bool isDesc)
         {
             var methodName = isDesc ? "OrderByDescending" : "OrderBy";
             var type = typeof(TSource);
             var memberProperty = type.GetProperty(StrHelper.Studly(sort))!;
             if (memberProperty is null)
             {
-                return source;
+                throw new ArgumentNullException(nameof(memberProperty));
             }
             var thisArg = Expression.Parameter(type);
             var lambda = Expression.Lambda<Func<TSource, TProperty>>(Expression.Property(thisArg, memberProperty), thisArg);

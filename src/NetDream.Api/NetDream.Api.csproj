@@ -25,8 +25,33 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\AdSense\AdSense.csproj" />
+    <ProjectReference Include="..\Modules\Bot\Bot.csproj" />
+    <ProjectReference Include="..\Modules\Career\Career.csproj" />
+    <ProjectReference Include="..\Modules\Catering\Catering.csproj" />
+    <ProjectReference Include="..\Modules\CMS\CMS.csproj" />
+    <ProjectReference Include="..\Modules\Counter\Counter.csproj" />
+    <ProjectReference Include="..\Modules\Exam\Exam.csproj" />
+    <ProjectReference Include="..\Modules\Finance\Finance.csproj" />
+    <ProjectReference Include="..\Modules\Forum\Forum.csproj" />
+    <ProjectReference Include="..\Modules\Legwork\Legwork.csproj" />
+    <ProjectReference Include="..\Modules\Live\Live.csproj" />
+    <ProjectReference Include="..\Modules\MessageService\MessageService.csproj" />
+    <ProjectReference Include="..\Modules\MicroBlog\MicroBlog.csproj" />
+    <ProjectReference Include="..\Modules\Navigation\Navigation.csproj" />
     <ProjectReference Include="..\Modules\Note\Note.csproj" />
+    <ProjectReference Include="..\Modules\OnlineDisk\OnlineDisk.csproj" />
+    <ProjectReference Include="..\Modules\OnlineMedia\OnlineMedia.csproj" />
+    <ProjectReference Include="..\Modules\OnlineService\OnlineService.csproj" />
+    <ProjectReference Include="..\Modules\Plan\Plan.csproj" />
+    <ProjectReference Include="..\Modules\Proxy\Proxy.csproj" />
+    <ProjectReference Include="..\Modules\ResourceStore\ResourceStore.csproj" />
     <ProjectReference Include="..\Modules\TradeTracker\TradeTracker.csproj" />
+    <ProjectReference Include="..\Modules\Trade\Trade.csproj" />
+    <ProjectReference Include="..\Modules\UserAccount\UserAccount.csproj" />
+    <ProjectReference Include="..\Modules\UserIdentity\UserIdentity.csproj" />
+    <ProjectReference Include="..\Modules\UserProfile\UserProfile.csproj" />
+    <ProjectReference Include="..\Modules\VisualEditor\VisualEditor.csproj" />
     <ProjectReference Include="..\NetDream.Shared\NetDream.Shared.csproj" />
     <ProjectReference Include="..\Modules\Auth\Auth.csproj" />
     <ProjectReference Include="..\Modules\Blog\Blog.csproj" />
@@ -38,6 +63,16 @@
     <ProjectReference Include="..\Modules\OpenPlatform\OpenPlatform.csproj" />
     <ProjectReference Include="..\Modules\SEO\SEO.csproj" />
     <ProjectReference Include="..\Modules\Shop\Shop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\Finance\" />
+    <Folder Include="Controllers\Document\" />
+    <Folder Include="Controllers\MicroBlog\" />
+    <Folder Include="Controllers\Navigation\" />
+    <Folder Include="Controllers\ResourceStore\" />
+    <Folder Include="Controllers\OpenPlatform\" />
+    <Folder Include="Controllers\OnlineDisk\" />
   </ItemGroup>
 
 </Project>

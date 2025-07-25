@@ -1,5 +1,4 @@
 ﻿using NetDream.Shared.Converters;
-using System;
 using System.Collections.Generic;
 
 namespace NetDream.Modules.OpenPlatform.Models

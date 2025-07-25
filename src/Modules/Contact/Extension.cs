@@ -9,6 +9,10 @@ namespace NetDream.Modules.Contact
         public static void ProvideContactRepositories(this IServiceCollection service)
         {
             service.AddScoped<ContactRepository>();
+            service.AddScoped<FeedbackRepository>();
+            service.AddScoped<FriendLinkRepository>();
+            service.AddScoped<SubscribeRepository>();
+            service.AddScoped<ReportRepository>();
             service.AddScoped<ISystemFeedback, ReportRepository>();
         }
     }

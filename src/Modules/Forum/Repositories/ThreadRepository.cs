@@ -10,7 +10,6 @@ using NetDream.Shared.Providers.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace NetDream.Modules.Forum.Repositories
 {
@@ -18,63 +17,61 @@ namespace NetDream.Modules.Forum.Repositories
         IUserRepository userStore,
         IClientContext client)
     {
-        public IPage<ThreadModel> ManageList(string keywords = "", 
-            int forum_id = 0, int page = 1)
+        public IPage<ThreadModel> ManageList(QueryForm form, 
+            int forum_id = 0)
         {
-            var items = db.Threads.Search(keywords, "title")
+            var items = db.Threads.Search(form.Keywords, "title")
                 .When(forum_id > 0, i => i.ForumId == forum_id)
                 .OrderByDescending(i => i.UpdatedAt)
-                .ToPage(page).CopyTo<ThreadEntity, ThreadModel>();
+                .ToPage(form).CopyTo<ThreadEntity, ThreadModel>();
             userStore.Include(items.Items);
             IncludeForum(items.Items);
             return items;
         }
 
-        private void IncludeForum(IEnumerable<ThreadModel> items)
+        private void IncludeForum(IEnumerable<IWithForumModel> items)
         {
             var idItems = items.Select(item => item.ForumId).Where(i => i > 0).Distinct();
             if (!idItems.Any())
             {
                 return;
             }
-            var data = db.Forums.Where(i => idItems.Contains(i.Id)).ToArray();
-            if (data.Length == 0)
+            var data = db.Forums.Where(i => idItems.Contains(i.Id))
+                .Select(i => new ForumLabelItem()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Thumb = i.Thumb,
+                }).ToDictionary(i => i.Id);
+            if (data.Count == 0)
             {
                 return;
             }
             foreach (var item in items)
             {
-                foreach (var it in data)
+                if (data.TryGetValue(item.ForumId, out var it))
                 {
-                    if (item.ForumId == it.Id)
-                    {
-                        item.Forum = it;
-                        break;
-                    }
+                    item.Forum = it;
                 }
             }
         }
-        private void IncludeClassify(IEnumerable<ThreadModel> items)
+        private void IncludeClassify(IEnumerable<IWithClassifyModel> items)
         {
             var idItems = items.Select(item => item.ClassifyId).Where(i => i > 0).Distinct();
             if (!idItems.Any())
             {
                 return;
             }
-            var data = db.ForumClassifies.Where(i => idItems.Contains(i.Id)).ToArray();
+            var data = db.ForumClassifies.Where(i => idItems.Contains(i.Id)).ToDictionary(i => i.Id);
             if (!data.Any())
             {
                 return;
             }
             foreach (var item in items)
             {
-                foreach (var it in data)
+                if (data.TryGetValue(item.ClassifyId, out var it))
                 {
-                    if (item.ClassifyId == it.Id)
-                    {
-                        item.Classify = it;
-                        break;
-                    }
+                    item.Classify = it;
                 }
             }
         }
@@ -141,52 +138,65 @@ namespace NetDream.Modules.Forum.Repositories
             db.ThreadPosts.Where(i => id.Contains(i.ThreadId)).ExecuteDelete();
         }
 
-        public IPage<ThreadModel> GetList(int forum, int classify = 0, 
-            string keywords = "", int user = 0, int type = 0, 
-            string sort = "", string order = "", int page = 1)
+        public IPage<ThreadListItem> GetList(ThreadQueryForm form)
         {
-            (sort, order) = SearchHelper.CheckSortOrder(sort, order, [
+            var (sort, order) = SearchHelper.CheckSortOrder(form.Sort, form.Order, [
                 "updated_at", "created_at", "post_count", "top_type"
             ]);
 
-            var query = db.Threads.When(classify > 0, i => i.ClassifyId == classify)
-                .Where(i => i.ForumId == forum);
-            if (type < 2)
+            var query = db.Threads.When(form.Classify > 0, i => i.ClassifyId == form.Classify)
+                .Where(i => i.ForumId == form.Forum);
+            if (form.Type < 2)
             {
-                query = query.Search(keywords, "title");
+                query = query.Search(form.Keywords, "title");
             } else
             {
-                var users = userStore.SearchUserId(keywords);
+                var users = userStore.SearchUserId(form.Keywords);
                 if (users.Length == 0)
                 {
-                    return new Page<ThreadModel>();
+                    return new Page<ThreadListItem>();
                 }
                 query = query.Where(i => users.Contains(i.UserId));
             } 
-            var items = query.When(user > 0, i => i.UserId == user)
+            var items = query.When(form.User > 0, i => i.UserId == form.User)
                 .OrderBy<ThreadEntity, int>(sort, order)
-                .ToPage(page).CopyTo<ThreadEntity, ThreadModel>();
+                .ToPage(form).CopyTo<ThreadEntity, ThreadListItem>();
+            if (items.Items.Length == 0)
+            {
+                return items;
+            }
             userStore.Include(items.Items);
             IncludeClassify(items.Items);
+            var posts = GetMainPost(items.Items.Select(i => i.Id));
             foreach (var item in items.Items)
             {
-                item.LastPost = LastPost(item.Id);
+                // item.LastPost = LastPost(item.Id);
                 item.IsNew = IsNew(item);
+                if (posts.TryGetValue(item.Id, out var post))
+                {
+                    item.AgreeCount = post.AgreeCount;
+                    item.DisagreeCount = post.DisagreeCount;
+                    item.Brief = post.Content;
+                }
             }
             return items;
         }
 
-        public IPage<ThreadModel> SelfList(string keywords = "", 
-            string sort = "", 
-            string order = "", int page = 1)
+        private IDictionary<int, ThreadPostEntity> GetMainPost(IEnumerable<int> threadItems)
         {
-            (sort, order) = SearchHelper.CheckSortOrder(sort, order, [
+            return db.ThreadPosts.Where(i => threadItems.Contains(i.ThreadId) && i.Grade == 0)
+                .ToDictionary(i => i.ThreadId);
+        }
+
+        public IPage<ThreadListItem> SelfList(QueryForm form)
+        {
+            var (sort, order) = SearchHelper.CheckSortOrder(form.Sort, form.Order, [
                 "updated_at", "created_at", "post_count", "top_type"
             ]);
             var items = db.Threads.Where(i => i.UserId == client.UserId)
-                .Search(keywords, "title")
+                .Search(form.Keywords, "title")
                 .OrderBy<ThreadEntity, int>(sort, order)
-                .ToPage(page).CopyTo<ThreadEntity, ThreadModel>();
+                .ToPage(form).CopyTo<ThreadEntity, ThreadListItem>();
             IncludeClassify(items.Items);
             IncludeForum(items.Items);
             return items;
@@ -196,7 +206,7 @@ namespace NetDream.Modules.Forum.Repositories
         {
             var data = db.Threads.Where(i => i.ForumId == forum && i.TopType > 0)
                 .OrderByDescending(i => i.TopType)
-                .OrderByDescending(i => i.Id)
+                .ThenByDescending(i => i.Id)
                 .ToArray().CopyTo<ThreadEntity, ThreadModel>();
             userStore.Include(data);
             IncludeClassify(data);
@@ -208,13 +218,9 @@ namespace NetDream.Modules.Forum.Repositories
             return data;
         }
 
-        protected bool IsNew(ThreadModel model)
+        protected bool IsNew(ThreadEntity model)
         {
-            var time = model.CreatedAt;
-            if (model.LastPost is not null)
-            {
-                time = model.LastPost.CreatedAt;
-            }
+            var time = model.UpdatedAt;
             return time > client.Now - 86400;
         }
 
@@ -230,43 +236,32 @@ namespace NetDream.Modules.Forum.Repositories
             return data;
         }
 
-        public void PostList(int thread_id, 
-            int user_id = 0, int post_id = 0, int status = 0, 
-            string sort = "", 
-            string order = "", int per_page = 20, 
-            string type = "", int page = 1)
+        public IPage<PostListItem> PostList(PostQueryForm form)
         {
-            //page = -1;
-            //if (post_id > 0)
-            //{
-            //    maps = ThreadPostModel.When(user_id > 0, use(user_id)(object query) {
-            //        query.Where("user_id", user_id);
-            //    })
-            //    .Where("thread_id", thread_id)
-            //    .OrderBy("grade", "asc")
-            //    .OrderBy(MigrationTable.COLUMN_CREATED_AT, "asc").Pluck("id");
-            //    count = empty(maps) ? false : array_search(post_id, maps);
-            //    if (count === false)
-            //    {
-            //        throw new Exception("找不到该回帖");
-            //    }
-            //    page = (int)ceil((count + 1) / per_page);
-            //}
-            //list(sort, order) = SearchModel.CheckSortOrder(sort, order, [
-            //    "grade", "status"
-            //], "asc");
-            ///** @var Page<ThreadPostModel> items */
-            //items = ThreadPostModel.With("user", "thread")
-            //    .When(user_id > 0, use(user_id)(object query) {
-            //    query.Where("user_id", user_id);
-            //})
-            //.When(status > 0, use(status)(object query) {
-            //    query.Where("status", status);
-            //})
-            //.Where("thread_id", thread_id)
-            //.OrderBy(sort, order)
-            //.OrderBy(MigrationTable.COLUMN_CREATED_AT, "asc")
-            //.Page(per_page, "page", page);
+            if (form.Post > 0)
+            {
+                var maps = db.ThreadPosts.When(form.User > 0, i => i.UserId == form.User)
+                    .Where(i => i.ThreadId == form.Thread)
+                    .OrderBy(i => i.Grade)
+                    .ThenBy(i => i.CreatedAt).Pluck(i => i.Id);
+                var index = maps.Length == 0 ? -1 : Array.IndexOf(maps, form.Post);
+                if (index < 0)
+                {
+                    throw new Exception("找不到该回帖");
+                }
+                form.Page = (int)Math.Ceiling((double)(index + 1) / form.PerPage);
+            }
+            var (sort, order) = SearchHelper.CheckSortOrder(form.Sort, form.Order, [
+                "grade", "status"
+            ], "asc");
+            var res = db.ThreadPosts
+                .When(form.User > 0, i => i.UserId == form.User)
+                .When(form.Status > 0, i => i.Status == form.Status)
+                .Where(i => i.ThreadId == form.Thread)
+                .OrderBy<ThreadPostEntity, int>(sort, order)
+                .ThenBy(i => i.CreatedAt)
+                .ToPage(form, i => i.SelectAs());
+            userStore.Include(res.Items);
             //data = items.GetPage();
             //foreach (data as item)
             //{
@@ -282,16 +277,15 @@ namespace NetDream.Modules.Forum.Repositories
             //    }
             //    return 0;
             //});
-            //return items.SetPage(data);
+            return res;
         }
 
-        public IPage<ThreadPostEntity> SelfPostList(string keywords = "", 
-            int page = 1)
+        public IPage<ThreadPostEntity> SelfPostList(QueryForm form)
         {
             return db.ThreadPosts.Where(i => i.UserId == client.UserId)
-                .Search(keywords, "content")
+                .Search(form.Keywords, "content")
                 .OrderBy(i => i.CreatedAt)
-                .ToPage(page);
+                .ToPage(form);
         }
 
         /**

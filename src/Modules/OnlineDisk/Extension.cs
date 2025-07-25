@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using NetDream.Modules.OnlineDisk.Repositories;
 
 namespace NetDream.Modules.OnlineDisk
 {
@@ -6,7 +7,7 @@ namespace NetDream.Modules.OnlineDisk
     {
         public static void ProvideContactRepositories(this IServiceCollection service)
         {
-            // service.AddScoped<ContactRepository>();
+            service.AddScoped<DiskRepository>();
         }
     }
 }

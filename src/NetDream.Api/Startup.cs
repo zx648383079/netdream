@@ -1,36 +1,39 @@
+using Duende.IdentityModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
+using MySqlConnector;
 using NetDream.Api.Base.Http;
 using NetDream.Api.Base.Middleware;
 using NetDream.Api.Models;
-using NetDream.Shared.Http;
-using NetDream.Shared.Interfaces;
 using NetDream.Modules.Auth;
 using NetDream.Modules.Blog;
 using NetDream.Modules.Contact;
 using NetDream.Modules.Gzo;
-using NetDream.Modules.OpenPlatform;
-using NetDream.Modules.SEO;
 using NetDream.Modules.Note;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.OpenPlatform.Http;
-using System.Text;
-using NetDream.Shared.Models;
-using System.IO;
-using Microsoft.Net.Http.Headers;
-using System.Text.Json;
-using NetDream.Shared.Converters;
-using Microsoft.EntityFrameworkCore;
-using System;
-using Microsoft.Extensions.Logging;
-using MySqlConnector;
-using System.Data.Common;
-using Duende.IdentityModel;
 using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.SEO;
+using NetDream.Modules.UserAccount;
+using NetDream.Modules.UserIdentity;
+using NetDream.Modules.UserProfile;
+using NetDream.Shared.Converters;
+using NetDream.Shared.Http;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using System;
+using System.Data.Common;
+using System.IO;
+using System.Text;
+using System.Text.Json;
 
 namespace NetDream.Api
 {
@@ -165,6 +168,9 @@ namespace NetDream.Api
 #endif
             var serverVersion = ServerVersion.AutoDetect(connectString); //new MySqlServerVersion(new Version(8, 0, 29));
             AddContext<AuthContext>(services, connectString, serverVersion);
+            AddContext<UserContext>(services, connectString, serverVersion);
+            AddContext<IdentityContext>(services, connectString, serverVersion);
+            AddContext<ProfileContext>(services, connectString, serverVersion);
             AddContext<SEOContext>(services, connectString, serverVersion);
             AddContext<BlogContext>(services, connectString, serverVersion);
             AddContext<ContactContext>(services, connectString, serverVersion);
@@ -203,12 +209,19 @@ namespace NetDream.Api
         private static void RegisterRepositories(IServiceCollection services)
         {
             services.ProvideAuthRepositories();
+            services.ProvideUserRepositories();
+            services.ProvideIdentityRepositories();
+            services.ProvideProfileRepositories();
             services.ProvideOpenRepositories();
             services.ProvideBlogRepositories();
             services.ProvideGzoRepositories();
             services.ProvideContactRepositories();
             services.ProvideOpenRepositories();
             services.ProvideNoteRepositories();
+            services.ProvideForumRepositories();
+            services.ProvideDocumentRepositories();
+            services.ProvideFinanceRepositories();
+            services.ProvidePlanRepositories();
         }
     }
 }

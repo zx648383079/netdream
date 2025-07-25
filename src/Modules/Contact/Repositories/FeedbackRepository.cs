@@ -2,6 +2,7 @@
 using NetDream.Modules.Contact.Entities;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using System.Linq;
 
@@ -9,11 +10,11 @@ namespace NetDream.Modules.Contact.Repositories
 {
     public class FeedbackRepository(ContactContext db)
     {
-        public IPage<FeedbackEntity> ManageList(string keywords = "", int page = 1)
+        public IPage<FeedbackEntity> ManageList(QueryForm form)
         {
-            return db.Feedbacks.Search(keywords, "name", "email", "content")
+            return db.Feedbacks.Search(form.Keywords, "name", "email", "content")
                 .OrderBy(i => i.Status)
-                .OrderByDescending(i => i.Id).ToPage(page);
+                .OrderByDescending(i => i.Id).ToPage(form);
         }
 
         /// <summary>
@@ -23,12 +24,11 @@ namespace NetDream.Modules.Contact.Repositories
         /// <param name="perPage"></param>
         /// <param name="page"></param>
         /// <returns></returns>
-        public IPage<FeedbackEntity> GetList(string keywords = "", 
-            int perPage = 20, int page = 1)
+        public IPage<FeedbackEntity> GetList(QueryForm form)
         {
-            var items = db.Feedbacks.Search(keywords, "name", "content")
+            var items = db.Feedbacks.Search(form.Keywords, "name", "content")
                 .Where(i => i.OpenStatus == 1).OrderByDescending(i => i.Id)
-                .ToPage(page);
+                .ToPage(form);
             foreach (var item in items.Items)
             {
                 item.Name = StrHelper.HideName(item.Name);

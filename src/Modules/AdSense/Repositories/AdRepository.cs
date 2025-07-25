@@ -25,17 +25,17 @@ namespace NetDream.Modules.AdSense.Repositories
             db.Ads.Where(i => i.PositionId == id).ExecuteDelete();
         }
 
-        public IList<PositionEntity> PositionAll()
+        public PositionEntity[] PositionAll()
         {
             return db.Positions.ToArray();
         }
 
-        public IList<FormattedAdModel> Banners()
+        public FormattedAdModel[] Banners()
         {
             return Load("banner");
         }
 
-        public IList<FormattedAdModel> MobileBanners()
+        public FormattedAdModel[] MobileBanners()
         {
             return Load("mobile_banner");
         }
@@ -128,12 +128,13 @@ namespace NetDream.Modules.AdSense.Repositories
             return position;
         }
 
-        /**
-         * @param array|AdPositionEntity position
-         * @param array items
-         * @param bool formatBody 是否预生成内容
-         * @return array
-         */
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="items"></param>
+        /// <param name="formatBody">是否预生成内容</param>
+        /// <returns></returns>
         public FormattedAdModel[] Format(PositionEntity position, IList<AdEntity> items, bool formatBody = true)
         {
             var data = new List<FormattedAdModel>();
@@ -159,41 +160,42 @@ namespace NetDream.Modules.AdSense.Repositories
             }
             return [..data];
         }
-        public IPage<AdEntity> ManageList(string keywords, string position, int page = 1)
+        public IPage<AdEntity> ManageList(AdQueryForm form)
         {
             var id = 0;
-            if (string.IsNullOrWhiteSpace(position))
+            var positionId = Validator.IsInt(form.Position) ? int.Parse(form.Position) : 0;
+            if (positionId == 0 && !string.IsNullOrWhiteSpace(form.Position))
             {
-                id = db.Positions.Where(i => i.Name == position).Select(i => i.Id).Single();
+                positionId = db.Positions.Where(i => i.Name == form.Position).Select(i => i.Id).Single();
                 if (id == 0)
                 {
                     return new Page<AdEntity>();
                 }
             }
-            return ManageList(keywords, id, page);
-        }
-        public IPage<AdEntity> ManageList(string keywords = "", 
-            int position = 0, int page = 1)
-        {
-            return db.Ads.Include(i => i.Position).When(keywords, i => i.Name.Contains(keywords))
-                .When(position > 0, i => i.PositionId == position)
+            return db.Ads.Include(i => i.Position).When(form.Keywords, i => i.Name.Contains(form.Keywords))
+                .When(positionId > 0, i => i.PositionId == positionId)
                 .Where(i => i.StartAt <= environment.Now && i.EndAt > environment.Now)
                 .OrderByDescending(i => i.Status)
-                .OrderByDescending(i => i.Id).ToPage(page);
+                .ThenByDescending(i => i.Id).ToPage(form);
         }
 
-        public AdEntity? ManageGet(int id)
+        public IOperationResult<AdEntity> ManageGet(int id)
         {
-            return db.Ads.Where(i => i.Id == id).Single();
+            var res = db.Ads.Where(i => i.Id == id).Single();
+            if (res is null)
+            {
+                return OperationResult<AdEntity>.Fail("id is error");
+            }
+            return OperationResult.Ok(res);
         }
 
-        public AdEntity ManageSave(AdForm data)
+        public IOperationResult<AdEntity> ManageSave(AdForm data)
         {
             var model = data.Id > 0 ? db.Ads.Where(i => i.Id == data.Id).Single() :
                 new AdEntity();
             if (model is null)
             {
-                throw new Exception("id is error");
+                return OperationResult<AdEntity>.Fail("id is error");
             }
             model.StartAt = data.StartAt;
             model.EndAt = data.EndAt;
@@ -216,7 +218,7 @@ namespace NetDream.Modules.AdSense.Repositories
                 db.Ads.Add(model);
             }
             db.SaveChanges();
-            return model;
+            return OperationResult.Ok(model);
         }
 
         public void ManageRemove(int id)
@@ -224,25 +226,30 @@ namespace NetDream.Modules.AdSense.Repositories
             db.Ads.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public IPage<PositionEntity> ManagePositionList(string keywords = "", int page = 1)
+        public IPage<PositionEntity> ManagePositionList(QueryForm form)
         {
-            return db.Positions.When(keywords, i => i.Name.Contains(keywords))
+            return db.Positions.When(form.Keywords, i => i.Name.Contains(form.Keywords))
                 .OrderByDescending(i => i.Status)
-                .OrderByDescending(i => i.Id).ToPage(page);
+                .ThenByDescending(i => i.Id).ToPage(form);
         }
 
-        public PositionEntity? ManagePosition(int id)
+        public IOperationResult<PositionEntity> ManagePosition(int id)
         {
-            return db.Positions.Where(i => i.Id == id).Single();
+            var res = db.Positions.Where(i => i.Id == id).Single();
+            if (res is null)
+            {
+                return OperationResult<PositionEntity>.Fail("id is error");
+            }
+            return OperationResult.Ok(res);
         }
 
-        public PositionEntity ManagePositionSave(PositionForm data)
+        public IOperationResult<PositionEntity> ManagePositionSave(PositionForm data)
         {
             var model = data.Id > 0 ? db.Positions.Where(i => i.Id == data.Id).Single() :
                 new PositionEntity();
             if (model is null)
             {
-                throw new Exception("id error");
+                return OperationResult<PositionEntity>.Fail("id is error");
             }
             model.Template = data.Template;
             model.Status = data.Status;
@@ -264,7 +271,7 @@ namespace NetDream.Modules.AdSense.Repositories
                 db.Positions.Add(model);
             }
             db.SaveChanges();
-            return model;
+            return OperationResult.Ok(model);
         }
 
     }

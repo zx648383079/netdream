@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
+using NetDream.Modules.Document.Repositories;
 
 namespace NetDream.Modules.Document
 {
-    internal class Extension
+    public static class Extension
     {
+        public static void ProvideDocumentRepositories(this IServiceCollection service)
+        {
+            service.AddScoped<PageRepository>();
+        }
     }
 }

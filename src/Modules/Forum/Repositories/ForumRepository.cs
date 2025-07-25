@@ -2,8 +2,12 @@
 using NetDream.Modules.Forum.Entities;
 using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.Forum.Repositories
@@ -29,22 +33,23 @@ namespace NetDream.Modules.Forum.Repositories
             return model;
         }
 
-        public ForumModel? GetFull(int id, bool full = true)
+        public IOperationResult<ForumModel> GetFull(int id, bool full = true)
         {
             var model = db.Forums.Where(i => i.Id == id).Single()?.CopyTo<ForumModel>();
             if (model is null)
             {
-                return model;
+                return OperationResult<ForumModel>.Fail("id is error");
             }
             model.Classifies = db.ForumClassifies.Where(i => i.ForumId == id).OrderBy(i => i.Id).ToArray();
             if (full)
             {
-                //model.Moderators;
+                model.Moderators = db.ForumModerators.Where(i => i.ForumId == id)
+                    .OrderBy(i => i.RoleId).ToArray();
                 //model.Children = Children(id, false);
                 //model.Path = ForumModel.FindPath(id);
                 //model.ThreadTop = ThreadRepository.TopList(id);
             }
-            return model;
+            return OperationResult.Ok(model);
         }
 
         public ForumEntity Save(ForumForm data)
@@ -115,25 +120,57 @@ namespace NetDream.Modules.Forum.Repositories
             // return ForumModel.Tree().MakeTreeForHtml();
         }
 
-        public void Children(int id, bool hasChildren = true)
+        public ForumListItem[] Children(int id, bool hasChildren = true)
         {
-            //query = hasChildren ? ForumModel.With("children") : ForumModel.Query();
-            //data = query
-            //    .Where("parent_id", id).Get();
-            //foreach (data as item)
-            //{
-            //    item.LastThread = static.LastThread(item["id"]);
-            //    item.TodayCount = item.GetTodayCountAttribute();
-            //    if (hasChildren)
-            //    {
-            //        foreach (item.Children as it)
-            //        {
-            //            it.TodayCount = it.GetTodayCountAttribute();
-            //            it.LastThread = static.LastThread(it["id"]);
-            //        }
-            //    }
-            //};
-            //return data;
+            var res = db.Forums.Where(i => i.ParentId == id)
+                .SelectAs().ToArray();
+            if (res.Length == 0)
+            {
+                return res;
+            }
+            if (hasChildren)
+            {
+                IncludeChildren(res);
+            }
+            IncludeTodayCount(res);
+            return res;
+        }
+
+        private void IncludeChildren(ForumListItem[] items)
+        {
+            if (items.Length == 0)
+            {
+                return;
+            }
+            var idItems = items.Select(i => i.Id).ToArray();
+            var data = db.Forums.Where(i => idItems.Contains(i.ParentId)).SelectAs().ToArray();
+            IncludeTodayCount(data);
+            foreach (var item in items)
+            {
+                item.Children = data.Where(i => i.ParentId == item.Id).ToArray();
+            }
+        }
+
+        private void IncludeTodayCount(ForumListItem[] items)
+        {
+            if (items.Length == 0)
+            {
+                return;
+            }
+            var today = TimeHelper.TimestampFrom(DateTime.Today);
+            var todayEnd = today + 86400;
+            var idItems = items.Select(i => i.Id).ToArray();
+            var data = db.Threads.Where(i => idItems.Contains(i.ForumId) && i.CreatedAt >= today && i.CreatedAt < todayEnd)
+                .GroupBy(i => i.ForumId)
+                .Select(i => new KeyValuePair<int, int>(i.Key, i.Count()))
+                .ToDictionary();
+            foreach (var item in items)
+            {
+                if (data.TryGetValue(item.Id, out var count))
+                {
+                    item.TodayCount = count;
+                }
+            }
         }
 
         private ThreadModel? LastThread(int id)

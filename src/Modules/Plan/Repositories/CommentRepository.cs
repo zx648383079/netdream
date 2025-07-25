@@ -12,9 +12,9 @@ namespace NetDream.Modules.Plan.Repositories
         IClientContext client,
         IUserRepository userStore)
     {
-        public IPage<CommentListItem> GetList(QueryForm form, int task_id)
+        public IPage<CommentListItem> GetList(CommentQueryForm form)
         {
-            var model = db.Tasks.Where(i => i.Id == task_id).SingleOrDefault();
+            var model = db.Tasks.Where(i => i.Id == form.Task).SingleOrDefault();
             if (model is null)
             {
                 return new Page<CommentListItem>();
@@ -25,9 +25,9 @@ namespace NetDream.Modules.Plan.Repositories
                 return new Page<CommentListItem>();
                 // throw new \Exception("无权限查看评论");
             }
-            var taskIds = db.Tasks.Where(i => i.ParentId == task_id)
+            var taskIds = db.Tasks.Where(i => i.ParentId == form.Task)
                 .Select(i => i.Id).ToList();
-            taskIds.Add(task_id);
+            taskIds.Add(form.Task);
             var res = db.Comments.Where(i => taskIds.Contains(i.TaskId))
                 .OrderByDescending(i => i.Id).ToPage(form).CopyTo<CommentEntity, CommentListItem>();
             userStore.Include(res.Items);

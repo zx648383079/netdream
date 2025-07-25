@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using NetDream.Modules.AdSense.Repositories;
 
 namespace NetDream.Modules.AdSense
 {
@@ -6,6 +7,7 @@ namespace NetDream.Modules.AdSense
     {
         public static void ProvideAdRepositories(this IServiceCollection service)
         {
+            service.AddScoped<AdRepository>();
         }
     }
 }

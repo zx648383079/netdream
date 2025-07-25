@@ -7,6 +7,11 @@ namespace NetDream.Modules.UserIdentity.Repositories
     public class IdentityRepository(IdentityContext db) : IIdentityRepository
     {
         /// <summary>
+        /// 管理员最高权限
+        /// </summary>
+        public const string Administrator = "administrator";
+
+        /// <summary>
         /// 判断是否是角色
         /// </summary>
         /// <param name="role"></param>

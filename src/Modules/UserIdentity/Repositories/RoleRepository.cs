@@ -196,7 +196,7 @@ namespace NetDream.Modules.UserIdentity.Repositories
             var roles = db.Roles.Where(i => roleId.Contains(i.Id))
                 .Select(i => i.Name).ToArray();
             var role = db.Roles.Where(i => i.Id == roleId.Min()).Single();
-            if (roles.Contains("administrator"))
+            if (roles.Contains(IdentityRepository.Administrator))
             {
                 var permissions = db.Permissions.Select(i => i.Name).ToArray();
                 return new UserRole()
