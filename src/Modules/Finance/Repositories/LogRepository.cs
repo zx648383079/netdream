@@ -29,18 +29,21 @@ namespace NetDream.Modules.Finance.Repositories
         public const byte TYPE_BORROW = 3; // 借入
 
 
-        public IPage<LogListItem> GetList(QueryForm form, int type = 0, int account = 0, 
-            int budget = 0, DateTime? start_at = null, DateTime? end_at = null)
+        public IPage<LogListItem> GetList(LogQueryForm form)
         {
-            return BindQuery(db.Log.Where(i => i.UserId == client.UserId), type, form.Keywords, account, budget, start_at, end_at)
+            return BindQuery(db.Log.Where(i => i.UserId == client.UserId), form.Type, 
+                form.Keywords, form.Account, form.Budget, 
+                DateTime.TryParse(form.StartAt, out var s) ? s : null ,
+                DateTime.TryParse(form.EndAt, out var e) ? e : null)
                 .OrderByDescending(i => i.HappenedAt).ToPage(form).CopyTo<LogEntity, LogListItem>();
         }
 
-        public int Count(int type = 0, string keywords = "", 
-            int account = 0, 
-            int budget = 0, DateTime? start_at = null, DateTime? end_at = null)
+        public int Count(LogQueryForm form)
         {
-            return BindQuery(db.Log.Where(i => i.UserId == client.UserId), type, keywords, account, budget, start_at, end_at).Count();
+            return BindQuery(db.Log.Where(i => i.UserId == client.UserId), 
+                form.Type, form.Keywords, form.Account, form.Budget,
+                DateTime.TryParse(form.StartAt, out var s) ? s : null,
+                DateTime.TryParse(form.EndAt, out var e) ? e : null).Count();
         }
 
         private static IQueryable<LogEntity> BindQuery(IQueryable<LogEntity> builder, 
@@ -127,37 +130,35 @@ namespace NetDream.Modules.Finance.Repositories
             db.SaveChanges();
         }
 
-        public int BatchEdit(string keywords, 
-            int account_id = 0, int project_id = 0, 
-            int channel_id = 0, int budget_id = 0)
+        public int BatchEdit(BatchLogForm form)
         {
-            if (string.IsNullOrWhiteSpace(keywords))
+            if (string.IsNullOrWhiteSpace(form.Keywords))
             {
                 return 0;
             }
             var data = new Dictionary<string, int>();
-            if (account_id > 0)
+            if (form.AccountId > 0)
             {
-                data.Add(nameof(account_id), account_id);
+                data.Add("account_id", form.AccountId);
             }
-            if (project_id > 0)
+            if (form.ProjectId > 0)
             {
-                data.Add(nameof(project_id), project_id);
+                data.Add("project_id", form.ProjectId);
             }
-            if (channel_id > 0)
+            if (form.ChannelId > 0)
             {
-                data.Add(nameof(channel_id), channel_id);
+                data.Add("channel_id", form.ChannelId);
             }
-            if (budget_id > 0)
+            if (form.BudgetId > 0)
             {
-                data.Add(nameof(budget_id), budget_id);
+                data.Add("budget_id", form.BudgetId);
             }
             if (data.Count == 0)
             {
                 return 0;
             }
             var query = db.Log.Where(i => i.UserId == client.UserId)
-                .Search(keywords, "remark");
+                .Search(form.Keywords, "remark");
 
             // 构建 SET 子句
             var parameters = new List<object>();
@@ -182,13 +183,9 @@ namespace NetDream.Modules.Finance.Repositories
         }
 
 
-        public void SaveDay(string day, int account_id, 
-            int channel_id = 0, int budget_id = 0,
-            LogPartialForm? breakfast = null,
-            LogPartialForm? lunch = null,
-            LogPartialForm? dinner = null)
+        public IOperationResult SaveDay(DayLogForm form)
         {
-            var items = new LogPartialForm[] { breakfast, lunch, dinner };
+            var items = new LogPartialForm[] { form.Breakfast, form.Lunch, form.Dinner };
             foreach (var item in items)
             {
                 if (item is null || item.Money <= 0)
@@ -199,18 +196,19 @@ namespace NetDream.Modules.Finance.Repositories
                 {
                     Type = TYPE_EXPENDITURE,
                     Money = item.Money,
-                    AccountId = account_id,
-                    ChannelId = channel_id,
-                    BudgetId = budget_id,
+                    AccountId = form.AccountId,
+                    ChannelId = form.ChannelId,
+                    BudgetId = form.BudgetId,
                     Remark = item.Remark,
                     TradingObject = item.TradingObject,
                     UserId = client.UserId,
                     CreatedAt = client.Now,
                     UpdatedAt = client.Now,
-                    HappenedAt = DateTime.Parse($"{day} {item.Time}")
+                    HappenedAt = DateTime.Parse($"{form.Day} {item.Time}")
                 });
             }
             db.SaveChanges();
+            return OperationResult.Ok();
         }
         public IOperationResult Import(Stream input)
         {
@@ -235,13 +233,13 @@ namespace NetDream.Modules.Finance.Repositories
             return OperationResult.Fail("不支持");
         }
 
-        public void Export(bool urlEncode = false)
+        public void Export(Stream output)
         {
-            var title = "流水记录";
-            if (urlEncode)
-            {
-                title = Uri.EscapeDataString(title);
-            }
+            //var title = "流水记录";
+            //if (urlEncode)
+            //{
+            //    title = Uri.EscapeDataString(title);
+            //}
             ExcelPackage.License.SetNonCommercialPersonal("zodream");
             using (var package = new ExcelPackage())
             {
@@ -286,10 +284,31 @@ namespace NetDream.Modules.Finance.Repositories
                 // 自动调整列宽
                 worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
 
-                // 保存文件
-                var fileInfo = new FileInfo(@"C:\Temp\Export.xlsx");
-                package.SaveAs(fileInfo);
+                package.SaveAs(output);
             }
+        }
+
+        public static IDictionary<int, decimal> GetMonthLogs(IEnumerable<LogEntity> items, int maxDay)
+        {
+            var data = new Dictionary<int, decimal>();
+            foreach (var item in items)
+            {
+                var day = item.HappenedAt.Day;
+                if (!data.TryAdd(day, item.Money))
+                {
+                    data[day] += item.Money;
+                }
+            }
+            var res = new OrderedDictionary<int, decimal>();
+            for (int i = 1; i <= maxDay; i++)
+            {
+                if (!data.TryGetValue(i, out var val))
+                {
+                    val = 0;
+                }
+                res.Add(i, val);
+            }
+            return res;
         }
     }
 }

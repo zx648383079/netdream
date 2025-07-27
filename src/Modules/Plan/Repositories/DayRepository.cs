@@ -1,4 +1,5 @@
 ﻿using NetDream.Modules.Plan.Entities;
+using NetDream.Modules.Plan.Forms;
 using NetDream.Modules.Plan.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
@@ -37,27 +38,27 @@ namespace NetDream.Modules.Plan.Repositories
             return OperationResult.Ok(res);
         }
 
-        public IOperationResult<DayEntity> Save(int task_id, int id = 0, byte amount = 1)
+        public IOperationResult<DayEntity> Save(DayForm form)
         {
-            if (id > 0)
+            if (form.Id > 0)
             {
-                var day = db.Days.Where(i => i.Id == id && i.UserId == client.UserId)
+                var day = db.Days.Where(i => i.Id == form.Id && i.UserId == client.UserId)
                 .SingleOrDefault();
                 if (day is null)
                 {
                     return OperationResult<DayEntity>.Fail("错误");
                 }
-                day.Amount = amount;
+                day.Amount = (byte)form.Amount;
                 db.Days.Save(day, client.Now);
                 db.SaveChanges();
                 return OperationResult.Ok(day);
             }
-            var task = db.Tasks.Where(i => i.Id == task_id && i.UserId == client.UserId).SingleOrDefault();
+            var task = db.Tasks.Where(i => i.Id == form.TaskId && i.UserId == client.UserId).SingleOrDefault();
             if (task is null)
             {
                 return OperationResult<DayEntity>.Fail("任务不存在");
             }
-            return Add(task, amount);
+            return Add(task, (byte)form.Amount);
         }
 
         public IOperationResult<DayEntity> Add(TaskEntity task,
@@ -97,6 +98,21 @@ namespace NetDream.Modules.Plan.Repositories
             new TaskRepository(db, client).Stop(id);
             db.Days.Remove(day);
             db.SaveChanges();
+            return OperationResult.Ok();
+        }
+
+        public IOperationResult BatchAdd(int[] items)
+        {
+            var data = db.Tasks.Where(i => items.Contains(i.Id) && i.UserId == client.UserId)
+                .ToArray();
+            if (data.Length == 0)
+            {
+                return OperationResult.Fail("请选择任务");
+            }
+            foreach (var item in data)
+            {
+                Add(item, 1);
+            }
             return OperationResult.Ok();
         }
     }

@@ -22,14 +22,15 @@ namespace NetDream.Modules.Plan.Repositories
         public const byte LOG_STATUS_PAUSE = 1; // 暂停
         public const byte LOG_STATUS_FINISH = 2; // 完成
         public const byte LOG_STATUS_FAILURE = 3; // 中断失败，未完成一个番茄时间
-        public IPage<TaskEntity> GetList(QueryForm form, int status = 0, int parent_id = 0)
+        public IPage<TaskListItem> GetList(TaskQueryForm form)
         {
-            return db.Tasks.Where(i => i.UserId == client.UserId && i.ParentId == parent_id)
+            return db.Tasks.Where(i => i.UserId == client.UserId && i.ParentId == form.ParentId)
                 .Search(form.Keywords, "name")
-                .When(status == 1, i => i.Status >= 5)
-                .When(status > 1, i => i.Status == STATUS_COMPLETE)
+                .When(form.Status == 1, i => i.Status >= 5)
+                .When(form.Status > 1, i => i.Status == STATUS_COMPLETE)
                 .OrderByDescending(i => i.Status)
-                .OrderByDescending(i => i.Id).ToPage(form);
+                .ThenByDescending(i => i.Id)
+                .ToPage(form, i => i.SelectAs());
         }
 
         public IOperationResult<TaskModel> Detail(int id)
@@ -45,9 +46,9 @@ namespace NetDream.Modules.Plan.Repositories
         }
 
         public IOperationResult<TaskEntity> Save(
-            TaskForm data, int id = 0, int status = -1)
+            TaskForm data, int status = -1)
         {
-            var model = data.Id > 0 ? db.Tasks.Where(i => i.Id == id && i.UserId == client.UserId).SingleOrDefault() 
+            var model = data.Id > 0 ? db.Tasks.Where(i => i.Id == data.Id && i.UserId == client.UserId).SingleOrDefault() 
                 : new TaskEntity();
             if (model is null)
             {

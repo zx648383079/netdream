@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetDream.Modules.Legwork.Forms
+﻿namespace NetDream.Modules.Legwork.Forms
 {
     public class ServiceForm
     {
@@ -13,7 +7,7 @@ namespace NetDream.Modules.Legwork.Forms
         public int CatId { get; set; }
         public string Thumb { get; set; } = string.Empty;
         public string Brief { get; set; } = string.Empty;
-        public float Price { get; set; }
+        public decimal Price { get; set; }
         public string Content { get; set; } = string.Empty;
         public ServiceFormItem[] Form { get; set; }
         public int UpdatedAt { get; set; }

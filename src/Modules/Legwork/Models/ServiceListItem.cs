@@ -11,7 +11,7 @@ namespace NetDream.Modules.Legwork.Models
         public int CatId { get; set; }
         public string Thumb { get; set; } = string.Empty;
         public string Brief { get; set; } = string.Empty;
-        public float Price { get; set; }
+        public decimal Price { get; set; }
 
         public int Status { get; set; }
         public IUser? User { get; set; }

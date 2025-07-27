@@ -8,7 +8,7 @@ namespace NetDream.Modules.Finance.Forms
         [Required]
         public string Name { get; set; } = string.Empty;
         [Required]
-        public float Budget { get; set; }
+        public decimal Budget { get; set; }
         public byte Cycle { get; set; }
     }
 }

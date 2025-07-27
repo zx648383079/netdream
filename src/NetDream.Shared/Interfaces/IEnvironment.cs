@@ -3,6 +3,7 @@
     public interface IEnvironment
     {
         public string Root { get; }
+        public string CacheRoot { get; }
 
         public string PublicRoot { get; }
         public string AssetRoot { get; }

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace NetDream.Modules.Finance.Forms
 {
@@ -11,8 +8,8 @@ namespace NetDream.Modules.Finance.Forms
         public int Id { get; set; }
         public int ParentId { get; set; }
         public byte Type { get; set; }
-        public float Money { get; set; }
-        public float FrozenMoney { get; set; }
+        public decimal Money { get; set; }
+        public decimal FrozenMoney { get; set; }
         public int AccountId { get; set; }
         public int ChannelId { get; set; }
         public int ProjectId { get; set; }
@@ -25,7 +22,7 @@ namespace NetDream.Modules.Finance.Forms
 
     public class LogPartialForm
     {
-        public float Money { get; set; }
+        public decimal Money { get; set; }
         public string Remark { get; set; } = string.Empty;
         public string TradingObject { get; set; } = string.Empty;
         /// <summary>
@@ -33,5 +30,30 @@ namespace NetDream.Modules.Finance.Forms
         /// </summary>
         public string Time { get; set; }
 
+    }
+
+    public class BatchLogForm
+    {
+        public string Keywords { get; set; }
+
+        public int AccountId { get; set; }
+        public int ProjectId { get; set; }
+        public int ChannelId { get; set; }
+        public int BudgetId { get; set; }
+    }
+
+    public class DayLogForm
+    {
+        [Required]
+        public string Day { get; set; }
+
+        public int AccountId { get; set; }
+        public int ProjectId { get; set; }
+        public int ChannelId { get; set; }
+        public int BudgetId { get; set; }
+
+        public LogPartialForm? Breakfast { get; set; }
+        public LogPartialForm? Lunch { get; set; }
+        public LogPartialForm? Dinner { get; set; }
     }
 }

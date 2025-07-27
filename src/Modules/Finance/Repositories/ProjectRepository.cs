@@ -118,7 +118,7 @@ namespace NetDream.Modules.Finance.Repositories
             }
             var model = new LogEntity
             {
-                Money = money,
+                Money = (decimal)money,
                 AccountId = project.AccountId,
                 ProjectId = project.Id,
                 Type = LogRepository.TYPE_INCOME,

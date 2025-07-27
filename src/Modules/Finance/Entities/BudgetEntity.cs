@@ -6,8 +6,8 @@ public class BudgetEntity : IIdEntity, ITimestampEntity, IBudget
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public float Budget { get; set; }
-    public float Spent { get; set; }
+    public decimal Budget { get; set; }
+    public decimal Spent { get; set; }
     public byte Cycle { get; set; }
     public int UserId { get; set; }
     public int DeletedAt { get; set; }

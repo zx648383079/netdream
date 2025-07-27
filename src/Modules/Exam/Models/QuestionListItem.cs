@@ -21,6 +21,6 @@ namespace NetDream.Modules.Exam.Models
 
         public string CourseGradeFormat { get; set; }
 
-        public byte Score { get; set; }
+        public int Score { get; set; }
     }
 }

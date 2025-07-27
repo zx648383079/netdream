@@ -30,7 +30,7 @@ namespace NetDream.Modules.Finance.Importers
             return new LogEntity()
             {
                 Type = (byte)(GetValue(columns, data, "收/支") == "支出" ? 0 : 1),
-                Money = float.Parse(Regex.Match(GetValue(columns, data, "金额(元)"), @"[^\d\.]+").Value),
+                Money = decimal.Parse(Regex.Match(GetValue(columns, data, "金额(元)"), @"[^\d\.]+").Value),
                 AccountId = _accountId,
                 Remark = string.Format("{0} {1}", 
                     GetValue(columns, data, "交易对方"), GetValue(columns, data, "商品")),

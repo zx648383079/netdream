@@ -16,10 +16,16 @@ namespace NetDream.Modules.Plan.Repositories
         public ReviewListItem[] Statistics(string start_at, string end_at, 
             bool ignoreEmpty = false)
         {
+            return Statistics(DateTime.Parse(start_at), DateTime.Parse(end_at), ignoreEmpty);
+        }
+
+        public ReviewListItem[] Statistics(DateTime start_at, DateTime end_at,
+            bool ignoreEmpty = false)
+        {
             var start = TimeHelper.TimestampFrom(start_at);
             var end = TimeHelper.TimestampFrom(end_at);
-            var data = db.Days.Where(i => 
-            i.CreatedAt >= start 
+            var data = db.Days.Where(i =>
+            i.CreatedAt >= start
             && i.CreatedAt <= end && i.UserId == client.UserId)
                 .OrderBy(i => i.Today).ToArray();
             var days = TimeHelper.RangeDate(start, end);
@@ -35,13 +41,6 @@ namespace NetDream.Modules.Plan.Repositories
             return FormatStatistics([day], data)[0];
         }
 
-        /**
-         * @param int start_at
-         * @param int end_at
-         * @param bool isAll
-         * @return Page<LogPageModel>|LogPageModel[]
-         * @throws Exception
-         */
         public IPage<LogListItem> LogList(QueryForm form, int start_at, int end_at)
         {
             var res = db.Logs
@@ -61,12 +60,6 @@ namespace NetDream.Modules.Plan.Repositories
             return res;
         }
 
-        /**
-         * @param ignoreEmpty
-         * @param array days
-         * @param data
-         * @return array
-         */
         public ReviewListItem[] FormatStatistics(string[] days, DayEntity[] data, bool ignoreEmpty = false)
         {
             var day_list = days.Select(i => new ReviewListItem()

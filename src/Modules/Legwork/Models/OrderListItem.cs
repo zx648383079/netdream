@@ -9,7 +9,7 @@ namespace NetDream.Modules.Legwork.Models
         public int UserId { get; set; }
         public int ServiceId { get; set; }
         public int Amount { get; set; }
-        public float OrderAmount { get; set; }
+        public decimal OrderAmount { get; set; }
         public int WaiterId { get; set; }
         public byte Status { get; set; }
         public int UpdatedAt { get; set; }

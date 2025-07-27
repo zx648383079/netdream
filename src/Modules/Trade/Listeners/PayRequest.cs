@@ -20,7 +20,7 @@ namespace NetDream.Modules.Trade.Listeners
         public string Subject { get; set; } = string.Empty;
         public string Body { get; set; } = string.Empty;
 
-        public float TotalAmount { get; set; }
+        public decimal TotalAmount { get; set; }
         /// <summary>
         /// web app
         /// </summary>

@@ -206,7 +206,7 @@ namespace NetDream.Modules.Finance.Repositories
             return OperationResult.Ok(res);
         }
 
-        private void GetLogByYear(SortedDictionary<int, float> res, int id)
+        private void GetLogByYear(SortedDictionary<int, decimal> res, int id)
         {
             var now = DateTime.Now;
             var data = db.Log.Where(i => i.UserId == client.UserId
@@ -227,7 +227,7 @@ namespace NetDream.Modules.Finance.Repositories
             }
         }
 
-        private void GetLogByMonth(SortedDictionary<int, float> res, int id)
+        private void GetLogByMonth(SortedDictionary<int, decimal> res, int id)
         {
             var now = DateTime.Now;
             var endAt = new DateTime(now.Year + 1, 1, 1);
@@ -258,7 +258,7 @@ namespace NetDream.Modules.Finance.Repositories
             }
         }
 
-        private void GetLogByWeek(IDictionary<int, float> res, int id)
+        private void GetLogByWeek(IDictionary<int, decimal> res, int id)
         {
             var now = DateTime.Now;
             var endAt = new DateTime(now.Year + 1, 1, 1);
@@ -288,7 +288,7 @@ namespace NetDream.Modules.Finance.Repositories
             }
         }
 
-        private void GetLogByDay(IDictionary<int, float> res, int id)
+        private void GetLogByDay(IDictionary<int, decimal> res, int id)
         {
             var (startAt, endAt) = GetTimeRange(CYCLE_DAY);
             var data = db.Log.Where(i => i.UserId == client.UserId 

@@ -151,22 +151,38 @@ namespace NetDream.Shared.Helpers
             return CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         }
 
-        public static (int, int) WeekRange(DateTime date)
+        public static (DateTime, DateTime) DayRange(DateTime date)
         {
-            var begin = TimestampFrom(date.AddDays((7 - (int)date.DayOfWeek) % 7 - 7 + 1));
-            var end = TimestampFrom(date.AddDays((7 - (int)date.DayOfWeek) % 7));
+            var begin = date.Date;
+            var end = date.AddDays(1);
             return (begin, end);
         }
+
+        public static (DateTime, DateTime) WeekRange(DateTime date)
+        {
+            var begin = date.AddDays((7 - (int)date.DayOfWeek) % 7 - 7 + 1);
+            var end = begin.AddDays(7);
+            return (begin, end);
+        }
+
+        
 
         /// <summary>
         /// 获取单月起始时间结束时间
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        public static (int, int) MonthRange(DateTime date)
+        public static (DateTime, DateTime) MonthRange(DateTime date)
         {
-            var begin = TimestampFrom(new DateTime(date.Year, date.Month, date.Day));
-            var end = TimestampFrom(new DateTime(date.Year, date.Month, 1).AddMonths(1)) - 1;
+            var begin = new DateTime(date.Year, date.Month, 1);
+            var end = begin.AddMonths(1);
+            return (begin, end);
+        }
+
+        public static (DateTime, DateTime) YearRange(DateTime date)
+        {
+            var begin = new DateTime(date.Year, 1, 1);
+            var end = begin.AddYears(1);
             return (begin, end);
         }
         public static string[] RangeDate(int begin, int end)

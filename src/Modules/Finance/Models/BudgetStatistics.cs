@@ -8,11 +8,11 @@ namespace NetDream.Modules.Finance.Models
     {
         public BudgetEntity Data => model;
 
-        public SortedDictionary<int, float> LogList { get; set; } = [];
+        public SortedDictionary<int, decimal> LogList { get; set; } = [];
 
-        public float Sum => LogList.Values.Sum();
+        public decimal Sum => LogList.Values.Sum();
 
-        public float BudgetSum => LogList.Count * Data.Budget;
+        public decimal BudgetSum => LogList.Count * Data.Budget;
 
     }
 }

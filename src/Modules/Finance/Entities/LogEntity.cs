@@ -6,8 +6,8 @@ public class LogEntity : IIdEntity, ITimestampEntity
 {
     public int Id { get; set; }
     public byte Type { get; set; }
-    public float Money { get; set; }
-    public float FrozenMoney { get; set; }
+    public decimal Money { get; set; }
+    public decimal FrozenMoney { get; set; }
     public int ParentId { get; set; }
     public int AccountId { get; set; }
     public int ChannelId { get; set; }

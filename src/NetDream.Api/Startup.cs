@@ -18,6 +18,10 @@ using NetDream.Modules.Blog;
 using NetDream.Modules.Contact;
 using NetDream.Modules.Gzo;
 using NetDream.Modules.Note;
+using NetDream.Modules.Forum;
+using NetDream.Modules.Document;
+using NetDream.Modules.Finance;
+using NetDream.Modules.Plan;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Modules.OpenPlatform.Models;
@@ -47,6 +51,7 @@ namespace NetDream.Api
             var currentFolder = Directory.GetCurrentDirectory();
             env.Root = Path.Combine(currentFolder, env.Root);
             env.PublicRoot = Path.Combine(currentFolder, env.PublicRoot);
+            env.CacheRoot = Path.Combine(currentFolder, env.CacheRoot);
             _environment = env;
         }
         public IConfiguration Configuration { get; private set; }

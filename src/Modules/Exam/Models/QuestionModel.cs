@@ -21,6 +21,6 @@ namespace NetDream.Modules.Exam.Models
         public bool Editable { get; set; }
         public QuestionModel[] Children { get; set; }
 
-        public byte Score { get; set; }
+        public int Score { get; set; }
     }
 }
