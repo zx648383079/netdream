@@ -11,7 +11,7 @@ namespace NetDream.Shared.Notifications
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="includeTags"></param>
-    public class UserStatistics(int userId, string[]? includeTags = null) : INotification
+    public class UserStatisticsRequest(int userId, string[]? includeTags = null) : INotification
     {
 
         public int UserId => userId;
@@ -52,7 +52,7 @@ namespace NetDream.Shared.Notifications
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="includeTags"></param>
-    public class UserOpenStatistics(int userId, string[]? includeTags = null) : INotification
+    public class UserOpenStatisticsRequest(int userId, string[]? includeTags = null) : INotification
     {
 
         public int UserId => userId;

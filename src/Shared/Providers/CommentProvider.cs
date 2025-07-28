@@ -1,92 +1,97 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers.Context;
 using NetDream.Shared.Providers.Entities;
+using NetDream.Shared.Providers.Forms;
 using NetDream.Shared.Providers.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace NetDream.Shared.Providers
 {
-    public class CommentProvider(ICommentContext db, IClientContext environment)
+    public class CommentProvider(
+        ICommentContext db, 
+        IClientContext client,
+        IUserRepository userStore)
     {
         public const byte LOG_TYPE_COMMENT = 6;
         public const byte LOG_ACTION_AGREE = 1;
         public const byte LOG_ACTION_DISAGREE = 2;
 
-        private ActionLogProvider _logger => new(db, environment);
+        private ActionLogProvider _logger => new(db, client);
 
-        public IPage<CommentLog> Search(string keywords = "", int user = 0, 
-            int target = 0, int parentId = -1, 
-            string sort = "id", string order = "desc")
+        public IPage<CommentListItem> Search(CommentQueryForm form)
         {
-            //list(sort, order) = SearchModel.CheckSortOrder(sort, order, [
-            //    "id",
-            //MigrationTable.COLUMN_CREATED_AT,
-            //"agree_count"
-            //]);
-            //page = Query().When(user > 0, use(user)(object query) {
-            //    query.Where("user_id", user);
-            //})
-            //.When(target > 0, use(target)(object query) {
-            //    query.Where("target_id", target);
-            //})
-            //.When(parentId >= 0, use(parentId)(object query) {
-            //    query.Where("parent_id", parentId);
-            //})
-            //.When(!empty(keywords), use(keywords)(object query) {
-            //    SearchModel.SearchWhere(query, ["content"], false, string.Empty, keywords);
-            //}).OrderBy(sort, order).Page();
-            //data = page.GetPage();
-            //if (empty(data))
-            //{
-            //    return page;
-            //}
-            //data = Relation.Create(FormatList(data), [
-            //    "user" => Relation.Make(UserSimpleModel.Query(), "user_id", "id")
-            //]);
-            //page.SetPage(data);
-            //return page;
-            return null;
+            var (sort, order) = SearchHelper.CheckSortOrder(form.Sort, form.Order, [
+                "id",
+                "created_at",
+                "agree_count"
+            ]);
+            var items = db.Comments.Search(form.Keywords, "content")
+                .When(form.User > 0, i => i.UserId == form.User)
+                .When(form.Target > 0, i => i.TargetId == form.Target)
+                .When(form.Parent >= 0, i => i.ParentId == form.Parent)
+                .OrderBy<CommentEntity, int>(sort, order)
+                .ToPage(form);
+            var res = new Page<CommentListItem>(items)
+            {
+                Items = Format(items.Items)
+            };
+            userStore.Include(res.Items);
+            return res;
         }
 
-        protected void FormatList(IList<CommentLog> data)
+        private CommentListItem[] Format(CommentEntity[] data)
         {
-            //idItems = array_column(data, "id");
-            //count = Query().WhereIn("parent_id", idItems)
-            //    .GroupBy("parent_id")
-            //    .SelectRaw("COUNT(*) as count,parent_id as id").Get();
-            //count = array_column(count, "count", "id");
-            //foreach (data as k => item)
-            //{
-            //    val = Format(item);
-            //    val["reply_count"] = isset(count[item["id"]]) ? intval(count[item["id"]]) : 0;
-            //    item["agree_type"] = GetAgreeType(val["id"]);
-            //    data[k] = val;
-            //}
-            //return data;
+            if (data.Length == 0)
+            {
+                return [];
+            }
+            var idItems = data.Select(i => i.Id).ToArray();
+            var count = db.Comments.Where(i => idItems.Contains(i.ParentId))
+                .GroupBy(i => i.ParentId)
+                .Select(i => new KeyValuePair<int, int>(i.Key, i.Count())).ToDictionary();
+            var agreeLog = db.Logs.Where(i => idItems.Contains(i.ItemId)
+                    && i.ItemType == LOG_TYPE_COMMENT
+                    && (i.Action == LOG_ACTION_AGREE || i.Action == LOG_ACTION_DISAGREE))
+                .Select(i => new KeyValuePair<int, byte>(i.ItemId, i.Action)).ToDictionary();
+            return data.Select(i => new CommentListItem(i)
+            {
+                ReplyCount = count.TryGetValue(i.Id, out var c) ? c : 0,
+                AgreeType = agreeLog.TryGetValue(i.Id, out var a) ? a : (byte)0,
+            }).ToArray();
         }
 
-        public void Remove(int id)
+        public IOperationResult Remove(int id)
         {
             db.Comments.Where(i => i.Id == id).ExecuteDelete();
+            db.SaveChanges();
+            return OperationResult.Ok();
         }
 
-        public int Insert(CommentEntity data)
+        public IOperationResult<CommentListItem> Insert(CommentForm data)
         {
-            //if (isset(data["extra_rule"]) && is_array(data["extra_rule"]))
-            //{
-            //    data["extra_rule"] = Json.Encode(data["extra_rule"]);
-            //}
-            db.Comments.Add(data);
-            db.SaveChanges();
-            if (data.Id == 0)
+            var model = new CommentEntity()
             {
-                throw new Exception("insert log error");
+                Content = data.Content,
+                TargetId = data.Target,
+                ParentId = data.Parent,
+                UserId = client.UserId,
+                CreatedAt = client.Now,
+            };
+            db.Comments.Add(model);
+            db.SaveChanges();
+            if (model.Id == 0)
+            {
+                return OperationResult<CommentListItem>.Fail("insert error");
             }
-            return data.Id;
+            var res = new CommentListItem(model);
+            userStore.Include(res);
+            return OperationResult.Ok(res);
         }
 
         public CommentEntity? Get(int id)
@@ -94,14 +99,27 @@ namespace NetDream.Shared.Providers
             return db.Comments.Where(i => i.Id == id).Single();
         }
 
-        public CommentEntity Save(CommentEntity data)
+        public IOperationResult<CommentListItem> Save(CommentEditForm data)
         {
-            data.UserId = environment.UserId;
-            data.CreatedAt = environment.Now;
-            db.Comments.Add(data);
+            var model = data.Id > 0 ? db.Comments.Where(i => i.Id == data.Id).SingleOrDefault() : 
+                new CommentEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<CommentListItem>("id is error");
+            }
+            model.Content = data.Content;
+            model.ExtraRule = JsonSerializer.Serialize(data.ExtraRule);
+            model.TargetId = data.TargetId;
+            model.ParentId = data.ParentId;
+            if (model.UserId == 0)
+            {
+                model.UserId = client.UserId;
+            }
+            db.Comments.Save(model, client.Now);
             db.SaveChanges();
-            // data["user"] = UserSimpleModel.ConverterFrom(auth().User());
-            return data;
+            var res = new CommentListItem(model);
+            userStore.Include(res);
+            return OperationResult.Ok(res);
         }
 
         public void RemoveByTarget(int id)
@@ -109,13 +127,14 @@ namespace NetDream.Shared.Providers
             db.Comments.Where(i => i.TargetId == id).ExecuteDelete();
         }
 
-        public void RemoveBySelf(int id)
+        public IOperationResult RemoveBySelf(int id)
         {
-            if (environment.UserId == 0) 
+            if (client.UserId == 0) 
             {
-                return;
+                return OperationResult.Fail("无权限");
             }
-            db.Comments.Where(i => i.Id == id && i.UserId == environment.UserId).ExecuteDelete();
+            db.Comments.Where(i => i.Id == id && i.UserId == client.UserId).ExecuteDelete();
+            return OperationResult.Ok();
         }
 
         public IOperationResult<AgreeResult> Agree(int id)
@@ -201,7 +220,7 @@ namespace NetDream.Shared.Providers
         /// <returns></returns>
         public byte GetAgreeType(int comment)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return 0;
             }

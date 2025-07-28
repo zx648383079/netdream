@@ -19,8 +19,9 @@ namespace NetDream.Modules.UserAccount
             service.AddTransient<INotificationHandler<CancelAccount>, CancelAccountListener>();
             service.AddTransient<INotificationHandler<ManageAction>, ManageActionListener>();
 
-            service.AddTransient<INotificationHandler<UserStatistics>, UserStatisticsHandler>();
-            service.AddTransient<INotificationHandler<UserOpenStatistics>, UserOpenStatisticsHandler>();
+            service.AddTransient<INotificationHandler<UserStatisticsRequest>, UserStatisticsHandler>();
+            service.AddTransient<INotificationHandler<UserOpenStatisticsRequest>, UserOpenStatisticsHandler>();
+            service.AddTransient<INotificationHandler<UserProfileCardRequest>, UserProfileCardHandler>();
         }
     }
 }

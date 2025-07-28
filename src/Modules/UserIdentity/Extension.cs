@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using NetDream.Modules.UserIdentity.Listeners;
 using NetDream.Modules.UserIdentity.Repositories;
+using NetDream.Shared.Notifications;
 
 namespace NetDream.Modules.UserIdentity
 {
@@ -10,6 +13,8 @@ namespace NetDream.Modules.UserIdentity
             service.AddScoped<CardRepository>();
             service.AddScoped<IdentityRepository>();
             service.AddScoped<RoleRepository>();
+
+            service.AddTransient<INotificationHandler<UserProfileCardRequest>, UserProfileCardHandler>();
         }
     }
 }

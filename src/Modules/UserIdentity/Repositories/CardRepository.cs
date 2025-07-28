@@ -5,6 +5,7 @@ using NetDream.Modules.UserIdentity.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
+using NetDream.Shared.Notifications;
 using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,15 @@ namespace NetDream.Modules.UserIdentity.Repositories
 {
     public class CardRepository(IdentityContext db, IClientContext client)
     {
+        /// <summary>
+        /// 过期的
+        /// </summary>
+        public const byte STATUS_EXPIRED = 0;
+        /// <summary>
+        /// 有效激活的
+        /// </summary>
+        public const byte STATUS_ACTIVATED = 1;
+
         public IPage<EquityCardModel> GetList(string keywords = "", int page = 1)
         {
             var items = db.EquityCards.Search(keywords, "name")
@@ -129,7 +139,7 @@ namespace NetDream.Modules.UserIdentity.Repositories
         public UserEquityCardEntity UserUpdate(int userId, int cardId, int expiredAt)
         {
             var log = db.UserEquityCards.Where(i => i.CardId == cardId && i.UserId == userId).Single();
-            var status = expiredAt > TimeHelper.TimestampNow() ? 1 : 0;
+            var status = expiredAt > TimeHelper.TimestampNow() ? STATUS_ACTIVATED : STATUS_EXPIRED;
             if (log is null)
             {
                 log = new UserEquityCardEntity()
@@ -151,18 +161,18 @@ namespace NetDream.Modules.UserIdentity.Repositories
             return log;
         }
 
-        public static UserEquityCard[] GetUserCard(IdentityContext db, int user)
+        public static UserCardItem[] GetUserCard(IdentityContext db, int user)
         {
             var now = TimeHelper.TimestampNow();
             var items = db.UserEquityCards
                 .Include(i => i.Card)
-                .Where(i => i.UserId == user && i.Status == 1 && i.ExpiredAt > now)
+                .Where(i => i.UserId == user && i.Status == STATUS_ACTIVATED && i.ExpiredAt > now)
                 .OrderByDescending(i => i.CardId).ToArray();
             if (items.Length == 0)
             {
                 return [];
             }
-            var data = new List<UserEquityCard>();
+            var data = new List<UserCardItem>();
             foreach (var item in items)
             {
                 if (item.Card is null)
@@ -173,7 +183,7 @@ namespace NetDream.Modules.UserIdentity.Repositories
                 {
                     Id = item.CardId,
                     Status = item.Status,
-                    ExpiredAt = TimeHelper.Format(item.ExpiredAt),
+                    ExpiredAt = TimeHelper.TimestampTo(item.ExpiredAt),
                     Exp = item.Exp,
                     Name = item.Card.Name,
                     Icon = item.Card.Icon,

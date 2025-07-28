@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace NetDream.Modules.Forum.Forms
 {
@@ -14,6 +10,19 @@ namespace NetDream.Modules.Forum.Forms
         public string Title { get; set; } = string.Empty;
 
         public string Content { get; set; } = string.Empty;
+
+        public byte IsPrivatePost { get; set; }
+    }
+
+    public class ThreadPublishForm
+    {
+        [Required]
+        public string Title { get; set; } = string.Empty;
+        [Required]
+        public string Content { get; set; } = string.Empty;
+        [Required]
+        public int Forum { get; set; }
+        public int Classify { get; set; }
 
         public byte IsPrivatePost { get; set; }
     }

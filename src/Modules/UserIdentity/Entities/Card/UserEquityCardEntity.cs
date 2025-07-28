@@ -9,7 +9,7 @@ namespace NetDream.Modules.UserIdentity.Entities
         public int Id { get; set; }
         
         public int UserId { get; set; }
-        public int Status { get; set; }
+        public byte Status { get; set; }
         
         public int ExpiredAt { get; set; }
 

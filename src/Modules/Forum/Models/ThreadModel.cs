@@ -12,6 +12,10 @@ namespace NetDream.Modules.Forum.Models
         public ForumLabelItem? Forum { get; set; }
         public ForumClassifyEntity? Classify { get; set; }
 
- 
+        public byte LikeType { get; set; }
+
+        public bool IsCollected { get; set; }
+
+        public bool IsReward { get; set; }
     }
 }

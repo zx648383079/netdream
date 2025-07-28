@@ -19,9 +19,9 @@ namespace NetDream.Modules.Document.Repositories
 
         public const byte TYPE_NONE = 0;
         public const byte TYPE_API = 1;
-        public CommentProvider Comment()
+        public CommentProvider Comment(IUserRepository userStore)
         {
-            return new CommentProvider(db, client);
+            return new CommentProvider(db, client, userStore);
         }
 
         public ActionLogProvider Log()
@@ -34,7 +34,7 @@ namespace NetDream.Modules.Document.Repositories
             return db.Projects.Where(i => i.Id == projectId && i.UserId == client.UserId).Any();
         }
 
-        public IPage<ProjectEntity> GetList(QueryForm form, int type = 0)
+        public IPage<ProjectEntity> GetList(ProjectQueryForm form)
         {
             var query = db.Projects.Search(form.Keywords, "name");
             if (client.UserId == 0)
@@ -46,23 +46,25 @@ namespace NetDream.Modules.Document.Repositories
                 query = query.Where(i => i.Status == STATUS_PUBLIC || i.UserId == client.UserId);
             }
             return query
-            .When(type > 0, i => i.Type == type - 1)
-            .OrderByDescending(i => i.Id).ToPage(form);
-        }
-
-        public IPage<ProjectEntity> GetSelfList(QueryForm form, int type = 0)
-        {
-            return db.Projects.Search(form.Keywords, "name")
-                .Where(i => i.UserId == client.UserId)
-                .When(type > 0, i => i.Type == type - 1)
+                .When(form.Type > 0, i => i.Type == form.Type - 1)
                 .OrderByDescending(i => i.Id).ToPage(form);
         }
 
-        /**
-         * @param int id
-         * @return ProjectModel
-         * @throws Exception
-         */
+        public IPage<ProjectEntity> GetSelfList(ProjectQueryForm form)
+        {
+            return db.Projects.Search(form.Keywords, "name")
+                .Where(i => i.UserId == client.UserId)
+                .When(form.Type > 0, i => i.Type == form.Type  - 1)
+                .OrderByDescending(i => i.Id).ToPage(form);
+        }
+
+        public IPage<ProjectEntity> GetMangerList(ProjectQueryForm form)
+        {
+            return db.Projects.Search(form.Keywords, "name")
+                .When(form.Type > 0, i => i.Type == form.Type - 1)
+                .OrderByDescending(i => i.Id).ToPage(form);
+        }
+
         public IOperationResult<ProjectEntity> Get(int id)
         {
             var query = db.Projects.Where(i => i.Id == id);
@@ -85,6 +87,17 @@ namespace NetDream.Modules.Document.Repositories
         public IOperationResult<ProjectEntity> GetSelf(int id)
         {
             var model = db.Projects.Where(i => i.Id == id && i.UserId == client.UserId)
+                .SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult<ProjectEntity>.Fail("项目文档不存在");
+            }
+            return OperationResult.Ok(model);
+        }
+
+        public IOperationResult<ProjectEntity> GetManger(int id)
+        {
+            var model = db.Projects.Where(i => i.Id == id)
                 .SingleOrDefault();
             if (model is null)
             {
@@ -116,6 +129,29 @@ namespace NetDream.Modules.Document.Repositories
         public IOperationResult RemoveSelf(int id)
         {
             var res = GetSelf(id);
+            if (!res.Succeeded)
+            {
+                return res;
+            }
+            db.Projects.Remove(res.Result);
+            db.Versions.Where(i => i.ProjectId == id).ExecuteDelete();
+            db.Pages.Where(i => i.ProjectId == id).ExecuteDelete();
+            var apiId = db.Apies.Where(i => i.ProjectId == id)
+               .Select(i => i.Id).ToArray();
+            if (apiId.Length == 0)
+            {
+                db.SaveChanges();
+                return OperationResult.Ok();
+            }
+            db.Fields.Where(i => apiId.Contains(i.ApiId)).ExecuteDelete();
+            db.Apies.Where(i => i.ProjectId == id).ExecuteDelete();
+            db.SaveChanges();
+            return OperationResult.Ok();
+        }
+
+        public IOperationResult Remove(int id)
+        {
+            var res = Get(id);
             if (!res.Succeeded)
             {
                 return res;
@@ -263,8 +299,12 @@ namespace NetDream.Modules.Document.Repositories
             }
         }
 
-        public void VersionRemove(int project, int id = 0)
+        public IOperationResult VersionRemove(int project, int id = 0)
         {
+            if (!IsSelf(project))
+            {
+                return OperationResult.Fail("无权限");
+            }
             if (id > 0)
             {
                 db.Versions.Where(i => i.Id == id).ExecuteDelete();
@@ -276,11 +316,12 @@ namespace NetDream.Modules.Document.Repositories
             if (apiId.Length == 0)
             {
                 db.SaveChanges();
-                return;
+                return OperationResult.Ok();
             }
             db.Fields.Where(i => apiId.Contains(i.ApiId)).ExecuteDelete();
             db.Apies.Where(i => i.ProjectId == project && i.VersionId == id).ExecuteDelete();
             db.SaveChanges();
+            return OperationResult.Ok();
         }
 
         public ListLabelItem[] All()

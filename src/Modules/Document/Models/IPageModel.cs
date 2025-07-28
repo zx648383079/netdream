@@ -1,5 +1,4 @@
-﻿
-namespace NetDream.Modules.Document.Models
+﻿namespace NetDream.Modules.Document.Models
 {
     public interface IPageModel
     {

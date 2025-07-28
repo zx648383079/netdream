@@ -17,8 +17,8 @@ namespace NetDream.Modules.Blog
             service.AddScoped<MetaRepository>();
             service.AddScoped<PublishRepository>();
 
-            service.AddTransient<INotificationHandler<UserStatistics>, UserStatisticsHandler>();
-            service.AddTransient<INotificationHandler<UserOpenStatistics>, UserOpenStatisticsHandler>();
+            service.AddTransient<INotificationHandler<UserStatisticsRequest>, UserStatisticsHandler>();
+            service.AddTransient<INotificationHandler<UserOpenStatisticsRequest>, UserOpenStatisticsHandler>();
         }
     }
 }

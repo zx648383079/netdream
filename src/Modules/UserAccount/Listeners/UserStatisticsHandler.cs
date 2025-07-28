@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.UserAccount.Listeners
 {
-    public class UserStatisticsHandler(UserContext db) : INotificationHandler<UserStatistics>
+    public class UserStatisticsHandler(UserContext db) : INotificationHandler<UserStatisticsRequest>
     {
 
-        public Task Handle(UserStatistics request, CancellationToken cancellationToken)
+        public Task Handle(UserStatisticsRequest request, CancellationToken cancellationToken)
         {
             if (request.IsInclude("bulletin_count"))
             {
@@ -29,10 +29,10 @@ namespace NetDream.Modules.UserAccount.Listeners
         }
     }
 
-    public class UserOpenStatisticsHandler(UserContext db) : INotificationHandler<UserOpenStatistics>
+    public class UserOpenStatisticsHandler(UserContext db) : INotificationHandler<UserOpenStatisticsRequest>
     {
 
-        public Task Handle(UserOpenStatistics request, CancellationToken cancellationToken)
+        public Task Handle(UserOpenStatisticsRequest request, CancellationToken cancellationToken)
         {
             request.TryAdd("bulletin_count", () => BulletinRepository.UnReadCount(db, request.UserId));
             request.TryAdd("following_count", () => RelationshipRepository.FollowingCount(db, request.UserId));

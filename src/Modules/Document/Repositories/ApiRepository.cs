@@ -43,6 +43,16 @@ namespace NetDream.Modules.Document.Repositories
             return OperationResult.Ok(model);
         }
 
+        public IOperationResult<IPageModel> MangerGet(int id)
+        {
+            var model = db.Apies.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
+            {
+                return OperationResult.Fail<IPageModel>("文档不存在");
+            }
+            return GetRead(model);
+        }
+
         public IOperationResult<ApiEntity> GetSelf(int id) 
         {
             var res = Get(id);
@@ -51,6 +61,20 @@ namespace NetDream.Modules.Document.Repositories
                 return OperationResult.Fail<ApiEntity>("文档不存在");
             }
             return res;
+        }
+
+        public IOperationResult<IPageModel> EditSelf(int id)
+        {
+            var model = db.Apies.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
+            {
+                return OperationResult.Fail<IPageModel>("文档不存在");
+            }
+            if (!new ProjectRepository(db, client).IsSelf(model.ProjectId))
+            {
+                return OperationResult.Fail<IPageModel>("文档不存在");
+            }
+            return GetRead(model);
         }
 
         public IOperationResult<ApiEntity> Save(ApiForm data) 
@@ -182,6 +206,7 @@ namespace NetDream.Modules.Document.Repositories
                         .SetProperty(i => i.Mock, data.Mock)
                         .SetProperty(i => i.Remark, data.Remark)
                         );
+                db.SaveChanges();
                 return id;
             } else {
                 var model = new FieldEntity()
@@ -206,11 +231,22 @@ namespace NetDream.Modules.Document.Repositories
             
         }
 
-        public void RemoveSelf(int id) 
+        public IOperationResult RemoveSelf(int id) 
         {
+            var model = db.Apies.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
+            {
+                return OperationResult.Fail("文档不存在");
+            }
+            if (!new ProjectRepository(db, client).IsSelf(model.ProjectId))
+            {
+                return OperationResult.Fail("文档不存在");
+            }
             var apiId = db.Apies.Where(i => i.Id == id || i.ParentId == id).Select(i => i.Id).ToArray();
             db.Fields.Where(i => apiId.Contains(i.ApiId)).ExecuteDelete();
             db.Apies.Where(i => apiId.Contains(i.Id)).ExecuteDelete();
+            db.SaveChanges();
+            return OperationResult.Ok();
         }
 
         public (FieldEntity[], FieldEntity[], FieldTreeItem[]) FieldList(int apiId) {
@@ -272,6 +308,10 @@ namespace NetDream.Modules.Document.Repositories
             if (model == null)
             {
                 return OperationResult<IPageModel>.Fail("id is error");
+            }
+            if (new ProjectRepository(db, client).CanOpen(model.ProjectId))
+            {
+                return OperationResult<IPageModel>.Fail("无权限浏览");
             }
             return GetRead(model);
         }

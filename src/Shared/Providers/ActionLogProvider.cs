@@ -12,7 +12,7 @@ namespace NetDream.Shared.Providers
 {
     public class ActionLogProvider(
         ILogContext db, 
-        IClientContext environment)
+        IClientContext client)
     {
         /// <summary>
         /// 切换记录
@@ -36,17 +36,17 @@ namespace NetDream.Shared.Providers
         /// <returns></returns>
         public byte ToggleLog(byte type, byte action, int id, IList<byte> searchAction)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return 0;
             }
-            var log = db.Logs.Where(i => i.ItemId == id && i.ItemType == type && i.UserId == environment.UserId && searchAction.Contains(i.Action))
+            var log = db.Logs.Where(i => i.ItemId == id && i.ItemType == type && i.UserId == client.UserId && searchAction.Contains(i.Action))
                 .Single();
             if (log == null)
             {
                 log = new LogEntity
                 {
-                    UserId = environment.UserId,
+                    UserId = client.UserId,
                     ItemId = id,
                     ItemType = type,
                     Action = action,
@@ -71,11 +71,11 @@ namespace NetDream.Shared.Providers
 
         public byte? GetAction(byte type, int id, IList<byte>? onlyAction = null)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return null;
             }
-            var query = db.Logs.Where(i => i.ItemId == id && i.ItemType == type && i.UserId == environment.UserId);
+            var query = db.Logs.Where(i => i.ItemId == id && i.ItemType == type && i.UserId == client.UserId);
             if (onlyAction is not null)
             {
                 query = query.Where(i => onlyAction.Contains(i.Action));
@@ -97,7 +97,7 @@ namespace NetDream.Shared.Providers
 
         public bool Has(byte type, int id, byte action = 0)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return false;
             }
@@ -108,7 +108,7 @@ namespace NetDream.Shared.Providers
         {
             if (string.IsNullOrWhiteSpace(data.Ip))
             {
-                data.Ip = environment.Ip;
+                data.Ip = client.Ip;
             }
             if (data.CreatedAt == 0)
             {
@@ -116,7 +116,7 @@ namespace NetDream.Shared.Providers
             }
             if (data.UserId == 0)
             {
-                data.UserId = environment.UserId;
+                data.UserId = client.UserId;
             }
             db.Logs.Add(data);
             db.SaveChanges();

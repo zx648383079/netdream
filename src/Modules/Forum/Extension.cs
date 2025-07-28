@@ -48,5 +48,29 @@ namespace NetDream.Modules.Forum
                 UpdatedAt = i.UpdatedAt,
             });
         }
+
+        internal static IQueryable<ThreadLogModel> SelectAs(this IQueryable<ThreadLogEntity> query)
+        {
+            return query.Select(i => new ThreadLogModel()
+            {
+                Id = i.Id,
+                UserId = i.UserId,
+                ItemType = i.ItemType,
+                ItemId = i.ItemId,
+                CreatedAt = i.CreatedAt,
+                NodeIndex = i.NodeIndex,
+                Action = i.Action,
+            });
+        }
+
+        internal static IQueryable<ModeratorListItem> SelectAs(this IQueryable<ForumModeratorEntity> query)
+        {
+            return query.Select(i => new ModeratorListItem()
+            {
+                UserId = i.UserId,
+                ForumId = i.ForumId,
+                RoleId = i.RoleId,
+            });
+        }
     }
 }

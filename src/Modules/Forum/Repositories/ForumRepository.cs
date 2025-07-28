@@ -4,6 +4,7 @@ using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using System;
@@ -12,25 +13,33 @@ using System.Linq;
 
 namespace NetDream.Modules.Forum.Repositories
 {
-    public class ForumRepository(ForumContext db, IUserRepository userStore)
+    public class ForumRepository(ForumContext db, 
+        IUserRepository userStore,
+        IClientContext client)
     {
-        public IPage<ForumEntity> GetList(string keywords = "", 
-            int parent = 0, int page = 1)
+        public IPage<ForumEntity> GetList(ForumQueryForm form)
         {
-            return db.Forums.Search(keywords, "name")
-                .Where(i => i.ParentId == parent)
-                .ToPage(page);
+            return db.Forums.Search(form.Keywords, "name")
+                .Where(i => i.ParentId == form.Parent)
+                .ToPage(form);
         }
 
-        public ForumModel? Get(int id, bool full = true)
+        public IOperationResult<ForumModel> Get(int id, bool full = true)
         {
             var model = db.Forums.Where(i => i.Id == id).Single()?.CopyTo<ForumModel>();
-            if (model is not null && full)
+            if (model is null)
             {
-                model.Classifies = db.ForumClassifies.Where(i => i.ForumId == id).OrderBy(i => i.Id).ToArray();
-                // model.Moderators;
+                return OperationResult.Fail<ForumModel>("id is error");
             }
-            return model;
+            if (full)
+            {
+                model.Classifies = db.ForumClassifies.Where(i => i.ForumId == id)
+                    .OrderBy(i => i.Id).ToArray();
+                model.Moderators = db.ForumModerators.Where(i => i.ForumId == id)
+                    .OrderBy(i => i.RoleId).SelectAs().ToArray();
+                userStore.Include(model.Moderators);
+            }
+            return OperationResult.Ok(model);
         }
 
         public IOperationResult<ForumModel> GetFull(int id, bool full = true)
@@ -44,80 +53,137 @@ namespace NetDream.Modules.Forum.Repositories
             if (full)
             {
                 model.Moderators = db.ForumModerators.Where(i => i.ForumId == id)
-                    .OrderBy(i => i.RoleId).ToArray();
-                //model.Children = Children(id, false);
+                    .OrderBy(i => i.RoleId).SelectAs().ToArray();
+                userStore.Include(model.Moderators);
+                model.Children = Children(id, false);
                 //model.Path = ForumModel.FindPath(id);
-                //model.ThreadTop = ThreadRepository.TopList(id);
+                model.ThreadTop = new ThreadRepository(db, userStore, client, null).TopList(id);
             }
             return OperationResult.Ok(model);
         }
 
-        public ForumEntity Save(ForumForm data)
+        public IOperationResult<ForumEntity> Save(ForumForm data)
         {
-            //id = data["id"] ?? 0;
-            //unset(data["id"]);
-            //model = ForumModel.FindOrNew(id);
-            //model.Load(data);
-            //if (!model.Save())
-            //{
-            //    throw new Exception(model.GetFirstError());
-            //}
-            //if (isset(data["classifies"]))
-            //{
-            //    foreach (data["classifies"] as item)
-            //    {
-            //        item["forum_id"] = model.Id;
-            //        SaveClassify(item);
-            //    }
-            //}
-            //if (isset(data["moderators"]))
-            //{
-            //    SaveModerator(array_column(data["moderators"], "id"), model.Id);
-            //}
-            //return model;
-            return null;
+            var model = data.Id > 0 ? db.Forums.Where(i => i.Id == data.Id)
+                .SingleOrDefault() :
+                new ForumEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<ForumEntity>("id error");
+            }
+            model.Name = data.Name;
+            model.Description = data.Description;
+            model.Thumb = data.Thumb;
+            model.ParentId = data.ParentId;
+            model.Position = data.Position;
+            model.Type = data.Type;
+            db.Forums.Save(model, client.Now);
+            db.SaveChanges();
+            if (data.Classifies?.Length > 0)
+            {
+                foreach (var item in data.Classifies)
+                {
+                    item.ForumId = model.Id;
+                    SaveClassify(item);
+                }
+            }
+            if (data.Moderators?.Length > 0)
+            {
+                SaveModerator(data.Moderators, model.Id);
+            }
+            return OperationResult.Ok(model);
+        }
+        public void SaveModerator(ModeratorForm[] items, int forumId)
+        {
+            var exist = db.ForumModerators.Where(i => i.ForumId == forumId)
+                .Pluck(i => i.UserId);
+            var users = items.Select(i => i.UserId).ToArray();
+            var remove = ModelHelper.Diff(exist, users);
+            if (remove.Length > 0)
+            {
+                db.ForumModerators.Where(i => i.ForumId == forumId && remove.Contains(i.UserId))
+                    .ExecuteDelete();
+            }
+            var updated = new HashSet<int>();
+            foreach (var item in items)
+            {
+                if (updated.Contains(item.UserId) || item.UserId < 1)
+                {
+                    continue;
+                }
+                updated.Add(item.UserId);
+                if (exist.Contains(item.UserId))
+                {
+                    db.ForumModerators.Where(i => i.ForumId == forumId && i.UserId == item.UserId)
+                        .ExecuteUpdate(setters => setters.SetProperty(i => i.RoleId, item.RoleId));
+                    continue;
+                }
+                db.ForumModerators.Add(new ForumModeratorEntity()
+                {
+                    ForumId = forumId,
+                    UserId = item.UserId,
+                    RoleId = item.RoleId,
+                });
+            }
+            db.SaveChanges();
+        }
+        public void SaveModerator(int[] users, int forumId)
+        {
+            var exist = db.ForumModerators.Where(i => i.ForumId == forumId)
+                .Pluck(i => i.UserId);
+            var add = ModelHelper.Diff(users, exist);
+            var remove = ModelHelper.Diff(exist, users);
+            if (remove.Length > 0)
+            {
+                db.ForumModerators.Where(i => i.ForumId == forumId && remove.Contains(i.UserId))
+                    .ExecuteDelete();
+            }
+            if (add.Length > 0)
+            {
+                db.ForumModerators.AddRange(add.Select(i => new ForumModeratorEntity()
+                {
+                    UserId = i,
+                    ForumId = forumId
+                }));
+            }
+            db.SaveChanges();
         }
 
-        //public void SaveModerator(array users, int forum_id)
-        //{
-        //    exist = ForumModeratorModel.Where("forum_id", forum_id)
-        //        .Pluck("user_id");
-        //    add = array_diff(users, exist);
-        //    remove = array_diff(exist, users);
-        //    if (!empty(add))
-        //    {
-        //        ForumModeratorModel.Query().Insert(array_map(use(forum_id)(object user_id) {
-        //            return compact("user_id", "forum_id");
-        //        }, add));
-        //    }
-        //    if (!empty(remove))
-        //    {
-        //        ForumModeratorModel.Where("forum_id", forum_id)
-        //            .WhereIn("user_id", remove).Delete();
-        //    }
-        //}
-
-        //public void SaveClassify(array data)
-        //{
-        //    id = data["id"] ?? 0;
-        //    unset(data["id"]);
-        //    model = ForumClassifyModel.FindOrNew(id);
-        //    model.Load(data);
-        //    if (!model.Save())
-        //    {
-        //        throw new Exception(model.GetFirstError());
-        //    }
-        //    return model;
-        //}
+        public IOperationResult<ForumClassifyEntity> SaveClassify(ClassifyForm data)
+        {
+            var model = data.Id > 0 ? db.ForumClassifies.Where(i => i.Id == data.Id)
+                .SingleOrDefault() :
+                new ForumClassifyEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<ForumClassifyEntity>("id error");
+            }
+            model.Name = data.Name;
+            model.Icon = data.Icon;
+            model.ForumId = data.ForumId;
+            model.Position = data.Position;
+            db.ForumClassifies.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
+        }
 
         public void Remove(int id)
         {
             db.Forums.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public void All()
+        public ForumTreeItem[] All()
         {
-            // return ForumModel.Tree().MakeTreeForHtml();
+            var data = db.Forums
+                .OrderBy(i => i.ParentId)
+                .ThenBy(i => i.Position)
+                .Select(i => new ForumTreeItem()
+                {
+                    Id = i.Id,
+                    ParentId = i.ParentId,
+                    Name = i.Name,
+                }).ToArray();
+            return TreeHelper.Sort(data);
         }
 
         public ForumListItem[] Children(int id, bool hasChildren = true)

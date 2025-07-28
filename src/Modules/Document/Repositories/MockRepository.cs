@@ -87,31 +87,28 @@ namespace NetDream.Modules.Document.Repositories
             return val;
         }
 
-        /**
-        * 获取响应字段mock数组
-        * @param api_id
-        * @param int parent_id
-        * @return mixed
-        */
-        public Dictionary<string, object> GetMockData(int api_id, int parent_id = 0)
+        /// <summary>
+        /// 获取响应字段mock数组
+        /// </summary>
+        /// <param name="apiId"></param>
+        /// <param name="parentId"></param>
+        /// <returns></returns>
+        public IOperationResult<Dictionary<string, object>> GetMockData(int apiId, int parentId = 0)
         {
             var fields = db.Fields.Where(i => i.Kind ==
-                ApiRepository.KIND_RESPONSE && i.ApiId == api_id && i.ParentId == parent_id)
+                ApiRepository.KIND_RESPONSE && i.ApiId == apiId && i.ParentId == parentId)
                 .ToArray();
             var data = new Dictionary<string, object>();
-            return data;
+            return OperationResult.Ok(data);
 
         }
 
-        /**
-         * @param string content
-         * @param int kind
-         * @return FieldModel[]
-         */
-        public FieldEntity[] ParseContent(string content, 
+        public IOperationResult<FieldEntity[]> ParseContent(string content, 
             int kind = ApiRepository.KIND_REQUEST)
         {
-            return [];
+            var res = new List<FieldEntity>();
+
+            return OperationResult.Ok(res.ToArray());
         }
 
         public void ParseChildren(string? content, FieldEntity model)

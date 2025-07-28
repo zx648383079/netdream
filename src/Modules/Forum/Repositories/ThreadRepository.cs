@@ -1,27 +1,29 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Forum.Entities;
 using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
+using NetDream.Shared.Notifications;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace NetDream.Modules.Forum.Repositories
 {
     public class ThreadRepository(ForumContext db, 
         IUserRepository userStore,
-        IClientContext client)
+        IClientContext client, IMediator mediator)
     {
-        public IPage<ThreadModel> ManageList(QueryForm form, 
-            int forum_id = 0)
+        public IPage<ThreadModel> ManageList(ThreadQueryForm form)
         {
             var items = db.Threads.Search(form.Keywords, "title")
-                .When(forum_id > 0, i => i.ForumId == forum_id)
+                .When(form.Forum > 0, i => i.ForumId == form.Forum)
                 .OrderByDescending(i => i.UpdatedAt)
                 .ToPage(form).CopyTo<ThreadEntity, ThreadModel>();
             userStore.Include(items.Items);
@@ -188,7 +190,7 @@ namespace NetDream.Modules.Forum.Repositories
                 .ToDictionary(i => i.ThreadId);
         }
 
-        public IPage<ThreadListItem> SelfList(QueryForm form)
+        public IPage<ThreadListItem> SelfList(ThreadQueryForm form)
         {
             var (sort, order) = SearchHelper.CheckSortOrder(form.Sort, form.Order, [
                 "updated_at", "created_at", "post_count", "top_type"
@@ -201,7 +203,6 @@ namespace NetDream.Modules.Forum.Repositories
             IncludeForum(items.Items);
             return items;
         }
-
         public ThreadModel[] TopList(int forum)
         {
             var data = db.Threads.Where(i => i.ForumId == forum && i.TopType > 0)
@@ -314,13 +315,12 @@ namespace NetDream.Modules.Forum.Repositories
             return yes;
         }
 
-        /**
-         * 是否同意回帖内容
-         * @param id
-         * @param bool agree
-         * @return array
-         * @throws Exception
-         */
+        /// <summary>
+        /// 是否同意回帖内容
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="agree"></param>
+        /// <returns></returns>
         public IOperationResult<AgreeResult> AgreePost(int id, bool agree = true)
         {
             var model = db.ThreadPosts.Where(i => i.Id == id).Single();
@@ -365,30 +365,27 @@ namespace NetDream.Modules.Forum.Repositories
             return OperationResult.Ok(new AgreeResult(agree, model.AgreeCount, model.DisagreeCount));
         }
 
-        public IOperationResult<ThreadPostEntity> Create(string title, 
-            string content, int forum_id, int classify_id = 0, 
-            byte is_private_post = 0)
+        public IOperationResult<ThreadPostEntity> Create(ThreadPublishForm form)
         {
-            title = title.Trim();
-            if (string.IsNullOrWhiteSpace(title))
+            if (string.IsNullOrWhiteSpace(form.Title))
             {
                 return OperationResult<ThreadPostEntity>.Fail("标题不能为空");
             }
-            if (forum_id < 1)
+            if (form.Forum < 1)
             {
                 return OperationResult<ThreadPostEntity>.Fail("请选择版块");
             }
             var userId = client.UserId;
-            if (!CanPublish(userId, title)) {
+            if (!CanPublish(userId, form.Title)) {
                 return OperationResult<ThreadPostEntity>.Fail("你的操作太频繁了，请五分钟后再试");
             }
             var thread = new ThreadEntity()
             {
-                Title = title,
-                ForumId = forum_id,
-                ClassifyId = classify_id,
+                Title = form.Title,
+                ForumId = form.Forum,
+                ClassifyId = form.Classify,
                 UserId = userId,
-                IsPrivatePost = is_private_post
+                IsPrivatePost = form.IsPrivatePost
             };
             db.Threads.Save(thread, client.Now);
             if (db.SaveChanges() == 0)
@@ -396,7 +393,7 @@ namespace NetDream.Modules.Forum.Repositories
                 return OperationResult<ThreadPostEntity>.Fail("发帖失败");
             }
             var model = new ThreadPostEntity() {
-                Content = content,
+                Content = form.Content,
                 UserId=userId,
                 ThreadId = thread.Id,
                 Grade =0,
@@ -421,9 +418,9 @@ namespace NetDream.Modules.Forum.Repositories
             return !count;
         }
 
-        public IOperationResult<ThreadEntity> Update(int id, ThreadForm data)
+        public IOperationResult<ThreadEntity> Update(ThreadForm data)
         {
-            var thread = Get(id);
+            var thread = Get(data.Id);
             if (thread is null)
             {
                 return OperationResult<ThreadEntity>.Fail("无权限");
@@ -505,26 +502,26 @@ namespace NetDream.Modules.Forum.Repositories
             return model.UserId == client.UserId || Can(model, "edit");
         }
 
-        public IOperationResult<ThreadPostEntity> Reply(string content, int thread_id)
+        public IOperationResult<ThreadPostEntity> Reply(ThreadReplyForm form)
         {
-            if (string.IsNullOrWhiteSpace(content))
+            if (string.IsNullOrWhiteSpace(form.Content))
             {
                 return OperationResult<ThreadPostEntity>.Fail("请输入内容");
             }
-            if (thread_id < 1)
+            if (form.Thread < 1)
             {
                 return OperationResult<ThreadPostEntity>.Fail("请选择帖子");
             }
-            var thread = Get(thread_id);
+            var thread = Get(form.Thread);
             if (thread is null || thread.IsClosed > 0)
             {
                 return OperationResult<ThreadPostEntity>.Fail("帖子已关闭");
             }
-            var max = db.ThreadPosts.Where(i => i.ThreadId == thread_id).Max(i => i.Grade);
+            var max = db.ThreadPosts.Where(i => i.ThreadId == form.Thread).Max(i => i.Grade);
             var post = new ThreadPostEntity() {
-                Content = content,
+                Content = form.Content,
                 UserId = client.UserId,
-                ThreadId = thread_id,
+                ThreadId = form.Thread,
                 Grade = max + 1,
                 Ip = client.Ip,
             };
@@ -535,69 +532,122 @@ namespace NetDream.Modules.Forum.Repositories
             }
             new ForumRepository(db, userStore)
                 .UpdateCount(thread.ForumId, "post_count");
-            db.Threads.Where(i => i.Id == thread_id)
+            db.Threads.Where(i => i.Id == form.Thread)
                 .ExecuteUpdate(setters => 
                     setters.SetProperty(i => i.PostCount, i => i.PostCount + 1)
                     .SetProperty(i => i.UpdatedAt, client.Now));
             return OperationResult.Ok(post);
         }
 
-        /**
-         * 操作主题
-         * @param int id
-         * @return ThreadModel
-         * @throws Exception
-         */
-        public IOperationResult<ThreadEntity> ThreadAction(int id, Dictionary<string, object> data)
+
+        public IOperationResult<ThreadEntity> ThreadAction(int id, string[] data)
+        {
+            var thread = db.Threads.Where(i => i.Id == id).Single();
+            if (thread is null)
+            {
+                return OperationResult<ThreadEntity>.Fail("请选择帖子");
+            }
+            var res = thread.CopyTo<ThreadModel>();
+            if (data.Contains("like"))
+            {
+                res.LikeType = ToggleLike(thread);
+                return OperationResult.Ok<ThreadEntity>(res);
+            }
+            if (data.Contains("collect"))
+            {
+                res.IsCollected = ToggleCollectThread(thread);
+                return OperationResult.Ok<ThreadEntity>(res);
+            }
+            var type = thread.GetType();
+            foreach (var action in data)
+            {
+                if (!(action is "is_highlight" or "is_digest" or "is_closed" or "top_type"))
+                {
+                    continue;
+                }
+                if (Can(thread, action))
+                {
+                    return OperationResult.Fail<ThreadEntity>("权限不足");
+                }
+                var field = type.GetField(StrHelper.Studly(action));
+                if (field is null)
+                {
+                    continue;
+                }
+                field.SetValue(thread, (byte)((byte)field.GetValue(thread) > 0 ? 0 : 1));
+            }
+            db.Threads.Save(thread, client.Now);
+            db.Logs.Add(new LogEntity()
+            {
+                ItemType = LogRepository.TYPE_THREAD,
+                ItemId = thread.Id,
+                Action = 1,
+                Data = JsonSerializer.Serialize(data),
+                UserId = client.UserId,
+                CreatedAt = client.Now,
+            });
+            db.SaveChanges();
+            return OperationResult.Ok(thread);
+        }
+        /// <summary>
+        /// 操作主题
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public IOperationResult<ThreadEntity> ThreadAction(int id, Dictionary<string, int> data)
         {
             var thread = Get(id);
             if (thread is null)
             {
                 return OperationResult<ThreadEntity>.Fail("请选择帖子");
             }
-            //if (in_array("like", data) || array_key_exists("like", data))
-            //{
-            //    thread.LikeType = static.ToggleLike(thread);
-            //    return thread;
-            //}
-            //if (in_array("collect", data) || array_key_exists("collect", data))
-            //{
-            //    thread.IsCollected = static.ToggleCollectThread(thread);
-            //    return thread;
-            //}
-            //if (isset(data["reward"]))
-            //{
-            //    static.RewardThread(thread, floatval(data["reward"]));
-            //    thread.IsReward = true;
-            //    return thread;
-            //}
-            //maps = ["is_highlight", "is_digest", "is_closed", "top_type"];
-            //foreach (data as action => val)
-            //{
-            //    if (is_int(action))
-            //    {
-            //        if (empty(val))
-            //        {
-            //            continue;
-            //        }
-            //        list(action, val) = [val, thread.{ val} > 0 ? 0 : 1];
-            //    }
-            //    if (empty(action) || !in_array(action, maps))
-            //    {
-            //        continue;
-            //    }
-            //    if (!Can(thread, action)) {
-            //        throw new Exception("无权限");
-            //    }
-            //    thread.{ action} = intval(val);
-            //}
-            //thread.Save();
-            //ForumLogModel.Create([
-            //    "item_type" => ForumLogModel.TYPE_THREAD,
-            //    "item_id" => thread.Id,
-            //    "action" => 1,
-            //    "data" => Json.Encode(data)
-            //]);
+            var res = thread.CopyTo<ThreadModel>();
+            if (data.ContainsKey("like"))
+            {
+                res.LikeType = ToggleLike(thread);
+                return OperationResult.Ok<ThreadEntity>(res);
+            }
+            if (data.ContainsKey("collect"))
+            {
+                res.IsCollected = ToggleCollectThread(thread);
+                return OperationResult.Ok<ThreadEntity>(res);
+            }
+            if (data.TryGetValue("reward", out var val))
+            {
+                RewardThread(thread, val);
+                res.IsReward = true;
+                return OperationResult.Ok<ThreadEntity>(res);
+            }
+            var type = thread.GetType();
+            foreach (var action in data)
+            {
+                if (!(action.Key is "is_highlight" or "is_digest" or "is_closed" or "top_type"))
+                {
+                    continue;
+                }
+                if (Can(thread, action.Key))
+                {
+                    return OperationResult.Fail<ThreadEntity>("权限不足");
+                }
+                var field = type.GetField(StrHelper.Studly(action.Key));
+                if (field is null)
+                {
+                    continue;
+                }
+                field.SetValue(thread, (byte)(action.Value > 0 ? 1 : 0));
+            }
+            db.Threads.Save(thread, client.Now);
+            db.Logs.Add(new LogEntity()
+            {
+                ItemType = LogRepository.TYPE_THREAD,
+                ItemId = thread.Id,
+                Action = 1,
+                Data = JsonSerializer.Serialize(data),
+                UserId = client.UserId,
+                CreatedAt = client.Now,
+            });
+            db.SaveChanges();
             return OperationResult.Ok(thread);
         }
 
@@ -614,7 +664,7 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return false;
             }
-            return true;// TODO auth().User().HasRole("administrator");
+            return userStore.IsRole(client.UserId, "administrator");
         }
 
         public bool CanRemovePost(ThreadEntity model, ThreadPostEntity item)
@@ -631,7 +681,7 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return true;
             }
-            return true;//TODO auth().User().HasRole("administrator");
+            return userStore.IsRole(client.UserId, "administrator");
         }
 
         public IOperationResult RemovePost(int id)
@@ -683,21 +733,21 @@ namespace NetDream.Modules.Forum.Repositories
         }
 
 
-        public ThreadEntity[] Suggestion(string keywords = "")
+        public ListArticleItem[] Suggestion(string keywords = "")
         {
             return db.Threads.Search(keywords, "title")
-                .Take(4).Select(i => new ThreadEntity()
+                .Take(4).Select(i => new ListArticleItem()
                 {
                     Id = i.Id,
                     Title = i.Title,
                 }).ToArray();
         }
 
-        public IPage<ThreadLogModel> RewardList(int item_id, 
-            byte item_type = 0, int page = 1)
+        public IPage<ThreadLogModel> RewardList(RewardQueryForm form)
         {
-            var items = db.ThreadLogs.Where(i => i.ItemType == item_type && i.ItemId == item_id && i.Action == LogRepository.ACTION_REWARD)
-                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ThreadLogEntity, ThreadLogModel>();
+            var items = db.ThreadLogs.Where(i => i.ItemType == form.Type && i.ItemId == form.Id && i.Action == LogRepository.ACTION_REWARD)
+                .OrderByDescending(i => i.Id)
+                .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
             return items;
         }
@@ -712,7 +762,7 @@ namespace NetDream.Modules.Forum.Repositories
             ]);
         }
 
-        private void RewardThread(ThreadModel thread, float money)
+        private void RewardThread(ThreadEntity thread, float money)
         {
             if (thread.UserId == client.UserId)
             {
@@ -759,23 +809,20 @@ namespace NetDream.Modules.Forum.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 获取用户的统计信息
-         * @param int id
-         * @return array
-         */
-        //public static array GetUser(int id)
-        //{
-        //    user = UserRepository.GetPublicProfile(id, "card_items");
-        //    user["count_items"] = [
-        //        ["name" => "主题", "count" => ThreadModel.Where("user_id", id).Count()],
-        //    ["name" => "帖子", "count" => ThreadPostModel.Where("user_id", id).Count()],
-        //    ["name" => "积分", "count" => 0],
-        //];
-        //    user["medal_items"] = [
-        //    // ["name" => string.Empty, "icon" => url().Asset(string.Empty)],
-        //    ];
-        //    return user;
-        //}
+        /// <summary>
+        /// 获取用户的统计信息
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IOperationResult<UserProfileCard> GetUser(int id)
+        {
+            var request = new UserProfileCardRequest(id, ["card_items"]);
+            request.Add(
+                new StatisticsItem("主题", db.Threads.Where(i => i.UserId == id).Count()),
+                new StatisticsItem("帖子", db.ThreadPosts.Where(i => i.UserId == id).Count())
+            );
+            mediator.Publish(request).GetAwaiter().GetResult();
+            return OperationResult.Ok(request.Result);
+        }
     }
 }

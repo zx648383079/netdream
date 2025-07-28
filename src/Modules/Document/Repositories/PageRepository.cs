@@ -74,10 +74,20 @@ namespace NetDream.Modules.Document.Repositories
             return OperationResult.Ok(model);
         }
 
-        public void RemoveSelf(int id)
+        public IOperationResult RemoveSelf(int id)
         {
+            var model = db.Pages.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
+            {
+                return OperationResult.Fail("id is error");
+            }
+            if (new ProjectRepository(db, client).CanOpen(model.ProjectId))
+            {
+                return OperationResult.Fail("无权限浏览");
+            }
             db.Pages.Where(i => i.Id == id || i.ParentId == id).ExecuteDelete();
             db.SaveChanges();
+            return OperationResult.Ok();
         }
         public IOperationResult<IPageModel> GetRead(int id)
         {
@@ -85,6 +95,10 @@ namespace NetDream.Modules.Document.Repositories
             if (model == null)
             {
                 return OperationResult<IPageModel>.Fail("id is error");
+            }
+            if (new ProjectRepository(db, client).CanOpen(model.ProjectId))
+            {
+                return OperationResult<IPageModel>.Fail("无权限浏览");
             }
             return GetRead(model);
         }

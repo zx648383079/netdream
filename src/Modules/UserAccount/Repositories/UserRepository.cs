@@ -62,7 +62,7 @@ namespace NetDream.Modules.UserAccount.Repositories
                 return null;
             }
             var model = db.Users.Where(i => i.Id == client.UserId).Single();
-            var openItems = new UserOpenStatistics(model.Id, extra.Split(','));
+            var openItems = new UserOpenStatisticsRequest(model.Id, extra.Split(','));
             mediator.Publish(openItems).GetAwaiter().GetResult();
             return new UserProfileModel()
             {
@@ -90,7 +90,7 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return null;
             }
-            var openItems = new UserOpenStatistics(model.Id, extra.Split(','));
+            var openItems = new UserOpenStatisticsRequest(model.Id, extra.Split(','));
             mediator.Publish(openItems).GetAwaiter().GetResult();
             return new UserProfile()
             {
@@ -201,7 +201,7 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return [];
             }
-            var data = new UserStatistics(client.UserId);
+            var data = new UserStatisticsRequest(client.UserId);
             mediator.Publish(data).GetAwaiter().GetResult();
             return [..data.Result];
         }
