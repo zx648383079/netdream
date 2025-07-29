@@ -2,6 +2,7 @@
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Context;
 using NetDream.Shared.Providers.Entities;
 using System;
@@ -30,19 +31,10 @@ namespace NetDream.Shared.Repositories
             return items.Select(i => i.Id).ToArray();
         }
 
-        public IPage<TagEntity> GetList(string keywords = "", long page = 1)
+        public IPage<TagEntity> GetList(QueryForm form)
         {
-            IQueryable<TagEntity> query = db.Tags;
-            if (!string.IsNullOrWhiteSpace(keywords))
-            {
-                query = query.Where(i => i.Name.Contains(keywords));
-            }
-            var res = new Page<TagEntity>(query.Count(), (int)page);
-            if (!res.IsEmpty)
-            {
-                res.Items = query.Skip(res.ItemsOffset).Take(res.ItemsPerPage).ToArray();
-            }
-            return res;
+            return db.Tags.Search(form.Keywords, "name")
+                .OrderBy(i => i.Id).ToPage(form);
         }
 
         public TagEntity[] AllList()

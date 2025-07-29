@@ -62,13 +62,12 @@ namespace NetDream.Shared.Providers
             return db.Collects.Where(i => i.Id == id).Single();
         }
 
-        /**
-         * 是否已经收藏了
-         * @param int itemId
-         * @param int itemType
-         * @return bool
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 是否已经收藏了
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <param name="itemType"></param>
+        /// <returns></returns>
         public bool Has(int itemId, int itemType = 0)
         {
             if (environment.UserId == 0)

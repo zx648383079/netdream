@@ -1,15 +1,14 @@
-using NetDream.Shared.Interfaces.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace NetDream.Modules.Navigation.Entities
+namespace NetDream.Modules.Navigation.Forms
 {
-    
-    public class CategoryEntity  : IIdEntity
+    public class CategoryForm
     {
-        
         public int Id { get; set; }
+        [Required]
         public string Name { get; set; } = string.Empty;
         public string Icon { get; set; } = string.Empty;
-        
+
         public int ParentId { get; set; }
     }
 }

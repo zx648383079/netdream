@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Navigation.Entities
 {
     
-    public class SiteScoringLogEntity
+    public class SiteScoringLogEntity : IIdEntity, ICreatedEntity
     {
         
         public int Id { get; set; }

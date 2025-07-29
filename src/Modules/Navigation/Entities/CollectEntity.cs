@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.Navigation.Entities
 {
     
-    public class CollectEntity
+    public class CollectEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

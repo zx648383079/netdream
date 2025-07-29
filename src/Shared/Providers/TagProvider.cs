@@ -4,6 +4,7 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers.Context;
 using NetDream.Shared.Providers.Entities;
+using NetDream.Shared.Providers.Forms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,65 +19,61 @@ namespace NetDream.Shared.Providers
             db.TagLinks.Where(i => i.TagId == id).ExecuteDelete();
         }
 
+        public IOperationResult<TagEntity> Save(TagForm data)
+        {
+            if (db.Tags.Where(i => i.Id != data.Id && i.Name == data.Name).Any())
+            {
+                return OperationResult.Fail<TagEntity>("已存在");
+            }
+            var model = data.Id > 0 ? db.Tags.Where(i => i.Id == data.Id).SingleOrDefault() : new TagEntity();
+            if (model == null)
+            {
+                return OperationResult.Fail<TagEntity>("id is error");
+            }
+            model.Name = data.Name;
+            db.Tags.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
+        }
+
         /// <summary>
         /// 保存标签并获取标签的id
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="append"></param>
         /// <returns></returns>
-        public int[] Save(string[] name, 
-            IDictionary<string, object>? append) {
-            //var items = [];
-            //idItems = [];
-            //foreach ((array)name as item) {
-            //    if (is_array(item)) {
-            //        if (isset(item["id"]) && item["id"] > 0) {
-            //            idItems[] = item["id"];
-            //            continue;
-            //        }
-            //        item = item["name"] ?? null;
-            //    }
-            //    if (empty(item)) {
-            //        continue;
-            //    }
-            //    if (in_array(name, items)) {
-            //        continue;
-            //    }
-            //    items[] = item;
-            //}
-            //exist = TagQuery().WhereIn("name", items)
-            //    .Pluck("id", "name");
-            //foreach (items as name) {
-            //    if (isset(exist[name])) {
-            //        idItems[] = exist[name];
-            //        continue;
-            //    }
-            //    id = TagQuery().Insert(array_merge(
-            //        append,
-            //        [
-            //            "name" => name,
-            //        ]
-            //    ));
-            //    if (id > 0) {
-            //        idItems[] = id;
-            //    }
-            //}
-            //return idItems;
-            return [];
-        }
-
-        public IPage<TagEntity> GetList(string keywords = "", long page = 1, int perPage = 20) {
-            IQueryable<TagEntity> query = db.Tags;
-            if (!string.IsNullOrWhiteSpace(keywords))
+        public int[] Save(string[] nameItems) 
+        {
+            if (nameItems.Length == 0)
             {
-                query = query.Where(i => i.Name.Contains(keywords));
+                return [];
             }
-            var res = new Page<TagEntity>(query.Count(), (int)page, perPage);
-            if (!res.IsEmpty)
+            var exist = db.Tags.Where(i => nameItems.Contains(i.Name))
+                .Select(i => new KeyValuePair<string, int>(i.Name, i.Id)).ToDictionary();
+            var res = new int[nameItems.Length];
+            for (int i = 0; i < nameItems.Length; i++)
             {
-                res.Items = query.Skip(res.ItemsOffset).Take(res.ItemsPerPage).ToArray();
+                var name = nameItems[i];
+                if (exist.TryGetValue(name, out var id))
+                {
+                    res[i] = id;
+                    continue;
+                }
+                // 可以提前优化，批量插入
+                var model = new TagEntity()
+                {
+                    Name = name
+                };
+                db.Tags.Add(model);
+                db.SaveChanges();
+                res[i] = model.Id;
             }
             return res;
+        }
+
+        public IPage<TagEntity> GetList(QueryForm form) {
+            return db.Tags.Search(form.Keywords, "name")
+                .OrderBy(i => i.Id)
+                .ToPage(form);
         }
 
         public string[] Suggest(string keywords = "", int count = 5) {
@@ -194,7 +191,7 @@ namespace NetDream.Shared.Providers
         /// <param name="afterBind"></param>
         public void BindTag(int target, string[] tags, 
             IDictionary<string, object>? append, Action<int[], int[], int[]>? afterBind = null) {
-            var tagId = Save(tags, append);
+            var tagId = Save(tags);
             if (tagId.Length == 0) {
                 return;
             }
@@ -215,6 +212,31 @@ namespace NetDream.Shared.Providers
                 db.SaveChanges();
             }
             afterBind?.Invoke(tagId, [.. add], [.. remove]);
+        }
+
+        public void BindTag(int target, string[] tags)
+        {
+            var tagId = Save(tags);
+            if (tagId.Length == 0)
+            {
+                return;
+            }
+            var (add, _, remove) = ModelHelper.SplitId(tagId,
+                db.TagLinks.Where(i => i.TargetId == target).Select(i => i.TagId)
+                .ToArray());
+            if (remove.Count > 0)
+            {
+                db.TagLinks.Where(i => i.TargetId == target && remove.Contains(i.TagId)).ExecuteDelete();
+            }
+            if (add.Count > 0)
+            {
+                db.TagLinks.AddRange(add.Select(i => new TagLinkEntity()
+                {
+                    TagId = i,
+                    TargetId = target,
+                }));
+                db.SaveChanges();
+            }
         }
 
 

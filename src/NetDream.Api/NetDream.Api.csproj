@@ -67,7 +67,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\MicroBlog\" />
-    <Folder Include="Controllers\Navigation\" />
     <Folder Include="Controllers\ResourceStore\" />
     <Folder Include="Controllers\OpenPlatform\" />
     <Folder Include="Controllers\OnlineDisk\" />
