@@ -48,13 +48,17 @@ namespace NetDream.Modules.UserAccount.Repositories
             return db.Relationships.Where(i => i.LinkId == user && i.Type == TYPE_FOLLOWING).Count();
         }
 
-        /**
-         * 添加
-         * @param int user
-         * @param int type
-         * @return void
-         * @throws \Exception
-         */
+        public static int FollowStatus(UserContext db, int user)
+        {
+            return new RelationshipRepository(db, null).TypeStatus(user, TYPE_FOLLOWING);
+        }
+
+        /// <summary>
+        /// 添加
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public IOperationResult Bind(int user, int type)
         {
             var me = client.UserId;
@@ -86,13 +90,11 @@ namespace NetDream.Modules.UserAccount.Repositories
             return OperationResult.Ok();
         }
 
-        /**
-         * 取消操作
-         * @param int user
-         * @param int type
-         * @return void
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 取消操作
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="type"></param>
         public void Unbind(int user, int type)
         {
             var me = client.UserId;
@@ -104,13 +106,13 @@ namespace NetDream.Modules.UserAccount.Repositories
                 && i.Type == type).ExecuteDelete();
         }
 
-        /**
-         * 变更为
-         * @param int user
-         * @param int type
-         * @return int // {0: 取消，1: 更新为，2：新增}
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 变更为
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="type"></param>
+        /// <returns>{0: 取消，1: 更新为，2：新增}</returns>
+        /// <exception cref="Exception"></exception>
         public int Toggle(int user, int type)
         {
             var me = client.UserId;
@@ -143,14 +145,13 @@ namespace NetDream.Modules.UserAccount.Repositories
             return 1;
         }
 
-        /**
-         * 获取某一类型的双方关注状态
-         * @param int user
-         * @param int type
-         * @return int  0 未关注 1 已关注，当对方未关注 2 已互相关注
-         * @throws \Exception
-         */
-        public int TypeStatus(int user, int type)
+        /// <summary>
+        /// 获取某一类型的双方关注状态
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="type"></param>
+        /// <returns>0 未关注 1 已关注，当对方未关注 2 已互相关注</returns>
+        public int TypeStatus(int user, byte type)
         {
             var me = client.UserId;
             if (me == user)
@@ -169,12 +170,12 @@ namespace NetDream.Modules.UserAccount.Repositories
             return Is(user, me, type);
         }
 
-        /**
-         * 获取用户的所有关系
-         * @param int me
-         * @param int user
-         * @return int[]
-         */
+        /// <summary>
+        /// 获取用户的所有关系
+        /// </summary>
+        /// <param name="me"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public UserRelationship Relationship(int me, int user)
         {
             var res = new UserRelationship();

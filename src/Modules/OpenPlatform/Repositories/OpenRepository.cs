@@ -105,31 +105,31 @@ namespace NetDream.Modules.OpenPlatform.Repositories
         /// <param name="url"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public PlatformModel CheckUrl(string appId, string url)
+        public IOperationResult<PlatformModel> CheckUrl(string appId, string url)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
-                throw new Exception("网址不能为空");
+                return OperationResult<PlatformModel>.Fail("网址不能为空");
             }
             if (string.IsNullOrWhiteSpace(appId))
             {
-                throw new Exception("应用无效");
+                return OperationResult<PlatformModel>.Fail("应用无效");
             }
             var model = GetByAppId(appId);
             if (model is null || string.IsNullOrWhiteSpace(model.Domain))
             {
-                throw new Exception("应用无效");
+                return OperationResult<PlatformModel>.Fail("应用无效");
             }
             if (model.Domain == "*")
             {
-                return model;
+                return OperationResult.Ok(model);
             }
             var host = new Uri(url).Host;
             if (host != model.Domain)
             {
-                throw new Exception("应用域名不匹配");
+                return OperationResult<PlatformModel>.Fail("应用域名不匹配");
             }
-            return model;
+            return OperationResult.Ok(model);
         }
 
     }

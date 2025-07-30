@@ -29,28 +29,28 @@ namespace NetDream.Shared.Helpers
             }
             foreach (var item in rules)
             {
-                content = content.Replace(item.S, RenderReplace(item));
+                content = content.Replace(item.Word, RenderReplace(item));
             }
             return content;
         }
 
         protected string RenderReplace(LinkExtraRule rule)
         {
-            if (!string.IsNullOrEmpty(rule.I))
+            if (rule.TryGet(LinkExtraRule.IMAGE_KEY, out var val))
             {
-                return string.Format("<img src=\"{0}\" alt=\"{1}\">", rule.I, rule.S);
+                return string.Format("<img src=\"{0}\" alt=\"{1}\">", val, rule.Word);
             }
-            if (string.IsNullOrWhiteSpace(rule.F))
+            if (rule.TryGet(LinkExtraRule.FILE_KEY, out val))
             {
-                return string.Format("<a href=\"{0}\" download>{1}</a>", rule.F, rule.S);
+                return string.Format("<a href=\"{0}\" download>{1}</a>", val, rule.Word);
             }
-            if (rule.U > 0)
+            if (rule.User > 0)
             {
                 return RenderUser(rule);
             }
-            if (string.IsNullOrWhiteSpace(rule.L))
+            if (rule.TryGet(LinkExtraRule.LINK_KEY, out val))
             {
-                return string.Format("<a href=\"{0}\">{1}</a>", deeplink.Decode(rule.L), rule.S);
+                return string.Format("<a href=\"{0}\">{1}</a>", deeplink.Decode(val), rule.Word);
             }
             return RenderExtra(rule);
         }
@@ -62,28 +62,28 @@ namespace NetDream.Shared.Helpers
 
         protected string RenderUser(LinkExtraRule rule)
         {
-            return string.Format("<a href=\"{0}\">{1}</a>", rule.U, rule.S);
+            return string.Format("<a href=\"{0}\">{1}</a>", rule.User, rule.Word);
         }
 
         public LinkExtraRule FormatRule(string word, LinkExtraRule rule)
         {
-            rule.S = word;
+            rule.Word = word;
             return rule;
         }
 
         public LinkExtraRule FormatUser(string word, int user)
         {
-            return new LinkExtraRule(word, user);
+            return LinkExtraRule.CreateUser(word, user);
         }
 
         public LinkExtraRule FormatImage(string word, string image)
         {
-            return new LinkExtraRule(word) { I = image };
+            return LinkExtraRule.CreateImage(word, image);
         }
 
         public LinkExtraRule FormatFile(string word, string file)
         {
-            return new LinkExtraRule(word) { F = file };
+            return LinkExtraRule.CreateFile(word, file);
         }
 
         /// <summary>
@@ -94,15 +94,15 @@ namespace NetDream.Shared.Helpers
         /// <returns></returns>
         public LinkExtraRule FormatId(string word, string id)
         {
-            return new LinkExtraRule(word) { L = "#" + id };
+            return LinkExtraRule.CreateLink(word, "#" + id);
         }
 
         public LinkExtraRule FormatLink(string word, string link, IDictionary<string, object>? queries = null)
         {
-            return new LinkExtraRule(word) 
-            {
-                L = link.Contains("://") && (queries is null || queries.Count == 0) ? link : deeplink.Encode(link, queries)
-            };
+            return LinkExtraRule.CreateLink(word, 
+                link.Contains("://") && (queries is null || queries.Count == 0) ? 
+                link : deeplink.Encode(link, queries)
+            );
         }
 
     }

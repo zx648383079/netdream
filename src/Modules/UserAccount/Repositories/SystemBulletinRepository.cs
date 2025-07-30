@@ -10,7 +10,7 @@ namespace NetDream.Modules.UserAccount.Repositories
 {
     public class SystemBulletinRepository(UserContext db, 
         ILinkRuler ruler,
-        IClientContext environment) : ISystemBulletin
+        IClientContext client) : ISystemBulletin
     {
 
         public ILinkRuler Ruler => ruler;
@@ -42,7 +42,7 @@ namespace NetDream.Modules.UserAccount.Repositories
         {
             return Send(user, 
                 HttpUtility.HtmlEncode(title),
-                HttpUtility.HtmlEncode(content), type, environment.UserId, extraRule);
+                HttpUtility.HtmlEncode(content), type, client.UserId, extraRule);
         }
 
         /// <summary>
@@ -85,12 +85,12 @@ namespace NetDream.Modules.UserAccount.Repositories
                 UserId = sender,
                 ExtraRule = extraRule is not null && extraRule.Any() ? JsonSerializer.Serialize(extraRule) 
                 : string.Empty,
-                CreatedAt = environment.Now,
+                CreatedAt = client.Now,
                 Items = user.Select(i => {
                     return new BulletinUserEntity()
                     {
                         UserId = i,
-                        CreatedAt = environment.Now,
+                        CreatedAt = client.Now,
                     };
                 }).ToArray()
             };

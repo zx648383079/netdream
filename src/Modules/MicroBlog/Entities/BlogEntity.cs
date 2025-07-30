@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.MicroBlog.Entities
 {
     
-    public class BlogEntity
+    public class BlogEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
