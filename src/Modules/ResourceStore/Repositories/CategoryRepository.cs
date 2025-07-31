@@ -93,7 +93,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
         public IPage<CategoryEntity> Search(QueryForm form, int[] idItems)
         {
             return db.Categories.Search(form.Keywords, "name")
-                .Where(i => idItems.Contains(i.Id))
+                .When(idItems?.Length > 0, i => idItems.Contains(i.Id))
                 .ToPage(form);
         }
 
@@ -106,9 +106,9 @@ namespace NetDream.Modules.ResourceStore.Repositories
             {
                 foreach (var item in items)
                 {
-                    item.Items = ResourceRepository.AsList(
+                    item.Items = 
                         db.Resources.Where(i => i.CatId == item.Id)
-                        .Take(5))
+                        .Take(5).SelectAs()
                         .ToArray();
                 }
             }

@@ -1,28 +1,28 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Navigation.Forms;
-using NetDream.Modules.Navigation.Entities;
-using NetDream.Modules.Navigation.Repositories;
 using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Modules.UserIdentity.Repositories;
+using NetDream.Modules.ResourceStore.Repositories;
+using NetDream.Modules.ResourceStore.Models;
+using NetDream.Modules.ResourceStore.Forms;
+using NetDream.Modules.ResourceStore.Entities;
 using NetDream.Shared.Models;
-using NetDream.Modules.Navigation.Models;
 
-namespace NetDream.Api.Controllers.Navigation
+namespace NetDream.Api.Controllers.ResourceStore
 {
-    [Route("open/navigation/admin/category")]
+    [Route("open/res/admin/category")]
     [Authorize(Roles = IdentityRepository.Administrator)]
     [ApiController]
     public class CategoryBackendController(CategoryRepository repository) : JsonController
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(PageResponse<CategoryEntity>), 200)]
+        [ProducesResponseType(typeof(DataResponse<CategoryTreeItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Index([FromQuery] QueryForm form)
+        public IActionResult Index()
         {
-            return RenderPage(repository.GetList(form));
+            return RenderData(repository.LevelTree([]));
         }
 
         [HttpPost]
@@ -56,6 +56,15 @@ namespace NetDream.Api.Controllers.Navigation
         public IActionResult All()
         {
             return RenderData(repository.LevelTree([]));
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        [ProducesResponseType(typeof(PageResponse<CategoryEntity>), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
+        public IActionResult Search(QueryForm form, int[]? id = null)
+        {
+            return RenderPage(repository.Search(form, id));
         }
     }
 }

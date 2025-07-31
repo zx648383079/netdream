@@ -1,35 +1,48 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Navigation.Forms;
-using NetDream.Modules.Navigation.Entities;
-using NetDream.Modules.Navigation.Repositories;
+using NetDream.Modules.OpenPlatform.Entities;
+using NetDream.Modules.OpenPlatform.Forms;
 using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform.Repositories;
 using NetDream.Modules.UserIdentity.Repositories;
-using NetDream.Shared.Models;
-using NetDream.Modules.Navigation.Models;
 
-namespace NetDream.Api.Controllers.Navigation
+namespace NetDream.Api.Controllers.OpenPlatform
 {
-    [Route("open/navigation/admin/category")]
+    [Route("open/admin/[controller]")]
     [Authorize(Roles = IdentityRepository.Administrator)]
     [ApiController]
-    public class CategoryBackendController(CategoryRepository repository) : JsonController
+    public class PlatformBackendController(PlatformRepository repository) : JsonController
     {
+
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(PageResponse<CategoryEntity>), 200)]
+        [ProducesResponseType(typeof(PageResponse<PlatformListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Index([FromQuery] QueryForm form)
+        public IActionResult Index([FromQuery] PlatformQueryForm form)
         {
             return RenderPage(repository.GetList(form));
         }
 
+        [HttpGet]
+        [Route("[action]")]
+        [ProducesResponseType(typeof(PageResponse<PlatformEntity>), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
+        public IActionResult Detail(int id)
+        {
+            var res = repository.Get(id);
+            if (!res.Succeeded)
+            {
+                return RenderFailure(res.Message);
+            }
+            return Render(res.Result);
+        }
+
         [HttpPost]
         [Route("[action]")]
-        [ProducesResponseType(typeof(CategoryEntity), 200)]
+        [ProducesResponseType(typeof(PlatformEntity), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Save([FromBody] CategoryForm form)
+        public IActionResult Save([FromBody] PlatformForm form)
         {
             var res = repository.Save(form);
             if (res.Succeeded)
@@ -47,15 +60,6 @@ namespace NetDream.Api.Controllers.Navigation
         {
             repository.Remove(id);
             return RenderData(true);
-        }
-
-        [HttpGet]
-        [Route("[action]")]
-        [ProducesResponseType(typeof(DataResponse<CategoryTreeItem>), 200)]
-        [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult All()
-        {
-            return RenderData(repository.LevelTree([]));
         }
     }
 }

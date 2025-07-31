@@ -18,5 +18,9 @@ namespace NetDream.Modules.ResourceStore.Forms
         public int Price { get; set; }
         public byte IsCommercial { get; set; }
         public byte IsReprint { get; set; }
+
+        public string[] Tags {  get; set; }
+
+        public ResourceFileForm[] Files { get; set; }
     }
 }

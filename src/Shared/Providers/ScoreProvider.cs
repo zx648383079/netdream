@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers.Context;
 using NetDream.Shared.Providers.Entities;
+using NetDream.Shared.Providers.Forms;
 using NetDream.Shared.Providers.Models;
 using System;
 using System.Linq;
@@ -9,37 +12,32 @@ using System.Linq;
 
 namespace NetDream.Shared.Providers
 {
-    public class ScoreProvider(ISoreContext db, IClientContext environment)
+    public class ScoreProvider(ISoreContext db, IClientContext client, IUserRepository userStore)
     {
 
-        public IPage<ScoreLogEntity> Search(byte itemType = 0, int itemId = 0, 
-            int user = 0, byte fromType = 0, int fromId = 0, string sort = "id", string order = "desc")
+        public IPage<ScoreListItem> Search(ScoreQueryForm form)
         {
-            //list(sort, order) = SearchModel.CheckSortOrder(sort, order, [
-            //    "id",
-            //MigrationTable.COLUMN_CREATED_AT,
-            //"score"
-            //]);
-            //page = Query().When(user > 0, use(user)(object query) {
-            //    query.Where("user_id", user);
-            //})
-            //.When(itemId > 0, use(itemId, itemType)(object query) {
-            //    query.Where("item_id", itemId).Where("item_type", itemType);
-            //})
-            //.When(fromId > 0, use(fromId, fromType)(object query) {
-            //    query.Where("from_id", fromId).Where("from_type", fromType);
-            //}).OrderBy(sort, order).Page();
-            //data = page.GetPage();
-            //if (empty(data))
-            //{
-            //    return page;
-            //}
-            //data = Relation.Create(data, [
-            //    "user" => Relation.Make(UserSimpleModel.Query(), "user_id", "id")
-            //]);
-            //page.SetPage(data);
-            //return page;
-            return null;
+            var (sort, order) = SearchHelper.CheckSortOrder(form.Sort, form.Order, [
+                "id",
+                "created_at",
+                "score"
+            ]);
+            var items = db.ScoreLogs.When(form.User > 0, i => i.UserId == form.User)
+                .When(form.ItemId > 0, i => i.ItemId == form.ItemId && i.ItemType == form.ItemType)
+                .When(form.FromId > 0, i => i.FromId == form.FromId && i.FromType == form.FromType)
+                .OrderBy<ScoreLogEntity, int>(sort, order)
+                .ToPage(form, i => i.Select(j => new ScoreListItem()
+                {
+                    Id = j.Id,
+                    CreatedAt = j.CreatedAt,
+                    FromId = j.FromId,
+                    FromType = j.FromType,
+                    ItemId = j.ItemId,
+                    ItemType = j.ItemType,
+                    UserId = j.UserId,
+                }));
+            userStore.Include(items.Items);
+            return items;
         }
 
         public void Remove(int id)
@@ -47,15 +45,15 @@ namespace NetDream.Shared.Providers
             db.ScoreLogs.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public int Insert(ScoreLogEntity data)
+        public IOperationResult<int> Insert(ScoreLogEntity data)
         {
             db.ScoreLogs.Add(data);
             db.SaveChanges();
             if (data.Id == 0)
             {
-                throw new Exception("insert log error");
+                return OperationResult<int>.Fail("insert log error");
             }
-            return data.Id;
+            return OperationResult.Ok(data.Id);
         }
 
         public void Update(int id, ScoreLogEntity data)
@@ -65,9 +63,14 @@ namespace NetDream.Shared.Providers
             db.SaveChanges();
         }
 
-        public ScoreLogEntity? Get(int id)
+        public IOperationResult<ScoreLogEntity> Get(int id)
         {
-            return db.ScoreLogs.Where(i => i.Id == id).Single();
+            var model = db.ScoreLogs.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
+            {
+                return OperationResult<ScoreLogEntity>.Fail("数据错误");
+            }
+            return OperationResult.Ok(model);
         }
 
         /// <summary>
@@ -82,28 +85,32 @@ namespace NetDream.Shared.Providers
             int fromId = 0)
         {
             return db.ScoreLogs.Where(i => i.ItemType == itemType && i.ItemId == itemId 
-            && i.UserId == environment.UserId && i.FromType == fromType 
+            && i.UserId == client.UserId && i.FromType == fromType 
             && i.FromId == fromId).Any();
         }
 
-        public ScoreLogEntity Save(ScoreLogEntity data)
+        public IOperationResult<ScoreLogEntity> Save(ScoreLogEntity data)
         {
-            data.UserId = environment.UserId;
-            data.CreatedAt = environment.Now;
-            data.Id = Insert(data);
-            // data["user"] = UserSimpleModel.ConverterFrom(auth().User());
-            return data;
+            data.UserId = client.UserId;
+            data.CreatedAt = client.Now;
+            db.ScoreLogs.Add(data);
+            db.SaveChanges();
+            if (data.Id == 0)
+            {
+                return OperationResult<ScoreLogEntity>.Fail("insert log error");
+            }
+            return OperationResult.Ok(data);
         }
 
-        public ScoreLogEntity Add(byte score, int item_id, byte item_type = 0, byte from_type = 0, int from_id = 0)
+        public IOperationResult<ScoreLogEntity> Add(ScoreForm form)
         {
             return Save(new ScoreLogEntity()
             {
-                Score = score,
-                ItemId = item_id,
-                ItemType = item_type,
-                FromId = from_id,
-                FromType = from_type,
+                Score = form.Score,
+                ItemId = form.ItemId,
+                ItemType = form.ItemType,
+                FromId = form.FromId,
+                FromType = form.FromType,
             });
         }
 
@@ -159,11 +166,11 @@ namespace NetDream.Shared.Providers
 
         public void RemoveBySelf(int id)
         {
-            if (environment.UserId == 0)
+            if (client.UserId == 0)
             {
                 return;
             }
-            db.ScoreLogs.Where(i => i.Id == id && i.UserId == environment.UserId).ExecuteDelete();
+            db.ScoreLogs.Where(i => i.Id == id && i.UserId == client.UserId).ExecuteDelete();
         }
     }
 }

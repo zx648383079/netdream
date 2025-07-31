@@ -1,10 +1,15 @@
-﻿using System;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Shared.Repositories
 {
-    public class FileRepository
+    public class FileRepository(
+        StorageProvider storage, 
+        IClientContext client)
     {
 
         /// <summary>
@@ -43,6 +48,41 @@ namespace NetDream.Shared.Repositories
                 return res;
             }
             return string.Empty;
+        }
+
+        public IPage<FileListItem> FileList(QueryForm form)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPage<FileListItem> ImageList(QueryForm form)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<FileUploadResult> UploadAudio(IUploadFile file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<FileUploadResult> UploadVideo(IUploadFile file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<FileUploadResult> UploadImages(IUploadFile file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<FileUploadResult> UploadBase64(IUploadFile file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<FileUploadResult> UploadFiles(IUploadFile file)
+        {
+            throw new NotImplementedException();
         }
     }
 }

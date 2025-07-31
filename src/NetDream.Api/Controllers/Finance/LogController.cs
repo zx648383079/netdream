@@ -97,9 +97,9 @@ namespace NetDream.Api.Controllers.Finance
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Export()
         {
-            using var ms = new MemoryStream();
+            var ms = new MemoryStream();
             repository.Export(ms);
-            return new FileContentResult(ms.ToArray(), "application/vnd.ms-excel")
+            return new FileStreamResult(ms, "application/vnd.ms-excel")
             {
                 FileDownloadName = "流水记录.xls"
             };

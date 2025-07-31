@@ -66,8 +66,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\ResourceStore\" />
-    <Folder Include="Controllers\OpenPlatform\" />
     <Folder Include="Controllers\OnlineDisk\" />
   </ItemGroup>
 

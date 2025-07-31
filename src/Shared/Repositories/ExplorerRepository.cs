@@ -55,12 +55,10 @@ namespace NetDream.Shared.Repositories
             return items;
         }
 
-        /**
-         * 删除一些备份文件
-         * @param string prefix
-         * @return void
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 删除一些备份文件
+        /// </summary>
+        /// <param name="prefix"></param>
         public void RemoveBakFiles(string prefix)
         {
             var root = new DirectoryInfo(BakPath());

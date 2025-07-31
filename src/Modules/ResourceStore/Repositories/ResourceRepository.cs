@@ -8,6 +8,7 @@ using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 
@@ -29,11 +30,11 @@ namespace NetDream.Modules.ResourceStore.Repositories
         }
         public CommentProvider Comment()
         {
-            return new CommentProvider(db, client);
+            return new CommentProvider(db, client, userStore);
         }
         public ScoreProvider Score()
         {
-            return new ScoreProvider(db, client);
+            return new ScoreProvider(db, client, userStore);
         }
 
         public IPage<ResourceListItem> GetList(QueryForm form, 
@@ -90,7 +91,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
                     query = query.OrderBy<ResourceEntity, int>(sort, order);
                     break;
             }
-            return AsList(query);
+            return query.SelectAs();
         }
 
         public ResourceListItem[] GetLimitList(int count, 
@@ -197,7 +198,11 @@ namespace NetDream.Modules.ResourceStore.Repositories
             {
                 return OperationResult<ScoreModel>.Fail("已评价过，不能更改");
             }
-            var data = provider.Add(score, id);
+            var data = provider.Add(new Shared.Providers.Forms.ScoreForm()
+            {
+                ItemId = id,
+                Score = score,
+            });
 
             var avg = provider.Avg(id);
             db.Resources.Where(i => i.Id == id)
@@ -207,8 +212,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
             return OperationResult.Ok(res);
         }
 
-        public IOperationResult<ResourceEntity> Save(ResourceForm data, 
-            string[] tags, ResourceFileForm[] files)
+        public IOperationResult<ResourceEntity> Save(ResourceForm data)
         {
             var model = data.Id > 0 ? db.Resources.Where(i => i.Id == data.Id
                 && i.UserId == client.UserId).FirstOrDefault()
@@ -222,33 +226,39 @@ namespace NetDream.Modules.ResourceStore.Repositories
             model.UserId = client.UserId;
             db.Resources.Save(model, client.Now);
             db.SaveChanges();
-            Tag().BindTag(model.Id, tags, null);
-            var fileId = new List<int>();
-            foreach (var item in files)
+            if (data.Tags?.Length > 0)
             {
-                var fileModel = FileSave(new FileForm()
+                Tag().BindTag(model.Id, data.Tags, null);
+            }
+            var fileId = new List<int>();
+            if (data.Files?.Length > 0)
+            {
+                foreach (var item in data.Files)
                 {
-                    Id = item.Id,
-                    ResId = model.Id,
-                    File = item.File,
-                    FileType = item.FileType,
-                });
-                if (!fileModel.Succeeded)
-                {
-                    continue;
+                    var fileModel = FileSave(new FileForm()
+                    {
+                        Id = item.Id,
+                        ResId = model.Id,
+                        File = item.File,
+                        FileType = item.FileType,
+                    });
+                    if (!fileModel.Succeeded)
+                    {
+                        continue;
+                    }
+                    fileId.Add(fileModel.Result.Id);
+                    if (fileModel.Result.FileType > 0)
+                    {
+                        continue;
+                    }
+                    //self.Storage().AddQuote(fileModel.File, Constants.TYPE_RESOURCE_STORE, model.Id);
+                    //file = UploadRepository.File(fileModel);
+                    //if (file.Exist())
+                    //{
+                    //    model.Size = file.Size();
+                    //}
+                    //data["file_catalog"] = UploadRepository.Catalog(fileModel);
                 }
-                fileId.Add(fileModel.Result.Id);
-                if (fileModel.Result.FileType > 0)
-                {
-                    continue;
-                }
-                //self.Storage().AddQuote(fileModel.File, Constants.TYPE_RESOURCE_STORE, model.Id);
-                //file = UploadRepository.File(fileModel);
-                //if (file.Exist())
-                //{
-                //    model.Size = file.Size();
-                //}
-                //data["file_catalog"] = UploadRepository.Catalog(fileModel);
             }
             db.ResourceFiles.Where(i => i.ResId == model.Id && fileId.Contains(i.Id))
                 .ExecuteDelete();
@@ -313,20 +323,19 @@ namespace NetDream.Modules.ResourceStore.Repositories
             return JsonSerializer.Deserialize<CatalogItem[]>(text);
         }
 
-        public ListArticleItem[] Suggestion(string keywords)
+        public ListArticleItem[] Suggest(string keywords)
         {
             return db.Resources.Search(keywords, "title")
                 .Take(4).Select(i => new ListArticleItem(i.Id, i.Title))
                 .ToArray();
         }
 
-        public IPage<ResourceListItem> GetManageList(QueryForm form, 
-            int user = 0, int category = 0)
+        public IPage<ResourceListItem> GetManageList(ResourceQueryForm form)
         {
-            var res = AsList(db.Resources
-                .When(category > 0, i => i.CatId == category)
-                .When(user > 0, i => i.UserId == user).Search(form.Keywords, "title")
-                .OrderByDescending(i => i.Id)).ToPage(form);
+            var res = db.Resources
+                .When(form.Category > 0, i => i.CatId == form.Category)
+                .When(form.User > 0, i => i.UserId == form.User).Search(form.Keywords, "title")
+                .OrderByDescending(i => i.Id).ToPage(form, i => i.SelectAs());
             userStore.Include(res.Items);
             CategoryRepository.Include(db, res.Items);
             return res;
@@ -347,9 +356,9 @@ namespace NetDream.Modules.ResourceStore.Repositories
             return RemoveResource(db.Resources.Where(i => i.Id == id && i.UserId == client.UserId).SingleOrDefault());
         }
 
-        public IPage<ResourceFileEntity> FileList(int res_id, QueryForm form)
+        public IPage<ResourceFileEntity> FileList(FileQueryForm form)
         {
-            return db.ResourceFiles.Where(i => i.ResId == res_id)
+            return db.ResourceFiles.Where(i => i.ResId == form.ResId)
                 .OrderBy(i => i.Id)
                 .ToPage(form);
         }
@@ -411,30 +420,10 @@ namespace NetDream.Modules.ResourceStore.Repositories
             return UploadRepository.File(fileModel);
         }
 
-
-        public static IQueryable<ResourceListItem> AsList(IQueryable<ResourceEntity> source)
+        public IOperationResult<FileUploadResult> Upload(IUploadFile input)
         {
-            return source.Select(i => new ResourceListItem()
-            {
-                Id = i.Id,
-                Title = i.Title,
-                Description = i.Description,
-                Keywords = i.Keywords,
-                Thumb = i.Thumb,
-                Size = i.Size,
-                Score = i.Score,
-                UserId = i.UserId,
-                PreviewType = i.PreviewType,
-                CatId = i.CatId,
-                Price = i.Price,
-                IsCommercial = i.IsCommercial,
-                IsReprint = i.IsReprint,
-                CommentCount = i.CommentCount,
-                DownloadCount = i.DownloadCount,
-                CreatedAt = i.CreatedAt,
-                UpdatedAt = i.UpdatedAt,
-                ViewCount = i.ViewCount,
-            });
+            // TODO
+            return OperationResult<FileUploadResult>.Fail("未实现");
         }
     }
 }

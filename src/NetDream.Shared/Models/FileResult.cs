@@ -1,12 +1,14 @@
-﻿using System.IO;
+﻿using NetDream.Shared.Interfaces;
+using System.IO;
 
 namespace NetDream.Shared.Models
 {
-    public class FileResult
+    public class FileResult : IDownloadFile
     {
         public string Name { get; set; }
 
         public string FullPath { get; set; }
+        public string FileType { get; set; } = "application/force-download";
 
         public FileResult(string fullPath)
             : this (Path.GetFileName(fullPath), fullPath)
@@ -19,5 +21,11 @@ namespace NetDream.Shared.Models
             Name = name;
             FullPath = fullPath;
         }
+
+        public Stream OpenRead()
+        {
+            return File.OpenRead(FullPath);
+        }
+
     }
 }
