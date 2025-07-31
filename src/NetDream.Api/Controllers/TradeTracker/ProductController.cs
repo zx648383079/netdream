@@ -37,7 +37,7 @@ namespace NetDream.Api.Controllers.TradeTracker
         [Route("[action]")]
         public IActionResult Suggest(string keywords)
         {
-            return RenderData(repository.Suggestion(keywords));
+            return RenderData(repository.Suggest(keywords));
         }
     }
 }

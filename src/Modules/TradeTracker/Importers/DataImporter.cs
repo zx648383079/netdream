@@ -52,9 +52,9 @@ namespace NetDream.Modules.TradeTracker.Importers
             }
         }
 
-        private void ReadFromJson(string file)
+        public void ReadFromJson(Stream input)
         {
-            using var reader = new StreamReader(file);
+            var reader = new StreamReader(input);
             while (true)
             {
                 var line = reader.ReadLine();
@@ -65,6 +65,12 @@ namespace NetDream.Modules.TradeTracker.Importers
                 using var doc = JsonDocument.Parse(line);
                 UpdateLog(doc.RootElement);
             }
+        }
+
+        private void ReadFromJson(string file)
+        {
+            using var fs = File.OpenRead(file);
+            ReadFromJson(fs);
         }
 
         private void UpdateLog(JsonElement data)

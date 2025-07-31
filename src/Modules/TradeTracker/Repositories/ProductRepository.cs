@@ -1,4 +1,5 @@
 ﻿using NetDream.Modules.TradeTracker.Entities;
+using NetDream.Modules.TradeTracker.Forms;
 using NetDream.Modules.TradeTracker.Importers;
 using NetDream.Modules.TradeTracker.Models;
 using NetDream.Shared.Helpers;
@@ -13,20 +14,20 @@ namespace NetDream.Modules.TradeTracker.Repositories
 {
     public class ProductRepository(TrackerContext db)
     {
-        public IPage<ProductEntity> GetGoodsList(QueryForm form, int category = 0, int project = 0)
+        public IPage<ProductListItem> GetGoodsList(ProductQueryForm form)
         {
             return db.Products.Search(form.Keywords, "name", "en_name")
-                .When(category > 0, i => i.CatId == category)
-                .When(project > 0, i => i.ProjectId == project)
-                .Where(i => i.IsSku == 0).ToPage(form);
+                .When(form.Category > 0, i => i.CatId == form.Category)
+                .When(form.Project > 0, i => i.ProjectId == form.Project)
+                .Where(i => i.IsSku == 0).ToPage(form, i => i.SelectAs());
         }
 
-        public IPage<ProductEntity> GetProductList(QueryForm form, int category = 0, int project = 0)
+        public IPage<ProductListItem> GetProductList(ProductQueryForm form)
         {
             return db.Products.Search(form.Keywords, "name", "en_name")
-                .When(category > 0, i => i.CatId == category)
-                .When(project > 0, i => i.ProjectId == project)
-                .Where(i => i.IsSku == 1).ToPage(form);
+                .When(form.Category > 0, i => i.CatId == form.Category)
+                .When(form.Project > 0, i => i.ProjectId == form.Project)
+                .Where(i => i.IsSku == 1).ToPage(form, i => i.SelectAs());
         }
 
         public IOperationResult<ProductModel> Get(int id)
@@ -95,7 +96,7 @@ namespace NetDream.Modules.TradeTracker.Repositories
             return items.CopyTo<TradeEntity, TradeListItem>();
         }
 
-        public string[] Suggestion(string keywords)
+        public string[] Suggest(string keywords)
         {
             return db.Products.Search(keywords, "name", "en_name")
                 .Where(i => i.ParentId == 0).Select(i => i.Name).ToArray();

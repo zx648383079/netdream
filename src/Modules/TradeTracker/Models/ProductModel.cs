@@ -1,7 +1,7 @@
 ﻿using NetDream.Modules.TradeTracker.Entities;
 using NetDream.Shared.Models;
 
-namespace NetDream.Modules.TradeTracker.Repositories
+namespace NetDream.Modules.TradeTracker.Models
 {
     public class ProductModel : ProductEntity
     {

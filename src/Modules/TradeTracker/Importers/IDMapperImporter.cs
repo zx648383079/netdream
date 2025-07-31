@@ -113,6 +113,11 @@ namespace NetDream.Modules.TradeTracker.Importers
         private void ReadFromZip(string file)
         {
             using var reader = ZipFile.OpenRead(file);
+            ReadFromZip(reader);
+        }
+
+        private void ReadFromZip(ZipArchive reader)
+        {
             var items = new Dictionary<string, Dictionary<int, ZipArchiveEntry>>();
             foreach (var item in reader.Entries)
             {
@@ -122,7 +127,7 @@ namespace NetDream.Modules.TradeTracker.Importers
                 }
                 var args = item.Name.Split('/');
                 var appName = args[^2];
-                var appId = int.Parse(args[^1][0 .. ^5]);
+                var appId = int.Parse(args[^1][0..^5]);
                 if (!items.ContainsKey(appName))
                 {
                     items.Add(appName, []);
@@ -150,6 +155,12 @@ namespace NetDream.Modules.TradeTracker.Importers
                     ReadOther(doc.RootElement, item.Key, it.Key);
                 }
             }
+        }
+
+        public void ReadFromZip(Stream input)
+        {
+            using var reader = new ZipArchive(input);
+            ReadFromZip(reader);
         }
 
         private void ReadFromFolder(string folder)

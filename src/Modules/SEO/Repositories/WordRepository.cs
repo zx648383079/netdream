@@ -10,11 +10,11 @@ namespace NetDream.Modules.SEO.Repositories
 {
     public class WordRepository(SEOContext db)
     {
-        public IPage<BlackWordEntity> GetList(string keywords = "", int page = 1)
+        public IPage<BlackWordEntity> GetList(QueryForm form)
         {
-            return db.BlackWords.Search(keywords, "words", "replace_words")
+            return db.BlackWords.Search(form.Keywords, "words", "replace_words")
                 .OrderByDescending(i => i.Id)
-                .ToPage(page);
+                .ToPage(form);
         }
 
         public BlackWordEntity? Get(int id)

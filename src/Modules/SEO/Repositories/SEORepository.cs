@@ -1,4 +1,5 @@
-﻿using NetDream.Shared.Models;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using NetDream.Shared.Repositories.Models;
 using System.Collections.Generic;
@@ -24,14 +25,15 @@ namespace NetDream.Modules.SEO.Repositories
             explorer.RemoveBakFiles("sql_");
         }
 
-        public void BackUpSql(bool isZip = true)
+        public IOperationResult BackUpSql(bool isZip = true)
         {
             var root = explorer.BakPath();
             if (Directory.Exists(root)) 
             {
                 Directory.CreateDirectory(root);
             }
-
+            // TODO
+            return OperationResult.Fail("未实现");
             //var fileName = sprintf("sql_%s.sql", date("Y-m-d"));
             //targetFileName = isZip ? sprintf("sql_%s.zip", date("Y-m-d")) : fileName;
             //targetFile = root.File(targetFileName);
@@ -53,6 +55,7 @@ namespace NetDream.Modules.SEO.Repositories
             //ZipStream.Create(targetFile).AddFile(file)
             //    .Close();
             //file.Delete();
+            return OperationResult.Ok();
         }
 
         public IList<FileItem> SqlFiles()

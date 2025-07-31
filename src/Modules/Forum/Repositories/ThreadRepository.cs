@@ -733,7 +733,7 @@ namespace NetDream.Modules.Forum.Repositories
         }
 
 
-        public ListArticleItem[] Suggestion(string keywords = "")
+        public ListArticleItem[] Suggest(string keywords = "")
         {
             return db.Threads.Search(keywords, "title")
                 .Take(4).Select(i => new ListArticleItem()

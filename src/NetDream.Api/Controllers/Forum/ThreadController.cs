@@ -273,9 +273,9 @@ namespace NetDream.Api.Controllers.Forum
         [Route("[action]")]
         [ProducesResponseType(typeof(DataResponse<ListArticleItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Suggestion(string keywords)
+        public IActionResult Suggest(string keywords)
         {
-            return RenderData(repository.Suggestion(keywords));
+            return RenderData(repository.Suggest(keywords));
         }
     }
 }

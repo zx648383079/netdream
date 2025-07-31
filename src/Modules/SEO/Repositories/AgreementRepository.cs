@@ -16,11 +16,11 @@ namespace NetDream.Modules.SEO.Repositories
         LocalizeRepository localize)
     {
 
-        public IPage<AgreementEntity> GetList(string keywords = "", int page = 1)
+        public IPage<AgreementListItem> GetList(QueryForm form)
         {
-            return db.Agreements.Search(keywords, "name", "title")
+            return db.Agreements.Search(form.Keywords, "name", "title")
                 .OrderByDescending(i => i.Id)
-                .ToPage(page);
+                .ToPage(form, i => i.SelectAs());
         }
 
         public AgreementEntity? Get(int id)

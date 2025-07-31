@@ -16,17 +16,22 @@ namespace NetDream.Modules.SEO.Repositories
     {
         public const string CACHE_KEY = "emoji_tree";
 
-        public IPage<EmojiEntity> GetList(string keywords = "", 
-            int category = 0, int page = 1)
+        public IPage<EmojiEntity> GetList(EmojiQueryForm form)
         {
-            return db.Emojis.Include(i => i.Category).Search(keywords, "name")
-                .When(category > 0, i => i.CatId == category)
-                .OrderByDescending(i => i.Id).ToPage(page);
+            return db.Emojis.Include(i => i.Category)
+                .Search(form.Keywords, "name")
+                .When(form.Category > 0, i => i.CatId == form.Category)
+                .OrderByDescending(i => i.Id).ToPage(form);
         }
 
-        public EmojiEntity? Get(int id)
+        public IOperationResult<EmojiEntity> Get(int id)
         {
-            return db.Emojis.Where(i => i.Id == id).Single();
+            var model = db.Emojis.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
+            {
+                return OperationResult.Fail<EmojiEntity>("id is error");
+            }
+            return OperationResult.Ok(model);
         }
 
         public IOperationResult<EmojiEntity> Save(EmojiForm data)
@@ -69,15 +74,19 @@ namespace NetDream.Modules.SEO.Repositories
             return db.EmojiCategories.Where(i => i.Id == id).Single();
         }
 
-        public EmojiCategoryEntity SaveCategory(EmojiCategoryForm data)
+        public IOperationResult<EmojiCategoryEntity> SaveCategory(EmojiCategoryForm data)
         {
-            var model = data.Id > 0 ? db.EmojiCategories.Where(i => i.Id == data.Id).Single() :
+            var model = data.Id > 0 ? db.EmojiCategories.Where(i => i.Id == data.Id).SingleOrDefault() :
                 new EmojiCategoryEntity();
+            if (model is null)
+            {
+                return OperationResult<EmojiCategoryEntity>.Fail("数据错误");
+            }
             model.Name = data.Name;
             model.Icon = data.Icon;
             db.EmojiCategories.Save(model);
             db.SaveChanges();
-            return model;
+            return OperationResult.Ok(model);
         }
 
         public void RemoveCategory(int id)
