@@ -2,7 +2,6 @@
 using NetDream.Modules.Contact.Entities;
 using NetDream.Modules.Contact.Forms;
 using NetDream.Modules.Contact.Models;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
@@ -12,26 +11,29 @@ using System.Linq;
 namespace NetDream.Modules.Contact.Repositories
 {
     public class ReportRepository(ContactContext db, IUserRepository userStore,
-        IClientContext environment): ISystemFeedback
+        IClientContext client): ISystemFeedback
     {
-        public IPage<ReportModel> GetList(string keywords = "", 
-            int itemType = 0, int itemId = 0, int type = 0, int page = 1)
+        public IPage<ReportListItem> GetList(ReportQueryForm form)
         {
-            var items = db.Reports.Search(keywords, "title", "email", "content")
-                .When(itemType > 0, i => i.ItemType == itemType)
-                .When(itemType > 0 && itemId > 0, i => i.ItemId == itemId)
-                .When(type > 0, i => i.Type == type)
+            var items = db.Reports.Search(form.Keywords, "title", "email", "content")
+                .When(form.ItemType > 0, i => i.ItemType == form.ItemType)
+                .When(form.ItemType > 0 && form.ItemId > 0, i => i.ItemId == form.ItemId)
+                .When(form.Type > 0, i => i.Type == form.Type)
                 .OrderBy(i => i.Status)
                 .OrderByDescending(i => i.Id)
-                .ToPage(page).CopyTo<ReportEntity, ReportModel>();
-
+                .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
             return items;
         }
 
-        public ReportEntity? Get(int id)
+        public IOperationResult<ReportEntity> Get(int id)
         {
-            return db.Reports.Where(i => i.Id == id).Single();
+            var model = db.Reports.Where(i => i.Id == id).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult<ReportEntity>.Fail("数据错误");
+            }
+            return OperationResult.Ok(model);
         }
 
         public IOperationResult<ReportEntity> Create(ReportForm data)
@@ -45,8 +47,8 @@ namespace NetDream.Modules.Contact.Repositories
                 Content = data.Content,
                 Email = data.Email,
                 Files = data.Files,
-                UserId = environment.UserId,
-                Ip = environment.Ip,
+                UserId = client.UserId,
+                Ip = client.Ip,
             };
             if (!Check(model)) {
                 return OperationResult.Fail<ReportEntity>("请不要重复操作");
@@ -93,22 +95,23 @@ namespace NetDream.Modules.Contact.Repositories
             return model.Succeeded ? model.Result.Id : 0;
         }
 
-        public ReportEntity? Change(int id, int status)
+        public IOperationResult<ReportEntity> Change(int id, int status)
         {
-            var model = Get(id);
+            var model = db.Reports.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)
             {
-                return null;
+                return OperationResult<ReportEntity>.Fail("数据错误");
             }
             model.Status = status;
             db.Reports.Save(model);
             db.SaveChanges();
-            return model;
+            return OperationResult.Ok(model);
         }
 
         public void Remove(params int[] id)
         {
             db.Reports.Where(i => id.Contains(i.Id)).ExecuteDelete();
+            db.SaveChanges();
         }
     }
 }

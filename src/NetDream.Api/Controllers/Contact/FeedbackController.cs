@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.Contact.Entities;
+using NetDream.Modules.Contact.Forms;
 using NetDream.Modules.Contact.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Shared.Models;

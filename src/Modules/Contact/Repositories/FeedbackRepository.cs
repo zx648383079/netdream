@@ -38,24 +38,31 @@ namespace NetDream.Modules.Contact.Repositories
             return items;
         }
 
-        public FeedbackEntity Get(int id)
+        public IOperationResult<FeedbackEntity> Get(int id)
         {
-            return db.Feedbacks.Where(i => i.Id == id).Single();
+            var model = db.Feedbacks.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
+            {
+                return OperationResult<FeedbackEntity>.Fail("数据错误");
+            }
+            return OperationResult.Ok(model);
         }
 
-        public FeedbackEntity? Change(int id, string[] data)
+        public IOperationResult<FeedbackEntity> Change(int id, string[] data)
         {
             var res = db.Feedbacks.BatchToggle(id, data, ["status", "open_status"]);
-            if (res is not null)
+            if (res == null)
             {
-                db.SaveChanges();
+                return OperationResult<FeedbackEntity>.Fail("数据错误");
             }
-            return res;
+            db.SaveChanges();
+            return OperationResult.Ok(res);
         }
 
         public void Remove(params int[] id)
         {
             db.Feedbacks.Where(i => id.Contains(i.Id)).ExecuteDelete();
+            db.SaveChanges();
         }
     }
 }

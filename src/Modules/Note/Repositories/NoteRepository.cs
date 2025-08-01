@@ -2,7 +2,6 @@
 using NetDream.Modules.Note.Entities;
 using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Models;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
@@ -10,46 +9,46 @@ using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using System.Web;
 
 namespace NetDream.Modules.Note.Repositories
 {
     public class NoteRepository(NoteContext db, 
-        IClientContext environment, IUserRepository userStore,
+        IClientContext client, IUserRepository userStore,
         LocalizeRepository localize)
     {
         public const int STATUS_VISIBLE = 1;
         public const int STATUS_HIDE = 0;
 
-        public IPage<NoteEntity> GetManageList(string keywords = "", 
-            int user = 0, int page = 1)
+        public IPage<NoteListItem> ManageList(NoteQueryForm form)
         {
-            return db.Notes.Search(keywords, "content")
-                .When(user > 0, i => i.UserId == user).OrderByDescending(i => i.Id)
-                .ToPage(page);
+            var items = db.Notes.Search(form.Keywords, "content")
+                .When(form.User > 0, i => i.UserId == form.User)
+                .OrderByDescending(i => i.Id)
+                .ToPage(form, i => i.SelectAs());
+            userStore.Include(items.Items);
+            return items;
         }
-        public IPage<NoteListItem> GetList(QueryForm form,
-            int user = 0,
-            int id = 0, bool notice = false)
+        public IPage<NoteListItem> GetList(NoteQueryForm form)
         {
             var query = db.Notes.Search(form.Keywords, "content")
-                .When(id > 0, i => i.Id == id)
-                .When(notice, i => i.IsNotice == 1)
-                .When(user > 0, i => i.UserId == user);
-            if (environment.UserId > 0)
+                .When(form.Id > 0, i => i.Id == form.Id)
+                .When(form.Notice > 0, i => i.IsNotice == 1)
+                .When(form.User > 0, i => i.UserId == form.User);
+            if (client.UserId > 0)
             {
-                query = query.Where(i => i.Status == STATUS_VISIBLE || i.UserId == environment.UserId);
+                query = query.Where(i => i.Status == STATUS_VISIBLE || i.UserId == client.UserId);
             } else
             {
                 query = query.Where(i => i.Status == STATUS_VISIBLE);
             }
-            var items = query.OrderByDescending(i => i.Id).ToPage(form);
-            var res = new Page<NoteListItem>(items)
+            var items = query.OrderByDescending(i => i.Id).ToPage(form, i => i.SelectAs());
+            foreach (var item in items.Items)
             {
-                Items = items.Items.Select(i => new NoteListItem(i)).ToArray()
-            };
-            userStore.Include(res.Items);
-            return res;
+                item.Html = RenderHtml(item.Html);
+            }
+            userStore.Include(items.Items);
+            return items;
         }
 
         public NoteModel? Get(int id)
@@ -65,7 +64,7 @@ namespace NetDream.Modules.Note.Repositories
 
         public NoteModel? GetSelf(int id)
         {
-            var model = db.Notes.Where(i => i.Id == id && i.UserId == environment.UserId).Single()?.CopyTo<NoteModel>();
+            var model = db.Notes.Where(i => i.Id == id && i.UserId == client.UserId).Single()?.CopyTo<NoteModel>();
             if (model is not null)
             {
                 model.User = userStore.Get(model.UserId);
@@ -86,24 +85,30 @@ namespace NetDream.Modules.Note.Repositories
             {
                 model.UserId = userId;
             }
-            db.Notes.Save(model);
+            if (data.Id == 0 && userId == 0)
+            {
+                model.UserId = client.UserId;
+            }
+            db.Notes.Save(model, client.Now);
             db.SaveChanges();
             return OperationResult.Ok(model);
         }
 
-        public IOperationResult<NoteEntity> SaveSelf(NoteForm data)
+        public IOperationResult<NoteEntity> SelfSave(NoteForm data)
         {
-            return Save(data, environment.UserId);
+            return Save(data, client.UserId);
         }
 
         public void Remove(int id)
         {
             db.Notes.Where(i => i.Id == id).ExecuteDelete();
+            db.SaveChanges();
         }
 
-        public void RemoveSelf(int id)
+        public void SelfRemove(int id)
         {
-            db.Notes.Where(i => i.Id == id && i.UserId == environment.UserId).ExecuteDelete();
+            db.Notes.Where(i => i.Id == id && i.UserId == client.UserId).ExecuteDelete();
+            db.SaveChanges();
         }
 
         public string[] Suggestion(string keywords)
@@ -122,23 +127,24 @@ namespace NetDream.Modules.Note.Repositories
             return items;
         }
 
-        public NoteEntity? Change(int id, IDictionary<string, string> data)
+        public IOperationResult<NoteEntity> Change(int id, IDictionary<string, string> data)
         {
             var res = db.Notes.BatchToggle(id, data, "is_notice");
             if (res is null)
             {
-                return null;
+                return OperationResult.Fail<NoteEntity>("数据错误");
             }
             db.SaveChanges();
-            return res;
+            return OperationResult.Ok(res);
         }
 
         internal static string RenderHtml(string content)
         {
-            var res = WebUtility.HtmlEncode(content).Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+            var res = HttpUtility.HtmlEncode(content).Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
                 .Replace(" ", "&nbsp;");
             return string.Join("", res.Split('\n').Where(i => !string.IsNullOrWhiteSpace(i))
                 .Select(i => $"<p>{i}</p>"));
         }
+
     }
 }
