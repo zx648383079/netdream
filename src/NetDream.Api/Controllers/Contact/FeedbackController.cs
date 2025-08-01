@@ -2,7 +2,7 @@
 using NetDream.Api.Base.Http;
 using NetDream.Modules.Contact.Entities;
 using NetDream.Modules.Contact.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.Contact

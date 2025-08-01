@@ -4,7 +4,7 @@ using NetDream.Api.Base.Http;
 using NetDream.Modules.Navigation.Entities;
 using NetDream.Modules.Navigation.Forms;
 using NetDream.Modules.Navigation.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers.Entities;

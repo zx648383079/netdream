@@ -1,7 +1,7 @@
 ﻿using NetDream.Shared.Converters;
 using System.Collections.Generic;
 
-namespace NetDream.Modules.OpenPlatform.Models
+namespace NetDream.Modules.OpenPlatform
 {
     public class BaseResponse
     {

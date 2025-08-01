@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.OnlineDisk.Entities
 {
     
-    public class FileEntity
+    public class FileEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
@@ -11,7 +12,7 @@ namespace NetDream.Modules.OnlineDisk.Entities
         public string Md5 { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string Thumb { get; set; } = string.Empty;
-        public string Size { get; set; } = string.Empty;
+        public long Size { get; set; }
         
         public int UpdatedAt { get; set; }
         

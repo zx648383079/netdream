@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.Document.Entities;
 using NetDream.Modules.Document.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
 
 namespace NetDream.Api.Controllers.Document

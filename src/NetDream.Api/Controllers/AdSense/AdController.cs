@@ -3,7 +3,7 @@ using NetDream.Api.Base.Http;
 using NetDream.Modules.AdSense.Entities;
 using NetDream.Modules.AdSense.Models;
 using NetDream.Modules.AdSense.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 
 namespace NetDream.Api.Controllers.AdSense
 {

@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Modules.UserIdentity.Repositories;
 using NetDream.Modules.ResourceStore.Repositories;
 using NetDream.Modules.ResourceStore.Models;
 using NetDream.Modules.ResourceStore.Forms;
 using NetDream.Modules.ResourceStore.Entities;
 using NetDream.Shared.Models;
+using NetDream.Modules.OpenPlatform;
 
 namespace NetDream.Api.Controllers.ResourceStore
 {

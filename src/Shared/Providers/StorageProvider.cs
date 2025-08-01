@@ -4,6 +4,7 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers.Context;
 using NetDream.Shared.Providers.Entities;
+using NetDream.Shared.Providers.Forms;
 using NetDream.Shared.Providers.Models;
 using System;
 using System.IO;
@@ -186,26 +187,18 @@ namespace NetDream.Shared.Providers
             return null;
         }
 
-        public IPage<FileEntity> Search(string keywords, string[] extension, 
-            int page = 1)
+        public IPage<FileEntity> Search(StorageQueryForm form)
         {
-            return Search(keywords, extension, _tag, page);
-        }
-
-        public IPage<FileEntity> Search(string keywords, string[] extension,
-            int folder,
-            int page = 1)
-        {
-            var query = db.Files.Where(i => i.Folder == folder);
-            if (string.IsNullOrWhiteSpace(keywords))
+            var query = db.Files.Where(i => i.Folder == form.Folder);
+            if (string.IsNullOrWhiteSpace(form.Keywords))
             {
-                query = query.Where(i => i.Name.Contains(keywords));
+                query = query.Where(i => i.Name.Contains(form.Keywords));
             }
-            if (extension.Length > 0)
+            if (form.Extension?.Length > 0)
             {
-                query = query.Where(i => extension.Contains(i.Extension));
+                query = query.Where(i => form.Extension.Contains(i.Extension));
             }
-            var res = new Page<FileEntity>(query.Count(), page);
+            var res = new Page<FileEntity>(query.Count(), form.Page);
             if (res.IsEmpty)
             {
                 return res;

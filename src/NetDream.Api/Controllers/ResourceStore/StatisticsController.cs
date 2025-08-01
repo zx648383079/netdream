@@ -5,6 +5,7 @@ using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Modules.UserIdentity.Repositories;
 using NetDream.Modules.ResourceStore.Repositories;
 using NetDream.Modules.ResourceStore.Models;
+using NetDream.Modules.OpenPlatform;
 
 namespace NetDream.Api.Controllers.ResourceStore
 {

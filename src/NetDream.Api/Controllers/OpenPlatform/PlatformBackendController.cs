@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.OpenPlatform.Entities;
 using NetDream.Modules.OpenPlatform.Forms;
 using NetDream.Modules.OpenPlatform.Models;
@@ -9,7 +10,7 @@ using NetDream.Modules.UserIdentity.Repositories;
 
 namespace NetDream.Api.Controllers.OpenPlatform
 {
-    [Route("open/admin/[controller]")]
+    [Route("open/admin/platform")]
     [Authorize(Roles = IdentityRepository.Administrator)]
     [ApiController]
     public class PlatformBackendController(PlatformRepository repository) : JsonController

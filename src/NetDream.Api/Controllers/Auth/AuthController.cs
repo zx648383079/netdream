@@ -8,7 +8,7 @@ using NetDream.Api.Models;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Models;
 using NetDream.Modules.Auth.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserAccount.Models;
 using NetDream.Shared.Interfaces.Entities;
 using System;

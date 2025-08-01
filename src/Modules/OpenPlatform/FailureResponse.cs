@@ -1,4 +1,4 @@
-﻿namespace NetDream.Modules.OpenPlatform.Models
+﻿namespace NetDream.Modules.OpenPlatform
 {
     public class FailureResponse
     {

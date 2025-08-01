@@ -4,7 +4,7 @@ using NetDream.Api.Base.Http;
 using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
 using NetDream.Modules.Forum.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
 
 namespace NetDream.Api.Controllers.Forum

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.ResourceStore.Entities;
 using NetDream.Modules.ResourceStore.Forms;
 using NetDream.Modules.ResourceStore.Models;

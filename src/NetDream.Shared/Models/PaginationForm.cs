@@ -28,5 +28,18 @@ namespace NetDream.Shared.Models
         public string? Sort { get; set; } = string.Empty;
 
         public string? Order { get; set; } = string.Empty;
+
+        public QueryForm()
+        {
+            
+        }
+
+        public QueryForm(QueryForm form)
+            : base(form.Page, form.PerPage)
+        {
+            Keywords = form.Keywords;
+            Sort = form.Sort;
+            Order = form.Order;
+        }
     } 
 }

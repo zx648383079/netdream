@@ -4,7 +4,7 @@ using NetDream.Modules.Document.Entities;
 using NetDream.Modules.Document.Forms;
 using NetDream.Modules.Document.Models;
 using NetDream.Modules.Document.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 

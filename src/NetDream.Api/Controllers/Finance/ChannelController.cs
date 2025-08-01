@@ -4,7 +4,7 @@ using NetDream.Api.Base.Http;
 using NetDream.Modules.Finance.Entities;
 using NetDream.Modules.Finance.Forms;
 using NetDream.Modules.Finance.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 
 namespace NetDream.Api.Controllers.Finance
 {

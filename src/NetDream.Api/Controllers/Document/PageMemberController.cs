@@ -4,7 +4,7 @@ using NetDream.Api.Base.Http;
 using NetDream.Modules.Document.Entities;
 using NetDream.Modules.Document.Forms;
 using NetDream.Modules.Document.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 
 namespace NetDream.Api.Controllers.Document
 {

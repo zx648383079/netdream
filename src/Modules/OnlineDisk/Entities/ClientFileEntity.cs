@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.OnlineDisk.Entities
 {
     
-    public class ClientFileEntity
+    public class ClientFileEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

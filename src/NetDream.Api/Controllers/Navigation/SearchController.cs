@@ -2,7 +2,7 @@
 using NetDream.Api.Base.Http;
 using NetDream.Modules.Navigation.Models;
 using NetDream.Modules.Navigation.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.Navigation

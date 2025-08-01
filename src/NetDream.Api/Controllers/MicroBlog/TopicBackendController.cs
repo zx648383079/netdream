@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.MicroBlog.Models;
 using NetDream.Modules.MicroBlog.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
 using NetDream.Shared.Models;
 

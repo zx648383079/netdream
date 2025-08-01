@@ -5,7 +5,7 @@ using NetDream.Modules.Forum.Entities;
 using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
 using NetDream.Modules.Forum.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 using NetDream.Shared.Models;
 using NetDream.Shared.Notifications;
 

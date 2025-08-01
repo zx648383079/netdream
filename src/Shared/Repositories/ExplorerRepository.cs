@@ -3,6 +3,8 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Entities;
+using NetDream.Shared.Providers.Forms;
+using NetDream.Shared.Repositories.Forms;
 using NetDream.Shared.Repositories.Models;
 using System;
 using System.Collections.Generic;
@@ -109,11 +111,10 @@ namespace NetDream.Shared.Repositories
             }).ToArray();
         }
 
-        public IPage<VirtualFileItem> Search(string path = "", 
-            string keywords = "", string filter = "", int page = 1)
+        public IPage<VirtualFileItem> Search(ExplorerQueryForm form)
         {
-            var (drive, p, folder) = SplitPath(path);
-            path = p;
+            var (drive, p, folder) = SplitPath(form.Path);
+            var path = p;
             if (string.IsNullOrWhiteSpace(drive))
             {
                 return new Page<VirtualFileItem>(DriveList());
@@ -121,7 +122,10 @@ namespace NetDream.Shared.Repositories
             if (string.IsNullOrWhiteSpace(folder))
             {
                 return drive switch {
-                   "image" or "video" or "document" => SearchWithType(drive, keywords, page),
+                   "image" or "video" or "document" => SearchWithType(new ExplorerQueryForm(form)
+                   {
+                       Type = drive
+                   }),
                     _ => new Page<VirtualFileItem>(),
                 };
             }
@@ -134,11 +138,11 @@ namespace NetDream.Shared.Repositories
             var info = new DirectoryInfo(folder);
             foreach (var item in info.EnumerateDirectories())
             {
-                if (!IsMatch(keywords, item.Name))
+                if (!IsMatch(form.Keywords, item.Name))
                 {
                     continue;
                 }
-                if (!IsFilterFile(filter, true, string.Empty))
+                if (!IsFilterFile(form.Filter, true, string.Empty))
                 {
                     continue;
                 }
@@ -150,11 +154,11 @@ namespace NetDream.Shared.Repositories
             }
             foreach (var item in info.EnumerateFiles())
             {
-                if (!IsMatch(keywords, item.Name))
+                if (!IsMatch(form.Keywords, item.Name))
                 {
                     continue;
                 }
-                if (!IsFilterFile(filter, false, item.Extension))
+                if (!IsFilterFile(form.Filter, false, item.Extension))
                 {
                     continue;
                 }
@@ -292,11 +296,11 @@ namespace NetDream.Shared.Repositories
             return FileRepository.IsTypeExtension(ext, filter);
         }
 
-        public IPage<VirtualFileItem> SearchWithType(string type, string keywords, int page = 1)
+        public IPage<VirtualFileItem> SearchWithType(ExplorerQueryForm form)
         {
             var provider = storage.PublicStore();
-            var items = provider.Search(keywords, 
-                FileRepository.TypeExtension(type).Split('|'), page);
+            var items = provider.Search(form.Keywords, 
+                FileRepository.TypeExtension(form.Type).Split('|'), form.Page);
             //foreach (var item in items.Items)
             //{
             //    if (type == "image")
@@ -311,10 +315,9 @@ namespace NetDream.Shared.Repositories
         }
 
 
-        public IPage<FileEntity> StorageSearch(
-            string keywords = "", int tag = 0, int page = 1)
+        public IPage<FileEntity> StorageSearch(StorageQueryForm form)
         {
-            return storage.Search(keywords, [], tag, page);
+            return storage.Search(form);
         }
 
         public void StorageRemove(int[] id)

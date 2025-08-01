@@ -5,7 +5,7 @@ using NetDream.Modules.Navigation.Entities;
 using NetDream.Modules.Navigation.Forms;
 using NetDream.Modules.Navigation.Models;
 using NetDream.Modules.Navigation.Repositories;
-using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Modules.OpenPlatform;
 
 namespace NetDream.Api.Controllers.Navigation
 {

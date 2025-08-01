@@ -65,8 +65,4 @@
     <ProjectReference Include="..\Modules\Shop\Shop.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\OnlineDisk\" />
-  </ItemGroup>
-
 </Project>

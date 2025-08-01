@@ -5,6 +5,7 @@ using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Modules.UserIdentity.Repositories;
 using NetDream.Modules.TradeTracker.Repositories;
 using NetDream.Modules.TradeTracker.Models;
+using NetDream.Modules.OpenPlatform;
 
 namespace NetDream.Api.Controllers.TradeTracker
 {

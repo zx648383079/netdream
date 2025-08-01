@@ -1,14 +1,15 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.OnlineDisk.Entities
 {
     
-    public class ServerEntity
+    public class ServerEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
         public string Token { get; set; } = string.Empty;
         public string Ip { get; set; } = string.Empty;
-        public string Port { get; set; } = string.Empty;
+        public int Port { get; set; }
         
         public byte CanUpload { get; set; }
         

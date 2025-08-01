@@ -1,6 +1,6 @@
 ﻿using NetDream.Shared.Interfaces;
 
-namespace NetDream.Modules.OpenPlatform.Models
+namespace NetDream.Modules.OpenPlatform
 {
     public class PageResponse<T>: DataResponse<T>
     {
