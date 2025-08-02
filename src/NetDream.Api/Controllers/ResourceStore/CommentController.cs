@@ -56,7 +56,7 @@ namespace NetDream.Api.Controllers.ResourceStore
         [HttpGet]
         [Route("[action]")]
         [Authorize]
-        [ProducesResponseType(typeof(PageResponse<AgreeResult>), 200)]
+        [ProducesResponseType(typeof(AgreeResult), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Agree(int id)
         {
@@ -65,12 +65,12 @@ namespace NetDream.Api.Controllers.ResourceStore
             {
                 return RenderFailure(res.Message);
             }
-            return RenderData(true);
+            return Render(res.Result);
         }
         [HttpGet]
         [Route("[action]")]
         [Authorize]
-        [ProducesResponseType(typeof(PageResponse<AgreeResult>), 200)]
+        [ProducesResponseType(typeof(AgreeResult), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Disagree(int id)
         {
@@ -79,7 +79,7 @@ namespace NetDream.Api.Controllers.ResourceStore
             {
                 return RenderFailure(res.Message);
             }
-            return RenderData(true);
+            return Render(res.Result);
         }
 
         [HttpGet]

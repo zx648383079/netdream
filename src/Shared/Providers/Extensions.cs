@@ -148,6 +148,11 @@ namespace NetDream.Shared.Providers
             return source.OrderBy<TSource, TProperty>(sort, desc.Equals("desc", StringComparison.InvariantCultureIgnoreCase));
         }
 
+        public static IOrderedQueryable<TSource> OrderBy<TSource>(this IQueryable<TSource> source, QueryForm form)
+        {
+            return OrderBy<TSource, int>(source, form.Sort, form.Order);
+        }
+
         public static IOrderedQueryable<TSource> OrderBy<TSource, TProperty>(this IQueryable<TSource> source, string sort, bool isDesc)
         {
             var methodName = isDesc ? "OrderByDescending" : "OrderBy";

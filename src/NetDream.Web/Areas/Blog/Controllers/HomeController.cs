@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NetDream.Modules.Blog.Forms;
 using NetDream.Modules.Blog.Repositories;
 
 namespace NetDream.Web.Areas.Blog.Controllers
@@ -12,20 +13,20 @@ namespace NetDream.Web.Areas.Blog.Controllers
             _repository = repository;
         }
 
-        public IActionResult Index(int page = 1)
+        public IActionResult Index([FromQuery] BlogQueryForm form)
         {
             ViewData["categories"] = _repository.Categories();
-            ViewData["items"] = _repository.GetPage(page);
+            ViewData["items"] = _repository.GetList(form);
             ViewData["newItems"] = _repository.GetNewBlogs(4);
             ViewData["fullUrl"] = $"{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
-            ViewData["pageIndex"] = page;
+            ViewData["pageIndex"] = form.Page;
             return View();
         }
 
         public IActionResult Detail(int id)
         {
             ViewData["categories"] = _repository.Categories();
-            ViewData["data"] = _repository.GetBlog(id);
+            ViewData["data"] = _repository.Get(id).Result;
             ViewData["fullUrl"] = $"{HttpContext.Request.PathBase}{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
             return View();
         }

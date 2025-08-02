@@ -14,7 +14,7 @@ namespace NetDream.Modules.Blog.Forms
 
     public class BlogBatchResult
     {
-        public CategoryListItem[]? Categories { get; set; }
+        public CategoryLabelItem[]? Categories { get; set; }
         public BlogListItem[]? NewBlog { get; set; }
         public CommentListItem[]? NewComment { get; set; }
 

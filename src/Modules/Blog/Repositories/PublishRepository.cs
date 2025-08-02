@@ -35,18 +35,16 @@ namespace NetDream.Modules.Blog.Repositories
         public const byte OPEN_PASSWORD = 5; // 需要密码
         public const byte OPEN_BUY = 6; // 需要购买
 
-        public IPage<BlogListItem> GetList(string keywords = "", 
-            int category = 0, int status = 0, 
-            int type = 0, string language = "", 
-            int page = 1)
+        public IPage<BlogListItem> GetList(BlogQueryForm form)
         {
-            var items = db.Blogs.Search(keywords, "title")
-                .When(category > 0, i => i.TermId == category)
-                .When(type > 0, i => i.Type == type - 1)
-                .When(status > 0, i => i.PublishStatus == status - 1, i => i.PublishStatus == PUBLISH_STATUS_AUTO_SAVE)
-                .When(language, i => i.Language == language)
+            var items = db.Blogs.Search(form.Keywords, "title")
+                .When(form.Category > 0, i => i.TermId == form.Category)
+                .When(form.Type > 0, i => i.Type == form.Type - 1)
+                .When(form.Status > 0, i => i.PublishStatus == form.Status - 1, 
+                i => i.PublishStatus == PUBLISH_STATUS_AUTO_SAVE)
+                .When(form.Language, i => i.Language == form.Language)
                 .OrderByDescending(i => i.Id)
-                .ToPage(page, query => query.Select<BlogEntity, BlogListItem>());
+                .ToPage(form, query => query.SelectAs());
             CategoryRepository.Include(db, items.Items);
             foreach (var item in items.Items)
             {

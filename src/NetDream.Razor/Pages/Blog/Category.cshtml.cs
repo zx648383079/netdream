@@ -13,7 +13,7 @@ namespace NetDream.Razor.Pages.Blog
             _repository = repository;
         }
 
-        public CategoryListItem[] Items;
+        public CategoryLabelItem[] Items;
 
         public void OnGet()
         {

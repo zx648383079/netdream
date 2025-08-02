@@ -1,4 +1,5 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
+using System;
 
 namespace NetDream.Shared.Providers.Entities
 {

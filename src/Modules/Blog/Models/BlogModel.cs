@@ -44,6 +44,8 @@ namespace NetDream.Modules.Blog.Models
         public IUser? User { get; set; }
         public bool IsLocalization { get; set; }
 
+        public bool IsRecommended { get; set; }
+
         [JsonMeta]
         public BlogMetaModel ExtraData { get; set; } = new();
     }

@@ -1,17 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Blog.Entities;
-using NetDream.Modules.Blog.Forms;
 using NetDream.Modules.Blog.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
+using NetDream.Shared.Providers.Forms;
 using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using CommentForm = NetDream.Modules.Blog.Forms.CommentForm;
 
 namespace NetDream.Modules.Blog.Repositories
 {
@@ -24,26 +25,22 @@ namespace NetDream.Modules.Blog.Repositories
         ISystemFeedback feedback,
         LogRepository logStore)
     {
-        public IPage<CommentListItem> GetList(int blogId, int parentId = 0, 
-            bool isHot = false, 
-            string sort = "created_at", 
-            string order = "desc", int page = 1)
+        public IPage<CommentListItem> GetList(CommentQueryForm form, bool isHot = false)
         {
-            (sort, order) = SearchHelper.CheckSortOrder(sort, order, 
-                ["created_at", "id", "agree_count"]);
-
-            var query = db.Comments.Where(i => i.Approved == 1 && i.BlogId == blogId && i.ParentId == parentId);
+            SearchHelper.CheckSortOrder(form, ["created_at", "id", "agree_count"]);
+            var query = db.Comments.Where(i => i.Approved == 1 && i.BlogId == form.Target 
+            && i.ParentId == form.Parent);
             if (isHot)
             {
                 query = query.Where(i => i.AgreeCount > 0)
                     .OrderByDescending(i => i.AgreeCount);
             } else
             {
-                query = query.OrderBy<CommentEntity, int>(sort, order);
+                query = query.OrderBy(form);
             }
-            var items = query.ToPage(page, i => i.Select<CommentEntity, CommentListItem>());
+            var items = query.ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
-            if (parentId == 0)
+            if (form.Parent == 0)
             {
                 IncludeReply(items.Items);
             }
@@ -58,7 +55,7 @@ namespace NetDream.Modules.Blog.Repositories
                 return;
             }
             var data = db.Comments.Where(i => idItems.Contains(i.ParentId))
-                .Select<CommentEntity, CommentListItem>().ToArray();
+                .SelectAs().ToArray();
             if (!data.Any())
             {
                 return;
@@ -229,46 +226,45 @@ namespace NetDream.Modules.Blog.Repositories
         {
             var items = db.Comments.Where(i => i.BlogId == blogId && i.ParentId == 0 && i.AgreeCount > 0)
                 .OrderByDescending(i => i.AgreeCount)
-                .Take(limit).Select<CommentEntity, CommentListItem>().ToArray();
+                .Take(limit).SelectAs().ToArray();
             userStore.Include(items);
             return items;
         }
 
-        /**
-         * 用于后台管理
-         * @param int blog
-         * @param string keywords
-         * @param string email
-         * @param string name
-         */
-        public IPage<CommentListItem> CommentList(int blog = 0, 
-            string keywords = "", 
-            string email = "", 
-            string name = "",
-            int page = 1)
+        /// <summary>
+        /// 用于后台管理
+        /// </summary>
+        /// <param name="blog"></param>
+        /// <param name="keywords"></param>
+        /// <param name="email"></param>
+        /// <param name="name"></param>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        public IPage<CommentListItem> ManageList(CommentQueryForm form)
         {
-            var items = db.Comments.When(blog > 0, i => i.BlogId == blog)
-                .When(email, i => i.Email == email)
-                .Search(keywords, "content")
-                .Search(name, "name")
-                .OrderByDescending(i => i.Id).ToPage(page, i => i.Select<CommentEntity, CommentListItem>());
+            var items = db.Comments.When(form.Target > 0, i => i.BlogId == form.Target)
+                .Search(form.Keywords, "content", "email", "name")
+                .OrderByDescending(i => i.Id)
+                .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
             WithBlog(items.Items);
             return items;
         }
 
-        public void Remove(int id)
+        public void ManageRemove(int id)
         {
             db.Comments.Where(i => i.Id == id).ExecuteDelete();
+            db.SaveChanges();
         }
 
-        /**
-         * 前台删除，博主或发表人
-         * @param int id
-         */
+        /// <summary>
+        /// 前台删除，博主或发表人
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IOperationResult RemoveSelf(int id)
         {
-            var model = db.Comments.Where(i => i.Id == id).Single();
+            var model = db.Comments.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)
             {
                 return OperationResult.Fail("评论删除失败");
@@ -297,16 +293,17 @@ namespace NetDream.Modules.Blog.Repositories
         {
             var items = db.Comments.Where(i => i.Approved == 1)
                 .OrderByDescending(i => i.CreatedAt)
-                .Take(4).Select<CommentEntity, CommentListItem>().ToArray();
+                .Take(4).SelectAs().ToArray();
             WithBlog(items);
             return items;
         }
 
-        public void Report(int id)
+        public IOperationResult Report(int id)
         {
             var model = db.Comments.Where(i => i.Id == id).Single();
             feedback.Report(ModuleModelType.TYPE_BLOG_COMMENT, id,
                 string.Format("“{0}”", model.Content), "举报博客评论");
+            return OperationResult.Ok();
         }
 
         public IOperationResult<AgreeResult> Disagree(int id)
@@ -385,16 +382,17 @@ namespace NetDream.Modules.Blog.Repositories
             return OperationResult.Ok(data);
         }
 
-        public CommentEntity? ManageToggle(int id)
+        public IOperationResult<CommentEntity> ManageToggle(int id)
         {
-            var model = db.Comments.Where(i => i.Id == id).Single();
+            var model = db.Comments.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)
             {
-                return null;
+                return OperationResult<CommentEntity>.Fail("数据错误");
             }
             model.Approved = model.Approved < 1 ? 1 : 0;
-            db.Update(model);
-            return model;
+            db.Comments.Update(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
         public bool CanComment(int blogId)
@@ -424,12 +422,11 @@ namespace NetDream.Modules.Blog.Repositories
             return CommentStatus(int.Parse(val));
         }
 
-        /**
-         * 获取用户的最后使用信息
-         * @param string email
-         * @return array
-         * @throws Exception
-         */
+        /// <summary>
+        /// 获取用户的最后使用信息
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
         public IOperationResult<CommentEntity> LastCommentator(string email)
         {
             var data = db.Comments.Where(i => i.Email == email)

@@ -14,12 +14,12 @@ namespace NetDream.Razor.Pages.Blog
         }
 
         public BlogModel Data;
-        public CategoryListItem[] Categories;
+        public CategoryLabelItem[] Categories;
         public string FullUrl;
 
         public void OnGet(int id)
         {
-            Data = _repository.GetBlog(id);
+            Data = _repository.Get(id).Result;
             Categories = _repository.Categories();
             FullUrl = $"{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
         }

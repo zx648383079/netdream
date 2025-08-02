@@ -15,6 +15,6 @@ namespace NetDream.Api.Models
     {
         public UserProfileModel? AuthProfile { get; set; }
         public IDictionary<string, object>? SeoConfigs { get; set; }
-        public CategoryModel[]? BlogCategories { get; set; }
+        public CategoryLabelItem[]? BlogCategories { get; set; }
     }
 }

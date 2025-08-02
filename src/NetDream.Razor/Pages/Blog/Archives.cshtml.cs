@@ -13,7 +13,7 @@ namespace NetDream.Razor.Pages.Blog
             _repository = repository;
         }
 
-        public BlogArchives[] Items;
+        public BlogArchiveItem[] Items;
 
         public void OnGet()
         {

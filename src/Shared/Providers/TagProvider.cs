@@ -14,9 +14,11 @@ namespace NetDream.Shared.Providers
     public class TagProvider(ITagContext db)
     {
 
-        public void Remove(int id) {
+        public void Remove(int id) 
+        {
             db.Tags.Where(i => i.Id == id).ExecuteDelete();
             db.TagLinks.Where(i => i.TagId == id).ExecuteDelete();
+            db.SaveChanges();
         }
 
         public IOperationResult<TagEntity> Save(TagForm data)

@@ -1,18 +1,23 @@
-﻿using NetDream.Modules.Blog.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Blog.Entities;
+using NetDream.Modules.Blog.Forms;
 using NetDream.Modules.Blog.Models;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Modules.Blog.Repositories
 {
     public class CategoryRepository(BlogContext db, 
         LocalizeRepository localize)
     {
-        private IList<CategoryModel> Boot()
+        private IList<CategoryLabelItem> Boot()
         {
-            var data = db.Categories.Select<CategoryEntity, CategoryModel>().ToArray();
+            var data = db.Categories.Select<CategoryEntity, CategoryLabelItem>().ToArray();
             var countItems = db.Blogs.Where(i => i.ParentId == 0)
                 .GroupBy(i => i.TermId)
                 .Select(i => new { TermId = i.Key, Count = i.Count()})
@@ -26,22 +31,41 @@ namespace NetDream.Modules.Blog.Repositories
             }
             return data;
         }
-        public IList<CategoryModel> Get()
+        public IList<CategoryLabelItem> Get()
         {
             return Boot();
         }
-        public CategoryModel? Get(int id)
+        public IOperationResult<CategoryEntity> Get(int id)
         {
-            foreach (var item in Boot())
+            var model = db.Categories.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
             {
-                if (item.Id == id)
-                {
-                    return item;
-                }
+                return OperationResult<CategoryEntity>.Fail("数据错误");
             }
-            return null;
+            return OperationResult.Ok(model);
         }
-        public IList<CategoryModel> LocalizeGet()
+
+        public IOperationResult<CategoryEntity> Save(CategoryForm data)
+        {
+            var model = data.Id > 0 ? db.Categories.Where(i => i.Id == data.Id)
+                .SingleOrDefault() :
+                new CategoryEntity();
+            if (model is null)
+            {
+                return OperationResult.Fail<CategoryEntity>("id error");
+            }
+            model.Name = data.Name;
+            db.Categories.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
+        }
+
+        public void Remove(int id)
+        {
+            db.Categories.Where(i => i.Id == id).ExecuteDelete();
+            db.SaveChanges();
+        }
+        public IList<CategoryLabelItem> LocalizeGet()
         {
             var items = Get();
             foreach (var item in items)
@@ -50,15 +74,20 @@ namespace NetDream.Modules.Blog.Repositories
             }
             return items;
         }
-        public CategoryModel? LocalizeGet(int id)
+        public IOperationResult<CategoryLabelItem> LocalizeGet(int id)
         {
-            var data = Get(id);
-            if (data is null)
+            var model = db.Categories.Where(i => i.Id == id).SingleOrDefault();
+            if (model is null)
             {
-                return data;
+                return OperationResult<CategoryLabelItem>.Fail("数据错误");
             }
-            data.Name = localize.FormatValueWidthPrefix(data, "name");
-            return data;
+            var blogCount = db.Blogs.Where(i => i.TermId == model.Id).Count();
+            return OperationResult.Ok(new CategoryLabelItem()
+            {
+                Id = model.Id,
+                Name = localize.FormatValueWidthPrefix(model, "name"),
+                BlogCount = blogCount
+            });
         }
 
 
@@ -70,7 +99,7 @@ namespace NetDream.Modules.Blog.Repositories
                 return;
             }
             var data = db.Categories.Where(i => idItems.Contains(i.Id))
-                .Select(i => new CategoryListItem()
+                .Select(i => new CategoryLabelItem()
                 {
                     Id = i.Id,
                     Name = i.Name,

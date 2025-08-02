@@ -30,7 +30,7 @@ namespace NetDream.Api.Controllers.Blog
             }
             if (form.Detail is not null)
             {
-                res.Detail = repository.GetBlog(form.Detail.Id, form.Detail.OpenKey);
+                res.Detail = repository.Get(form.Detail.Id, form.Detail.OpenKey).Result;
             }
             if (form.Relation is not null)
             {

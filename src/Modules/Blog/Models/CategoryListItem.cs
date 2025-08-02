@@ -1,12 +1,9 @@
-﻿using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Modules.Blog.Entities;
 
 namespace NetDream.Modules.Blog.Models
 {
-    public class CategoryListItem : IListLabelItem
+    public class CategoryListItem: CategoryEntity
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-
-        public int BlogCount { get; set; }
+        public int BlogCount { get; set; } = 0;
     }
 }

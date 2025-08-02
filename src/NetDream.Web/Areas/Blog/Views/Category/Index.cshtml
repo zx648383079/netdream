@@ -26,7 +26,7 @@
             <a asp-area="Blog" asp-controller="Tag" asp-action="Index">标签</a>
             <a asp-area="Blog" asp-controller="Archives" asp-action="Index">归档</a>
         </div>
-        @foreach (var item in ViewData["items"] as List<CategoryModel>)
+        @foreach (var item in ViewData["items"] as List<CategoryLabelItem>)
         {
             <div class="cat-item">
                 <a >@item.Name</a>
