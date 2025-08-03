@@ -16,7 +16,7 @@ namespace NetDream.Modules.Chat.Repositories
         IClientContext client,
         IUserRepository userStore)
     {
-        public GroupEntity[] All()
+        public GroupListItem[] All()
         {
             var ids = db.GroupUsers.Where(i => i.UserId == client.UserId)
                 .Select(i => i.GroupId)
@@ -26,6 +26,7 @@ namespace NetDream.Modules.Chat.Repositories
                 return [];
             }
             return db.Groups.Where(i => ids.Contains(i.Id))
+                .SelectAs()
                 .ToArray();
         }
 
@@ -53,12 +54,13 @@ namespace NetDream.Modules.Chat.Repositories
             return items;
         }
 
-        public IPage<GroupEntity> Search(string keywords = "", int page = 1)
+        public IPage<GroupListItem> Search(QueryForm form)
         {
             var ids = db.GroupUsers.Where(i => i.UserId == client.UserId)
                 .Select(i => i.GroupId)
                 .ToArray();
-            return db.Groups.When(ids.Length > 0, i => !ids.Contains(i.Id)).ToPage(page);
+            return db.Groups.When(ids.Length > 0, i => !ids.Contains(i.Id))
+                .ToPage(form, i => i.SelectAs());
         }
 
         public bool Canable(int id)
@@ -71,44 +73,54 @@ namespace NetDream.Modules.Chat.Repositories
             return db.Groups.Where(i => i.Id == id && i.UserId == client.UserId).Any();
         }
 
-        public IOperationResult Agree(int user, int id)
+        public IOperationResult Agree(ApplyForm data)
         {
-            if (!Manageable(id)) {
+            if (data.Group < 1)
+            {
+                return OperationResult.Fail("错误");
+            }
+            if (!Manageable(data.Group)) {
                 return OperationResult.Fail("无权限处理");
             }
-            var exist = db.GroupUsers.Where(i => i.GroupId == id && i.UserId == user).Any();
+            var exist = db.GroupUsers.Where(i => i.GroupId == data.Group && i.UserId == data.User).Any();
             if (exist)
             {
                 return OperationResult.Fail("已处理过");
             }
-            var userModel = userStore.Get(user);
+            var userModel = userStore.Get(data.User);
             if (userModel is null)
             {
-                db.Applies.Where(i => i.UserId == user && i.ItemType == 1 && i.ItemId == id)
+                db.Applies.Where(i => i.UserId == data.User && i.ItemType == 1 && i.ItemId == data.Group)
                     .ExecuteDelete();
+                db.SaveChanges();
                 return OperationResult.Fail("用户不存在");
             }
             db.GroupUsers.Save(new GroupUserEntity()
             {
-                GroupId = id,
-                UserId = user,
+                GroupId = data.Group,
+                UserId = data.User,
                 Name = userModel.Name,
                 RoleId = 0,
                 Status = 5,
             }, client.Now);
-            db.Applies.Where(i => i.UserId == user && i.ItemType == 1 && i.ItemId == id && i.Status == 0)
+            db.Applies.Where(i => i.UserId == data.User && i.ItemType == 1 && i.ItemId == data.Group && i.Status == 0)
                   .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, 1)
                   .SetProperty(i => i.UpdatedAt, client.Now));
-
+            db.SaveChanges();
             return OperationResult.Ok();
         }
 
-        public IOperationResult Apply(int id, string remark = "")
+        public IOperationResult Apply(ApplyForm data)
         {
-            if (Canable(id)) {
+            if (data.Group < 1)
+            {
+                return OperationResult.Fail("错误");
+            }
+            if (Canable(data.Group)) 
+            {
                 return OperationResult.Fail("你已加入该群");
             }
-            var exist = db.Groups.Where(i => i.Id == id).Any();
+            var exist = db.Groups.Where(i => i.Id == data.Group).Any();
             if (!exist)
             {
                 return OperationResult.Fail("群不存在");
@@ -116,23 +128,24 @@ namespace NetDream.Modules.Chat.Repositories
             db.Applies.Save(new ApplyEntity()
             {
                 ItemType = 1,
-                ItemId = id,
-                Remark = remark,
+                ItemId = data.Group,
+                Remark = data.Remark,
                 UserId = client.UserId,
                 Status = 0
             }, client.Now);
             return OperationResult.Ok();
         }
 
-        public IPage<ApplyModel> ApplyLog(int id, int page = 1)
+        public IPage<ApplyListItem> ApplyLog(int id, QueryForm form)
         {
             if (!Manageable(id)) {
                 // throw new Exception("无权限处理");
-                return new Page<ApplyModel>();
+                return new Page<ApplyListItem>();
             }
             var items = db.Applies.Where(i => i.ItemType == 1 && i.ItemId == id)
                 .OrderBy(i => i.Status)
-                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
+                .OrderByDescending(i => i.Id)
+                .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
             return items;
         }
@@ -163,6 +176,7 @@ namespace NetDream.Modules.Chat.Repositories
                 RoleId = 99,
                 Status = 5,
             }, client.Now);
+            db.SaveChanges();
             return OperationResult.Ok(model);
         }
 
@@ -181,6 +195,7 @@ namespace NetDream.Modules.Chat.Repositories
             db.GroupUsers.Where(i => i.GroupId == id).ExecuteDelete();
             db.Messages.Where(i => i.GroupId == id).ExecuteDelete();
             db.Histories.Where(i => i.ItemId == id && i.ItemType == 1).ExecuteDelete();
+            db.SaveChanges();
             return OperationResult.Ok();
         }
 

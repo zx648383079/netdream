@@ -70,7 +70,12 @@ namespace NetDream.Shared.Repositories
             throw new NotImplementedException();
         }
 
-        public IOperationResult<FileUploadResult> UploadImages(IUploadFile file)
+        public FileUploadResult[] UploadImages(IUploadFileCollection files)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<FileUploadResult> UploadImage(IUploadFile file)
         {
             throw new NotImplementedException();
         }
@@ -80,7 +85,12 @@ namespace NetDream.Shared.Repositories
             throw new NotImplementedException();
         }
 
-        public IOperationResult<FileUploadResult> UploadFiles(IUploadFile file)
+        public FileUploadResult[] UploadFiles(IUploadFileCollection files)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<FileUploadResult> UploadFile(IUploadFile file)
         {
             throw new NotImplementedException();
         }

@@ -6,21 +6,21 @@ using System.Linq;
 
 namespace NetDream.Modules.Chat.Models
 {
-    public class FriendGroupModel
+    public class FriendGroupListItem
     {
 
-        public FriendGroupModel()
+        public FriendGroupListItem()
         {
             
         }
 
-        public FriendGroupModel(int id, string name)
+        public FriendGroupListItem(int id, string name)
         {
             Id = id;
             Name = name;
         }
 
-        public FriendGroupModel(FriendClassifyEntity model)
+        public FriendGroupListItem(FriendClassifyEntity model)
         {
             Id = model.Id;
             Name = model.Name;
@@ -34,6 +34,6 @@ namespace NetDream.Modules.Chat.Models
 
         public int Count => Users.Count;
 
-        public List<FriendModel> Users { get; set; } = [];
+        public List<FriendListItem> Users { get; set; } = [];
     }
 }

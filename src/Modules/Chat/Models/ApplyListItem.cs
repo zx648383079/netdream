@@ -3,7 +3,7 @@ using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Chat.Models
 {
-    public class ApplyModel: ApplyEntity, IWithUserModel
+    public class ApplyListItem: ApplyEntity, IWithUserModel
     {
         public IUser? User { get; set; }
     }

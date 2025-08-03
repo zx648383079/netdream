@@ -7,7 +7,8 @@ namespace NetDream.Shared.Helpers
 {
     public class Deeplink(IEnvironment environment): IDeeplink
     {
-        protected string Schema() {
+        protected string Schema() 
+        {
             return environment.Deeplink;
         }
 

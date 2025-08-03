@@ -15,25 +15,25 @@ namespace NetDream.Modules.Chat.Repositories
         GroupRepository groupStore
         )
     {
-        public IPage<ApplyModel> GroupList(int id = 0, int page = 1)
+        public IPage<ApplyListItem> GroupList(int id = 0, int page = 1)
         {
             if (!groupStore.Manageable(id))
             {
                 // throw new Exception("无权限处理");
-                return new Page<ApplyModel>();
+                return new Page<ApplyListItem>();
             }
             var items = db.Applies.Where(i => i.ItemType == 1 && i.ItemId == id)
                 .OrderBy(i => i.Status)
-                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
+                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyListItem>();
             userStore.Include(items.Items);
             return items;
         }
 
-        public IPage<ApplyModel> GetList(int page = 1)
+        public IPage<ApplyListItem> GetList(int page = 1)
         {
             var items = db.Applies.Where(i => i.ItemType == 0 && i.ItemId == client.UserId)
                 .OrderBy(i => i.Status)
-                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyModel>();
+                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<ApplyEntity, ApplyListItem>();
             userStore.Include(items.Items);
             return items;
         }

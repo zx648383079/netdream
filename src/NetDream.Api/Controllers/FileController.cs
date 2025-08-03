@@ -19,7 +19,7 @@ namespace NetDream.Api.Controllers
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index(IFormFile file)
         {
-            var res = repository.UploadFiles(new FormUploadFile(file));
+            var res = repository.UploadFile(new FormUploadFile(file));
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
@@ -47,7 +47,7 @@ namespace NetDream.Api.Controllers
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Image(IFormFile file)
         {
-            var res = repository.UploadImages(new FormUploadFile(file));
+            var res = repository.UploadImage(new FormUploadFile(file));
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);

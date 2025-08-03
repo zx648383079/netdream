@@ -3,9 +3,8 @@ using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Chat.Models
 {
-    public class MessageModel: MessageEntity, IWithUserModel
+    public class FriendListItem: FriendEntity, IWithUserModel
     {
         public IUser? User { get; set; }
-        public IUser? Receive { get; set; }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using NetDream.Shared.Interfaces;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace NetDream.Api.Base.Http
@@ -20,6 +22,24 @@ namespace NetDream.Api.Base.Http
         public Stream OpenRead()
         {
             return data.OpenReadStream();
+        }
+    }
+
+    public class FormUploadFileCollection(IFormFileCollection data) : IUploadFileCollection
+    {
+        public int Count => data.Count;
+
+        public IEnumerator<IUploadFile> GetEnumerator()
+        {
+            foreach (var item in data)
+            {
+                yield return new FormUploadFile(item);
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

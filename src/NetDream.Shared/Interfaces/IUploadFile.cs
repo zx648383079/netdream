@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace NetDream.Shared.Interfaces
 {
@@ -11,5 +12,10 @@ namespace NetDream.Shared.Interfaces
         public Stream OpenRead();
 
         public void CopyTo(Stream output);
+    }
+
+    public interface IUploadFileCollection : IEnumerable<IUploadFile>
+    {
+        public int Count { get; }
     }
 }
