@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using NetDream.Shared.Providers;
 using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.MessageService.Models;
 
 namespace NetDream.Modules.MessageService.Repositories
 {
@@ -65,38 +66,35 @@ namespace NetDream.Modules.MessageService.Repositories
             return option.Get<SmsProtocolSetting>(MessageProtocol.OPTION_SMS_KEY);
         }
 
-        public void OptionSave(IProtocolSetting data, bool isMail = true)
+        public IOperationResult OptionSave(IProtocolSetting data, bool isMail = true)
         {
             // data = InputHelper.value(static.optionInput(isMail), data);
             option.InsertOrUpdate(isMail ? MessageProtocol.OPTION_MAIL_KEY : MessageProtocol.OPTION_SMS_KEY,
                 data, isMail ? "Mail Smtp 配置" : "SMS配置");
+            return OperationResult.Ok();
         }
 
-        public IPage<TemplateEntity> TemplateList(string keywords = "", int type = -1, 
-            int page = 1)
+        public IPage<TemplateListItem> TemplateList(TemplateQueryForm form)
         {
-            return db.Templates.Search(keywords, "name", "title")
-                .When(type > 0, i => i.Type == type)
+            return db.Templates.Search(form.Keywords, "name", "title")
+                .When(form.Type > 0, i => i.Type == form.Type)
                 .OrderByDescending(i => i.Id)
-                .Select(i => new TemplateEntity()
-                {
-                    Id = i.Id,
-                    Name = i.Name,
-                    Type = i.Type,
-                    TargetNo = i.TargetNo,
-                    Status = i.Status,
-                    CreatedAt = i.CreatedAt,
-                }).ToPage(page);
+                .ToPage(form, i => i.SelectAs());
         }
 
-        public TemplateEntity? Template(int id)
+        public IOperationResult<TemplateEntity> Template(int id)
         {
-            return db.Templates.Where(i => i.Id == id).Single();
+            var model = db.Templates.Where(i => i.Id == id).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult.Fail<TemplateEntity>("id is error");
+            }
+            return OperationResult.Ok(model);
         }
 
         public IOperationResult<TemplateEntity> TemplateSave(TemplateForm data)
         {
-            var model = data.Id > 0 ? db.Templates.Where(i => i.Id == data.Id).Single() :
+            var model = data.Id > 0 ? db.Templates.Where(i => i.Id == data.Id).SingleOrDefault() :
                 new TemplateEntity();
             if (model is null)
             {
@@ -159,31 +157,24 @@ namespace NetDream.Modules.MessageService.Repositories
             return res;
         }
 
-        public IPage<LogEntity> LogList(string keywords = "", 
-            int status = -1, int page = 1)
+        public IPage<LogListItem> LogList(LogQueryForm form)
         {
-            return db.Logs.Search(keywords, "target", "template_name")
-                .When(status > 0, i => i.Status == status)
+            return db.Logs.Search(form.Keywords, "target", "template_name")
+                .When(form.Status > 0, i => i.Status == form.Status)
                 .OrderByDescending(i => i.Id)
-                .Select(i => new LogEntity()
-                {
-                    Id = i.Id,
-                    Target = i.Target,
-                    TemplateName = i.TemplateName,
-                    Status = i.Status,
-                    Message = i.Message,
-                    CreatedAt = i.CreatedAt,
-                }).ToPage(page);
+                .ToPage(form, i => i.SelectAs());
         }
 
-        public void LogRemove(int id)
+        public IOperationResult LogRemove(int id)
         {
             db.Logs.Where(i => i.Id == id).ExecuteDelete();
+            return OperationResult.Ok();
         }
 
-        public void LogClear()
+        public IOperationResult LogClear()
         {
             db.Logs.ExecuteDelete();
+            return OperationResult.Ok();
         }
 
         public void InsertIf(string name, string title, string content, byte type = MessageProtocol.TYPE_TEXT)

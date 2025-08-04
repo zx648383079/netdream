@@ -66,8 +66,7 @@ namespace NetDream.Modules.Contact.Repositories
             mediator.Publish(ManageAction.Create(client, "friend_link",
                 string.Format("友情链接[{0}]:{1}，理由: {2}", model.Url,
                     model.Status > 0 ? "上架" : "下架", remark)
-                , ModuleModelType.TYPE_SYSTEM_FRIEND_LINK, id));
-            // SEORepository.ClearCache(["pages", "nodes"]);
+                , ModuleTargetType.SystemFriendLink, id));
             return OperationResult.Ok(model);
         }
 

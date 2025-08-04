@@ -1,8 +1,10 @@
 
+using NetDream.Shared.Interfaces.Entities;
+
 namespace NetDream.Modules.OnlineService.Entities
 {
     
-    public class CategoryUserEntity
+    public class CategoryUserEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

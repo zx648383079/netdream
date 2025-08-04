@@ -35,16 +35,22 @@ namespace NetDream.Shared.Notifications
         {
             return new BulletinRequest([], title, content, extraRule, type, 0, TimeHelper.TimestampNow());
         }
+
+        public static BulletinRequest CreateAt(IClientContext client, ILinkRuler ruler, 
+            int[] users, string title, string link)
+        {
+            return CreateLink(client, ruler, users, title, link, BulletinType.At);
+        }
+        public static BulletinRequest CreateLink(IClientContext client, ILinkRuler ruler,
+            int[] users, string title, string link, BulletinType type = BulletinType.At)
+        {
+            var tag = "[查看]";
+            return Create(client, users, 
+                title, tag, [
+                    ruler.FormatLink(tag, link)
+                ], type);
+        }
     }
 
-    public enum BulletinType : byte
-    {
-        Agree = 6,
-        At = 7,
-        Comment = 8,
 
-        ChatAt = 88,
-        Message = 96,
-        Other = 99
-    }
 }

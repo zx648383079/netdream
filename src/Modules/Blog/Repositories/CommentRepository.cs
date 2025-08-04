@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
+using NetDream.Shared.Notifications;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Forms;
 using NetDream.Shared.Repositories;
@@ -21,8 +23,7 @@ namespace NetDream.Modules.Blog.Repositories
         IClientContext client,
         IGlobeOption option,
         ILinkRuler ruler,
-        ISystemBulletin bulletin,
-        ISystemFeedback feedback,
+        IMediator mediator,
         LogRepository logStore)
     {
         public IPage<CommentListItem> GetList(CommentQueryForm form, bool isHot = false)
@@ -218,7 +219,9 @@ namespace NetDream.Modules.Blog.Repositories
             {
                 return rules;
             }
-            bulletin.SendAt([.. userIds], "我在博客评论总提到了你", "blog/" + blogId);
+            mediator.Publish(BulletinRequest.CreateAt(client, ruler, [.. userIds], 
+                "我在博客评论总提到了你", 
+                "blog/" + blogId));
             return rules;
         }
 
@@ -301,8 +304,8 @@ namespace NetDream.Modules.Blog.Repositories
         public IOperationResult Report(int id)
         {
             var model = db.Comments.Where(i => i.Id == id).Single();
-            feedback.Report(ModuleModelType.TYPE_BLOG_COMMENT, id,
-                string.Format("“{0}”", model.Content), "举报博客评论");
+            mediator.Publish(ReportRequest.Create(client, ModuleTargetType.BlogComment, id,
+                string.Format("“{0}”", model.Content), "举报博客评论"));
             return OperationResult.Ok();
         }
 

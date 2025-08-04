@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace NetDream.Modules.UserAccount.Listeners
 {
@@ -14,8 +15,8 @@ namespace NetDream.Modules.UserAccount.Listeners
         {
             var bulletin = new BulletinEntity()
             {
-                Title = notification.Title,
-                Content = notification.Content,
+                Title = HttpUtility.HtmlEncode(notification.Title),
+                Content = HttpUtility.HtmlEncode(notification.Content),
                 Type = (byte)notification.Type,
                 UserId = notification.Sender,
                 ExtraRule = notification.ExtraRule?.Length > 0 ? JsonSerializer.Serialize(notification.ExtraRule)

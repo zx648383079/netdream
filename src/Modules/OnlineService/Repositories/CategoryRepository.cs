@@ -2,7 +2,6 @@
 using NetDream.Modules.OnlineService.Entities;
 using NetDream.Modules.OnlineService.Forms;
 using NetDream.Modules.OnlineService.Models;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
@@ -15,21 +14,26 @@ namespace NetDream.Modules.OnlineService.Repositories
     public class CategoryRepository(OnlineServiceContext db, 
         IUserRepository userStore)
     {
-        public IPage<CategoryEntity> GetList(string keywords = "", int page = 1)
+        public IPage<CategoryEntity> GetList(QueryForm form)
         {
-            return db.Categories.Search(keywords, "name")
+            return db.Categories.Search(form.Keywords, "name")
                 .OrderByDescending(i => i.Id)
-                .ToPage(page);
+                .ToPage(form);
         }
 
-        public CategoryEntity? Get(int id)
+        public IOperationResult<CategoryEntity> Get(int id)
         {
-            return db.Categories.Where(i => i.Id == id).Single();
+            var model = db.Categories.Where(i => i.Id == id).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult.Fail<CategoryEntity>("id error");
+            }
+            return OperationResult.Ok(model);
         }
         public IOperationResult<CategoryEntity> Save(CategoryForm data)
         {
             var model = data.Id > 0 ? db.Categories.Where(i => i.Id == data.Id)
-                .Single() :
+                .SingleOrDefault() :
                 new CategoryEntity();
             if (model is null)
             {
@@ -44,6 +48,7 @@ namespace NetDream.Modules.OnlineService.Repositories
         public void Remove(int id)
         {
             db.Categories.Where(i => i.Id == id).ExecuteDelete();
+            db.SaveChanges();
         }
 
         public CategoryEntity[] All()
@@ -51,26 +56,25 @@ namespace NetDream.Modules.OnlineService.Repositories
             return db.Categories.ToArray();
         }
 
-        public IPage<CategoryUserModel> UserList(int category = 0, 
-            string keywords = "", int page = 1)
+        public IPage<CategoryUserListItem> UserList(UserQueryForm form)
         {
-            if (string.IsNullOrWhiteSpace(keywords))
+            if (string.IsNullOrWhiteSpace(form.Keywords))
             {
-                var res = db.CategoryUsers.When(category > 0, i=> i.CatId == category).ToPage(page)
-                    .CopyTo<CategoryUserEntity, CategoryUserModel>();
+                var res = db.CategoryUsers.When(form.Category > 0, i => i.CatId == form.Category)
+                    .ToPage(form, i => i.SelectAs());
                 userStore.Include(res.Items);
                 return res;
             }
-            var userId = db.CategoryUsers.When(category > 0, i => i.CatId == category)
+            var userId = db.CategoryUsers.When(form.Category > 0, i => i.CatId == form.Category)
                 .Select(i => i.UserId).ToArray();
-            userId = userStore.SearchUserId(keywords, userId, true);
+            userId = userStore.SearchUserId(form.Keywords, userId, true);
             if (userId.Length == 0)
             {
-                return new Page<CategoryUserModel>();
+                return new Page<CategoryUserListItem>();
             }
-            var items = db.CategoryUsers.When(category > 0, i => i.CatId == category)
-                .Where(i => userId.Contains(i.UserId)).ToPage(page)
-                .CopyTo<CategoryUserEntity, CategoryUserModel>();
+            var items = db.CategoryUsers.When(form.Category > 0, i => i.CatId == form.Category)
+                .Where(i => userId.Contains(i.UserId))
+                .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
             return items;
         }
@@ -106,20 +110,20 @@ namespace NetDream.Modules.OnlineService.Repositories
         public void UserRemove(int category, int[] user)
         {
             db.CategoryUsers.Where(i => i.CatId == category && user.Contains(i.UserId)).ExecuteDelete();
+            db.SaveChanges();
         }
 
-        public IPage<CategoryWordEntity> WordList(int category = 0, 
-            string keywords = "", int page = 1)
+        public IPage<CategoryWordEntity> WordList(UserQueryForm form)
         {
             return db.CategoryWords.Include(i => i.Category)
-                .Search(keywords, "content")
-                .When(category > 0, i => i.CatId == category)
-                .ToPage(page);
+                .Search(form.Keywords, "content")
+                .When(form.Category > 0, i => i.CatId == form.Category)
+                .ToPage(form);
         }
 
         public IOperationResult<CategoryWordEntity> WordSave(CategoryWordForm data)
         {
-            var model = data.Id > 0 ? db.CategoryWords.Where(i => i.Id == data.Id).Single() :
+            var model = data.Id > 0 ? db.CategoryWords.Where(i => i.Id == data.Id).SingleOrDefault() :
                 new CategoryWordEntity();
             if (model is null)
             {
@@ -135,6 +139,7 @@ namespace NetDream.Modules.OnlineService.Repositories
         public void WordRemove(int id)
         {
             db.CategoryWords.Where(i => i.Id == id).ExecuteDelete();
+            db.SaveChanges();
         }
 
         public CategoryEntity[] WordAll()

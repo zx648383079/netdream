@@ -16,41 +16,43 @@ namespace NetDream.Modules.OnlineService.Repositories
         IClientContext client,
         ILinkRuler ruler)
     {
-        public IList<MessageModel> GetList(int sessionId, 
-            int startTime, int lastId = 0)
+        public const byte TYPE_TEXT = 0;
+        public const byte TYPE_EMOJI = 1;
+        public const byte TYPE_IMAGE = 2;
+        public MessageListItem[] GetList(MessageQueryForm form)
         {
-            var query = db.Messages.Where(i => i.SessionId == sessionId);
-            if (startTime <= 0)
+            var query = db.Messages.Where(i => i.SessionId == form.SessionId);
+            if (form.StartTime <= 0)
             {
-                query = query.When(lastId > 0, i => i.Id < lastId)
+                query = query.When(form.LastId > 0, i => i.Id < form.LastId)
                     .OrderByDescending(i => i.CreatedAt)
                     .Take(10);
             }
             else
             {
-                query = query.Where(i => i.CreatedAt >= startTime)
+                query = query.Where(i => i.CreatedAt >= form.StartTime)
                     .OrderBy(i => i.CreatedAt);
             }
-            var data = query.ToArray().CopyTo<MessageEntity, MessageModel>();
+            var data = query.SelectAs().ToArray();
             userStore.Include(data);
             var guest = new GuestUser();
             foreach (var item in data)
             {
                 item.User??= guest;
             }
-            if (startTime <= 0)
+            if (form.StartTime <= 0)
             {
-                data.Reverse();
+                return data.Reverse().ToArray();
             }
             return data;
         }
 
-        public void Send(int sessionId, MessageForm data, byte sendType = 0)
+        public IOperationResult Send(int sessionId, MessageForm data, byte sendType = 0)
         {
-            var session = db.Sessions.Where(i => i.Id == sessionId).Single();
+            var session = db.Sessions.Where(i => i.Id == sessionId).SingleOrDefault();
             if (session is null)
             {
-                return;
+                return OperationResult.Fail("session 错误");
             }
             if (sendType < 1)
             {
@@ -58,8 +60,9 @@ namespace NetDream.Modules.OnlineService.Repositories
                 db.Sessions.Update(session);
                 db.SaveChanges();
             }
-            if (!SendMessage(sessionId, data, sendType)) {
-                return;
+            var res = SendMessage(sessionId, data, sendType);
+            if (!res.Succeeded) {
+                return res;
             }
             if (sendType < 1 && session.ServiceWord > 0)
             {
@@ -81,35 +84,38 @@ namespace NetDream.Modules.OnlineService.Repositories
                 }, client.Now);
                 db.SaveChanges();
             }
+            return OperationResult.Ok();
         }
 
-        public bool SendMessage(int sessionId, MessageForm data, byte sendType = 0)
+        public IOperationResult SendMessage(int sessionId, MessageForm data, byte sendType = 0)
         {
-            if (data.Content is string)
-            {
-                return CreateMessage(sessionId, data.Content,
+            return CreateMessage(sessionId, data.Content,
                     data.Type, sendType);
-            }
-            var success = false;
-            //foreach (var item in data.Content)
-            //{
-            //    if (string.IsNullOrWhiteSpace(item))
-            //    {
-            //        continue;
-            //    }
-            //    if (CreateMessage(sessionId, item, data.Type, sendType)) {
-            //        success = true;
-            //    }
-            //}
-            return success;
         }
 
-        public bool CreateMessage(int sessionId, string content, 
+        public IOperationResult SendMessage(int sessionId, MessageForm[] data, byte sendType = 0)
+        {
+            foreach (var item in data)
+            {
+                if (string.IsNullOrWhiteSpace(item.Content))
+                {
+                    continue;
+                }
+                var res = CreateMessage(sessionId, item.Content, item.Type, sendType);
+                if (!res.Succeeded)
+                {
+                    return res;
+                }
+            }
+            return OperationResult.Ok();
+        }
+
+        public IOperationResult CreateMessage(int sessionId, string content, 
             byte type = 0, byte sendType = 0, int userId = -1)
         {
             if (string.IsNullOrWhiteSpace(content))
             {
-                return false;
+                return OperationResult.Fail("内容不能为空");
             }
             var extra_rule = new List<LinkExtraRule>();
             if (type == 1)
@@ -133,7 +139,7 @@ namespace NetDream.Modules.OnlineService.Repositories
                 UpdatedAt = client.Now,
             });
             db.SaveChanges();
-            return true;
+            return OperationResult.Ok(true);
         }
 
         public int SessionId(string session_token = "")
@@ -168,6 +174,33 @@ namespace NetDream.Modules.OnlineService.Repositories
         public string EncodeSession(int sessionId)
         {
             return sessionId.ToString();
+        }
+
+        public MessageQueryResult MessageList(MessageQueryForm form)
+        {
+            form.SessionId = SessionId(form.SessionToken);
+            var res = new MessageQueryResult
+            {
+                Data = GetList(form),
+                SessionToken = EncodeSession(form.SessionId),
+                NextTime = client.Now + 1
+            };
+            return res;
+        }
+
+        public bool CSEnabled(int sessionId)
+        {
+            return new SessionRepository(db, client, userStore).HasRole(sessionId);
+        }
+
+        public MessageQueryResult CSMessageList(MessageQueryForm form)
+        {
+            var res = new MessageQueryResult
+            {
+                Data = GetList(form),
+                NextTime = client.Now + 1
+            };
+            return res;
         }
     }
 }

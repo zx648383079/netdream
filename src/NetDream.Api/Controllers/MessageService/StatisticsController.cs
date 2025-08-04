@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.MicroBlog.Repositories;
 using NetDream.Modules.UserIdentity.Repositories;
-using NetDream.Modules.MicroBlog.Models;
 using NetDream.Modules.OpenPlatform;
+using NetDream.Modules.MessageService.Models;
+using NetDream.Modules.MessageService.Repositories;
 
-namespace NetDream.Api.Controllers.MicroBlog
+namespace NetDream.Api.Controllers.MessageService
 {
-    [Route("open/micro/admin/[controller]")]
+    [Route("open/ms/admin/[controller]")]
     [Authorize(Roles = IdentityRepository.Administrator)]
     [ApiController]
     public class StatisticsController(StatisticsRepository repository) : JsonController

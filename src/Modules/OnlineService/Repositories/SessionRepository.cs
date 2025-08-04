@@ -1,4 +1,5 @@
 ﻿using NetDream.Modules.OnlineService.Entities;
+using NetDream.Modules.OnlineService.Forms;
 using NetDream.Modules.OnlineService.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
@@ -11,20 +12,20 @@ namespace NetDream.Modules.OnlineService.Repositories
         IClientContext client,
         IUserRepository userStore)
     {
-        public IPage<SessionModel> GetList(string keywords = "", int status = 0, int page = 1)
+        public IPage<SessionListItem> GetList(SessionQueryForm form)
         {
-            var items = db.Sessions.Search(keywords, "name", "ip")
-                .When(status > 0, i => i.Status == status - 1)
-                .OrderByDescending(i => i.Id).ToPage(page).CopyTo<SessionEntity, SessionModel>();
+            var items = db.Sessions.Search(form.Keywords, "name", "ip")
+                .When(form.Status > 0, i => i.Status == form.Status - 1)
+                .OrderByDescending(i => i.Id).ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
             return items;
         }
 
-        public SessionModel[] MyList()
+        public SessionListItem[] MyList()
         {
             var data = db.Sessions.Where(i => (i.Status == 0 && i.UpdatedAt> client.Now - 3600) 
                 || (i.Status > 0 && i.ServiceId == client.UserId && i.UpdatedAt > client.Now - 86400))
-                .OrderByDescending(i => i.Id).ToArray().CopyTo<SessionEntity, SessionModel>();
+                .OrderByDescending(i => i.Id).ToArray().CopyTo<SessionEntity, SessionListItem>();
             userStore.Include(data);
             var guest = new GuestUser();
             foreach (var item in data)
@@ -101,15 +102,14 @@ namespace NetDream.Modules.OnlineService.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 判断客服是否有权限查看
-         * @param int sessionId
-         * @return bool
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 判断客服是否有权限查看
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public bool HasRole(int sessionId)
         {
-            var model = db.Sessions.Where(i => i.Id == sessionId).Single();
+            var model = db.Sessions.Where(i => i.Id == sessionId).SingleOrDefault();
             if (model is null)
             {
                 return false;
@@ -120,5 +120,7 @@ namespace NetDream.Modules.OnlineService.Repositories
             }
             return model.ServiceId == client.UserId;
         }
+
+        
     }
 }

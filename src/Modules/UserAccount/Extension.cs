@@ -1,9 +1,12 @@
 ﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using NetDream.Modules.UserAccount.Entities;
 using NetDream.Modules.UserAccount.Listeners;
+using NetDream.Modules.UserAccount.Models;
 using NetDream.Modules.UserAccount.Repositories;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Notifications;
+using System.Linq;
 
 namespace NetDream.Modules.UserAccount
 {
@@ -23,6 +26,21 @@ namespace NetDream.Modules.UserAccount
             service.AddTransient<INotificationHandler<UserStatisticsRequest>, UserStatisticsHandler>();
             service.AddTransient<INotificationHandler<UserOpenStatisticsRequest>, UserOpenStatisticsHandler>();
             service.AddTransient<INotificationHandler<UserProfileCardRequest>, UserProfileCardHandler>();
+        }
+
+        internal static IQueryable<AccountLogListItem> SelectAs(this IQueryable<AccountLogEntity> query)
+        {
+            return query.Select(i => new AccountLogListItem()
+            {
+                Id = i.Id,
+                UserId = i.UserId,
+                ItemId = i.Id,
+                Money = i.Money,
+                Remark = i.Remark,
+                Status = i.Status,
+                Type = i.Type,
+                CreatedAt = i.CreatedAt,
+            });
         }
     }
 }
