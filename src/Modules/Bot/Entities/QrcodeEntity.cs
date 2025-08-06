@@ -1,13 +1,16 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Bot.Entities
 {
     
-    public class QrcodeEntity
+    public class QrcodeEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
         
         public int BotId { get; set; }
+
+        public string Name { get; set; } = string.Empty;
         public byte Type { get; set; }
         
         public byte SceneType { get; set; }
@@ -24,6 +27,6 @@ namespace NetDream.Modules.Bot.Entities
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }
-        public string Name { get; set; } = string.Empty;
+
     }
 }

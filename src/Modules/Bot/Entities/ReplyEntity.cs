@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Bot.Entities
 {
     
-    public class ReplyEntity
+    public class ReplyEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }

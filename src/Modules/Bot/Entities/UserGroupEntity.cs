@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Bot.Entities
 {
     
-    public class UserGroupEntity
+    public class UserGroupEntity : IIdEntity
     {
         
         public int Id { get; set; }

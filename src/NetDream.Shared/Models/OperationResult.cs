@@ -36,6 +36,9 @@ namespace NetDream.Shared.Models
         public static OperationResult<T> Ok<T>(T content)
             => OperationResult<T>.Ok(content);
 
+        public static OperationResult<T> OkOrFail<T>(T? content, string failureMessage = "数据错误")
+            => content is null ? Fail<T>(failureMessage) : OperationResult<T>.Ok(content);
+
         public static OperationResult<T> Fail<T>(IOperationResult result)
         {
             return OperationResult<T>.Fail(result);

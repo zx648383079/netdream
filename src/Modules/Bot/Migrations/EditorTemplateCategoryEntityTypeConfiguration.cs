@@ -4,9 +4,9 @@ using NetDream.Modules.Bot.Entities;
 
 namespace NetDream.Modules.Bot.Migrations
 {
-    public class EditorTemplateCategoryEntityTypeConfiguration : IEntityTypeConfiguration<EditorTemplateCategoryEntity>
+    public class EditorTemplateCategoryEntityTypeConfiguration : IEntityTypeConfiguration<EditorCategoryEntity>
     {
-        public void Configure(EntityTypeBuilder<EditorTemplateCategoryEntity> builder)
+        public void Configure(EntityTypeBuilder<EditorCategoryEntity> builder)
         {
             builder.ToTable("bot_editor_template_category", table => table.HasComment("微信图文模板分类"));
             builder.HasKey(i => i.Id);

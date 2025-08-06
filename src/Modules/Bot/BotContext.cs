@@ -7,13 +7,13 @@ namespace NetDream.Modules.Bot
     public class BotContext(DbContextOptions<BotContext> options): DbContext(options)
     {
         public DbSet<BotEntity> Bots {get; set; }
-        public DbSet<EditorTemplateCategoryEntity> EditorTemplateCategorys {get; set; }
+        public DbSet<EditorCategoryEntity> EditorCategories {get; set; }
         public DbSet<EditorTemplateEntity> EditorTemplates {get; set; }
         public DbSet<MediaEntity> Medias {get; set; }
         public DbSet<MenuEntity> Menus {get; set; }
-        public DbSet<MessageHistoryEntity> MessageHistorys {get; set; }
-        public DbSet<QrcodeEntity> Qrcodes {get; set; }
-        public DbSet<ReplyEntity> Replys {get; set; }
+        public DbSet<MessageHistoryEntity> MessageHistories {get; set; }
+        public DbSet<QrcodeEntity> Qrcode {get; set; }
+        public DbSet<ReplyEntity> Replies {get; set; }
         public DbSet<TemplateEntity> Templates {get; set; }
         public DbSet<UserEntity> Users {get; set; }
         public DbSet<UserGroupEntity> UserGroups {get; set; }

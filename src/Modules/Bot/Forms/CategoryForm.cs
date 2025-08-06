@@ -1,13 +1,13 @@
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace NetDream.Modules.Bot.Entities
+namespace NetDream.Modules.Bot.Forms
 {
-    
-    public class EditorTemplateCategoryEntity
+    public class CategoryForm
     {
-        
         public int Id { get; set; }
+        [Required]
         public string Name { get; set; } = string.Empty;
-        
+
         public int ParentId { get; set; }
     }
 }

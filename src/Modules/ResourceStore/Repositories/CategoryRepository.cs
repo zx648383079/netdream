@@ -36,6 +36,10 @@ namespace NetDream.Modules.ResourceStore.Repositories
                 return OperationResult.Fail<CategoryEntity>("id error");
             }
             model.Name = data.Name;
+            model.ParentId = data.ParentId;
+            model.Description = data.Description;
+            model.Keywords = data.Keywords;
+            model.IsHot = data.IsHot;
             db.Categories.Save(model);
             db.SaveChanges();
             return OperationResult.Ok(model);

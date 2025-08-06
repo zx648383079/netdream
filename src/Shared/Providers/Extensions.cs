@@ -339,7 +339,7 @@ namespace NetDream.Shared.Providers
             string[] data, params string[] allowColumn)
             where TSource : class, IIdEntity
         {
-            var model = db.Where(i => i.Id == id).Single();
+            var model = db.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)
             {
                 return null;
@@ -386,7 +386,7 @@ namespace NetDream.Shared.Providers
             IDictionary<string, string> data, params string[] allowColumn)
             where TSource : class, IIdEntity
         {
-            var model = db.Where(i => i.Id == id).Single();
+            var model = db.Where(i => i.Id == id).SingleOrDefault();
             return BatchToggle(db, model, data, allowColumn);
         }
 

@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Bot.Entities
 {
     
-    public class TemplateEntity
+    public class TemplateEntity : IIdEntity
     {
         
         public int Id { get; set; }

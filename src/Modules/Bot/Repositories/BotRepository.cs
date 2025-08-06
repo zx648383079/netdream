@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetDream.Modules.Bot.Adapters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -48,5 +49,23 @@ namespace NetDream.Modules.Bot.Repositories
          * 关注状态
          */
         public const int STATUS_SUBSCRIBED = 1;
+
+        /**
+       * 微信请求信息
+       */
+        public const byte TYPE_REQUEST = 1;
+        /**
+         * 微信请求后的系统响应信息
+         */
+        public const byte TYPE_RESPONSE = 2;
+        /**
+         * 主动客服消息
+         */
+        public const byte TYPE_CUSTOM = 3;
+
+        public IPlatformAdapter Entry(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

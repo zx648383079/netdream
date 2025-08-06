@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.Bot.Entities
 {
     
-    public class MessageHistoryEntity
+    public class MessageHistoryEntity : IIdEntity, ICreatedEntity
     {
         
         public int Id { get; set; }
