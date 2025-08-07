@@ -42,5 +42,33 @@ namespace NetDream.Modules.UserAccount
                 CreatedAt = i.CreatedAt,
             });
         }
+
+        internal static IQueryable<ActionLogListItem> SelectAs(this IQueryable<ActionLogEntity> query)
+        {
+            return query.Select(i => new ActionLogListItem()
+            {
+                Id = i.Id,
+                UserId = i.UserId,
+                Ip = i.Ip,
+                Action = i.Action,
+                Remark = i.Remark,
+                CreatedAt = i.CreatedAt,
+            });
+        }
+
+        internal static IQueryable<AdminLogListItem> SelectAs(this IQueryable<AdminLogEntity> query)
+        {
+            return query.Select(i => new AdminLogListItem()
+            {
+                Id = i.Id,
+                UserId = i.UserId,
+                Ip = i.Ip,
+                ItemId = i.ItemId,
+                ItemType = i.ItemType,
+                Action = i.Action,
+                Remark = i.Remark,
+                CreatedAt = i.CreatedAt,
+            });
+        }
     }
 }
