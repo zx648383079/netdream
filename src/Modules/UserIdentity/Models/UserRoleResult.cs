@@ -2,7 +2,7 @@
 
 namespace NetDream.Modules.UserIdentity.Models
 {
-    public class UserRole
+    public class UserRoleResult
     {
         public RoleEntity? Role { get; set; }
 

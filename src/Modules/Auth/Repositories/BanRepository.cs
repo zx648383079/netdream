@@ -3,6 +3,7 @@ using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.UserAccount;
 using NetDream.Modules.UserAccount.Repositories;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
@@ -26,16 +27,16 @@ namespace NetDream.Modules.Auth.Repositories
             {AuthRepository.OAUTH_TYPE_GITHUB, AuthRepository.ACCOUNT_TYPE_OAUTH_GITHUB }
         };
 
-        public void BanUser(int userId)
+        public IOperationResult BanUser(int userId)
         {
             if (userId == client.UserId)
             {
-                throw new Exception("不能拉黑自己");
+                return OperationResult.Fail("不能拉黑自己");
             }
             var user = userStore.GetProfile(userId);
             if (user is null)
             {
-                return;
+                return OperationResult.Fail("账户不存在");
             }
             Ban(user.Email, AuthRepository.ACCOUNT_TYPE_EMAIL);
             Ban(user.Mobile, AuthRepository.ACCOUNT_TYPE_MOBILE);
@@ -48,17 +49,15 @@ namespace NetDream.Modules.Auth.Repositories
             }
             userDB.Users.Where(i => i.Id == userId && i.Status >= UserRepository.STATUS_ACTIVE)
                 .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, UserRepository.STATUS_FROZEN));
-        
+            return OperationResult.Ok();
         }
 
-        /**
-         * 屏蔽
-         * @param string itemKey
-         * @param int itemType
-         * @param int platformId
-         * @return void
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 屏蔽
+        /// </summary>
+        /// <param name="itemKey"></param>
+        /// <param name="itemType"></param>
+        /// <param name="platformId"></param>
         public void Ban(string itemKey, int itemType = 0, int platformId = 0)
         {
             if (string.IsNullOrWhiteSpace(itemKey))
@@ -103,12 +102,12 @@ namespace NetDream.Modules.Auth.Repositories
             return false;
         }
 
-        /**
-         * 取消屏蔽
-         * @param string itemKey
-         * @param int itemType
-         * @param int platformId
-         */
+        /// <summary>
+        /// 取消屏蔽
+        /// </summary>
+        /// <param name="itemKey"></param>
+        /// <param name="itemType"></param>
+        /// <param name="platformId"></param>
         public void Unban(string itemKey, int itemType = -1, int platformId = 0)
         {
             if (itemType < 0)
@@ -118,17 +117,20 @@ namespace NetDream.Modules.Auth.Repositories
             }
             db.BanAccounts.Where(i => i.ItemKey == itemKey && i.ItemType == itemType && i.PlatformId == platformId)
                 .ExecuteDelete();
+            db.SaveChanges();
         }
 
-        public IPage<BanAccountEntity> GetList(string keywords, int page = 1)
+        public IPage<BanAccountEntity> GetList(QueryForm form)
         {
-            return db.BanAccounts.Search(keywords, "item_key")
-                .ToPage(page);
+            return db.BanAccounts.Search(form.Keywords, "item_key")
+                .OrderByDescending(i => i.Id)
+                .ToPage(form);
         }
 
         public void Remove(int id)
         {
             db.BanAccounts.Where(i => i.Id == id).ExecuteDelete();
+            db.SaveChanges();
         }
 
         public void RemoveUser(int userId)
@@ -149,7 +151,7 @@ namespace NetDream.Modules.Auth.Repositories
             }
             userDB.Users.Where(i => i.Id == userId && i.Status < UserRepository.STATUS_ACTIVE)
                 .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, UserRepository.STATUS_ACTIVE));
-   
+            db.SaveChanges();
         }
     }
 }

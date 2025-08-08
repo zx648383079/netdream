@@ -24,16 +24,16 @@ namespace NetDream.Modules.UserIdentity.Repositories
         /// </summary>
         public const byte STATUS_ACTIVATED = 1;
 
-        public IPage<EquityCardModel> GetList(string keywords = "", int page = 1)
+        public IPage<EquityCardListItem> GetList(QueryForm form)
         {
-            var items = db.EquityCards.Search(keywords, "name")
+            var items = db.EquityCards.Search(form.Keywords, "name")
                 .OrderByDescending(i => i.Id)
-                .ToPage(page).CopyTo<EquityCardEntity, EquityCardModel>();
+                .ToPage(form, i => i.SelectAs());
             WithAmount(items.Items);
             return items;
         }
 
-        private void WithAmount(IEnumerable<EquityCardModel> items)
+        private void WithAmount(IEnumerable<EquityCardListItem> items)
         {
             var idItems = items.Select(item => item.Id);
             if (!idItems.Any())
@@ -60,7 +60,7 @@ namespace NetDream.Modules.UserIdentity.Repositories
         public IOperationResult<EquityCardEntity> Save(EquityCardForm data)
         {
             var model = data.Id > 0 ? db.EquityCards.Where(i => i.Id == data.Id).Single() : 
-                new EquityCardModel();
+                new EquityCardListItem();
             if (model is null)
             {
                 return OperationResult.Fail<EquityCardEntity>("id is error");
@@ -77,25 +77,24 @@ namespace NetDream.Modules.UserIdentity.Repositories
         {
             db.EquityCards.Where(i => i.Id == id).ExecuteDelete();
             db.UserEquityCards.Where(i => i.CardId == id).ExecuteDelete();
+            db.SaveChanges();
         }
 
-        public IPage<UserEquityCardEntity> UserCardList(int user, int page = 1)
+        public IPage<UserEquityCardEntity> UserCardList(int user, QueryForm form)
         {
             return db.UserEquityCards
                 .Include(i => i.Card).Where(i => i.UserId == user)
                 .OrderByDescending(i => i.ExpiredAt)
-                .ToPage(page);
+                .ToPage(form);
         }
 
 
-        /**
-         * 续期权益卡
-         * @param int user
-         * @param int card
-         * @param int second
-         * @return void
-         * @throws Exception
-         */
+        /// <summary>
+        /// 续期权益卡
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="card"></param>
+        /// <param name="second"></param>
         public void Recharge(int user, int card, int second)
         {
             var model = db.EquityCards.Where(i => i.Id == card).Single();
@@ -120,25 +119,34 @@ namespace NetDream.Modules.UserIdentity.Repositories
             db.SaveChanges();
         }
 
-        public IPage<EquityCardEntity> Search(string keywords, int[] id, int page = 1)
+        public IPage<EquityCardLabelItem> Search(QueryForm form, int[] idItems)
         {
-            return db.EquityCards.Search(keywords, "name")
-                .When(id.Length > 0, i => id.Contains(i.Id))
+            return db.EquityCards.Search(form.Keywords, "name")
+                .When(idItems.Length > 0, i => idItems.Contains(i.Id))
                 .OrderByDescending(i => i.Id)
-                .Select(i => new EquityCardEntity()
+                .Select(i => new EquityCardLabelItem()
                 {
                     Id = i.Id,
                     Name = i.Name,
                     Icon = i.Icon
-                }).ToPage(page);
+                }).ToPage(form);
         }
-        public UserEquityCardEntity UserUpdate(int userId, int cardId, string expiredAt)
+
+        public IOperationResult<UserEquityCardEntity> UserUpdate(BindingCardForm data)
+        {
+            return UserUpdate(data.User, data.Card, TimeHelper.TimestampFrom(data.ExpiredAt));
+        }
+        public IOperationResult<UserEquityCardEntity> UserUpdate(int userId, int cardId, string expiredAt)
         {
             return UserUpdate(userId, cardId, TimeHelper.TimestampFrom(expiredAt));
         }
-        public UserEquityCardEntity UserUpdate(int userId, int cardId, int expiredAt)
+        public IOperationResult<UserEquityCardEntity> UserUpdate(int userId, int cardId, int expiredAt)
         {
-            var log = db.UserEquityCards.Where(i => i.CardId == cardId && i.UserId == userId).Single();
+            if (!db.EquityCards.Where(i => i.Id == cardId).Any())
+            {
+                return OperationResult<UserEquityCardEntity>.Fail("数据错误");
+            }
+            var log = db.UserEquityCards.Where(i => i.CardId == cardId && i.UserId == userId).SingleOrDefault();
             var status = expiredAt > TimeHelper.TimestampNow() ? STATUS_ACTIVATED : STATUS_EXPIRED;
             if (log is null)
             {
@@ -158,7 +166,7 @@ namespace NetDream.Modules.UserIdentity.Repositories
             db.UserEquityCards.Save(log);
             db.SaveChanges();
             // TODO 埋点记录管理账户记录
-            return log;
+            return OperationResult.Ok(log);
         }
 
         public static UserCardItem[] GetUserCard(IdentityContext db, int user)

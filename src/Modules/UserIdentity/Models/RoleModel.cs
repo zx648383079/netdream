@@ -2,8 +2,9 @@
 
 namespace NetDream.Modules.UserIdentity.Models
 {
-    public class EquityCardModel: EquityCardEntity
+    public class RoleModel : RoleEntity
     {
-        public int Amount { get; set; }
+
+        public int[] Permissions { get; set; }
     }
 }

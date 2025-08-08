@@ -8,6 +8,10 @@
 
         ChatAt = 88,
         Message = 96,
+        /// <summary>
+        /// 附加通知
+        /// </summary>
+        Additional = 98,
         Other = 99
     }
 }

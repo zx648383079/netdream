@@ -1,15 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Auth.Entities;
+using NetDream.Modules.Auth.Forms;
+using NetDream.Modules.Auth.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.Auth.Repositories
 {
-    public class InviteRepository(AuthContext db, IClientContext client)
+    public class InviteRepository(AuthContext db, 
+        IClientContext client,
+        IUserRepository userStore)
     {
         public const int TYPE_CODE = 0; // 邀请码
         public const int TYPE_LOGIN = 5; // 扫码登录
@@ -19,20 +24,26 @@ namespace NetDream.Modules.Auth.Repositories
         public const int STATUS_SUCCESS = 2;     // 登录成功
         public const int STATUS_REJECT = 3;      // 拒绝登录
 
-        public IPage<InviteCodeEntity> CodeList(string keywords = "", int user = 0, int page = 1)
+        public IPage<InviteCodeEntity> CodeList(CodeQueryForm form)
         {
             return db.InviteCodes.Where(i => i.Type == TYPE_CODE)
-                .When(keywords, i => i.Token == keywords)
-                .When(user > 0, i => i.UserId == user)
-                .OrderByDescending(i => i.Id).ToPage(page);
+                .When(form.Keywords, i => i.Token == form.Keywords)
+                .When(form.User > 0, i => i.UserId == form.User)
+                .OrderByDescending(i => i.Id)
+                .ToPage(form);
         }
-        public string CodeCreate(int amount = 1, string expiredAt = "")
+
+        public IOperationResult<string> CodeCreate(CodeGenerateForm data)
+        {
+            return CodeCreate(data.Amount, data.ExpiredAt);
+        }
+        public IOperationResult<string> CodeCreate(int amount = 1, string expiredAt = "")
         {
             return CodeCreate(amount, string.IsNullOrWhiteSpace(expiredAt) ? 0 : TimeHelper.TimestampFrom(expiredAt));
         }
-        public string CodeCreate(int amount = 1, int expiredAt = 0)
+        public IOperationResult<string> CodeCreate(int amount = 1, int expiredAt = 0)
         {
-            return CreateNew(TYPE_CODE, amount, expiredAt);
+            return OperationResult.Ok(CreateNew(TYPE_CODE, amount, expiredAt));
         }
 
         private bool HasCode(string code)
@@ -41,11 +52,11 @@ namespace NetDream.Modules.Auth.Repositories
                 .Where(i => i.ExpiredAt > client.Now || i.ExpiredAt == 0).Any();
         }
 
-        /**
-         * 判断邀请码是否有效
-         * @param string code
-         * @return InviteCodeModel|null
-         */
+        /// <summary>
+        /// 判断邀请码是否有效
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
         public InviteCodeEntity? FindCode(string code)
         {
             if (string.IsNullOrWhiteSpace(code))
@@ -71,17 +82,40 @@ namespace NetDream.Modules.Auth.Repositories
             db.InviteCodes.Where(i => i.Type == TYPE_CODE).ExecuteDelete();
         }
 
-        public IPage<InviteLogEntity> LogList(string keywords = "", int user = 0, int inviter = 0, int page = 1)
+        public IPage<InviteLogListItem> LogList(CodeQueryForm form)
         {
-            var query = db.InviteLogs.When(user > 0, i => i.UserId == user)
-                .When(inviter > 0, i => i.ParentId == inviter);
-            if (!string.IsNullOrWhiteSpace(keywords))
+            var query = db.InviteLogs.When(form.User > 0, i => i.UserId == form.User)
+                .When(form.Inviter > 0, i => i.ParentId == form.Inviter);
+            if (!string.IsNullOrWhiteSpace(form.Keywords))
             {
-                var codeId = db.InviteCodes.Where(i => i.Token == keywords)
+                var codeId = db.InviteCodes.Where(i => i.Token == form.Keywords)
                     .Select(i => i.Id).ToArray();
                 query = query.Where(i => codeId.Contains(i.CodeId));
             }
-            return query.OrderByDescending(i => i.Id).ToPage(page);
+            var items = query.OrderByDescending(i => i.Id).ToPage(form, i => i.SelectAs());
+            if (items.Items.Length == 0)
+            {
+                return items;
+            }
+            var userItems = new HashSet<int>();
+            foreach (var item in items.Items)
+            {
+                userItems.Add(item.UserId);
+                userItems.Add(item.ParentId);
+            }
+            var data = userStore.GetDictionary([..userItems]);
+            foreach (var item in items.Items)
+            {
+                if (data.TryGetValue(item.UserId, out var u))
+                {
+                    item.User = u;
+                }
+                if (data.TryGetValue(item.ParentId, out u))
+                {
+                    item.Inviter = u;
+                }
+            }
+            return items;
         }
 
         public void AddLog(InviteCodeEntity model, int userId)
@@ -103,14 +137,13 @@ namespace NetDream.Modules.Auth.Repositories
             db.SaveChanges();
         }
 
-        /**
-         * 生成一个邀请码
-         * @param int type
-         * @param int amount
-         * @param string|int expiredAt
-         * @return string
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 生成一个邀请码
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="amount"></param>
+        /// <param name="expiredAt"></param>
+        /// <returns></returns>
         public string CreateNew(byte type, int amount = 1, string expiredAt = "")
         {
             return CreateNew(type, amount, string.IsNullOrWhiteSpace(expiredAt) ? 0 : TimeHelper.TimestampFrom(expiredAt));
@@ -133,13 +166,12 @@ namespace NetDream.Modules.Auth.Repositories
             return code;
         }
 
-        /**
-         * 手动失效
-         * @param int type
-         * @param string token
-         * @return void
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 手动失效
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="token"></param>
+        /// <exception cref="Exception"></exception>
         public void Cancel(byte type, string token)
         {
             var model = db.InviteCodes.Where(i => i.Type == type && i.Token == token).Single();

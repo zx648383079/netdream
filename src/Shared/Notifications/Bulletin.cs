@@ -7,6 +7,7 @@ namespace NetDream.Shared.Notifications
 {
     public record BulletinRequest(int[] Users, string Title, string Content, LinkExtraRule[] ExtraRule, BulletinType Type, int Sender, int SendAt) : INotification
     {
+        public const int AdministratorPlaceholder = -99;
 
         public static BulletinRequest Create(IClientContext client, int[] users, 
             string title, string content, BulletinType type = BulletinType.Other)
@@ -49,6 +50,18 @@ namespace NetDream.Shared.Notifications
                 title, tag, [
                     ruler.FormatLink(tag, link)
                 ], type);
+        }
+
+        public static BulletinRequest ToAdministrator(IClientContext client,
+            string title, string content, BulletinType type = BulletinType.Additional)
+        {
+            return ToAdministrator(client, title, content, [], type);
+        }
+
+        public static BulletinRequest ToAdministrator(IClientContext client,
+            string title, string content, LinkExtraRule[] extraRule, BulletinType type = BulletinType.Additional)
+        {
+            return new BulletinRequest([AdministratorPlaceholder], title, content, extraRule, type, 0, client.Now);
         }
     }
 

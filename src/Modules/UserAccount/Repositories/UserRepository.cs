@@ -103,34 +103,27 @@ namespace NetDream.Modules.UserAccount.Repositories
        
 
 
-        public IPage<UserEntity> GetAll(string keywords = "", 
-            string sort = "id", string order = "desc",
-            int page = 1)
+        public IPage<UserListItem> MangeList(QueryForm form)
         {
-            (sort, order) = SearchHelper.CheckSortOrder(sort, order, [
+            SearchHelper.CheckSortOrder(form, [
                "id", "created_at",
                 "name", "email",
                 "status", "sex", "money", "credits"
             ]);
-            return db.Users.Search(keywords, "name")
-                .OrderBy<UserEntity, object>(sort, order)
-                .ToPage(page);
+            return db.Users.Search(form.Keywords, "name")
+                .OrderBy<UserEntity, int>(form.Sort, form.Order)
+                .ToPage(form, i => i.SelectAs());
         }
 
-        public IPage<UserListItem> SearchUser(string keywords = "", int page = 1)
+        public IPage<UserLabelItem> SearchUser(QueryForm form)
         {
-            return db.Users.Search(keywords, "name")
+            return db.Users.Search(form.Keywords, "name")
                 .OrderByDescending(i => i.Id)
-                .Select(i => new UserListItem()
-                {
-                    Id = i.Id,
-                    Name = i.Name,
-                    Avatar = i.Avatar,
-                }).ToPage(page);
+                .ToPage(form, i => i.SelectAsLabel());
         }
 
 
-        public void SaveIDCard(int id, string idCard = "")
+        public IOperationResult SaveIDCard(int id, string idCard = "")
         {
             SaveBatch(id, new()
             {
@@ -139,6 +132,7 @@ namespace NetDream.Modules.UserAccount.Repositories
             var status = string.IsNullOrWhiteSpace(idCard) ? STATUS_ACTIVE : STATUS_ACTIVE_VERIFIED;
             db.Users.Where(i => i.Id == id && i.Status >= STATUS_ACTIVE)
                 .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, status));
+            return OperationResult.Ok();
         }
 
         /// <summary>
@@ -147,13 +141,13 @@ namespace NetDream.Modules.UserAccount.Repositories
         /// <param name="data"></param>
         /// <param name="roles"></param>
         /// <returns></returns>
-        public IOperationResult<UserEntity> Save(UserForm data, int[] roles)
+        public IOperationResult<UserEntity> Save(UserForm data)
         {
             if (data.Password != data.ConfirmPassword)
             {
                 return OperationResult.Fail<UserEntity>("两次密码不一致！");
             }
-            var model = data.Id > 0 ? db.Users.Where(i => i.Id == data.Id).Single() : new UserEntity();
+            var model = data.Id > 0 ? db.Users.Where(i => i.Id == data.Id).SingleOrDefault() : new UserEntity();
             if (model is null)
             {
                 return OperationResult.Fail<UserEntity>("user is error");
@@ -168,11 +162,12 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return OperationResult.Fail<UserEntity>("");
             }
-            // SaveRoles(model.Id, roles);
-            mediator.Publish(ManageAction.Create(client, "user_edit", model.Name, ModuleModelType.TYPE_USER_UPDATE, model.Id));
+            // mediator.Send(new UserRoleBinding(model.Id, data.Roles));
+            mediator.Publish(ManageAction.Create(client, "user_edit", model.Name, 
+                ModuleTargetType.UserUpdate, model.Id));
             return OperationResult.Ok(model);
         }
-
+        
         
 
         public void Remove(int id)
@@ -185,13 +180,14 @@ namespace NetDream.Modules.UserAccount.Repositories
             db.Users.Remove(user);
             db.SaveChanges();
             mediator.Publish(new CancelAccount(user, client.Now));
-            mediator.Publish(ManageAction.Create(client, "user_remove", user.Name, ModuleModelType.TYPE_USER_UPDATE, user.Id));
+            mediator.Publish(ManageAction.Create(client, "user_remove", user.Name,
+                ModuleTargetType.UserUpdate, user.Id));
         }
 
 
         public string GetName(int id)
         {
-            return db.Users.Where(i => i.Id == id).Select(i => i.Name).Single();
+            return db.Users.Where(i => i.Id == id).Value(i => i.Name) ?? string.Empty;
         }
 
 
@@ -204,6 +200,17 @@ namespace NetDream.Modules.UserAccount.Repositories
             var data = new UserStatisticsRequest(client.UserId);
             mediator.Publish(data).GetAwaiter().GetResult();
             return [..data.Result];
+        }
+
+        public IOperationResult<UserEditableModel> MangeGet(int id)
+        {
+            var model = db.Users.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
+            {
+                return OperationResult<UserEditableModel>.Fail("数据错误");
+            }
+            var res = model.CopyTo<UserEditableModel>();
+            return OperationResult.Ok(res);
         }
     }
 }

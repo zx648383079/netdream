@@ -4,6 +4,7 @@ using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserAccount.Models;
 using NetDream.Modules.UserAccount.Repositories;
+using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.Auth
 {
@@ -13,7 +14,7 @@ namespace NetDream.Api.Controllers.Auth
     {
         [HttpGet]
         [Authorize]
-        [ProducesResponseType(typeof(UserModel), 200)]
+        [ProducesResponseType(typeof(UserProfileModel), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index(string extra = "")
         {
@@ -23,6 +24,8 @@ namespace NetDream.Api.Controllers.Auth
         [Route("[action]")]
         [HttpGet]
         [Authorize]
+        [ProducesResponseType(typeof(DataResponse<StatisticsItem>), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Statistics()
         {
             return RenderData(auth.Statistics());

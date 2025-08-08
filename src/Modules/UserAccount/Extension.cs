@@ -70,5 +70,35 @@ namespace NetDream.Modules.UserAccount
                 CreatedAt = i.CreatedAt,
             });
         }
+
+        internal static IQueryable<UserLabelItem> SelectAsLabel(this IQueryable<UserEntity> query)
+        {
+            return query.Select(i => new UserLabelItem()
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Avatar = i.Avatar,
+            });
+        }
+
+        internal static IQueryable<UserListItem> SelectAs(this IQueryable<UserEntity> query)
+        {
+            return query.Select(i => new UserListItem()
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Avatar = i.Avatar,
+                Birthday = i.Birthday,
+                Sex = i.Sex,
+                Credits = i.Credits,
+                Mobile = i.Mobile,
+                Money = i.Money,
+                Email = i.Email,
+                ParentId = i.ParentId,
+                Status = i.Status,
+                CreatedAt = i.CreatedAt,
+                UpdatedAt = i.UpdatedAt
+            });
+        }
     }
 }

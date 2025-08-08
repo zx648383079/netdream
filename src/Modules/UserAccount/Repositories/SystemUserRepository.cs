@@ -32,7 +32,7 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return null;
             }
-            return db.Users.Where(i => i.Id == userId).Select(i => new UserListItem()
+            return db.Users.Where(i => i.Id == userId).Select(i => new UserLabelItem()
             {
                 Id = i.Id,
                 Name = i.Name,
@@ -69,7 +69,7 @@ namespace NetDream.Modules.UserAccount.Repositories
             }
             
             return db.Users.Where(i => userItems.Contains(i.Id))
-                .Select(i => new UserListItem()
+                .Select(i => new UserLabelItem()
                 {
                     Id = i.Id,
                     Name = i.Name,
@@ -96,7 +96,7 @@ namespace NetDream.Modules.UserAccount.Repositories
                 return [];
             }
             return db.Users.Where(i => userItems.Contains(i.Name))
-                .Select(i => new UserListItem()
+                .Select(i => new UserLabelItem()
                 {
                     Id = i.Id,
                     Name = i.Name,
@@ -121,12 +121,12 @@ namespace NetDream.Modules.UserAccount.Repositories
                     query = query.Where(i => items.Contains(i.Id));
                 }
             }
-            return query.Select(i => new UserListItem()
+            return query.Select(i => new UserLabelItem()
             {
                 Id = i.Id,
                 Name = i.Name,
                 Avatar = i.Avatar
-            }).ToPage(form).ConvertTo<UserListItem, IUserSource>();
+            }).ToPage(form).ConvertTo<UserLabelItem, IUserSource>();
         }
 
         public int[] SearchUserId(string keywords, int[]? userIds = null, bool checkEmpty = false)

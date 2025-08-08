@@ -12,12 +12,33 @@ using System.Data;
 using System.Linq;
 using NetDream.Shared.Repositories;
 using NetDream.Shared.Notifications;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.UserIdentity.Repositories
 {
     public class RoleRepository(IdentityContext db, IClientContext client, IMediator mediator)
     {
-        public void SaveRoles(int user, int[] roles)
+        public IPage<RoleEntity> RoleList(QueryForm form)
+        {
+            return db.Roles.Search(form.Keywords, "name")
+                .OrderByDescending(i => i.Id)
+                .ToPage(form);
+        }
+
+        public IOperationResult<RoleModel> RoleGet(int id)
+        {
+            var model = db.Roles.Where(i => i.Id == id).SingleOrDefault();
+            if (model == null)
+            {
+                return OperationResult.Fail<RoleModel>("数据错误");
+            }
+            var res = model.CopyTo<RoleModel>();
+            res.Permissions = db.RolePermissions.Where(i => i.RoleId == model.Id)
+                .Pluck(i => i.PermissionId);
+            return OperationResult.Ok(res);
+        }
+
+        public void BindingUser(int user, int[] roles)
         {
             var (add, _, remove) = ModelHelper.SplitId(roles,
                 db.UserRoles.Where(i => i.UserId == user)
@@ -37,16 +58,16 @@ namespace NetDream.Modules.UserIdentity.Repositories
                 db.SaveChanges();
             }
         }
-        public RoleEntity SaveRole(RoleForm data, params int[] permissions)
+        public IOperationResult<RoleEntity> RoleSave(RoleForm data)
         {
             if (string.IsNullOrWhiteSpace(data.Name))
             {
-                throw new Exception("请输入角色名");
+                return OperationResult<RoleEntity>.Fail("请输入角色名");
             }
             var count = db.Roles.Where(i => i.Id != data.Id && i.Name == data.Name).Any();
             if (count)
             {
-                throw new Exception("已存在角色");
+                return OperationResult<RoleEntity>.Fail("已存在角色");
             }
             var model = new RoleEntity
             {
@@ -56,11 +77,11 @@ namespace NetDream.Modules.UserIdentity.Repositories
                 DisplayName = data.DisplayName
             };
             db.Roles.Save(model);
-            BindRolePermission(model.Id, permissions);
+            BindRolePermission(model.Id, data.Permissions);
             mediator.Publish(ManageAction.Create(client, 
                 "role_edit", 
-                string.Empty, ModuleModelType.TYPE_ROLE, model.Id));
-            return model;
+                string.Empty, ModuleTargetType.Role, model.Id));
+            return OperationResult.Ok(model);
         }
 
         private void BindRolePermission(int roleId, params int[] permissions)
@@ -83,14 +104,13 @@ namespace NetDream.Modules.UserIdentity.Repositories
         }
 
 
-        /**
-         * 新增角色和权限
-         * @param name
-         * @param display_name
-         * @param array permission [name => display_name]
-         * @throws Exception
-         * @return integer
-         */
+        /// <summary>
+        /// 新增角色和权限
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="display_name"></param>
+        /// <param name="permission"></param>
+        /// <returns></returns>
         public int NewRole(string name, string display_name,
             Dictionary<string, string> permission)
         {
@@ -137,12 +157,11 @@ namespace NetDream.Modules.UserIdentity.Repositories
             return id;
         }
 
-        /**
-         * 新增权限
-         * @param array permission
-         * @return array
-         * @throws Exception
-         */
+        /// <summary>
+        /// 新增权限
+        /// </summary>
+        /// <param name="permission"></param>
+        /// <returns></returns>
         public int[] NewPermission(Dictionary<string, string> permission)
         {
             if (permission.Count == 0)
@@ -179,18 +198,18 @@ namespace NetDream.Modules.UserIdentity.Repositories
             return [..idItems];
         }
 
-        /**
-         * 获取用户的角色和权限
-         * @param user_id
-         * @return array [role => array, roles => string[], permissions => string[]]
-         */
-        public UserRole UserRolePermission(int userId)
+        /// <summary>
+        /// 获取用户的角色和权限
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public UserRoleResult UserRolePermission(int userId)
         {
             var roleId = db.UserRoles.Where(i => i.UserId == userId)
                 .Select(i => i.RoleId).ToArray();
             if (roleId.Length == 0)
             {
-                return new UserRole();
+                return new UserRoleResult();
             }
 
             var roles = db.Roles.Where(i => roleId.Contains(i.Id))
@@ -199,7 +218,7 @@ namespace NetDream.Modules.UserIdentity.Repositories
             if (roles.Contains(IdentityRepository.Administrator))
             {
                 var permissions = db.Permissions.Select(i => i.Name).ToArray();
-                return new UserRole()
+                return new UserRoleResult()
                 {
                     Role = role,
                     Roles = [..roles],
@@ -212,14 +231,14 @@ namespace NetDream.Modules.UserIdentity.Repositories
             {
                 var permissions = db.Permissions.Where(i => permissionId.Contains(i.Id))
                     .Select(i => i.Name).ToArray();
-                return new UserRole()
+                return new UserRoleResult()
                 {
                     Role = role,
                     Roles = [.. roles],
                     Permissions = [.. permissions]
                 };
             }
-            return new UserRole()
+            return new UserRoleResult()
             {
                 Role = role,
                 Roles = [.. roles],
@@ -238,17 +257,17 @@ namespace NetDream.Modules.UserIdentity.Repositories
             return [];
         }
 
-        public PermissionEntity SavePermission(PermissionForm data)
+        public IOperationResult<PermissionEntity> PermissionSave(PermissionForm data)
         {
             if (string.IsNullOrWhiteSpace(data.Name))
             {
-                throw new Exception("请输入权限名");
+                return OperationResult<PermissionEntity>.Fail("请输入权限名");
             }
             var count = db.Permissions.Where(i => i.Id != data.Id && i.Name == data.Name).Any();
 
             if (count)
             {
-                throw new Exception("已存在权限");
+                return OperationResult<PermissionEntity>.Fail("已存在权限");
             }
             var model = new PermissionEntity()
             {
@@ -260,11 +279,11 @@ namespace NetDream.Modules.UserIdentity.Repositories
             db.Permissions.Save(model, client.Now);
             db.SaveChanges();
             mediator.Publish(ManageAction.Create(client, 
-                "permission_edit", model.Name, ModuleModelType.TYPE_ROLE_PERMISSION, model.Id));
-            return model;
+                "permission_edit", model.Name, ModuleTargetType.RolePermission, model.Id));
+            return OperationResult.Ok(model);
         }
 
-        public void RemoveRole(int id)
+        public void RoleRemove(int id)
         {
             var model = db.Roles.Where(i => i.Id == id).Single();
             if (model is null)
@@ -274,7 +293,54 @@ namespace NetDream.Modules.UserIdentity.Repositories
             db.Roles.Where(i => i.Id == id).ExecuteDelete();
             db.UserRoles.Where(i => i.RoleId == id).ExecuteDelete();
             db.RolePermissions.Where(i => i.RoleId == id).ExecuteDelete();
-            mediator.Publish(ManageAction.Create(client, "role_remove", model.Name, ModuleModelType.TYPE_ROLE, model.Id));
+            db.SaveChanges();
+            mediator.Publish(ManageAction.Create(client, "role_remove", model.Name, 
+               ModuleTargetType.Role, model.Id));
         }
+
+        public RoleEntity[] RoleAll()
+        {
+            return db.Roles.Select(i => new RoleEntity()
+            {
+                Id = i.Id,
+                Name = i.Name,
+                DisplayName = i.DisplayName,
+            }).OrderBy(i => i.Id).ToArray();
+        }
+
+        public IPage<PermissionEntity> PermissionList(QueryForm form)
+        {
+            return db.Permissions.Search(form.Keywords, "name")
+                .OrderByDescending(i => i.Id)
+                .ToPage(form);
+        }
+
+        public IOperationResult<PermissionEntity> PermissionGet(int id)
+        {
+            var model = db.Permissions.Where(i => i.Id == id).SingleOrDefault();
+            return OperationResult.OkOrFail(model, "数据错误");
+        }
+
+        public void PermissionRemove(int id)
+        {
+            db.Permissions.Where(i => i.Id == id).ExecuteDelete();
+            db.SaveChanges();
+        }
+
+        public PermissionEntity[] PermissionAll()
+        {
+            return db.Permissions.Select(i => new PermissionEntity()
+            {
+                Id = i.Id,
+                Name = i.Name,
+                DisplayName = i.DisplayName,
+            }).OrderBy(i => i.Id).ToArray();
+        }
+
+        public int[] GetByUser(int user)
+        {
+            return db.UserRoles.Where(i => i.UserId == user).Pluck(i => i.RoleId);
+        }
+
     }
 }

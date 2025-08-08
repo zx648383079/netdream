@@ -13,6 +13,8 @@ namespace NetDream.Modules.UserAccount.Listeners
     {
         public async Task Handle(BulletinRequest notification, CancellationToken cancellationToken)
         {
+            var users = notification.Users.Select(i => i == BulletinRequest.AdministratorPlaceholder ? 1 : i)
+                .Where(i => i > 0).ToArray();
             var bulletin = new BulletinEntity()
             {
                 Title = HttpUtility.HtmlEncode(notification.Title),
@@ -22,7 +24,7 @@ namespace NetDream.Modules.UserAccount.Listeners
                 ExtraRule = notification.ExtraRule?.Length > 0 ? JsonSerializer.Serialize(notification.ExtraRule)
                 : string.Empty,
                 CreatedAt = notification.SendAt,
-                Items = notification.Users.Select(i => {
+                Items = users.Select(i => {
                     return new BulletinUserEntity()
                     {
                         UserId = i,
