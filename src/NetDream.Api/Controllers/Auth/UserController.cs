@@ -30,5 +30,7 @@ namespace NetDream.Api.Controllers.Auth
         {
             return RenderData(auth.Statistics());
         }
+
+
     }
 }

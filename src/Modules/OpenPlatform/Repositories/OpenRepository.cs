@@ -1,8 +1,12 @@
-﻿using NetDream.Modules.OpenPlatform.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.OpenPlatform.Entities;
+using NetDream.Modules.OpenPlatform.Models;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.OpenPlatform.Repositories
@@ -48,5 +52,96 @@ namespace NetDream.Modules.OpenPlatform.Repositories
             return OperationResult.Ok(model);
         }
 
+        public ListLabelItem[] GetByUser(int user)
+        {
+            return db.Platforms.Where(i => i.UserId == user)
+                .OrderByDescending(i => i.CreatedAt)
+                .Select(i => new ListLabelItem(i.Id, i.Name))
+                .ToArray();
+        }
+
+        public IDictionary<string, IDictionary<string, string>> OptionGet(int user, int platform, IDictionary<string, IDictionary<string, string>> data)
+        {
+            if (data.Count == 0)
+            {
+                return data;
+            }
+            if (!db.Platforms.Where(i => i.UserId == user && i.Id == platform).Any())
+            {
+                return data;
+            }
+            var keys = data.Keys.ToArray();
+            var items = db.PlatformOptions.Where(i => i.PlatformId == platform && keys.Contains(i.Store)).ToArray();
+            foreach ( var item in items)
+            {
+                if (!data.TryGetValue(item.Store, out var package))
+                {
+                    continue;
+                }
+                if (!package.ContainsKey(item.Name))
+                {
+                    continue;
+                }
+                package[item.Name] = item.Value;
+            }
+            return data;
+        }
+
+        public IOperationResult OptionSave(int user, int platform, IDictionary<string, IDictionary<string, string>> data)
+        {
+            if (data.Count == 0)
+            {
+                return OperationResult.Fail("数据错误");
+            }
+            if (!db.Platforms.Where(i => i.UserId == user && i.Id == platform).Any())
+            {
+                return OperationResult.Fail("数据错误");
+            }
+            var keys = data.Keys.ToArray();
+            var items = db.PlatformOptions.Where(i => i.PlatformId == platform && keys.Contains(i.Store))
+                .Select(i => new PlatformOptionEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Store = i.Store,
+                })
+                .ToArray()
+                .Select(i => new KeyValuePair<string, int>($"{i.Store}_{i.Name}", i.Id))
+                .ToDictionary();
+            var now = TimeHelper.TimestampNow();
+            foreach (var group in data)
+            {
+                if (string.IsNullOrWhiteSpace(group.Key))
+                {
+                    continue;
+                }
+                foreach (var item in group.Value)
+                {
+                    if (item.Key.StartsWith('_') || string.IsNullOrWhiteSpace(item.Key))
+                    {
+                        continue;
+                    }
+                    var key = $"{group.Key}_{item.Key}";
+                    if (items.TryGetValue(key, out var id))
+                    {
+                        db.PlatformOptions.Where(i => i.Id == id)
+                            .ExecuteUpdate(setters => setters.SetProperty(i => i.Value, item.Value)
+                            .SetProperty(i => i.UpdatedAt, now));
+                        continue;
+                    }
+                    db.PlatformOptions.Add(new PlatformOptionEntity()
+                    {
+                        Store = group.Key,
+                        Name = item.Key,
+                        Value = item.Value,
+                        PlatformId = platform,
+                        CreatedAt = now,
+                        UpdatedAt = now,
+                    });
+                }
+            }
+            db.SaveChanges();
+            return OperationResult.Ok();
+        }
     }
 }

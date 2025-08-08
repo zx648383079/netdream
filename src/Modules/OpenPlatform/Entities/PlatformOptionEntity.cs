@@ -1,8 +1,9 @@
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.OpenPlatform.Entities
 {
     
-    public class PlatformOptionEntity
+    public class PlatformOptionEntity : IIdEntity, ITimestampEntity
     {
         
         public int Id { get; set; }
