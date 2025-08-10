@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Shared.Providers.Context;
-using NetDream.Shared.Providers.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -11,35 +10,44 @@ namespace NetDream.Shared.Repositories
     {
         protected virtual Dictionary<string, string> DefaultItems => [];
 
-        /**
-         * 获取并合并默认的
-         * @param int id
-         * @return array
-         */
-        public Dictionary<string, string> GetOrDefault(int id)
+        /// <summary>
+        /// 获取并合并默认的
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IDictionary<string, string> GetOrDefault(int id)
         {
             return GetMap(id, DefaultItems);
         }
 
-        /**
-         * 获取
-         * @param int id
-         * @param array default
-         * @return array
-         */
-        public Dictionary<string, string> GetMap(int id)
+        /// <summary>
+        /// 获取全部
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IDictionary<string, string> GetMap(int id)
         {
-            return GetMap(id, []);
+            return db.Metas.Where(i => i.ItemId == id)
+                .Select(i => new KeyValuePair<string, string>(i.Name, i.Content))
+                .ToDictionary();
         }
 
-        public Dictionary<string, string> GetMap(int id, Dictionary<string, string> def)
+        /// <summary>
+        /// 获取指定的
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="def"></param>
+        /// <returns></returns>
+        public IDictionary<string, string> GetMap(int id, IDictionary<string, string> def)
         {
             if (id < 1)
             {
                 return def;
             }
-            var items = db.Metas.Where(i => i.ItemId == id)
-                .ToDictionary(i => i.Name, i => i.Content);
+            var keys = def.Keys;
+            var items = db.Metas.Where(i => i.ItemId == id && keys.Contains(i.Name))
+                .Select(i => new KeyValuePair<string, string>(i.Name, i.Content))
+                .ToDictionary();
             foreach (var item in def)
             {
                 items.TryAdd(item.Key, item.Value);
@@ -47,16 +55,17 @@ namespace NetDream.Shared.Repositories
             return items;
         }
 
-        public void SaveBatch(int id, Dictionary<string, string> data)
+        public void SaveBatch(int id, IDictionary<string, string> data)
         {
-            SaveBatch(id, data, []);
+            SaveBatch(id, data, new Dictionary<string, string>());
         }
-        /**
-         * 批量保存
-         * @param int id
-         * @param array data
-         */
-        public void SaveBatch(int id, Dictionary<string, string> data, Dictionary<string, string> defItems)
+        /// <summary>
+        /// 批量保存
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <param name="defItems"></param>
+        public void SaveBatch(int id, IDictionary<string, string> data, IDictionary<string, string> defItems)
         {
             if (data.Count == 0)
             {
@@ -64,7 +73,6 @@ namespace NetDream.Shared.Repositories
             }
             var metaKeys = defItems.Count == 0 ? DefaultItems.Keys : defItems.Keys;
             var items = GetMap(id);
-            var add = new List<MetaEntity>();
             foreach (var item in data)
             {
                 if (!metaKeys.Contains(item.Key))
@@ -85,7 +93,7 @@ namespace NetDream.Shared.Repositories
                     {
                         continue;
                     }
-                    add.Add(new()
+                    db.Metas.Add(new()
                     {
                         ItemId = id,
                         Name = item.Key,
@@ -99,11 +107,6 @@ namespace NetDream.Shared.Repositories
                 }
                 db.Metas.Where(i => i.ItemId == id && i.Name == item.Key).ExecuteUpdate(setters => setters.SetProperty(i => i.Content, content));
             }
-            if (add.Count == 0)
-            {
-                return;
-            }
-            db.Metas.AddRange(add);
             db.SaveChanges();
         }
 
@@ -114,6 +117,7 @@ namespace NetDream.Shared.Repositories
         public void DeleteBatch(int id)
         {
             db.Metas.Where(i => i.ItemId == id).ExecuteDelete();
+            db.SaveChanges();
         }
     }
 }

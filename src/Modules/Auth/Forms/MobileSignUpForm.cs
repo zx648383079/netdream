@@ -8,20 +8,21 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NetDream.Modules.Auth.Forms
 {
-    public class EmailSignUpForm: ISignUpForm, IContextForm
+    public class MobileSignUpForm: ISignUpForm, IContextForm
     {
         [Required]
         public string Name { get; set; } = string.Empty;
         [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
+        public string Mobile { get; set; } = string.Empty;
+        [Required]
+        public string Code { get; set; } = string.Empty;
         [Compare(nameof(ConfirmPassword))]
         public string Password { get; set; } = string.Empty;
         public string ConfirmPassword { get; set; } = string.Empty;
         public string InviteCode { get; set; } = string.Empty;
         public bool Agree { get; set; }
 
-        public string Account => Email;
+        public string Account => Mobile;
 
         public bool Agreement => Agree;
 
@@ -31,22 +32,26 @@ namespace NetDream.Modules.Auth.Forms
             {
                 return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "Agreement is not confirm");
             }
-            if (Shared.Helpers.Validator.IsEmail(Email) || string.IsNullOrWhiteSpace(Password)) 
+            if (Shared.Helpers.Validator.IsMobile(Mobile) || string.IsNullOrWhiteSpace(Code) || string.IsNullOrWhiteSpace(Password))
             {
-                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "email or password is empty");
+                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "mobile or password is empty");
             }
             if (Password != ConfirmPassword)
             {
                 return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "password is not confirm");
             }
-            if (db.Exists(i => i.Email == Email))
+            if (db.VerifyCode(Mobile, Code))
+            {
+                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "Code is error");
+            }
+            if (db.Exists(i => i.Mobile == Mobile))
             {
                 return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "email is sign in");
             }
             return db.Create(new UserEntity()
             {
                 Name = Name,
-                Email = Email,
+                Mobile = Mobile,
                 Password = BCrypt.Net.BCrypt.HashPassword(Password),
             }, InviteCode);
         }

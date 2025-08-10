@@ -30,7 +30,7 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         protected override Dictionary<string, string> DefaultItems => new()
         {
-            {"address_id", "0" }, // 默认收货地址
+            { "address_id", "0" }, // 默认收货地址
             { "id_card", "" } // 身份证
         };
 
@@ -125,7 +125,7 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         public IOperationResult SaveIDCard(int id, string idCard = "")
         {
-            SaveBatch(id, new()
+            SaveBatch(id, new Dictionary<string, string>()
             {
                 {"id_card", idCard }
             });
@@ -211,6 +211,54 @@ namespace NetDream.Modules.UserAccount.Repositories
             }
             var res = model.CopyTo<UserEditableModel>();
             return OperationResult.Ok(res);
+        }
+
+        public IOperationResult<UserProfileModel> ChangeAvatar(IUploadFile file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<UserProfileModel> UpdateProfile(ProfileUpdateForm data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<UserProfileModel> UpdateAccount(AccountUpdateForm data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult<EmailLabelItem> CheckEmail(string email)
+        {
+            var model = db.Users.Where(i => i.Email == email)
+                .Select(i => new EmailLabelItem()
+                {
+                    Email = email,
+                    Name = i.Name,
+                    Avatar = i.Avatar,
+                }).FirstOrDefault();
+            return OperationResult.OkOrFail(model, "邮箱未注册");
+        }
+
+        public IDictionary<string, string> SettingGet()
+        {
+            return GetMap(client.UserId, new Dictionary<string, string>()
+            {
+                {"accept_new_bulletin", "1" },
+                {"open_not_disturb", "0" },
+                {"post_expiration", "0" },
+            });
+        }
+
+        public IOperationResult SettingSave(IDictionary<string, string> data)
+        {
+            SaveBatch(client.UserId, data, new Dictionary<string, string>()
+            {
+                {"accept_new_bulletin", "1" },
+                {"open_not_disturb", "0" },
+                {"post_expiration", "0" },
+            });
+            return OperationResult.Ok();
         }
     }
 }

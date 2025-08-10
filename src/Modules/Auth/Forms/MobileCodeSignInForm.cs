@@ -24,7 +24,7 @@ namespace NetDream.Modules.Auth.Forms
             {
                 return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "Agreement is not confirm");
             }
-            if (string.IsNullOrWhiteSpace(Mobile) || string.IsNullOrWhiteSpace(Code))
+            if (Shared.Helpers.Validator.IsMobile(Mobile) || string.IsNullOrWhiteSpace(Code))
             {
                 return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "mobile or password is empty");
             }

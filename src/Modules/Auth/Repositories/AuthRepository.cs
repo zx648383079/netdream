@@ -123,54 +123,24 @@ namespace NetDream.Modules.Auth.Repositories
             return res;
         }
 
-        public UserModel Register(RegisterForm data)
+        public IOperationResult Logout()
         {
-            if (!data.Agreement)
+
+            return OperationResult.Ok();
+        }
+
+        public IOperationResult<IUserProfile> Register(ISignUpForm data)
+        {
+            if (data is not IContextForm form)
             {
-                throw new ArgumentException("必须同意相关协议");
+                return OperationResult.Fail<IUserProfile>("form is error");
             }
-            if (string.IsNullOrWhiteSpace(data.Name))
+            var res = form.Verify(this);
+            if (!string.IsNullOrWhiteSpace(data.Account) || res.Succeeded)
             {
-                throw new ArgumentException("请输入昵称");
+                LogLogin(data.Account, res.Result?.Id ?? 0, res.Succeeded);
             }
-            if (string.IsNullOrWhiteSpace(data.Mobile))
-            {
-                if (string.IsNullOrWhiteSpace(data.Email))
-                {
-                    throw new ArgumentException("请输入Email");
-                }
-                if (IsBan(data.Email))
-                {
-                    throw new ArgumentException("此Email禁止注册");
-                }
-                if (IsExist(data.Email))
-                {
-                    throw new ArgumentException("此Email已注册");
-                }
-                if (string.IsNullOrWhiteSpace(data.Password) || data.Password != data.ConfirmPassword)
-                {
-                    throw new ArgumentException("请输入 Password 并确认密码");
-                }
-            } else
-            {
-                // TODO 验证验证码
-            }
-            var user = CheckInviteCode(data.InviteCode, parentId => {
-                var model = new UserEntity
-                {
-                    Name = data.Name,
-                    Mobile = data.Mobile,
-                    Email = string.IsNullOrWhiteSpace(data.Email) ? EmptyEmail : data.Email,
-                    ParentId = parentId,
-                    Password = string.IsNullOrWhiteSpace(data.Password) ? UNSET_PASSWORD 
-                    : BCrypt.Net.BCrypt.HashPassword(data.Password),
-                    CreatedAt = client.Now
-                };
-                userDB.Users.Add(model);
-                db.SaveChanges();
-                return model;
-            });
-            return new UserModel();
+            return res;
         }
 
         public IOperationResult<UserEntity> CheckInviteCode(string code, Func<int, UserEntity> func)
@@ -312,7 +282,11 @@ namespace NetDream.Modules.Auth.Repositories
             throw new NotImplementedException();
         }
 
+
+
         [GeneratedRegex("^zreno_\\d{11}@zodream\\.cn$")]
         private static partial Regex EmptyEmailRegex();
+
+
     }
 }

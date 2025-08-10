@@ -1,12 +1,10 @@
 ﻿using Duende.IdentityModel;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NetDream.Api.Base.Http;
 using NetDream.Api.Models;
 using NetDream.Modules.Auth.Forms;
-using NetDream.Modules.Auth.Models;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserAccount.Models;
@@ -50,6 +48,38 @@ namespace NetDream.Api.Controllers.Auth
         }
 
 
+        [Route("[action]")]
+        [HttpPost]
+        [ProducesResponseType(typeof(UserProfileModel), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
+        public IActionResult Register([FromBody] SignUpForm form)
+        {
+            if (!string.IsNullOrEmpty(form.Password))
+            {
+                form.Password = JsonResponse.Decoder.Decrypt(form.Password);
+            }
+            var res = repository.Register(form.GetContext());
+            if (!res.Succeeded)
+            {
+                return RenderFailure(res.Message, res.FailureReason);
+            }
+            var token = Token(res.Result);
+            if (res.Result is IUserToken u)
+            {
+                u.Token = token;
+            }
+            return Render(res.Result);
+        }
+        [Route("[action]")]
+        [HttpPost]
+        [ProducesResponseType(typeof(DataOneResponse<bool>), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
+        public IActionResult Logout()
+        {
+            var res = repository.Logout();
+
+            return RenderData(true);
+        }
 
         /// <summary>
         /// 获取 token

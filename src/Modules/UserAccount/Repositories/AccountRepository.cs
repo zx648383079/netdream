@@ -13,7 +13,10 @@ namespace NetDream.Modules.UserAccount.Repositories
 {
     public class AccountRepository(UserContext db, 
         IClientContext client,
-        IUserRepository repository, IFundAccount account, IMediator mediator)
+        IUserRepository userStore, 
+        IFundAccount account, 
+        IMediator mediator,
+        ILinkRuler ruler)
     {
         public IPage<AccountLogListItem> LogList(LogQueryForm form)
         {
@@ -22,8 +25,17 @@ namespace NetDream.Modules.UserAccount.Repositories
                 .When(form.Type > 0, i => i.Type == form.Type)
                 .OrderByDescending(i => i.Id)
                 .ToPage(form, i => i.SelectAs());
-            repository.Include(items.Items);
+            userStore.Include(items.Items);
             return items;
+        }
+
+        public IPage<AccountLogListItem> SelfLogList(LogQueryForm form)
+        {
+            return db.AccountLogs.Search(form.Keywords, "remark")
+                .Where(i => i.UserId == client.UserId)
+                .When(form.Type > 0, i => i.Type == form.Type)
+                .OrderByDescending(i => i.Id)
+                .ToPage(form, i => i.SelectAs()); ;
         }
 
         public IPage<ActionLogListItem> ActionLog(LogQueryForm form)
@@ -33,7 +45,7 @@ namespace NetDream.Modules.UserAccount.Repositories
                 .Search(form.Keywords, "ip")
                 .OrderByDescending(i => i.Id)
                 .ToPage(form, i => i.SelectAs());
-            repository.Include(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 
@@ -44,7 +56,7 @@ namespace NetDream.Modules.UserAccount.Repositories
                 .When(form.User > 0, i => i.UserId == form.User)
                 .OrderByDescending(i => i.Id)
                 .ToPage(form, i => i.SelectAs());
-            repository.Include(items.Items);
+            userStore.Include(items.Items);
             return items;
         }
 
@@ -78,6 +90,30 @@ namespace NetDream.Modules.UserAccount.Repositories
                 string.Format("{0}金额：{1}", data.IsMinus ?  "扣除" : "充值", data.Money)
                 , ModuleTargetType.UserRecharge, data.User));
             return OperationResult.Ok();
+        }
+
+        public IOperationResult SelfCancel(string reason)
+        {
+            var model = db.Users.Where(i => i.Id == client.UserId).Single();
+            model.Status = UserRepository.STATUS_FROZEN;
+            db.Users.Save(model, client.UserId);
+            db.SaveChanges();
+            mediator.Publish(BulletinRequest.ToAdministrator(client, "账户注销申请",
+                $"申请用户：{model.Name}，注销理由：{reason} [马上查看]",
+                [
+                    ruler.FormatLink("[马上查看]", $"b/user/{model.Id}")
+                ]));
+            return OperationResult.Ok();
+        }
+
+        public UserSubtotalResult SelfSubtotal()
+        {
+            var model = db.Users.Where(i => i.Id == client.UserId).Single();
+            return new UserSubtotalResult()
+            {
+                Money = model.Money,
+                Integral = model.Credits
+            };
         }
     }
 }
