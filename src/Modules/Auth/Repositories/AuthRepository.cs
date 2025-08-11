@@ -282,11 +282,48 @@ namespace NetDream.Modules.Auth.Repositories
             throw new NotImplementedException();
         }
 
+        public IOperationResult<QrResult> QrRefresh()
+        {
+            throw new NotImplementedException();
+        }
 
+        public IOperationResult<UserProfileModel> QrCheck(string token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult QrAuthorize(QrAuthorizeForm data)
+        {
+            throw new NotImplementedException();
+        }
+        public IOperationResult SendFindEmail(string email)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult SendCode(CodeRequestForm form)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult VerifyCode(CodeVerifyForm data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult ResetPassword(ResetPasswordForm data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult UpdatePassword(UpdatePasswordForm data)
+        {
+            throw new NotImplementedException();
+        }
 
         [GeneratedRegex("^zreno_\\d{11}@zodream\\.cn$")]
         private static partial Regex EmptyEmailRegex();
 
-
+ 
     }
 }
