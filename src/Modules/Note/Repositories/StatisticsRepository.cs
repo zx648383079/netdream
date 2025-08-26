@@ -1,5 +1,5 @@
-﻿using NetDream.Shared.Helpers;
-using NetDream.Shared.Interfaces;
+﻿using NetDream.Modules.Note.Models;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -7,19 +7,16 @@ using System.Linq;
 
 namespace NetDream.Modules.Note.Repositories
 {
-    public class StatisticsRepository(NoteContext db) : IStatisticsRepository, IUserStatistics
+    public class StatisticsRepository(NoteContext db)
     {
-        public IDictionary<string, int> Subtotal()
+        public StatisticsResult Subtotal()
         {
+            var res = new StatisticsResult();
             var todayStart = TimeHelper.TimestampFrom(DateTime.Today);
-            var noteCount = db.Notes.Count();
-            var noteToday = noteCount > 0 ? 
+            res.NoteCount = db.Notes.Count();
+            res.NoteToday = res.NoteCount > 0 ? 
                 db.Notes.Where(i => i.CreatedAt >= todayStart).Count() : 0; 
-            return new Dictionary<string, int>()
-            {
-                {"note_count", noteCount},
-                { "note_today", noteToday}
-            };
+            return res;
         }
 
         public IEnumerable<StatisticsItem> Subtotal(int user)

@@ -1,5 +1,5 @@
-﻿using NetDream.Shared.Helpers;
-using NetDream.Shared.Interfaces;
+﻿using NetDream.Modules.Book.Models;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -7,49 +7,36 @@ using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class StatisticsRepository(BookContext db, BookRepository bookStore) : IStatisticsRepository, IUserStatistics
+    public class StatisticsRepository(BookContext db, BookRepository bookStore)
     {
-        public IDictionary<string, int> Subtotal()
+        public StatisticsResult Subtotal()
         {
-            var todayStart = TimeHelper.TimestampFrom(DateTime.Today); ;
-            var categoryCount = 0;
-            var bookCount = db.Books.Count();
-            var bookToday = bookCount > 0 ? 
+            var res = new StatisticsResult();
+            var todayStart = TimeHelper.TimestampFrom(DateTime.Today);
+            res.CategoryCount = 0;
+            res.BookCount = db.Books.Count();
+            res.BookToday = res.BookCount > 0 ? 
                 db.Books.Where(i => i.CreatedAt >= todayStart).Count() : 0;
 
-            var chapterCount = db.Chapters.Count();
-            var chapterToday = chapterCount > 0 ?
+            res.ChapterCount = db.Chapters.Count();
+            res.ChapterToday = res.ChapterCount > 0 ?
                 db.Chapters.Where(i => i.CreatedAt >= todayStart).Count() : 0;
 
-            var wordCount = db.Chapters.Sum(i => i.Size);
-            var wordToday = wordCount > 0 ?
+            res.WordCount = db.Chapters.Sum(i => i.Size);
+            res.WordToday = res.WordCount > 0 ?
                 db.Chapters.Where(i => i.CreatedAt >= todayStart).Sum(i => i.Size) : 0;
-            
-            var authorCount = db.Authors.Count();
 
-            var listCount = db.Lists.Count();
-            var listToday = listCount > 0 ?
+            res.AuthorCount = db.Authors.Count();
+
+            res.ListCount = db.Lists.Count();
+            res.ListToday = res.ListCount > 0 ?
                 db.Lists.Where(i => i.CreatedAt >= todayStart).Count() : 0;
 
-            var viewCount = db.Books.Sum(i => i.ClickCount);
-            var viewToday = viewCount > 0 ?
+            res.ViewCount = db.Books.Sum(i => i.ClickCount);
+            res.ViewToday = res.ViewCount > 0 ?
                 bookStore.ClickLog().TodayCount(BookRepository.LOG_TYPE_BOOK, 0, BookRepository.LOG_ACTION_CLICK) : 0;
 
-            return new Dictionary<string, int>()
-            {
-                {"category_count", categoryCount },
-                {"author_count", authorCount },
-                {"book_count", bookCount },
-                {"book_today", bookToday },
-                  {"chapter_count", chapterCount },
-                {"chapter_today", chapterToday },
-                  {"word_count", wordCount },
-                {"word_today", wordToday },
-                  {"list_count", listCount },
-                {"list_today", listToday },
-                  {"view_count", viewCount },
-                {"view_today", viewToday },
-            };
+            return res;
         }
 
         public IEnumerable<StatisticsItem> Subtotal(int user)

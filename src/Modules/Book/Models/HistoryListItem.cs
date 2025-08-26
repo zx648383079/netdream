@@ -2,7 +2,7 @@
 
 namespace NetDream.Modules.Book.Models
 {
-    public class HistoryModel: HistoryEntity, IWithBookModel
+    public class HistoryListItem: HistoryEntity, IWithBookModel
     {
         public BookEntity? Book { get; set; }
 

@@ -17,10 +17,10 @@ namespace NetDream.Modules.Book.Repositories
         HistoryRepository historyStore,
         IUserRepository userStore)
     {
-        public IPage<ListEntity> GetList(string keywords = "", int page = 1)
+        public IPage<ListEntity> GetList(QueryForm form)
         {
-            return db.Lists.Search(keywords, "title")
-                .OrderByDescending(i => i.CreatedAt).ToPage(page);
+            return db.Lists.Search(form.Keywords, "title")
+                .OrderByDescending(i => i.CreatedAt).ToPage(form);
         }
 
         public IOperationResult<ListModel> Detail(int id)

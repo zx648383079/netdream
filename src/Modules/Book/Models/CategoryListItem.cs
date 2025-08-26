@@ -2,7 +2,7 @@
 
 namespace NetDream.Modules.Book.Models
 {
-    public class CategoryModel: CategoryEntity
+    public class CategoryListItem: CategoryEntity
     {
         public int BookCount { get; set; }
 

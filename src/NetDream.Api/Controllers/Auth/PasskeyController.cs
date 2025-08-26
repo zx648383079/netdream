@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
+using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.OpenPlatform;
 
 namespace NetDream.Api.Controllers.Auth
 {
     [Route("open/auth/[controller]")]
     [ApiController]
-    public class PasskeyController : JsonController
+    public class PasskeyController(PasskeyRepository repository) : JsonController
     {
         [HttpGet]
         [Route("")]

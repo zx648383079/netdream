@@ -42,10 +42,10 @@ namespace NetDream.Modules.Book.Repositories
             db.Categories.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public CategoryModel[] GetList(string keywords = "")
+        public CategoryListItem[] GetList(string keywords = "")
         {
             var items = db.Categories.Search(keywords, "name")
-                .OrderByDescending(i => i.Id).Select<CategoryEntity, CategoryModel>().ToArray();
+                .OrderByDescending(i => i.Id).SelectAs().ToArray();
             foreach (var item in items)
             {
                 var thumb = db.Books.Where(i => i.CatId == item.Id).Select(i => i.Cover).Single();

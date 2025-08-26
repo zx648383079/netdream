@@ -89,13 +89,13 @@ namespace NetDream.Modules.Book.Repositories
          * @return Page
          * @throws \Exception
          */
-        public IPage<HistoryModel> GetHistory(int page = 1)
+        public IPage<HistoryListItem> GetHistory(QueryForm form)
         {
-            IPage<HistoryModel> res;
+            IPage<HistoryListItem> res;
             if (client.UserId > 0)
             {
                 res = db.Histories.Where(i => i.UserId == client.UserId)
-                    .ToPage(page).CopyTo<HistoryEntity, HistoryModel>();
+                    .ToPage(form, i => i.SelectAs());
                 WithBook(res.Items);
                 WithChapter(res.Items);
                 return res;
@@ -103,13 +103,13 @@ namespace NetDream.Modules.Book.Repositories
             var items = GetHistoryId();
             if (items.Length == 0)
             {
-                return new Page<HistoryModel>();
+                return new Page<HistoryListItem>();
             }
             var chapterItems = db.Chapters.Where(i => items.Contains(i.Id))
-                .ToPage(page);
-            res = new Page<HistoryModel>(chapterItems.TotalItems, chapterItems.CurrentPage)
+                .ToPage(form);
+            res = new Page<HistoryListItem>(chapterItems.TotalItems, chapterItems.CurrentPage)
             {
-                Items = chapterItems.Items.Select(item => new HistoryModel()
+                Items = chapterItems.Items.Select(item => new HistoryListItem()
                 {
                     BookId = item.BookId,
                     ChapterId = item.Id,
@@ -125,7 +125,7 @@ namespace NetDream.Modules.Book.Repositories
             return db.Chapters.Where(i => ids.Contains(i.Id)).ToArray();
         }
 
-        private void WithChapter(IEnumerable<HistoryModel> items)
+        private void WithChapter(IEnumerable<HistoryListItem> items)
         {
             var idItems = items.Select(item => item.ChapterId).Where(i => i > 0).Distinct();
             if (!idItems.Any())
@@ -154,7 +154,7 @@ namespace NetDream.Modules.Book.Repositories
         {
             return db.Books.Where(i => ids.Contains(i.Id)).ToArray();
         }
-        private void WithBook(IEnumerable<HistoryModel> items)
+        private void WithBook(IEnumerable<HistoryListItem> items)
         {
             var idItems = items.Select(item => item.BookId).Where(i => i > 0).Distinct();
             if (!idItems.Any())

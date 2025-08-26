@@ -47,38 +47,28 @@ namespace NetDream.Modules.Book.Repositories
         /// <summary>
         /// 前台请求
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="category"></param>
-        /// <param name="keywords"></param>
-        /// <param name=""></param>
-        /// <param name="top"></param>
-        /// <param name="status"></param>
-        /// <param name="author"></param>
-        /// <param name="page"></param>
-        /// <param name="per_page"></param>
-        public IPage<BookEntity> GetList(int[] id, int category = 0, 
-            string keywords = "", 
-            bool top = false, 
-            int status = 0, int author = 0, 
-            int page = 1, int perPage = 20)
+        /// <param name="form"></param>
+        /// <returns></returns>
+        public IPage<BookEntity> GetList(BookQueryForm form)
         {
             return db.Books.Include(i => i.Author)
                 .Include(i => i.Category)
-                .Search(keywords, "name")
+                .Search(form.Keywords, "name")
                 .When(client.UserId == 0, i => i.Classify == 0)
-                .When(category > 0, i => i.CatId == category)
-                .When(author > 0, i => i.AuthorId == author)
+                .When(form.Category > 0, i => i.CatId == form.Category)
+                .When(form.Author > 0, i => i.AuthorId == form.Author)
                 .Where(i => i.Status == 1)
-                .When(status == 1, i => i.OverAt == 0)
-                .When(status == 2, i => i.OverAt > 0)
+                .When(form.Status == 1, i => i.OverAt == 0)
+                .When(form.Status == 2, i => i.OverAt > 0)
                 .OrderByDescending(i => i.Id)
-                .ToPage(page);
+                .ToPage(form);
         }
 
-        protected IPage<BookEntity> SortByClick(IQueryable<BookEntity> query, string type, int page = 1, int per_page = 20)
+        protected IPage<BookEntity> SortByClick(IQueryable<BookEntity> query, 
+            string type, PaginationForm form)
         {
             var logs = ClickLogs(type);
-            var res = new Page<BookEntity>(logs.Count, page, per_page);
+            var res = new Page<BookEntity>(logs.Count, form);
             if (logs.Count == 0 || res.IsEmpty)
             {
                 return res;
@@ -115,29 +105,26 @@ namespace NetDream.Modules.Book.Repositories
             };
         }
 
-        public IPage<BookEntity> GetManageList(string keywords = "", 
-            int category = 0, int author = 0, int classify = 0, 
-            int status = -1,
-            int page = 1)
+        public IPage<BookEntity> GetManageList(BookQueryForm form)
         {
             return db.Books.Include(i => i.Author)
                 .Include(i => i.Category)
-                .Search(keywords, "name")
-                .Where(i => i.Classify == classify)
-                .When(category > 0, i => i.CatId == category)
-                .When(author > 0, i => i.AuthorId == author)
-                .When(status >= 0, i=> i.Status == status)
-                .OrderByDescending(i => i.Id).ToPage(page);
+                .Search(form.Keywords, "name")
+                .Where(i => i.Classify == form.Classify)
+                .When(form.Category > 0, i => i.CatId == form.Category)
+                .When(form.Author > 0, i => i.AuthorId == form.Author)
+                .When(form.Status >= 0, i=> i.Status == form.Status)
+                .OrderByDescending(i => i.Id).ToPage(form);
         }
 
-        public IPage<BookEntity> GetSelfList(string keywords = "", int category = 0, int page = 1)
+        public IPage<BookEntity> GetSelfList(BookQueryForm form)
         {
             return db.Books.Include(i => i.Author)
                 .Include(i => i.Category)
-                .Search(keywords, "name")
-                .When(category > 0, i => i.CatId == category)
+                .Search(form.Keywords, "name")
+                .When(form.Category > 0, i => i.CatId == form.Category)
                 .Where(i => i.UserId == client.UserId)
-                .OrderByDescending(i => i.Id).ToPage(page);
+                .OrderByDescending(i => i.Id).ToPage(form);
         }
 
         public IOperationResult<BookEntity> Detail(int id)

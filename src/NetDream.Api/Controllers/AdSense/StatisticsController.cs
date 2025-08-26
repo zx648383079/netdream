@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.AdSense.Forms;
+using NetDream.Modules.AdSense.Models;
 using NetDream.Modules.AdSense.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
@@ -15,7 +16,7 @@ namespace NetDream.Api.Controllers.AdSense
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(BaseResponse), 200)]
+        [ProducesResponseType(typeof(StatisticsResult), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] AdQueryForm form)
         {

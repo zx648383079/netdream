@@ -19,13 +19,12 @@ namespace NetDream.Modules.Book.Repositories
         public const int TYPE_FREE_CHAPTER = 0;
         public const int TYPE_VIP_CHAPTER = 1;
         public const int TYPE_GROUP = 9; // 卷
-        public IPage<ChapterEntity> GetList(int book, 
-            string keywords = "", int page = 1)
+        public IPage<ChapterEntity> GetList(ChapterQueryForm form)
         {
-            return db.Chapters.Where(i => i.BookId == book)
-                .Search(keywords, "title")
+            return db.Chapters.Where(i => i.BookId == form.Book)
+                .Search(form.Keywords, "title")
                 .OrderBy(i => i.Position)
-                .OrderBy(i => i.CreatedAt).ToPage(page);
+                .ThenBy(i => i.CreatedAt).ToPage(form);
         }
 
         public IOperationResult<ChapterModel> Get(int id, bool checkUser = false)

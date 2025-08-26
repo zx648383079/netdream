@@ -13,16 +13,16 @@ namespace NetDream.Modules.Book.Repositories
         IClientContext client,
         IUserRepository userStore)
     {
-        public IPage<AuthorEntity> GetList(string keywords = "", int page = 1)
+        public IPage<AuthorEntity> GetList(QueryForm form)
         {
-            return db.Authors.Search(keywords, "name")
+            return db.Authors.Search(form.Keywords, "name")
                 .OrderByDescending(i => i.Id)
-                .ToPage(page);
+                .ToPage(form);
         }
 
-        public AuthorEntity? Get(int id)
+        public IOperationResult<AuthorEntity> Get(int id)
         {
-            return db.Authors.Where(i => i.Id == id).Single();
+            return OperationResult.OkOrFail(db.Authors.Where(i => i.Id == id).SingleOrDefault());
         }
         public IOperationResult<AuthorEntity> Save(AuthorForm data)
         {
@@ -58,9 +58,14 @@ namespace NetDream.Modules.Book.Repositories
                 }).ToPage(page);
         }
 
-        public AuthorModel? Profile(int id)
+        public IOperationResult<AuthorModel> Profile(int id)
         {
-            return AppendProfile(Get(id));
+            var model = db.Authors.Where(i => i.Id == id).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult<AuthorModel>.Fail("数据错误");
+            }
+            return OperationResult.OkOrFail(AppendProfile(model));
         }
 
         protected AuthorModel? AppendProfile(AuthorEntity? model)
