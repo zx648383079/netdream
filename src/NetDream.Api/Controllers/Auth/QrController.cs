@@ -54,7 +54,7 @@ namespace NetDream.Api.Controllers.Auth
             {
                 return RenderFailure(res);
             }
-            return Render(res.Result);
+            return RenderData(true);
         }
     }
 }

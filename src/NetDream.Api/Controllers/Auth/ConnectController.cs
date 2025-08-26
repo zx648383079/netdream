@@ -14,7 +14,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index(string type, string redirect_uri = "")
         {
-
+            return RenderData(true);
         }
 
         [HttpPost]
@@ -23,7 +23,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Mini()
         {
-
+            return RenderData(true);
         }
 
         [HttpPost]
@@ -32,7 +32,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult MiniLogin()
         {
-
+            return RenderData(true);
         }
 
         [HttpPost]
@@ -41,7 +41,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult MiniDecrypt()
         {
-
+            return RenderData(true);
         }
     }
 }

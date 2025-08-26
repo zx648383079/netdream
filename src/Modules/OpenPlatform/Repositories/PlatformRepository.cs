@@ -219,7 +219,8 @@ namespace NetDream.Modules.OpenPlatform.Repositories
             {
                 return;
             }
-            var data = db.Platforms.Where(i => idItems.Contains(i.Id)).ToDictionary(i => i.Id);
+            var data = db.Platforms.Where(i => idItems.Contains(i.Id))
+                .Select(i => new ListLabelItem(i.Id, i.Name)).ToDictionary(i => i.Id);
             if (data.Count == 0)
             {
                 return;

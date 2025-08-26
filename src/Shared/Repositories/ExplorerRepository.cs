@@ -299,8 +299,10 @@ namespace NetDream.Shared.Repositories
         public IPage<VirtualFileItem> SearchWithType(ExplorerQueryForm form)
         {
             var provider = storage.PublicStore();
-            var items = provider.Search(form.Keywords, 
-                FileRepository.TypeExtension(form.Type).Split('|'), form.Page);
+            var items = provider.Search(new StorageQueryForm(form)
+            {
+                Extension = FileRepository.TypeExtension(form.Type).Split('|')
+            });
             //foreach (var item in items.Items)
             //{
             //    if (type == "image")

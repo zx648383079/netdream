@@ -17,7 +17,7 @@ namespace NetDream.Modules.ResourceStore.Models
         public bool IsGradable { get; internal set; }
 
         [JsonMeta]
-        public Dictionary<string, string>? MetaItems { get; set; }
+        public IDictionary<string, string>? MetaItems { get; set; }
      
         public CatalogItem[]? FileCatalog {  get; set; }
         public string PreviewUrl { get; internal set; }

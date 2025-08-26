@@ -97,7 +97,8 @@ namespace NetDream.Modules.Chat.Repositories
                 BelongId = client.UserId,
                 Status = data.Group > 0 && count ? 1 : 0
             }, client.Now);
-            var logCount = db.Applies.Where(i => i.ItemId == client.UserId && i.ItemType == 0 && i.UserId == user).Any();
+            var logCount = db.Applies.Where(i => i.ItemId == client.UserId 
+            && i.ItemType == 0 && i.UserId == data.User).Any();
             if (logCount) {
                 
                 db.Applies.Where(i => i.UserId == data.User && i.ItemType == 0 && i.ItemId == client.UserId && i.Status == 0)

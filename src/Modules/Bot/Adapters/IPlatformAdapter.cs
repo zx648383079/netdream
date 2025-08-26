@@ -1,4 +1,5 @@
-﻿using NetDream.Shared.Interfaces;
+﻿using NetDream.Modules.Bot.Forms;
+using NetDream.Shared.Interfaces;
 using System;
 
 namespace NetDream.Modules.Bot.Adapters
@@ -7,7 +8,7 @@ namespace NetDream.Modules.Bot.Adapters
     {
         public IOperationResult PullUser(string openId);
 
-        public IOperationResult PullUsers(Action<object> cb);
+        public IOperationResult PullUsers(Action<FansForm> cb);
 
         public IOperationResult PushMenu(object[] items);
 
@@ -19,7 +20,7 @@ namespace NetDream.Modules.Bot.Adapters
 
         public IOperationResult SendTemplate(string openid, object data);
 
-        public IOperationResult PullTemplate(Action<object> cb);
+        public IOperationResult PullTemplate(Action<TemplateForm> cb);
 
         public IOperationResult PushMedia(object model);
         public IOperationResult PushNews(object model);

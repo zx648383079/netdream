@@ -36,7 +36,8 @@ namespace NetDream.Modules.OnlineDisk.Adapters
             throw new NotImplementedException();
         }
 
-        public IOperationResult Remove(int id)
+
+        public IOperationResult Remove(string id)
         {
             throw new NotImplementedException();
         }
@@ -46,27 +47,31 @@ namespace NetDream.Modules.OnlineDisk.Adapters
             throw new NotImplementedException();
         }
 
-        public IPage<DiskQueryForm> Search(DiskQueryForm form)
+
+        public IOperationResult<DiskListItem> UploadCheck(DiskCheckForm data)
         {
             throw new NotImplementedException();
         }
 
-        public IOperationResult<DiskListItem> uploadCheck(DiskCheckForm data)
+
+        public IOperationResult<DiskChunkResult> UploadChunk(DiskChunkForm data)
         {
             throw new NotImplementedException();
         }
 
-        public object uploadChunk(DiskChunkForm data)
+
+        public IOperationResult<DiskListItem> UploadFile(DiskFileForm data)
         {
             throw new NotImplementedException();
         }
 
-        public IOperationResult<DiskListItem> uploadFile(DiskFileForm data)
+
+        public IOperationResult<DiskListItem> UploadFinish(DiskChunkFinishForm data)
         {
             throw new NotImplementedException();
         }
 
-        public IOperationResult<DiskListItem> uploadFinish(DiskChunkFinishForm data)
+        public IPage<DiskListItem> Search(DiskQueryForm form)
         {
             throw new NotImplementedException();
         }

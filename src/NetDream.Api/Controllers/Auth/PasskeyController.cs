@@ -14,7 +14,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index()
         {
-
+            return RenderData(true);
         }
 
         [HttpPost]
@@ -23,7 +23,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Login()
         {
-
+            return RenderData(true);
         }
 
         [HttpGet]
@@ -32,7 +32,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult RegisterOption()
         {
-
+            return RenderData(true);
         }
 
         [HttpPost]
@@ -41,7 +41,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Register()
         {
-
+            return RenderData(true);
         }
 
 
@@ -51,7 +51,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Twofa()
         {
-
+            return RenderData(true);
         }
 
 
@@ -61,7 +61,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult TwofaSave()
         {
-
+            return RenderData(true);
         }
     }
 }

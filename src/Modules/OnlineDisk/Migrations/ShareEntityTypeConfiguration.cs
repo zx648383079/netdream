@@ -13,7 +13,7 @@ namespace NetDream.Modules.OnlineDisk.Migrations
             builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100);
-            builder.Property(table => table.Mode).HasColumnName("mode").HasMaxLength(2).HasDefaultValue(DiskRepository.SHARE_PUBLIC);
+            builder.Property(table => table.Mode).HasColumnName("mode").HasMaxLength(2).HasDefaultValue(ShareRepository.SHARE_PUBLIC);
             builder.Property(table => table.Password).HasColumnName("password").HasMaxLength(20).HasDefaultValue(string.Empty);
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.DeathAt).HasColumnName("death_at");

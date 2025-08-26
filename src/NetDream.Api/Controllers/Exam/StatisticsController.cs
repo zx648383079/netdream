@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Modules.UserIdentity.Repositories;
 using NetDream.Modules.OpenPlatform;
+using NetDream.Modules.Exam.Repositories;
+using NetDream.Modules.Exam.Models;
 
 namespace NetDream.Api.Controllers.Exam
 {

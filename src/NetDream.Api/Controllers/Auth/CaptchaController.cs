@@ -14,7 +14,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index()
         {
-
+            return RenderData(true);
         }
 
         [HttpPost]
@@ -23,7 +23,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Verify()
         {
-
+            return RenderData(true);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using NetDream.Modules.Shop.Entities;
+using NetDream.Modules.Shop.Market.Models;
 using NetDream.Modules.Shop.Models;
 using NetDream.Shared.Models;
 using System.Linq;
@@ -9,6 +11,22 @@ namespace NetDream.Modules.Shop
     {
         public static void ProvideShopRepositories(this IServiceCollection service)
         {
+        }
+
+        internal static IQueryable<CommentListItem> SelectAs(this IQueryable<CommentEntity> query)
+        {
+            return query.Select(i => new CommentListItem()
+            {
+                Id = i.Id,
+                Content = i.Content,
+                ItemId = i.ItemId,
+                ItemType = i.ItemType,
+                Rank = i.Rank,
+                Title = i.Title,
+                UpdatedAt = i.UpdatedAt,
+                UserId = i.UserId,
+                CreatedAt = i.CreatedAt
+            });
         }
 
         internal static void IncludeCategory(ShopContext db, ArticleListItem[] items)

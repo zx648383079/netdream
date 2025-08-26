@@ -7,6 +7,6 @@ namespace NetDream.Modules.Catering.Models
     public class StoreModel : StoreEntity
     {
         [JsonMeta]
-        public Dictionary<string, string>? MetaItems { get; set; }
+        public IDictionary<string, string>? MetaItems { get; set; }
     }
 }

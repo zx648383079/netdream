@@ -28,7 +28,7 @@ namespace NetDream.Modules.Bot.Repositories
                 .ToPage(form, i => i.SelectAs());
         }
 
-        public IPage<UserListItem> ManageList(int bot_id = 0, UserQueryForm form)
+        public IPage<UserListItem> ManageList(int bot_id, UserQueryForm form)
         {
             return db.Users.Where(i => i.BotId == bot_id)
                 .When(form.Blacklist > 0, i => i.IsBlack == 1)
@@ -40,7 +40,7 @@ namespace NetDream.Modules.Bot.Repositories
                 .ToPage(form, i => i.SelectAs());
         }
 
-        public IOperationResult Add(int bot_id, string openid, object info)
+        public IOperationResult Add(int bot_id, string openid, FansForm info)
         {
             if (!AccountRepository.IsSelf(db, client, bot_id))
             {
@@ -91,7 +91,7 @@ namespace NetDream.Modules.Bot.Repositories
             }
             new BotRepository().Entry(bot_id)
                 .PullUsers(data => {
-                    Add(bot_id, data["openid"], data);
+                    Add(bot_id, data.Openid, data);
                 });
             return OperationResult.Ok();
         }

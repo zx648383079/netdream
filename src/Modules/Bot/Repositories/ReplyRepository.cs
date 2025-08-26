@@ -131,7 +131,12 @@ namespace NetDream.Modules.Bot.Repositories
 
         public IOperationResult Send(int bot_id, int toType, int to, Dictionary<string, string> data)
         {
-            if (data["type"] == 3)
+            var type = 0;
+            if (data.TryGetValue("type", out var v) && int.TryParse(v, out type))
+            {
+
+            }
+            if (type == 3)
             {
                 return SendTemplate(bot_id, to, data);
             }
@@ -140,7 +145,7 @@ namespace NetDream.Modules.Bot.Repositories
                 return OperationResult.Fail("权限不足");
             }
             var content = string.Empty;
-            if (data["type"] < 1)
+            if (type < 1)
             {
                 content = data["text"];
             }
@@ -174,7 +179,7 @@ namespace NetDream.Modules.Bot.Repositories
             {
                 return OperationResult.Fail("用户未关注公众号");
             }
-            data["template_data"] = ToArray(data["template_data"]);
+            // data["template_data"] = ToArray(data["template_data"]);
             return new BotRepository().Entry(bot_id)
                 .SendTemplate(openid, data);
         }
@@ -221,7 +226,7 @@ namespace NetDream.Modules.Bot.Repositories
             }
             new BotRepository().Entry(bot_id)
                 .PullTemplate(item => {
-                    var templateId = item["template_id"];
+                    var templateId = item.TemplateId;
                     var model = db.Templates.Where(i => i.BotId == bot_id && i.TemplateId == templateId)
                         .SingleOrDefault();
                     if (model is null)
@@ -230,12 +235,13 @@ namespace NetDream.Modules.Bot.Repositories
                     }
                     model.BotId = bot_id;
                     model.TemplateId = templateId;
-                    model.Title = item["title"];
-                    model.Content = item["content"];
-                    model.Example = item["example"]
+                    model.Title = item.Title;
+                    model.Content = item.Content;
+                    model.Example = item.Example;
                     db.Templates.Save(model);
             });
             db.SaveChanges();
+            return OperationResult.Ok();
         }
 
         public string Preview(TemplateEntity entity, Dictionary<string, string> data)

@@ -400,7 +400,7 @@ namespace NetDream.Modules.Forum.Repositories
                 Ip = client.Ip,
             };
             db.ThreadPosts.Save(model, client.Now);
-            new ForumRepository(db, userStore).
+            new ForumRepository(db, userStore, client).
                 UpdateCount(thread.ForumId, "thread_count");
             return OperationResult.Ok(model);
         }
@@ -530,7 +530,7 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return OperationResult<ThreadPostEntity>.Fail("发表失败");
             }
-            new ForumRepository(db, userStore)
+            new ForumRepository(db, userStore, client)
                 .UpdateCount(thread.ForumId, "post_count");
             db.Threads.Where(i => i.Id == form.Thread)
                 .ExecuteUpdate(setters => 
@@ -701,7 +701,7 @@ namespace NetDream.Modules.Forum.Repositories
             }
             db.ThreadPosts.Remove(item);
             db.SaveChanges();
-            new ForumRepository(db, userStore).UpdateCount(thread.ForumId, "post_count", -1);
+            new ForumRepository(db, userStore, client).UpdateCount(thread.ForumId, "post_count", -1);
             db.Threads.Where(i => i.Id == item.ThreadId)
                 .ExecuteUpdate(setters =>
                     setters.SetProperty(i => i.PostCount, i => i.PostCount - 1)
@@ -718,7 +718,7 @@ namespace NetDream.Modules.Forum.Repositories
             db.Threads.Remove(thread);
             var count = db.ThreadPosts.Where(i => i.ThreadId == id).Count() - 1;
             db.ThreadPosts.Where(i => i.ThreadId == id).ExecuteDelete();
-            var repository = new ForumRepository(db, userStore);
+            var repository = new ForumRepository(db, userStore, client);
             repository.UpdateCount(thread.ForumId, "thread_count", -1);
             repository.UpdateCount(thread.ForumId, "post_count", -count);
             db.Logs.Add(new LogEntity() { 

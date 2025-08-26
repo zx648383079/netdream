@@ -5,7 +5,6 @@ using NetDream.Modules.Finance.Forms;
 using NetDream.Modules.Finance.Models;
 using NetDream.Modules.Finance.Repositories;
 using NetDream.Modules.OpenPlatform;
-using NetDream.Modules.OpenPlatform.Models;
 
 namespace NetDream.Api.Controllers.Finance
 {

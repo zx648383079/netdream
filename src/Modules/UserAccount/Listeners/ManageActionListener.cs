@@ -15,9 +15,9 @@ namespace NetDream.Modules.UserAccount.Listeners
                 Ip = notification.Ip,
                 Action = notification.Action,
                 Remark = notification.Remark,
-                ItemType = notification.ItemType,
+                ItemType = (int)notification.ItemType,
                 ItemId = notification.ItemId,
-                CreatedAt = notification.CreateAt
+                CreatedAt = notification.Timestamp
             });
             db.SaveChanges();
             return Task.CompletedTask;

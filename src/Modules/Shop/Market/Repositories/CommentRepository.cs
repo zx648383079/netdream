@@ -1,12 +1,12 @@
 ﻿using NetDream.Modules.Shop.Entities;
 using NetDream.Modules.Shop.Market.Forms;
-using NetDream.Modules.Shop.Market.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Providers.Models;
 using System;
 using System.Linq;
+using CommentListItem = NetDream.Modules.Shop.Market.Models.CommentListItem;
 
 namespace NetDream.Modules.Shop.Market.Repositories
 {
@@ -19,7 +19,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
             var res = db.Comments.Search(form.Keywords, "content")
                 .Where(i => i.ItemType == item_type && i.ItemId == item_id)
                 .OrderByDescending(i => i.Id)
-                .ToPage<CommentEntity, CommentListItem>(form);
+                .ToPage(form, i => i.SelectAs());
             userStore.Include(res.Items);
             IncludeImage(res.Items);
             return res;

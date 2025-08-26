@@ -36,7 +36,7 @@ namespace NetDream.Api.Controllers.Navigation
         public IActionResult Detail(int id)
         {
             var res = repository.Get(id);
-            if (!res.Successed)
+            if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
             }

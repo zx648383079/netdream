@@ -75,6 +75,7 @@ namespace NetDream.Modules.MessageService.Repositories
                  && i.Id != res.Result && i.Status == STATUS_SENT)
                     .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, STATUS_SENT_EXPIRED));
             }
+            db.SaveChanges();
             //if (res && EnableSession(templateName)) {
             //    session().set(self.SESSION_KEY, [
             //        "at" => time(),
@@ -105,7 +106,7 @@ namespace NetDream.Modules.MessageService.Repositories
             {
                 query = query.OrderByDescending(i => i.Type);
             }
-            var template = query.Single();
+            var template = query.SingleOrDefault();
             if (template is null)
             {
                 return OperationResult<int>.Fail(string.Format("未配置相关模板[{0}:{1}]", optionKey, templateName));
@@ -284,14 +285,14 @@ namespace NetDream.Modules.MessageService.Repositories
         {
 
         }
-        /**
-         * 自定义方式内容
-         * @param string target
-         * @param string title
-         * @param string|callable content
-         * @param bool isHtml
-         * @return void
-         */
+        /// <summary>
+        /// 自定义方式内容
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="title"></param>
+        /// <param name="content"></param>
+        /// <param name="isHtml"></param>
+        /// <exception cref="Exception"></exception>
         public void SendCustom(string target, string title, string content, bool isHtml = true)
         {
             var (type, option, _) = TargetOption(target);

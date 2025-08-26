@@ -74,7 +74,7 @@ namespace NetDream.Api.Controllers.Blog
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Upload(IFormFile file)
         {
-            var res = fileStore.UploadImages(new FormUploadFile(file));
+            var res = fileStore.UploadImage(new FormUploadFile(file));
             if (res.Succeeded)
             {
                 return Render(res.Result);

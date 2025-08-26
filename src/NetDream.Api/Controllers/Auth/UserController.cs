@@ -134,7 +134,7 @@ namespace NetDream.Api.Controllers.Auth
         [Route("[action]")]
         [ProducesResponseType(typeof(UserProfileModel), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Ticket()
+        public IActionResult Ticket(string email)
         {
             var res = repository.CheckEmail(email);
             if (!res.Succeeded)

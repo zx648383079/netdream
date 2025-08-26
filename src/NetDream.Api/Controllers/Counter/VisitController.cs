@@ -8,7 +8,12 @@ namespace NetDream.Api.Controllers.Counter
     [Route("open/counter/[controller]")]
     [Authorize(Roles = IdentityRepository.Administrator)]
     [ApiController]
-    public class CustomController : JsonController
+    public class VisitController : JsonController
     {
+
+        public IActionResult Index()
+        {
+            return RenderData(true);
+        }
     }
 }
