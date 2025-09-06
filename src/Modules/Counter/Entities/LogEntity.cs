@@ -9,20 +9,18 @@ namespace NetDream.Modules.Counter.Entities
         
         public int Id { get; set; }
         public string Ip { get; set; } = string.Empty;
-        public string Browser { get; set; } = string.Empty;
-        
-        public string BrowserVersion { get; set; } = string.Empty;
-        public string Os { get; set; } = string.Empty;
-        
-        public string OsVersion { get; set; } = string.Empty;
-        public string Url { get; set; } = string.Empty;
-        public string Referrer { get; set; } = string.Empty;
-        
+
+        public string Hostname { get; set; } = string.Empty;
+        public string Pathname { get; set; } = string.Empty;
+        public string Queries { get; set; } = string.Empty;
+        public string Method { get; set; } = "GET";
+        public int StatusCode { get; set; } = 200;
+        public string ReferrerHostname { get; set; } = string.Empty;
+        public string ReferrerPathname { get; set; } = string.Empty;
+
         public string UserAgent { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
-        public string Region { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        
+
+
         public int UserId { get; set; }
         
         public string SessionId { get; set; } = string.Empty;

@@ -1,4 +1,5 @@
 ﻿@using NetDream.Modules.Auth.Models
+@using NetDream.Modules.UserAccount.Models
 @using NetDream.Shared.Interfaces
 @using NetDream.Shared.Interfaces.Entities
 @inject IClientContext client;
@@ -31,7 +32,7 @@
                     <li><a asp-area="" asp-controller="Home" asp-action="About">关于</a></li>
                 </ul>
                 <ul class="nav-right">
-                    @if (client.TryGetUser(out var o) && o is UserProfile user)
+                    @if (client.TryGetUser(out var o) && o is UserProfileModel user)
                     {
                         <li>
                             <a href="javascript:;">

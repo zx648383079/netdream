@@ -11,17 +11,17 @@ namespace NetDream.Web.Areas.Note.Controllers
     [Area("Note")]
     public class HomeController(NoteRepository repository, IClientContext environment) : JsonController
     {
-        public IActionResult Index([FromQuery] QueryForm form, int id = 0, int user = 0)
+        public IActionResult Index([FromQuery] NoteQueryForm form)
         {
             ViewData["isGuest"] = environment.UserId == 0;
-            ViewData["items"] = repository.GetList(form, user, id, false);
+            ViewData["items"] = repository.GetList(form);
             return View();
         }
 
-        public IActionResult Page([FromQuery] QueryForm form, int id = 0, int user = 0)
+        public IActionResult Page([FromQuery] NoteQueryForm form)
         {
             ViewData["isGuest"] = environment.UserId == 0;
-            var items = repository.GetList(form, user, id, false);
+            var items = repository.GetList(form);
             ViewData["items"] = items;
             return RenderData(new {
                 Html = View().ToHtml(HttpContext),
@@ -36,7 +36,7 @@ namespace NetDream.Web.Areas.Note.Controllers
             {
                 return RenderFailure(ModelState);
             }
-            repository.SaveSelf(form);
+            repository.SelfSave(form);
             return RenderData(new {
                 Refresh = true
             });
@@ -45,7 +45,7 @@ namespace NetDream.Web.Areas.Note.Controllers
         [HttpDelete]
         public IActionResult Delete(int id)
         {
-            repository.RemoveSelf(id);
+            repository.SelfRemove(id);
             return RenderData(true);
         }
     }

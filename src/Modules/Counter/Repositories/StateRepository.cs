@@ -1,4 +1,5 @@
-﻿using NetDream.Modules.Counter.Entities;
+using NetDream.Modules.Counter.Entities;
+using NetDream.Modules.Counter.Forms;
 using NetDream.Modules.Counter.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
@@ -57,17 +58,17 @@ namespace NetDream.Modules.Counter.Repositories
         {
             var pv = db.StayTimeLogs.Where(i => i.EnterAt >= start_at && i.EnterAt < end_at)
                 .Count();
-            var uv = db.StayTimeLogs.Where(i => i.EnterAt >= start_at && i.EnterAt < end_at)
-                .GroupBy(i => i.SessionId).Count();
-            var ip_count = db.StayTimeLogs.Where(i => i.EnterAt >= start_at && i.EnterAt < end_at)
-                .GroupBy(i => i.Ip).Count();
+            var uv = 0;//db.StayTimeLogs.Where(i => i.EnterAt >= start_at && i.EnterAt < end_at)
+                //.GroupBy(i => i.SessionId).Count();
+            var ip_count = 0;// db.StayTimeLogs.Where(i => i.EnterAt >= start_at && i.EnterAt < end_at)
+                //.GroupBy(i => i.Ip).Count();
             var jump_count = db.JumpLogs.Where(i => i.CreatedAt >= start_at && i.CreatedAt < end_at)
                 .Count();
             var stay_time = db.StayTimeLogs.Where(i => i.EnterAt >= start_at 
                 && i.EnterAt < end_at && i.LeaveAt > 0)
                 .Average(i => i.LeaveAt - i.EnterAt);
             var next_time = db.Logs.Where(i => i.CreatedAt >= start_at && i.CreatedAt < end_at
-                && i.Referrer.StartsWith(client.Host)).Count();
+                && i.ReferrerHostname == client.Host).Count();
             return new TimeResult()
             {
                 Pv = pv,
@@ -81,57 +82,55 @@ namespace NetDream.Modules.Counter.Repositories
 
         public IPage<StayTimeModel> CurrentStay(QueryForm form)
         {
-            var items = db.StayTimeLogs.OrderByDescending(i => i.Id).ToPage(form);
-            return new Page<StayTimeModel>(items) 
-            {
-                Items = items.Items.Select(FormatAgent<StayTimeModel>).ToArray()
-            };
+            var items = db.StayTimeLogs.OrderByDescending(i => i.Id).ToPage(form, i => i.SelectAs());
+            IncludeClient(items.Items);
+            return items;
         }
 
-        public IPage<ITrendAnalysis> AllUrl(int start_at, int end_at)
+        public IPage<ITrendAnalysis> AllUrl(AnalysisQueryForm form)
         {
-            var items = MapGroups(start_at, end_at, i => {
-                if (string.IsNullOrWhiteSpace(i.Url))
+            var items = MapGroups(form, i => {
+                if (string.IsNullOrWhiteSpace(i.Pathname))
                 {
                     return null;
                 }
-                return i.Url;
+                return i.Pathname;
             }, i => new UrlTrendAnalysis(i), 
             db.Logs.Select(i => new LogEntity()
             {
-                Url = i.Url,
+                Pathname = i.Pathname,
                 Ip = i.Ip,
                 SessionId = i.SessionId,
             }));
             return new Page<ITrendAnalysis>(items);
         }
 
-        public IPage<ITrendAnalysis> EnterUrl(int start_at, int end_at)
+        public IPage<ITrendAnalysis> EnterUrl(AnalysisQueryForm form)
         {
-            var items = MapGroups(start_at, end_at, i => {
-                if (string.IsNullOrWhiteSpace(i.Url))
+            var items = MapGroups(form, i => {
+                if (string.IsNullOrWhiteSpace(i.Pathname))
                 {
                     return null;
                 }
-                return i.Url;
+                return i.Pathname;
             }, i => new UrlTrendAnalysis(i), 
-            db.Logs.Where(i => i.Referrer == "" || !i.Referrer.Contains(client.Host)).Select(i => new LogEntity()
+            db.Logs.Where(i => i.ReferrerHostname == "" || i.ReferrerHostname != client.Host).Select(i => new LogEntity()
             {
-                Url = i.Url,
+                Pathname = i.Pathname,
                 Ip = i.Ip,
                 SessionId = i.SessionId,
             }));
             return new Page<ITrendAnalysis>(items);
         }
 
-        public ITrendAnalysis[] Domain(int start_at, int end_at)
+        public ITrendAnalysis[] Domain(AnalysisQueryForm form)
         {
-            return MapGroups(start_at, end_at, i => {
-                if (string.IsNullOrWhiteSpace(i.Url))
+            return MapGroups(form, i => {
+                if (string.IsNullOrWhiteSpace(i.Hostname))
                 {
                     return null;
                 }
-                var host = new Uri(i.Url).Host;
+                var host = i.Hostname;
                 if (string.IsNullOrEmpty(host))
                 {
                     return null;
@@ -144,7 +143,7 @@ namespace NetDream.Modules.Counter.Repositories
             }, i => new HostTrendAnalysis(i), 
             db.Logs.Select(i => new LogEntity()
             {
-                Url = i.Url,
+                Hostname = i.Hostname,
                 Ip = i.Ip,
                 SessionId = i.SessionId,
             }));
@@ -160,42 +159,42 @@ namespace NetDream.Modules.Counter.Repositories
             return null;
         }
 
-        public ITrendAnalysis[] SearchKeywords(int start_at, int end_at)
+        public ITrendAnalysis[] SearchKeywords(AnalysisQueryForm form)
         {
-            return MapGroups(start_at, end_at, i => {
-                if (string.IsNullOrWhiteSpace(i.Referrer))
+            return MapGroups(form, i => {
+                if (string.IsNullOrWhiteSpace(i.ReferrerPathname))
                 {
                     return null;
                 }
-                var words = IsSearch(i.Referrer);
+                var words = IsSearch(i.ReferrerPathname);
                 if (string.IsNullOrWhiteSpace(words))
                 {
                     return null;
                 }
                 return words;
             }, i => new SearchTrendAnalysis(i), 
-            db.Logs.Where(i => i.Referrer == "" || !i.Referrer.Contains(client.Host))
+            db.Logs.Where(i => i.ReferrerHostname == "" || i.ReferrerHostname != client.Host)
             .Select(i => new LogEntity()
             {
-                Referrer = i.Referrer,
+                ReferrerPathname = i.ReferrerPathname,
                 Ip = i.Ip,
                 SessionId = i.SessionId,
             }));
         }
 
-        public ITrendAnalysis[] SearchEngine(int start_at, int end_at)
+        public ITrendAnalysis[] SearchEngine(AnalysisQueryForm form)
         {
-            return MapGroups(start_at, end_at, i => {
-                if (string.IsNullOrWhiteSpace(i.Referrer))
+            return MapGroups(form, i => {
+                if (string.IsNullOrWhiteSpace(i.ReferrerPathname))
                 {
                     return null;
                 }
-                var words = IsSearch(i.Referrer);
+                var words = IsSearch(i.ReferrerPathname);
                 if (string.IsNullOrWhiteSpace(words))
                 {
                     return null;
                 }
-                var host = new Uri(i.Referrer).Host;
+                var host = i.ReferrerHostname;
                 if (string.IsNullOrEmpty(host))
                 {
                     return null;
@@ -206,23 +205,24 @@ namespace NetDream.Modules.Counter.Repositories
                 }
                 return host;
             }, i => new HostTrendAnalysis(i), 
-            db.Logs.Where(i => i.Referrer == "" || !i.Referrer.Contains(client.Host))
+            db.Logs.Where(i => i.ReferrerHostname == "" || i.ReferrerHostname != client.Host)
             .Select(i => new LogEntity()
             {
-                Referrer = i.Referrer,
+                ReferrerHostname = i.ReferrerHostname,
+                ReferrerPathname = i.ReferrerPathname,
                 Ip = i.Ip,
                 SessionId = i.SessionId,
             }));
         }
 
-        public ITrendAnalysis[] Host(int start_at, int end_at)
+        public ITrendAnalysis[] Host(AnalysisQueryForm form)
         {
-            return MapGroups(start_at, end_at, i => {
-                if (string.IsNullOrWhiteSpace(i.Referrer))
+            return MapGroups(form, i => {
+                if (string.IsNullOrWhiteSpace(i.ReferrerHostname))
                 {
                     return null;
                 }
-                var host = new Uri(i.Referrer).Host;
+                var host = i.ReferrerHostname;
                 if (string.IsNullOrEmpty(host))
                 {
                     return null;
@@ -233,23 +233,23 @@ namespace NetDream.Modules.Counter.Repositories
                 }
                 return host;
             }, i => new HostTrendAnalysis(i), 
-            db.Logs.Where(i => i.Referrer == "" || !i.Referrer.Contains(client.Host))
+            db.Logs.Where(i => i.ReferrerHostname == "" || i.ReferrerHostname != client.Host)
             .Select(i => new LogEntity()
             {
-                Referrer = i.Referrer,
+                ReferrerHostname = i.ReferrerHostname,
                 Ip = i.Ip,
                 SessionId = i.SessionId,
             }));
         }
 
-        public ITrendAnalysis[] AllSource(int start_at, int end_at)
+        public ITrendAnalysis[] AllSource(AnalysisQueryForm form)
         {
-            return MapGroups(start_at, end_at, i => {
-                if (string.IsNullOrWhiteSpace(i.Referrer))
+            return MapGroups(form, i => {
+                if (string.IsNullOrWhiteSpace(i.ReferrerHostname))
                 {
                     return "直接访问";
                 }
-                var host = new Uri(i.Referrer).Host;
+                var host = i.ReferrerHostname;
                 if (string.IsNullOrWhiteSpace(host))
                 {
                     return "直接访问";
@@ -261,7 +261,7 @@ namespace NetDream.Modules.Counter.Repositories
                 return host;
             }, i => new HostTrendAnalysis(i), db.Logs.Select(i => new LogEntity()
             {
-                Referrer = i.Referrer,
+                ReferrerHostname = i.ReferrerHostname,
                 Ip = i.Ip,
                 SessionId = i.SessionId,
             }));
@@ -290,11 +290,11 @@ namespace NetDream.Modules.Counter.Repositories
 
         public int GetNextCount(string url)
         {
-            if (string.IsNullOrWhiteSpace(url))
+            if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
             {
                 return 0;
             }
-            return db.Logs.Where(i => i.Referrer == url).Count();
+            return db.Logs.Where(i => i.ReferrerHostname == uri.Host && i.ReferrerPathname == uri.PathAndQuery).Count();
         }
 
         public double GetStayTime(string url)
@@ -303,16 +303,19 @@ namespace NetDream.Modules.Counter.Repositories
             {
                 return 0;
             }
-            return db.StayTimeLogs.Where(i => i.Url == url && i.LeaveAt > i.EnterAt)
-                .Average(i => i.LeaveAt - i.EnterAt);
+            return 0;
+            //return db.StayTimeLogs.Where(i => i.Url == url && i.LeaveAt > i.EnterAt)
+            //    .Average(i => i.LeaveAt - i.EnterAt);
         }
 
         public ITrendAnalysis[] MapGroups(
-            int start_at, int end_at, 
+            AnalysisQueryForm form, 
             Func<LogEntity, string?> checkFn,
             Func<string, ITrendAnalysis> createFn,
             IQueryable<LogEntity> query)
         {
+            var start_at = TimeHelper.TimestampFrom(form.StartAt);
+            var end_at = TimeHelper.TimestampFrom(form.EndAt);
             var items = query.Where(i => i.CreatedAt >= start_at && i.CreatedAt < end_at).ToArray();
             var data = new Dictionary<string, AnalysisGroup>();
             foreach (var item in items)
@@ -342,32 +345,56 @@ namespace NetDream.Modules.Counter.Repositories
             }).OrderByDescending(i => i.Pv).ToArray();
         }
 
-        public IPage<JumpLogModel> Jump(int start_at, int end_at, QueryForm form)
+        public IPage<JumpLogModel> Jump(AnalysisQueryForm form)
         {
+            var start_at = TimeHelper.TimestampFrom(form.StartAt);
+            var end_at = TimeHelper.TimestampFrom(form.EndAt);
             var items = db.JumpLogs
                 .Where(i => i.CreatedAt >= start_at && i.CreatedAt < end_at)
                 .OrderByDescending(i => i.CreatedAt)
-                .ToPage(form);
-            return new Page<JumpLogModel>(items)
-            {
-                Items = items.Items.Select(FormatAgent<JumpLogModel>).ToArray()
-            };
+                .ToPage(form, i => i.SelectAs());
+            return items;
         }
 
-        public T FormatAgent<T>(IUserAgent item)
-            where T : class, IUserAgentFormatted, new()
+        public void IncludeClient(IWithClientModel[] items)
         {
-            if (string.IsNullOrWhiteSpace(item.UserAgent))
+            var idItems = items.Select(item => item.LogId).Where(i => i > 0)
+                .Distinct().ToArray();
+            if (idItems.Length == 0)
             {
-                return item.CopyTo<T>();
+                return;
             }
-            var data = item.CopyTo<T>();
+            var data = db.Logs.Where(i => idItems.Contains(i.Id))
+                .Select(i => new ClientLabelItem()
+                {
+                    Ip = i.Ip,
+                    UserAgent = i.UserAgent,
+                })
+                .ToDictionary(i => i.Id);
+            if (data.Count == 0)
+            {
+                return;
+            }
+            Format(data.Values);
+            foreach (var item in items)
+            {
+                if (item.LogId > 0 && data.TryGetValue(item.LogId, out var res))
+                {
+                    item.Client = res;
+                }
+            }
+        }
+
+        public void Format(IEnumerable<IUserAgentFormatted> items)
+        {
             var uaParser = Parser.GetDefault();
-            var clientInfo = uaParser.Parse(item.UserAgent);
-            data.Device = [clientInfo.Device.Family, clientInfo.Device.Brand];
-            data.Os = [clientInfo.OS.Family, $"{clientInfo.OS.Major}.{clientInfo.OS.Minor}"];
-            data.Browser = [clientInfo.UA.Family, $"{clientInfo.UA.Major}.{clientInfo.UA.Minor}"];
-            return data;
+            foreach (var item in items)
+            {
+                var clientInfo = uaParser.Parse(item.UserAgent);
+                item.Device = [clientInfo.Device.Family, clientInfo.Device.Brand];
+                item.Os = [clientInfo.OS.Family, $"{clientInfo.OS.Major}.{clientInfo.OS.Minor}"];
+                item.Browser = [clientInfo.UA.Family, $"{clientInfo.UA.Major}.{clientInfo.UA.Minor}"];
+            }
         }
     }
 }

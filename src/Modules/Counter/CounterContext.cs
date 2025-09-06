@@ -13,6 +13,10 @@ namespace NetDream.Modules.Counter
         public DbSet<PageLogEntity> PageLogs {get; set; }
         public DbSet<StayTimeLogEntity> StayTimeLogs {get; set; }
         public DbSet<VisitorLogEntity> VisitorLogs {get; set; }
+        public DbSet<HostnameEntity> Hostnames {get; set; }
+        public DbSet<PathnameEntity> Pathnames { get; set; }
+        public DbSet<SiteEntity> Sites { get; set; }
+        public DbSet<AnalysisFlagEntity> AnalysisFlags { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new ClickLogEntityTypeConfiguration());
@@ -22,6 +26,10 @@ namespace NetDream.Modules.Counter
             modelBuilder.ApplyConfiguration(new PageLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new StayTimeLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new VisitorLogEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new HostnameEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new PathnameEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new SiteEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new AnalysisFlagEntityTypeConfiguration());
             base.OnModelCreating(modelBuilder);
         }
     }

@@ -1,7 +1,9 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Counter.Events;
 using NetDream.Modules.Counter.Repositories;
+using NetDream.Shared.Providers;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,24 +14,35 @@ namespace NetDream.Modules.Counter.Listeners
     {
         public Task Handle(CounterStateLog notification, CancellationToken cancellationToken)
         {
-            //db.ClickLogs.Add(new()
-            //{
+            if (!Uri.TryCreate(notification.Url, UriKind.Absolute, out var uri))
+            {
+                return Task.CompletedTask;
+            }
+            var logId = db.Logs.Where(i => i.Ip == notification.Ip && i.Hostname == uri.Host 
+                && i.Pathname == uri.AbsolutePath && i.Queries == uri.Query
+                && i.UserAgent == notification.UserAgent 
+                && i.SessionId == notification.SessionId
+                && i.CreatedAt >= notification.Timestamp)
+                .OrderByDescending(i => i.CreatedAt).Value(i => i.Id);
 
-            //});
-            if (notification.Status == StateRepository.STATUS_LOADED)
+            if (notification.Status == StateRepository.STATUS_LOADED && logId > 0)
             {
                 db.LoadTimeLogs.Add(new()
                 {
-                    Url = notification.Url,
-                    SessionId = notification.SessionId,
-                    Ip = notification.Ip,
-                    UserAgent = notification.UserAgent,
+                    LogId = logId,
                     LoadTime = notification.LoadTime,
                 });
             }
             if (notification.Status == StateRepository.STATUS_ENTER)
             {
-                var log = db.PageLogs.Where(i => i.Url == notification.Url)
+                var hostId = db.Hostnames.Where(i => i.Name == uri.Host).Value(i => i.Id);
+                var pathId = db.Pathnames.Where(i => i.Name == uri.AbsolutePath).Value(i => i.Id);
+                if (hostId <= 0)
+                {
+                     // TODO
+                }
+                
+                var log = db.PageLogs.Where(i => i.HostId == hostId && i.PathId == pathId)
                     .FirstOrDefault();
                 if (log is not null)
                 {
@@ -39,7 +52,8 @@ namespace NetDream.Modules.Counter.Listeners
                 {
                     db.PageLogs.Add(new()
                     {
-                        Url = notification.Url,
+                        HostId = hostId,
+                        PathId = pathId,
                         VisitCount = 1,
                     });
                 }
@@ -66,21 +80,18 @@ namespace NetDream.Modules.Counter.Listeners
                 }
             }
             
-            if (notification.Status == StateRepository.STATUS_ENTER)
+            if (notification.Status == StateRepository.STATUS_ENTER && logId > 0)
             {
                 db.StayTimeLogs.Add(new()
                 {
-                    Url = notification.Url,
-                    Ip = notification.Ip,
-                    UserAgent = notification.UserAgent,
-                    SessionId = notification.SessionId,
+                    LogId = logId,
                     Status = notification.Status,
                     EnterAt = notification.EnterAt,
                 });
-            } else if(notification.Status == StateRepository.STATUE_LEAVE)
+            } else if(notification.Status == StateRepository.STATUE_LEAVE && logId > 0)
             {
-                db.StayTimeLogs.Where(i => i.Url == notification.Url
-                && i.LeaveAt == 0 && i.SessionId == notification.SessionId)
+                db.StayTimeLogs.Where(i => i.LogId == logId
+                && i.LeaveAt == 0)
                     .OrderByDescending(i => i.Id)
                     .Take(1).ExecuteUpdate(setters => setters.SetProperty(i => i.Status, notification.Status)
                     .SetProperty(i => i.LeaveAt, notification.GetTimeOrNow(notification.LeaveAt)));

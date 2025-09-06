@@ -7,8 +7,10 @@ namespace NetDream.Modules.Counter.Entities
     {
         
         public int Id { get; set; }
-        public string Url { get; set; } = string.Empty;
+        public int HostId { get; set; }
+        public int PathId { get; set; }
         
         public int VisitCount { get; set; }
+  
     }
 }
