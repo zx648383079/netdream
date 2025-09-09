@@ -4,6 +4,7 @@ using NetDream.Modules.Counter.Entities;
 using NetDream.Modules.Counter.Events;
 using NetDream.Modules.Counter.Listeners;
 using NetDream.Modules.Counter.Models;
+using NetDream.Modules.Counter.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.Counter
@@ -12,6 +13,9 @@ namespace NetDream.Modules.Counter
     {
         public static void ProvideCounterRepositories(this IServiceCollection service)
         {
+            service.AddScoped<AnalysisRepository>();
+            service.AddScoped<StateRepository>();
+            service.AddScoped<StatisticsRepository>();
             service.AddTransient<INotificationHandler<JumpOutLog>, JumpOutListener>();
             service.AddTransient<INotificationHandler<VisitLog>, VisitListener>();
             service.AddTransient<INotificationHandler<CounterStateLog>, StateListener>();

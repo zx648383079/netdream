@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Document.Repositories;
 
 namespace NetDream.Modules.Document
@@ -8,6 +8,10 @@ namespace NetDream.Modules.Document
         public static void ProvideDocumentRepositories(this IServiceCollection service)
         {
             service.AddScoped<PageRepository>();
+            service.AddScoped<ApiRepository>();
+            service.AddScoped<CategoryRepository>();
+            service.AddScoped<MockRepository>();
+            service.AddScoped<ProjectRepository>();
         }
     }
 }

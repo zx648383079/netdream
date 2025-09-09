@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.UserIdentity.Repositories;
@@ -62,9 +62,9 @@ namespace NetDream.Api.Controllers.ResourceStore
         [Route("[action]")]
         [ProducesResponseType(typeof(PageResponse<CategoryEntity>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Search(QueryForm form, int[]? id = null)
+        public IActionResult Search(QueryBoundForm form)
         {
-            return RenderPage(repository.Search(form, id));
+            return RenderPage(repository.Search(form, form.Id));
         }
     }
 }

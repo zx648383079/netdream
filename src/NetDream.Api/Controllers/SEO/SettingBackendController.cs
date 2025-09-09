@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
@@ -21,7 +21,7 @@ namespace NetDream.Api.Controllers.SEO
         [Route("")]
         [ProducesResponseType(typeof(DataResponse<OptionTreeModel>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Index([FromQuery] QueryForm form)
+        public IActionResult Index()
         {
             return RenderData(repository.GetEditList());
         }
@@ -44,22 +44,22 @@ namespace NetDream.Api.Controllers.SEO
         [Route("[action]")]
         [ProducesResponseType(typeof(DataOneResponse<bool>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Save(Dictionary<int, string>? option = null, OptionForm? field = null)
+        public IActionResult Save([FromBody] OptionBatchForm data)
         {
-            if (field is not null)
+            if (data.Field is not null)
             {
-                repository.SaveNewOption(field);
+                repository.SaveNewOption(data.Field);
             }
-            if (option is null)
-            {
-                return RenderData(true);
-            }
-            var res = repository.SaveOption(option);
-            if (res.Succeeded)
+            if (data.Option is null)
             {
                 return RenderData(true);
             }
-            return RenderFailure(res.Message);
+            var res = repository.SaveOption(data.Option);
+            if (!res.Succeeded)
+            {
+                return RenderFailure(res.Message);
+            }
+            return RenderData(true);
         }
 
         [HttpPost]

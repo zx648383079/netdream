@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Forum.Entities;
 using NetDream.Modules.Forum.Models;
 using NetDream.Modules.Forum.Repositories;
@@ -11,6 +11,9 @@ namespace NetDream.Modules.Forum
         public static void ProvideForumRepositories(this IServiceCollection service)
         {
             service.AddScoped<ForumRepository>();
+            service.AddScoped<LogRepository>();
+            service.AddScoped<ThreadRepository>();
+            service.AddScoped<StatisticsRepository>();
         }
 
         internal static IQueryable<ForumListItem> SelectAs(this IQueryable<ForumEntity> query)

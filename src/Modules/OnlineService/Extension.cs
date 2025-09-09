@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.OnlineService.Entities;
 using NetDream.Modules.OnlineService.Models;
 using NetDream.Modules.OnlineService.Repositories;
@@ -11,6 +11,8 @@ namespace NetDream.Modules.OnlineService
         public static void ProvideOnlineServiceRepositories(this IServiceCollection service)
         {
             service.AddScoped<ChatRepository>();
+            service.AddScoped<CategoryRepository>();
+            service.AddScoped<SessionRepository>();
         }
 
         internal static IQueryable<CategoryUserListItem> SelectAs(this IQueryable<CategoryUserEntity> query)

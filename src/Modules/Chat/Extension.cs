@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Models;
 using NetDream.Modules.Chat.Repositories;
@@ -12,6 +12,10 @@ namespace NetDream.Modules.Chat
         public static void ProvideChatRepositories(this IServiceCollection service)
         {
             service.AddScoped<ChatRepository>();
+            service.AddScoped<ApplyRepository>();
+            service.AddScoped<FriendRepository>();
+            service.AddScoped<GroupRepository>();
+            service.AddScoped<MessageRepository>();
         }
 
         internal static IQueryable<ListLabelItem> SelectAs(this IQueryable<FriendClassifyEntity> query)

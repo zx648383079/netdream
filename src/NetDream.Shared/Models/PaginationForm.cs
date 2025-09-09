@@ -1,4 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Forms;
+using NetDream.Shared.Interfaces.Forms;
 
 namespace NetDream.Shared.Models
 {
@@ -41,5 +41,12 @@ namespace NetDream.Shared.Models
             Sort = form.Sort;
             Order = form.Order;
         }
-    } 
+    }
+    /// <summary>
+    /// 包含 id 约束
+    /// </summary>
+    public class QueryBoundForm : QueryForm
+    {
+        public int[] Id { get; set; } = [];
+    }
 }

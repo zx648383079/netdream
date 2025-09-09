@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace NetDream.Modules.SEO.Forms
 {
@@ -15,5 +16,11 @@ namespace NetDream.Modules.SEO.Forms
         public string DefaultValue { get; set; } = string.Empty;
         public string Value { get; set; } = string.Empty;
         public int Position { get; set; }
+    }
+
+    public class OptionBatchForm
+    {
+        public Dictionary<int, string>? Option { get; set; }
+        public OptionForm? Field { get; set; }
     }
 }

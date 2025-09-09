@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Finance.Repositories;
 
 namespace NetDream.Modules.Finance
@@ -8,6 +8,12 @@ namespace NetDream.Modules.Finance
         public static void ProvideFinanceRepositories(this IServiceCollection service)
         {
             service.AddScoped<ProductRepository>();
+            service.AddScoped<AccountRepository>();
+            service.AddScoped<BudgetRepository>();
+            service.AddScoped<ChannelRepository>();
+            service.AddScoped<LogRepository>();
+            service.AddScoped<ProjectRepository>();
+            service.AddScoped<StatisticsRepository>();
         }
     }
 }

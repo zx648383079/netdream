@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.MessageService.Entities;
 using NetDream.Modules.MessageService.Models;
 using NetDream.Modules.MessageService.Repositories;
@@ -12,6 +12,7 @@ namespace NetDream.Modules.MessageService
         {
             service.AddScoped<MessageProtocol>();
             service.AddScoped<MessageRepository>();
+            service.AddScoped<StatisticsRepository>();
         }
 
         internal static IQueryable<LogListItem> SelectAs(this IQueryable<LogEntity> query)

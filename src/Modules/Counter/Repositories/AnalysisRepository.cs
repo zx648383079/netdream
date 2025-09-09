@@ -5,6 +5,7 @@ using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
+using System;
 using System.Linq;
 
 namespace NetDream.Modules.Counter.Repositories
@@ -14,11 +15,26 @@ namespace NetDream.Modules.Counter.Repositories
 
         public IPage<LogEntity> LogList(LogQueryForm form)
         {
+            var startAt = string.IsNullOrWhiteSpace(form.StartAt) ? 0 : TimeHelper.TimestampFrom(form.StartAt);
+            var endAt = string.IsNullOrWhiteSpace(form.EndAt) ? 0 : TimeHelper.TimestampFrom(form.EndAt);
+            var jumpTo = string.IsNullOrWhiteSpace(form.Goto) ? 0 : TimeHelper.TimestampFrom(form.Goto);
+            if (jumpTo > 0)
+            {
+                var count = db.Logs.Search(form.Keywords, "queries", "pathname")
+                    .When(form.UserAgent, i => i.UserAgent == form.UserAgent)
+                    .When(form.Hostname, i => i.Hostname == form.Hostname)
+                    .When(form.Pathname, i => i.Pathname == form.Pathname)
+                    .When(endAt > startAt, i => i.CreatedAt < endAt)
+                    .Where(i => i.CreatedAt >= jumpTo)
+                    .Count();
+                form.Page = (int)Math.Ceiling((float)count / form.PerPage);
+            }
             return db.Logs.Search(form.Keywords, "queries", "pathname")
+                .When(form.UserAgent, i => i.UserAgent == form.UserAgent)
                 .When(form.Hostname, i => i.Hostname == form.Hostname)
                 .When(form.Pathname, i => i.Pathname == form.Pathname)
-                .When(form.StartAt, i => i.CreatedAt >= TimeHelper.TimestampFrom(form.StartAt))
-                .When(form.EndAt, i => i.CreatedAt < TimeHelper.TimestampFrom(form.EndAt))
+                .When(startAt > 0, i => i.CreatedAt >= startAt)
+                .When(endAt > startAt, i => i.CreatedAt < endAt)
                 .OrderByDescending(i => i.CreatedAt)
                 .ToPage(form);
         }

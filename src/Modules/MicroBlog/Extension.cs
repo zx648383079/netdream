@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.MicroBlog.Entities;
 using NetDream.Modules.MicroBlog.Models;
 using NetDream.Modules.MicroBlog.Repositories;
@@ -11,6 +11,9 @@ namespace NetDream.Modules.MicroBlog
         public static void ProvideMicroRepositories(this IServiceCollection service)
         {
             service.AddScoped<MicroRepository>();
+            service.AddScoped<StatisticsRepository>();
+            service.AddScoped<TopicRepository>();
+            service.AddScoped<UserRepository>();
         }
 
         internal static IQueryable<TopicListItem> SelectAs(this IQueryable<TopicEntity> query)
