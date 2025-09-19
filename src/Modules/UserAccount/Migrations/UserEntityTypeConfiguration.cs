@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.UserAccount.Entities;
-using NetDream.Modules.UserAccount.Models;
 using NetDream.Modules.UserAccount.Repositories;
 using System;
 
@@ -23,10 +22,11 @@ namespace NetDream.Modules.UserAccount.Migrations
                 .HasDefaultValue(string.Empty);
             builder.Property(table => table.Birthday).HasColumnName("birthday").HasDefaultValue(DateOnly.FromDateTime(DateTime.Now));// .ToString("yyyy-MM-DD")
             builder.Property(table => table.Money).HasColumnName("money").HasDefaultValue(0);
-            builder.Property(table => table.Credits).HasColumnName("credits").HasDefaultValue(0).HasComment("»ı·Ö");
+            builder.Property(table => table.Credits).HasColumnName("credits").HasDefaultValue(0).HasComment("ç§¯åˆ†");
             builder.Property(table => table.ParentId).HasColumnName("parent_id").HasDefaultValue(0);
             builder.Property(table => table.Token).HasColumnName("token").HasMaxLength(60).HasDefaultValue(0);
             builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(2).HasDefaultValue(UserRepository.STATUS_ACTIVE);
+            builder.Property(table => table.ActivatedAt).HasColumnName("activated_at");
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
         }

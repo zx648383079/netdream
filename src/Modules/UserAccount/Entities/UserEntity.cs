@@ -21,7 +21,10 @@ namespace NetDream.Modules.UserAccount.Entities
         public int ParentId { get; set; }
         public string Token { get; set; } = string.Empty;
         public int Status { get; set; }
-        
+
+        public int ActivatedAt { get; set; }
+
+
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }
