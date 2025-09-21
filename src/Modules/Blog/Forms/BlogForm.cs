@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace NetDream.Modules.Blog.Forms
 {
@@ -20,6 +20,6 @@ namespace NetDream.Modules.Blog.Forms
         public int Type { get; set; }
         public int OpenType { get; set; }
         public string OpenRule { get; set; } = string.Empty;
-        public int PublishStatus { get; set; }
+        public byte PublishStatus { get; set; }
     }
 }

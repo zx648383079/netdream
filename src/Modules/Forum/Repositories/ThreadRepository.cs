@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Forum.Entities;
 using NetDream.Modules.Forum.Forms;
@@ -98,7 +98,7 @@ namespace NetDream.Modules.Forum.Repositories
 
         public IOperationResult<ThreadEntity> Save(ThreadForm data)
         {
-            var model = data.Id > 0 ? db.Threads.Where(i => i.Id == data.Id).Single() :
+            var model = data.Id > 0 ? db.Threads.Where(i => i.Id == data.Id).SingleOrDefault() :
                 new ThreadEntity();
             if (model is null) 
             {
@@ -131,6 +131,19 @@ namespace NetDream.Modules.Forum.Repositories
                     .ExecuteUpdate(setters => setters.SetProperty(i => i.Content, data.Content));
 
             }
+            return OperationResult.Ok(model);
+        }
+
+        public IOperationResult<ThreadEntity> ManageChange(int id, byte status)
+        {
+            var model = db.Threads.Where(i => i.Id == id).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult<ThreadEntity>.Fail("id is error");
+            }
+            model.Status = status;
+            db.Update(model);
+            db.SaveChanges();
             return OperationResult.Ok(model);
         }
 

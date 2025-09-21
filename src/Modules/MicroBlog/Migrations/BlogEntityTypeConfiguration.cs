@@ -12,16 +12,18 @@ namespace NetDream.Modules.MicroBlog.Migrations
             builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id");
+            builder.Property(table => table.ZoneId).HasColumnName("zone_id").HasDefaultValue(0);
             builder.Property(table => table.Content).HasColumnName("content").HasMaxLength(140);
             builder.Property(table => table.ExtraRule).HasColumnName("extra_rule").HasMaxLength(500).HasDefaultValue(string.Empty)
-                .HasComment("ÄÚÈİµÄÒ»Ğ©¸½¼Ó¹æÔò");
+                .HasComment("å†…å®¹çš„ä¸€äº›é™„åŠ è§„åˆ™");
             builder.Property(table => table.OpenType).HasColumnName("open_type").HasMaxLength(1).HasDefaultValue(0);
-            builder.Property(table => table.RecommendCount).HasColumnName("recommend_count").HasDefaultValue(0).HasComment("ÍÆ¼öÊı");
-            builder.Property(table => table.CollectCount).HasColumnName("collect_count").HasDefaultValue(0).HasComment("ÊÕ²ØÊı");
-            builder.Property(table => table.ForwardCount).HasColumnName("forward_count").HasDefaultValue(0).HasComment("×ª·¢Êı");
-            builder.Property(table => table.CommentCount).HasColumnName("comment_count").HasDefaultValue(0).HasComment("ÆÀÂÛÊı");
-            builder.Property(table => table.ForwardId).HasColumnName("forward_id").HasDefaultValue(0).HasComment("×ª·¢µÄÔ´id");
-            builder.Property(table => table.Source).HasColumnName("source").HasMaxLength(30).HasDefaultValue(string.Empty).HasComment("À´Ô´");
+            builder.Property(table => table.RecommendCount).HasColumnName("recommend_count").HasDefaultValue(0).HasComment("æ¨èæ•°");
+            builder.Property(table => table.CollectCount).HasColumnName("collect_count").HasDefaultValue(0).HasComment("æ”¶è—æ•°");
+            builder.Property(table => table.ForwardCount).HasColumnName("forward_count").HasDefaultValue(0).HasComment("è½¬å‘æ•°");
+            builder.Property(table => table.CommentCount).HasColumnName("comment_count").HasDefaultValue(0).HasComment("è¯„è®ºæ•°");
+            builder.Property(table => table.ForwardId).HasColumnName("forward_id").HasDefaultValue(0).HasComment("è½¬å‘çš„æºid");
+            builder.Property(table => table.Source).HasColumnName("source").HasMaxLength(30).HasDefaultValue(string.Empty).HasComment("æ¥æº");
+            builder.Property(table => table.Status).HasColumnName("status").HasDefaultValue(0).HasComment("å®¡æ ¸çŠ¶æ€");
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
         }

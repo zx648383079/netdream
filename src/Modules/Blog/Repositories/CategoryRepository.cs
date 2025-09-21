@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Forms;
 using NetDream.Modules.Blog.Models;
@@ -8,7 +8,6 @@ using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Modules.Blog.Repositories
 {

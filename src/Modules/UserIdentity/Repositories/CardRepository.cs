@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.UserIdentity.Entities;
 using NetDream.Modules.UserIdentity.Forms;
 using NetDream.Modules.UserIdentity.Models;
@@ -59,8 +59,8 @@ namespace NetDream.Modules.UserIdentity.Repositories
 
         public IOperationResult<EquityCardEntity> Save(EquityCardForm data)
         {
-            var model = data.Id > 0 ? db.EquityCards.Where(i => i.Id == data.Id).Single() : 
-                new EquityCardListItem();
+            var model = data.Id > 0 ? db.EquityCards.Where(i => i.Id == data.Id).SingleOrDefault() : 
+                new EquityCardEntity();
             if (model is null)
             {
                 return OperationResult.Fail<EquityCardEntity>("id is error");

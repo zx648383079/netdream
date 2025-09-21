@@ -9,6 +9,7 @@ namespace NetDream.Modules.MicroBlog.Entities
         public int Id { get; set; }
         
         public int UserId { get; set; }
+        public int ZoneId { get; set; }
         public string Content { get; set; } = string.Empty;
         
         public string ExtraRule { get; set; } = string.Empty;
@@ -26,8 +27,9 @@ namespace NetDream.Modules.MicroBlog.Entities
         public int ForwardId { get; set; }
         public string Source { get; set; } = string.Empty;
         
+        public byte Status { get; set; }
         public int UpdatedAt { get; set; }
-        
+
         public int CreatedAt { get; set; }
     }
 }

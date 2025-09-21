@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.UserIdentity.Entities;
 using NetDream.Modules.UserIdentity.Migrations;
 
@@ -13,6 +13,7 @@ namespace NetDream.Modules.UserIdentity
         public DbSet<RoleEntity> Roles { get; set; }
         public DbSet<RolePermissionEntity> RolePermissions { get; set; }
         public DbSet<UserRoleEntity> UserRoles { get; set; }
+        public DbSet<ZoneEntity> Zones { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +24,7 @@ namespace NetDream.Modules.UserIdentity
             modelBuilder.ApplyConfiguration(new RoleEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new RolePermissionEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new UserRoleEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new ZoneEntityTypeConfiguration());
             base.OnModelCreating(modelBuilder);
         }
     }

@@ -36,8 +36,9 @@ namespace NetDream.Modules.Blog.Entities
         
         public string OpenRule { get; set; } = string.Empty;
         
-        public int PublishStatus { get; set; }
-        
+        public byte PublishStatus { get; set; }
+        public byte Status { get; set; }
+
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }

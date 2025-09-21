@@ -12,21 +12,23 @@ namespace NetDream.Modules.Forum.Migrations
             builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.ForumId).HasColumnName("forum_id");
+            builder.Property(table => table.ZoneId).HasColumnName("zone_id").HasDefaultValue(0);
             builder.Property(table => table.ClassifyId).HasColumnName("classify_id").HasDefaultValue(0);
-            builder.Property(table => table.Title).HasColumnName("title").HasMaxLength(200).HasComment("Ö÷Ìâ");
-            builder.Property(table => table.UserId).HasColumnName("user_id").HasComment("·¢ËÍÓÃ»§");
-            builder.Property(table => table.ViewCount).HasColumnName("view_count").HasDefaultValue(0).HasComment("²é¿´Êı");
-            builder.Property(table => table.PostCount).HasColumnName("post_count").HasDefaultValue(0).HasComment("»ØÌûÊı");
-            builder.Property(table => table.CollectCount).HasColumnName("collect_count").HasDefaultValue(0).HasComment("¹Ø×¢Êı");
+            builder.Property(table => table.Title).HasColumnName("title").HasMaxLength(200).HasComment("ä¸»é¢˜");
+            builder.Property(table => table.UserId).HasColumnName("user_id").HasComment("å‘é€ç”¨æˆ·");
+            builder.Property(table => table.ViewCount).HasColumnName("view_count").HasDefaultValue(0).HasComment("æŸ¥çœ‹æ•°");
+            builder.Property(table => table.PostCount).HasColumnName("post_count").HasDefaultValue(0).HasComment("å›å¸–æ•°");
+            builder.Property(table => table.CollectCount).HasColumnName("collect_count").HasDefaultValue(0).HasComment("å…³æ³¨æ•°");
             builder.Property(table => table.IsHighlight).HasColumnName("is_highlight").HasDefaultValue(0)
-                .HasComment("ÊÇ·ñ¸ßÁÁ");
+                .HasComment("æ˜¯å¦é«˜äº®");
             builder.Property(table => table.IsDigest).HasColumnName("is_digest").HasDefaultValue(0)
-                .HasComment("ÊÇ·ñ¾«»ª");
+                .HasComment("æ˜¯å¦ç²¾å");
             builder.Property(table => table.IsClosed).HasColumnName("is_closed").HasDefaultValue(0)
-                .HasComment("ÊÇ·ñ¹Ø±Õ");
+                .HasComment("æ˜¯å¦å…³é—­");
             builder.Property(table => table.TopType).HasColumnName("top_type").HasMaxLength(1).HasDefaultValue(0)
-                .HasComment("ÖÃ¶¥ÀàĞÍ£¬1 ±¾°æÖÃ¶¥ 2 ·ÖÀàÖÃ¶¥ 3 È«¾ÖÖÃ¶¥");
-            builder.Property(table => table.IsPrivatePost).HasColumnName("is_private_post").HasDefaultValue(0).HasComment("ÊÇ·ñ½öÂ¥Ö÷¿É¼û");
+                .HasComment("ç½®é¡¶ç±»å‹ï¼Œ1 æœ¬ç‰ˆç½®é¡¶ 2 åˆ†ç±»ç½®é¡¶ 3 å…¨å±€ç½®é¡¶");
+            builder.Property(table => table.IsPrivatePost).HasColumnName("is_private_post").HasDefaultValue(0).HasComment("æ˜¯å¦ä»…æ¥¼ä¸»å¯è§");
+            builder.Property(table => table.Status).HasColumnName("status").HasDefaultValue(0).HasComment("å®¡æ ¸çŠ¶æ€");
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
         }

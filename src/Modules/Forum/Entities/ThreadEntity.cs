@@ -9,7 +9,8 @@ namespace NetDream.Modules.Forum.Entities
         public int Id { get; set; }
         
         public int ForumId { get; set; }
-        
+        public int ZoneId { get; set; }
+
         public int ClassifyId { get; set; }
         public string Title { get; set; } = string.Empty;
         
@@ -30,7 +31,8 @@ namespace NetDream.Modules.Forum.Entities
         public byte IsPrivatePost { get; set; }
         
         public byte TopType { get; set; }
-        
+        public byte Status { get; set; }
+
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }

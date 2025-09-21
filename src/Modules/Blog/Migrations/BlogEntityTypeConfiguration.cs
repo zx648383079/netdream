@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Repositories;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Blog.Migrations
 {
@@ -17,20 +18,22 @@ namespace NetDream.Modules.Blog.Migrations
             builder.Property(table => table.Keywords).HasColumnName("keywords").HasDefaultValue(string.Empty);
             builder.Property(table => table.ParentId).HasColumnName("parent_id").HasDefaultValue(0);
             builder.Property(table => table.ProgrammingLanguage).HasColumnName("programming_language").HasMaxLength(20)
-                .HasDefaultValue(string.Empty).HasComment("±à³ÌÓïÑÔ");
-            builder.Property(table => table.Language).HasColumnName("language").HasComment("¶àÓïÑÔÅäÖÃ");
+                .HasDefaultValue(string.Empty).HasComment("ç¼–ç¨‹è¯­è¨€");
+            builder.Property(table => table.Language).HasColumnName("language").HasComment("å¤šè¯­è¨€é…ç½®");
             builder.Property(table => table.Thumb).HasColumnName("thumb").HasDefaultValue(string.Empty);
-            builder.Property(table => table.EditType).HasColumnName("edit_type").HasMaxLength(1).HasDefaultValue(PublishRepository.EDIT_HTML).HasComment("±à¼­Æ÷ÀàĞÍ");
+            builder.Property(table => table.EditType).HasColumnName("edit_type").HasMaxLength(1).HasDefaultValue(PublishRepository.EDIT_HTML).HasComment("ç¼–è¾‘å™¨ç±»å‹");
             builder.Property(table => table.Content).HasColumnName("content");
             builder.Property(table => table.UserId).HasColumnName("user_id");
             builder.Property(table => table.TermId).HasColumnName("term_id");
-            builder.Property(table => table.Type).HasColumnName("type").HasDefaultValue(PublishRepository.TYPE_ORIGINAL).HasComment("Ô­´´»ò×ªÔØ");
+            builder.Property(table => table.Type).HasColumnName("type").HasDefaultValue(PublishRepository.TYPE_ORIGINAL).HasComment("åŸåˆ›æˆ–è½¬è½½");
             builder.Property(table => table.RecommendCount).HasColumnName("recommend_count").HasDefaultValue(0);
             builder.Property(table => table.CommentCount).HasColumnName("comment_count").HasDefaultValue(0);
             builder.Property(table => table.ClickCount).HasColumnName("click_count").HasDefaultValue(0);
-            builder.Property(table => table.OpenType).HasColumnName("open_type").HasMaxLength(1).HasDefaultValue(PublishRepository.OPEN_PUBLIC).HasComment("¹«¿ªÀàĞÍ");
-            builder.Property(table => table.OpenRule).HasColumnName("open_rule").HasMaxLength(20).HasDefaultValue(string.Empty).HasComment("ÀàĞÍÆ¥ÅäµÄÖµ");
-            builder.Property(table => table.PublishStatus).HasColumnName("publish_status").HasMaxLength(1).HasDefaultValue(PublishRepository.PUBLISH_STATUS_DRAFT).HasComment("·¢²¼×´Ì¬");
+            builder.Property(table => table.OpenType).HasColumnName("open_type").HasMaxLength(1).HasDefaultValue(PublishRepository.OPEN_PUBLIC).HasComment("å…¬å¼€ç±»å‹");
+            builder.Property(table => table.OpenRule).HasColumnName("open_rule").HasMaxLength(20).HasDefaultValue(string.Empty).HasComment("ç±»å‹åŒ¹é…çš„å€¼");
+            builder.Property(table => table.PublishStatus).HasColumnName("publish_status").HasMaxLength(1).HasDefaultValue(PublishRepository.PUBLISH_STATUS_DRAFT).HasComment("å‘å¸ƒçŠ¶æ€");
+            builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(1)
+                .HasDefaultValue(ReviewStatus.None).HasComment("å‘å¸ƒçŠ¶æ€");
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
         }

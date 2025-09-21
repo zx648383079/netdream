@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.MicroBlog.Entities;
 using NetDream.Modules.MicroBlog.Forms;
 using NetDream.Modules.MicroBlog.Models;
@@ -12,7 +12,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Modules.MicroBlog.Repositories
 {
@@ -78,6 +77,19 @@ namespace NetDream.Modules.MicroBlog.Repositories
             userStore.Include(items.Items);
             IncludeAttachment(items.Items);
             return items;
+        }
+
+        public IOperationResult<BlogEntity> ManageChange(int id, byte status)
+        {
+            var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult<BlogEntity>.Fail("id is error");
+            }
+            model.Status = status;
+            db.Update(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
         public IOperationResult<PostListItem> Get(int id)

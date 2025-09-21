@@ -1,5 +1,6 @@
-﻿using Markdig;
+using Markdig;
 using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Forms;
 using NetDream.Modules.Blog.Markdown;
 using NetDream.Modules.Blog.Models;
@@ -251,6 +252,19 @@ namespace NetDream.Modules.Blog.Repositories
                 Term = db.Categories.Where(i => i.Id == model.TermId)
                     .SelectAsLabel().SingleOrDefault()
             });
+        }
+
+        public IOperationResult<BlogEntity> ManageChange(int id, byte status)
+        {
+            var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult<BlogEntity>.Fail("id is error");
+            }
+            model.Status = status;
+            db.Update(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
         }
 
         public void ManageRemove(int id)

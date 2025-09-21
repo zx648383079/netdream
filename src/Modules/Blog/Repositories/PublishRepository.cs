@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Forms;
 using NetDream.Modules.Blog.Models;

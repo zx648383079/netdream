@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.OpenPlatform;
-using System.Reflection;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Api.Controllers.Auth
 {

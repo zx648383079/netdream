@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
@@ -8,7 +8,6 @@ using NetDream.Modules.UserAccount.Models;
 using NetDream.Modules.UserAccount.Repositories;
 using NetDream.Shared.Models;
 using System.Collections.Generic;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Api.Controllers.Auth
 {
