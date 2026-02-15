@@ -3,7 +3,7 @@
   <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
-	  <LangVersion>13</LangVersion>
+	  <LangVersion>14</LangVersion>
 	  <Description>包括用户注册登录</Description>
 	  <AssemblyName>NetDream.Modules.$(MSBuildProjectName)</AssemblyName>
 	  <RootNamespace>NetDream.Modules.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
