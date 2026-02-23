@@ -193,7 +193,7 @@ namespace NetDream.Shared.Providers
             }
             var wordItems = SearchHelper.Split(keywords).Select(Expression.Constant).ToArray();
             var type = typeof(TSource);
-            var func = typeof(string).GetMethod("Contains");
+            var func = typeof(string).GetMethod("Contains", [typeof(string)]);
             var thisArg = Expression.Parameter(type);
             Expression? expression = null;
             foreach (var key in keys)
