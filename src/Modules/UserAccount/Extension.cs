@@ -15,6 +15,7 @@ namespace NetDream.Modules.UserAccount
         public static void ProvideUserRepositories(this IServiceCollection service)
         {
             service.AddScoped<IUserRepository, SystemUserRepository>();
+            service.AddScoped<IZoneRepository, SystemUserRepository>();
             service.AddScoped<UserRepository>();
             service.AddScoped<ISystemBulletin, SystemBulletinRepository>();
             service.AddScoped<BulletinRepository>();

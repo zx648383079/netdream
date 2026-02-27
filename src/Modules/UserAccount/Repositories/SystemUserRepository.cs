@@ -1,4 +1,5 @@
-﻿using NetDream.Modules.UserAccount.Models;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using NetDream.Modules.UserAccount.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
@@ -14,7 +15,7 @@ namespace NetDream.Modules.UserAccount.Repositories
     /// 提供全局引用，不应该依赖其他类
     /// </summary>
     /// <param name="db"></param>
-    public class SystemUserRepository(UserContext db): IUserRepository
+    public class SystemUserRepository(UserContext db): IUserRepository, IZoneRepository
     {
         public bool Exist(int userId)
         {
@@ -172,6 +173,10 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         public void Attach(int user, string key, string value)
         {
+            if (user <= 0)
+            {
+                return;
+            }
             var data = db.Metas.Where(i => i.ItemId == user && i.Name == key).FirstOrDefault();
             if (data != null)
             {
@@ -191,19 +196,29 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         public string? GetAttached(int user, string key)
         {
+            if (user <= 0)
+            {
+                return null;
+            }
             return db.Metas.Where(i => i.ItemId == user && i.Name == key).Value(i => i.Content);
         }
 
-        public bool IsRole(int user, string role)
+        public bool IsZone(int user, int zone)
         {
-            // TODO
-            return false;
+            if (zone == 0)
+            {
+                return true;
+            }
+            if (user <= 0)
+            {
+                return false;
+            }
+            return db.Metas.Where(i => i.ItemId == user && i.Name == "zone_id" && i.Content == zone.ToString()).Any();
         }
 
-        public bool HasPermission(int user, string permission)
+        public int GetZone(int user)
         {
-            // TODO
-            return false;
+            return int.TryParse(GetAttached(user, "zone_id"), out var res) ? res : 0;
         }
     }
 }

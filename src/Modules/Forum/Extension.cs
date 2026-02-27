@@ -28,6 +28,16 @@ namespace NetDream.Modules.Forum
             });
         }
 
+        internal static IQueryable<ForumLabelItem> SelectAsLabel(this IQueryable<ForumEntity> query)
+        {
+            return query.Select(i => new ForumLabelItem()
+            {
+                Id = i.Id,
+                Name = i.Name,
+                Thumb = i.Thumb,
+            });
+        }
+
         internal static IQueryable<ThreadListItem> SelectAs(this IQueryable<ThreadEntity> query)
         {
             return query.Select(i => new ThreadListItem()

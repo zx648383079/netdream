@@ -4,7 +4,6 @@ using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using System;
@@ -15,8 +14,24 @@ namespace NetDream.Modules.Forum.Repositories
 {
     public class ForumRepository(ForumContext db, 
         IUserRepository userStore,
+        IZoneRepository zoneStore,
         IClientContext client)
     {
+        private int _lastZone = -1;
+
+        private bool CheckZone(int zone)
+        {
+            if (zone == 0)
+            {
+                return true;
+            }
+            if (_lastZone < 0)
+            {
+                _lastZone = zoneStore.GetZone(client.UserId);
+            }
+            return zone == _lastZone;
+        }
+
         public IPage<ForumEntity> GetList(ForumQueryForm form)
         {
             return db.Forums.Search(form.Keywords, "name")
@@ -44,10 +59,14 @@ namespace NetDream.Modules.Forum.Repositories
 
         public IOperationResult<ForumModel> GetFull(int id, bool full = true)
         {
-            var model = db.Forums.Where(i => i.Id == id).Single()?.CopyTo<ForumModel>();
+            var model = db.Forums.Where(i => i.Id == id).SingleOrDefault()?.CopyTo<ForumModel>();
             if (model is null)
             {
                 return OperationResult<ForumModel>.Fail("id is error");
+            }
+            if (!CheckZone(model.ZoneId))
+            {
+                return OperationResult<ForumModel>.Fail("无法访问此板块");
             }
             model.Classifies = db.ForumClassifies.Where(i => i.ForumId == id).OrderBy(i => i.Id).ToArray();
             if (full)
@@ -75,6 +94,7 @@ namespace NetDream.Modules.Forum.Repositories
             model.Description = data.Description;
             model.Thumb = data.Thumb;
             model.ParentId = data.ParentId;
+            model.ZoneId = data.ZoneId;
             model.Position = data.Position;
             model.Type = data.Type;
             db.Forums.Save(model, client.Now);
@@ -194,6 +214,7 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return res;
             }
+            res = res.Where(i => CheckZone(i.ZoneId)).ToArray();
             if (hasChildren)
             {
                 IncludeChildren(res);
@@ -210,6 +231,7 @@ namespace NetDream.Modules.Forum.Repositories
             }
             var idItems = items.Select(i => i.Id).ToArray();
             var data = db.Forums.Where(i => idItems.Contains(i.ParentId)).SelectAs().ToArray();
+            data = data.Where(i => CheckZone(i.ZoneId)).ToArray();
             IncludeTodayCount(data);
             foreach (var item in items)
             {
@@ -239,9 +261,9 @@ namespace NetDream.Modules.Forum.Repositories
             }
         }
 
-        private ThreadModel? LastThread(int id)
+        private ThreadModel? LastThread(int id, int zoneId)
         {
-            var model = db.Threads.Where(i => i.ForumId == id)
+            var model = db.Threads.Where(i => i.ForumId == id && (i.ZoneId == 0 || i.ZoneId == zoneId))
                 .OrderByDescending(i => i.Id)
                 .Select(i => new ThreadModel()
                 {
@@ -253,10 +275,7 @@ namespace NetDream.Modules.Forum.Repositories
                     CollectCount = i.CollectCount,
                     UpdatedAt = i.UpdatedAt,
                 }).Single();
-            if (model is not null)
-            {
-                model.User = userStore.Get(id);
-            }
+            model?.User = userStore.Get(id);
             return model;
         }
 
@@ -267,5 +286,6 @@ namespace NetDream.Modules.Forum.Repositories
             //return ForumModel.WhereIn("id", path)
             //    .UpdateIncrement(key, count);
         }
+
     }
 }

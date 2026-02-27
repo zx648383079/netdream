@@ -4,6 +4,7 @@ using NetDream.Modules.UserIdentity.Entities;
 using NetDream.Modules.UserIdentity.Listeners;
 using NetDream.Modules.UserIdentity.Models;
 using NetDream.Modules.UserIdentity.Repositories;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Notifications;
 using System.Linq;
 
@@ -13,8 +14,9 @@ namespace NetDream.Modules.UserIdentity
     {
         public static void ProvideIdentityRepositories(this IServiceCollection service)
         {
+            service.AddScoped<IIdentityRepository, IdentityRepository>();
             service.AddScoped<CardRepository>();
-            service.AddScoped<IdentityRepository>();
+            
             service.AddScoped<RoleRepository>();
 
             service.AddTransient<INotificationHandler<UserProfileCardRequest>, UserProfileCardHandler>();
@@ -30,6 +32,17 @@ namespace NetDream.Modules.UserIdentity
                 Status = i.Status,
                 UpdatedAt = i.UpdatedAt,
                 CreatedAt = i.CreatedAt,
+            });
+        }
+
+        internal static IQueryable<ZoneListItem> SelectAs(this IQueryable<ZoneEntity> query)
+        {
+            return query.Select(i => new ZoneListItem()
+            {
+                Id = i.Id,
+                Icon = i.Icon,
+                Name = i.Name,
+                Description = i.Description,
             });
         }
     }

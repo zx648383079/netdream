@@ -17,5 +17,12 @@ namespace NetDream.Modules.Forum.Models
         public bool IsCollected { get; set; }
 
         public bool IsReward { get; set; }
+        public bool Digestable { get; internal set; }
+        public bool Highlightable { get; internal set; }
+        public bool Closeable { get; internal set; }
+        public bool Topable { get; internal set; }
+        public bool Editable { get; internal set; }
+        public int RewardCount { get; internal set; }
+        public ThreadLogModel[] RewardItems { get; internal set; }
     }
 }

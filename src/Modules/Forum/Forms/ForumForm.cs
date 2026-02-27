@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace NetDream.Modules.Forum.Forms
 {
@@ -16,6 +11,7 @@ namespace NetDream.Modules.Forum.Forms
         public string Description { get; set; } = string.Empty;
 
         public int ParentId { get; set; }
+        public int ZoneId { get; set; }
         public byte Type { get; set; }
         public byte Position { get; set; }
 

@@ -15,6 +15,7 @@ namespace NetDream.Modules.Forum.Migrations
             builder.Property(table => table.Thumb).HasColumnName("thumb").HasMaxLength(100).HasDefaultValue(string.Empty);
             builder.Property(table => table.Description).HasColumnName("description").HasDefaultValue(string.Empty);
             builder.Property(table => table.ParentId).HasColumnName("parent_id").HasDefaultValue(0);
+            builder.Property(table => table.ZoneId).HasColumnName("zone_id").HasDefaultValue(0);
             builder.Property(table => table.ThreadCount).HasColumnName("thread_count").HasDefaultValue(0).HasComment("主题数");
             builder.Property(table => table.PostCount).HasColumnName("post_count").HasDefaultValue(0).HasComment("回帖数");
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(2).HasDefaultValue(0);

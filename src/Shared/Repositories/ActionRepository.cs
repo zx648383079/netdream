@@ -78,9 +78,9 @@ namespace NetDream.Shared.Repositories
         /// <param name="itemType"></param>
         /// <param name="onlyAction"></param>
         /// <returns></returns>
-        public byte? UserActionValue(int userId, int itemId, byte itemType, IList<byte> onlyAction)
+        public byte UserActionValue(int userId, int itemId, byte itemType, IList<byte> onlyAction)
         {
-            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId && onlyAction.Contains(i.Action)).Select(i => i.Action).Single();
+            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId && onlyAction.Contains(i.Action)).Select(i => i.Action).SingleOrDefault();
         }
 
         /// <summary>
@@ -90,9 +90,9 @@ namespace NetDream.Shared.Repositories
         /// <param name="itemId"></param>
         /// <param name="itemType"></param>
         /// <returns></returns>
-        public byte? UserActionValue(int userId, int itemId, byte itemType)
+        public byte UserActionValue(int userId, int itemId, byte itemType)
         {
-            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId).Select(i => i.Action).Single();
+            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId).Select(i => i.Action).SingleOrDefault();
         }
         /// <summary>
         /// 取消或执行某个操作

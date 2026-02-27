@@ -18,8 +18,21 @@ namespace NetDream.Modules.Forum.Repositories
 {
     public class ThreadRepository(ForumContext db, 
         IUserRepository userStore,
+        IZoneRepository zoneStore,
+        IIdentityRepository roleStore,
         IClientContext client, IMediator mediator)
     {
+
+        private bool CheckThreadZone(int thread)
+        {
+            return CheckThreadZone(db.Threads.Where(i => i.Id == thread).Single());
+        }
+
+        private bool CheckThreadZone(ThreadEntity thread)
+        {
+            return zoneStore.IsZone(client.UserId, thread.ZoneId);
+        }
+
         public IPage<ThreadModel> ManageList(ThreadQueryForm form)
         {
             var items = db.Threads.Search(form.Keywords, "title")
@@ -158,9 +171,10 @@ namespace NetDream.Modules.Forum.Repositories
             var (sort, order) = SearchHelper.CheckSortOrder(form.Sort, form.Order, [
                 "updated_at", "created_at", "post_count", "top_type"
             ]);
+            var zoneId = zoneStore.GetZone(client.UserId);
 
             var query = db.Threads.When(form.Classify > 0, i => i.ClassifyId == form.Classify)
-                .Where(i => i.ForumId == form.Forum);
+                .Where(i => i.ForumId == form.Forum && (i.ZoneId == 0 || i.ZoneId == zoneId));
             if (form.Type < 2)
             {
                 query = query.Search(form.Keywords, "title");
@@ -218,7 +232,8 @@ namespace NetDream.Modules.Forum.Repositories
         }
         public ThreadModel[] TopList(int forum)
         {
-            var data = db.Threads.Where(i => i.ForumId == forum && i.TopType > 0)
+            var zoneId = zoneStore.GetZone(client.UserId);
+            var data = db.Threads.Where(i => i.ForumId == forum && i.TopType > 0 && (i.ZoneId == 0 || i.ZoneId == zoneId))
                 .OrderByDescending(i => i.TopType)
                 .ThenByDescending(i => i.Id)
                 .ToArray().CopyTo<ThreadEntity, ThreadModel>();
@@ -252,6 +267,10 @@ namespace NetDream.Modules.Forum.Repositories
 
         public IPage<PostListItem> PostList(PostQueryForm form)
         {
+            if (!CheckThreadZone(form.Thread))
+            {
+                return new Page<PostListItem>();
+            }
             if (form.Post > 0)
             {
                 var maps = db.ThreadPosts.When(form.User > 0, i => i.UserId == form.User)
@@ -261,7 +280,8 @@ namespace NetDream.Modules.Forum.Repositories
                 var index = maps.Length == 0 ? -1 : Array.IndexOf(maps, form.Post);
                 if (index < 0)
                 {
-                    throw new Exception("找不到该回帖");
+                    // throw new Exception("找不到该回帖");
+                    return new Page<PostListItem>();
                 }
                 form.Page = (int)Math.Ceiling((double)(index + 1) / form.PerPage);
             }
@@ -302,12 +322,11 @@ namespace NetDream.Modules.Forum.Repositories
                 .ToPage(form);
         }
 
-        /**
-         * 收藏
-         * @param id
-         * @return bool
-         * @throws Exception
-         */
+        /// <summary>
+        /// 收藏
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IOperationResult<bool> ToggleCollect(int id)
         {
             var model = db.Threads.Where(i => i.Id == id).Single();
@@ -392,8 +411,14 @@ namespace NetDream.Modules.Forum.Repositories
             if (!CanPublish(userId, form.Title)) {
                 return OperationResult<ThreadPostEntity>.Fail("你的操作太频繁了，请五分钟后再试");
             }
+            var forumZone = db.Forums.Where(i => i.Id == form.Forum).Value(i => i.ZoneId);
+            if (!zoneStore.IsZone(client.UserId, forumZone))
+            {
+                return OperationResult<ThreadPostEntity>.Fail("版块分区错误");
+            }
             var thread = new ThreadEntity()
             {
+                ZoneId = forumZone,
                 Title = form.Title,
                 ForumId = form.Forum,
                 ClassifyId = form.Classify,
@@ -413,7 +438,7 @@ namespace NetDream.Modules.Forum.Repositories
                 Ip = client.Ip,
             };
             db.ThreadPosts.Save(model, client.Now);
-            new ForumRepository(db, userStore, client).
+            new ForumRepository(db, userStore, zoneStore, client).
                 UpdateCount(thread.ForumId, "thread_count");
             return OperationResult.Ok(model);
         }
@@ -477,32 +502,43 @@ namespace NetDream.Modules.Forum.Repositories
                 res.ViewCount++;
                 db.SaveChanges();
             }
+            if (!CheckThreadZone(res))
+            {
+                return OperationResult<ThreadModel>.Fail("数据错误");
+            }
             var model = res.CopyTo<ThreadModel>();
-
-            //model.Forum;
-            //model.Path = array_merge(ForumModel.FindPath(model.ForumId), [model.Forum]);
-            //model.Digestable = static.Can(model, "is_digest");
-            //model.Highlightable = static.Can(model, "is_highlight");
-            //model.Closeable = static.Can(model, "is_closed");
-            //model.Topable = static.Can(model, "top_type");
-            //model.Editable = static.Editable(model);
-            //model.Classify;
-            //model.LastPost = static.LastPost(model.Id, false);
-            //model.IsNew = static.IsNew(model);
-            //model.LikeType = LogRepository.UserActionValue(id, ThreadLogModel.TYPE_THREAD,
-            //    [ThreadLogModel.ACTION_AGREE, ThreadLogModel.ACTION_DISAGREE]);
-            //model.IsCollected = LogRepository.UserAction(id, ThreadLogModel.TYPE_THREAD,
-            //    ThreadLogModel.ACTION_COLLECT);
-            //model.IsReward = LogRepository.UserAction(id, ThreadLogModel.TYPE_THREAD,
-            //    ThreadLogModel.ACTION_REWARD);
-            //model.RewardCount = ThreadLogModel.Where("item_type", ThreadLogModel.TYPE_THREAD)
-            //    .Where("item_id", id)
-            //    .Where("action", ThreadLogModel.ACTION_REWARD).Count();
-            //model.RewardItems = ThreadLogModel.With("user")
-            //    .Where("item_type", ThreadLogModel.TYPE_THREAD)
-            //    .Where("item_id", id)
-            //    .Where("action", ThreadLogModel.ACTION_REWARD).OrderBy("id", "desc")
-            //    .Limit(5).Get();
+            model.Forum = db.Forums.Where(i => i.Id == res.ForumId).SelectAsLabel().SingleOrDefault();
+            // model.Path = array_merge(ForumModel.FindPath(model.ForumId), [model.Forum]);
+            model.Digestable = Can(model, "is_digest");
+            model.Highlightable = Can(model, "is_highlight");
+            model.Closeable = Can(model, "is_closed");
+            model.Topable = Can(model, "top_type");
+            model.Editable = Editable(model);
+            if (res.ClassifyId > 0)
+            {
+                model.Classify = db.ForumClassifies.Where(i => i.Id == res.ClassifyId).Single();
+            }
+            
+            model.LastPost = LastPost(model.Id, false);
+            model.IsNew = IsNew(model);
+            var logStore = new LogRepository(db);
+            model.LikeType = logStore.UserActionValue(client.UserId, id, LogRepository.TYPE_THREAD,
+                [LogRepository.ACTION_AGREE, LogRepository.ACTION_DISAGREE]);
+            model.IsCollected = logStore.UserHasAction(client.UserId, id, LogRepository.TYPE_THREAD,
+                LogRepository.ACTION_COLLECT);
+            model.IsReward = logStore.UserHasAction(client.UserId, id, LogRepository.TYPE_THREAD,
+                LogRepository.ACTION_REWARD);
+            model.RewardCount = db.ThreadLogs
+                    .Where(i => i.ItemType == LogRepository.TYPE_THREAD
+                        && i.ItemId == id && i.Action == LogRepository.ACTION_REWARD).Count();
+            if (model.RewardCount > 0)
+            {
+                model.RewardItems = db.ThreadLogs
+                    .Where(i => i.ItemType == LogRepository.TYPE_THREAD
+                        && i.ItemId == id && i.Action == LogRepository.ACTION_REWARD)
+                    .OrderByDescending(i => i.Id)
+                    .SelectAs().Take(5).ToArray();
+            }
             return OperationResult.Ok(model);
         }
 
@@ -530,6 +566,10 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return OperationResult<ThreadPostEntity>.Fail("帖子已关闭");
             }
+            if (CheckThreadZone(thread))
+            {
+                return OperationResult<ThreadPostEntity>.Fail("帖子出了问题");
+            }
             var max = db.ThreadPosts.Where(i => i.ThreadId == form.Thread).Max(i => i.Grade);
             var post = new ThreadPostEntity() {
                 Content = form.Content,
@@ -543,7 +583,7 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return OperationResult<ThreadPostEntity>.Fail("发表失败");
             }
-            new ForumRepository(db, userStore, client)
+            new ForumRepository(db, userStore, zoneStore, client)
                 .UpdateCount(thread.ForumId, "post_count");
             db.Threads.Where(i => i.Id == form.Thread)
                 .ExecuteUpdate(setters => 
@@ -664,20 +704,19 @@ namespace NetDream.Modules.Forum.Repositories
             return OperationResult.Ok(thread);
         }
 
-        /**
-         * 是否有权限执行操作
-         * @param ThreadModel model
-         * @param string action
-         * @return bool
-         * @throws Exception
-         */
+        /// <summary>
+        /// 是否有权限执行操作
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
         public bool Can(ThreadEntity model, string action)
         {
             if (client.UserId == 0)
             {
                 return false;
             }
-            return userStore.IsRole(client.UserId, "administrator");
+            return roleStore.IsRole(client.UserId, "administrator");
         }
 
         public bool CanRemovePost(ThreadEntity model, ThreadPostEntity item)
@@ -694,7 +733,7 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return true;
             }
-            return userStore.IsRole(client.UserId, "administrator");
+            return roleStore.IsRole(client.UserId, "administrator");
         }
 
         public IOperationResult RemovePost(int id)
@@ -714,7 +753,7 @@ namespace NetDream.Modules.Forum.Repositories
             }
             db.ThreadPosts.Remove(item);
             db.SaveChanges();
-            new ForumRepository(db, userStore, client).UpdateCount(thread.ForumId, "post_count", -1);
+            new ForumRepository(db, userStore, zoneStore, client).UpdateCount(thread.ForumId, "post_count", -1);
             db.Threads.Where(i => i.Id == item.ThreadId)
                 .ExecuteUpdate(setters =>
                     setters.SetProperty(i => i.PostCount, i => i.PostCount - 1)
@@ -731,7 +770,7 @@ namespace NetDream.Modules.Forum.Repositories
             db.Threads.Remove(thread);
             var count = db.ThreadPosts.Where(i => i.ThreadId == id).Count() - 1;
             db.ThreadPosts.Where(i => i.ThreadId == id).ExecuteDelete();
-            var repository = new ForumRepository(db, userStore, client);
+            var repository = new ForumRepository(db, userStore, zoneStore, client);
             repository.UpdateCount(thread.ForumId, "thread_count", -1);
             repository.UpdateCount(thread.ForumId, "post_count", -count);
             db.Logs.Add(new LogEntity() { 
@@ -748,7 +787,9 @@ namespace NetDream.Modules.Forum.Repositories
 
         public ListArticleItem[] Suggest(string keywords = "")
         {
+            var zoneId = zoneStore.GetZone(client.UserId);
             return db.Threads.Search(keywords, "title")
+                .Where(i => i.ZoneId == 0 || i.ZoneId == zoneId)
                 .Take(4).Select(i => new ListArticleItem()
                 {
                     Id = i.Id,

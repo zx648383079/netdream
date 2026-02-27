@@ -85,17 +85,18 @@ namespace NetDream.Shared.Interfaces
         /// <returns></returns>
         public string? GetAttached(int user, string key);
 
+
+    }
+
+    public interface IZoneRepository
+    {
         /// <summary>
-        /// 判断是否是角色
+        /// 判断是否是分区
         /// </summary>
-        /// <param name="role"></param>
+        /// <param name="user"></param>
+        /// <param name="zone"></param>
         /// <returns></returns>
-        public bool IsRole(int user, string role);
-        /// <summary>
-        /// 判断是否有权限
-        /// </summary>
-        /// <param name="role"></param>
-        /// <returns></returns>
-        public bool HasPermission(int user, string permission);
+        public bool IsZone(int user, int zone);
+        public int GetZone(int user);
     }
 }

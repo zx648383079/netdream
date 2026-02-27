@@ -96,13 +96,12 @@ namespace NetDream.Modules.Plan.Repositories
                 .OrderBy(i => i.Id).ToArray();
         }
 
-        /**
-         * 开始
-         * @param id
-         * @param int child_id
-         * @return TaskDayModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 开始
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="child_id"></param>
+        /// <returns></returns>
         public IOperationResult<DayEntity> Start(int id, int child_id = 0)
         {
             var other = db.Days.Where(i => 
@@ -248,12 +247,11 @@ namespace NetDream.Modules.Plan.Repositories
             db.Days.Save(day, client.Now);
         }
 
-        /**
-         * 停止
-         * @param id
-         * @return TaskDayModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 停止
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IOperationResult<DayEntity> Stop(int id)
         {
             var day = db.Days.Where(i => i.Id == id && i.UserId == client.UserId).SingleOrDefault();
@@ -286,12 +284,11 @@ namespace NetDream.Modules.Plan.Repositories
             return OperationResult.Ok(day);
         }
 
-        /**
-         * 暂停
-         * @param id
-         * @return TaskDayModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 暂停
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IOperationResult<DayEntity> Pause(int id)
         {
             var day = db.Days.Where(i => i.Id == id && i.UserId == client.UserId).SingleOrDefault();
@@ -325,12 +322,11 @@ namespace NetDream.Modules.Plan.Repositories
             return OperationResult.Ok(day);
         }
 
-        /**
-         * 验证
-         * @param id
-         * @return bool|TaskDayModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 验证
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IOperationResult<DayEntity?> Check(int id)
         {
             var day = db.Days.Where(i => i.Id == id && i.UserId == client.UserId).SingleOrDefault();
@@ -374,12 +370,11 @@ namespace NetDream.Modules.Plan.Repositories
             return OperationResult.Ok(day);
         }
 
-        /**
-         * 完成任务
-         * @param id
-         * @return TaskModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 完成任务
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IOperationResult<TaskEntity> StopTask(int id)
         {
             var task = db.Tasks.Where(i => i.Id == id && i.UserId == client.UserId).SingleOrDefault();

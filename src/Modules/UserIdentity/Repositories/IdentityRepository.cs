@@ -53,5 +53,6 @@ namespace NetDream.Modules.UserIdentity.Repositories
             roleIds.Add(1);
             return db.UserRoles.Where(i => i.UserId == user && roleIds.Contains(i.RoleId)).Any();
         }
+
     }
 }

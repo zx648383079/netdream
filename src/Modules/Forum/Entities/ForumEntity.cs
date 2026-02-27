@@ -12,7 +12,9 @@ namespace NetDream.Modules.Forum.Entities
         public string Description { get; set; } = string.Empty;
         
         public int ParentId { get; set; }
-        
+
+        public int ZoneId { get; set; }
+
         public int ThreadCount { get; set; }
         
         public int PostCount { get; set; }
