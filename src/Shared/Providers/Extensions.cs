@@ -185,7 +185,7 @@ namespace NetDream.Shared.Providers
             return methodInfo?.MakeGenericMethod(argsT);
         }
 
-        public static IQueryable<TSource> Search<TSource>(this IQueryable<TSource> source, string keywords, [MinLength(1)] params string[] keys)
+        public static IQueryable<TSource> Search<TSource>(this IQueryable<TSource> source, string? keywords, [MinLength(1)] params string[] keys)
         {
             if (string.IsNullOrWhiteSpace(keywords))
             {

@@ -22,5 +22,14 @@ namespace NetDream.Api.Controllers.Finance
         {
             return Render(repository.Subtotal(form));
         }
+
+        [HttpGet]
+        [Route("[action]")]
+        [ProducesResponseType(typeof(StatisticsResult), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
+        public IActionResult Budget([FromQuery] StatisticsForm form)
+        {
+            return Render(repository.BugetWithMonth(form));
+        }
     }
 }

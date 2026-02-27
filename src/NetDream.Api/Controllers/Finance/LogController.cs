@@ -7,6 +7,7 @@ using NetDream.Modules.Finance.Forms;
 using NetDream.Modules.Finance.Models;
 using NetDream.Modules.Finance.Repositories;
 using NetDream.Modules.OpenPlatform;
+using NetDream.Shared.Models;
 using System.IO;
 
 namespace NetDream.Api.Controllers.Finance
@@ -60,8 +61,26 @@ namespace NetDream.Api.Controllers.Finance
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            repository.Remove(id);
-            return RenderData(true);
+            var res = repository.Remove(id);
+            if (res.Succeeded)
+            {
+                return RenderData(true);
+            }
+            return RenderFailure(res.Message);
+        }
+
+        [HttpDelete]
+        [Route("[action]")]
+        [ProducesResponseType(typeof(DataOneResponse<bool>), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
+        public IActionResult Merge(int[] id)
+        {
+            var res = repository.Merge(id);
+            if (res.Succeeded)
+            {
+                return RenderData(true);
+            }
+            return RenderFailure(res.Message);
         }
 
         [HttpPost]
@@ -78,15 +97,12 @@ namespace NetDream.Api.Controllers.Finance
         [Route("[action]")]
         [ProducesResponseType(typeof(DataOneResponse<bool>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Import(IFormFile file)
+        public IActionResult Import(IFormFileCollection file, string password = "")
         {
-            using var ms = new MemoryStream();
-            file.CopyTo(ms);
-            ms.Seek(0, SeekOrigin.Begin);
-            var res = repository.Import(ms);
+            var res = repository.Import(new FormUploadFileCollection(file), password);
             if (res.Succeeded)
             {
-                return RenderData(true);
+                return RenderData(true, $"导入 {res.Result} 条数据");
             }
             return RenderFailure(res.Message);
         }
@@ -126,6 +142,15 @@ namespace NetDream.Api.Controllers.Finance
         public IActionResult Count([FromQuery] LogQueryForm form)
         {
             return RenderData(repository.Count(form));
+        }
+
+        [HttpGet]
+        [Route("[search]")]
+        [ProducesResponseType(typeof(PageResponse<LogListItem>), 200)]
+        [ProducesResponseType(typeof(FailureResponse), 404)]
+        public IActionResult Search([FromQuery] LogSearchForm form)
+        {
+            return RenderPage(repository.Search(form));
         }
     }
 }

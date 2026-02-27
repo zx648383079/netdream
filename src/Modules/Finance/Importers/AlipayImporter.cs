@@ -27,26 +27,29 @@ namespace NetDream.Modules.Finance.Importers
 
         public override bool IsMatch(Stream input, string fileName)
         {
-            return FirstRowContains(input, "支付宝");
+            return fileName.EndsWith(".csv") && fileName.StartsWith("支付宝");
         }
 
         protected override LogEntity? FormatData(string[] columns, string[] data)
         {
+            if (GetValue(columns, data, "交易状态") != "交易成功") { // '交易成功' '已关闭' '冻结成功'
+                return null;
+            }
             var time = GetValue(columns, data, "付款时间");
             if (string.IsNullOrEmpty(time))
             {
-                time = GetValue(columns, data, "交易创建时间");
+                time = GetValue(columns, data, "交易时间");
             }
             return new LogEntity()
             {
-                Type = (byte)(GetValue(columns, data, "收/支") == "支出" ? 0 : 1),
-                Money = decimal.Parse(Regex.Match(GetValue(columns, data, "金额（元）"), @"[^\d\.]+").Value),
+                Type = (byte)(GetValue(columns, data, "收/支") == "支出" ? 0 : 1), // '不计收支' '支出' '收入'
+                Money = decimal.Parse(Regex.Match(GetValue(columns, data, "金额"), @"[^\d\.]+").Value),
                 AccountId = _accountId,
-                Remark = string.Format("{0} {1}",
-                    GetValue(columns, data, "交易对方"), GetValue(columns, data, "商品名称")),
+                TradingObject = GetValue(columns, data, "交易对方"),
+                Remark = GetValue(columns, data, "商品说明"),
                 UserId = client.UserId,
                 OutTradeNo = string.Format("ali{0}",
-                    GetValue(columns, data, "交易号")),
+                    GetValue(columns, data, "交易订单号")),
                 CreatedAt = client.Now,
                 UpdatedAt = client.Now,
                 HappenedAt = DateTime.Parse(time)

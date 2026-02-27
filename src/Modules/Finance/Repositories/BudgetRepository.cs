@@ -103,12 +103,11 @@ namespace NetDream.Modules.Finance.Repositories
                 .Sum(i => i.Money);
         }
 
-        /**
-         * 获取
-         * @param int id
-         * @return BudgetModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 获取
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IOperationResult<BudgetEntity> Get(int id)
         {
             var model = db.Budget.Where(i => i.UserId == client.UserId && i.Id == id).FirstOrDefault();
@@ -119,12 +118,11 @@ namespace NetDream.Modules.Finance.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 保存
-         * @param array data
-         * @return BudgetModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public IOperationResult<BudgetEntity> Save(BudgetForm data)
         {
             BudgetEntity? model;
@@ -150,11 +148,10 @@ namespace NetDream.Modules.Finance.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 软删除产品
-         * @param int id
-         * @return mixed
-         */
+        /// <summary>
+        /// 软删除产品
+        /// </summary>
+        /// <param name="id"></param>
         public void SoftDelete(int id)
         {
             db.Budget.Where(i => i.UserId == client.UserId && i.Id == id)
@@ -168,14 +165,13 @@ namespace NetDream.Modules.Finance.Repositories
             db.SaveChanges();
         }
 
-        
 
-        /**
-         * 获取统计
-         * @param int id
-         * @return array
-         * @throws Exception
-         */
+
+        /// <summary>
+        /// 获取统计
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IOperationResult<BudgetStatistics> Statistics(int id)
         {
             var model = db.Budget.Where(i => i.UserId == client.UserId && i.Id == id).FirstOrDefault();

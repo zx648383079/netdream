@@ -7,6 +7,7 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using OfficeOpenXml;
+using SharpCompress.Archives.Zip;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,7 +36,7 @@ namespace NetDream.Modules.Finance.Repositories
                 form.Keywords, form.Account, form.Budget, 
                 DateTime.TryParse(form.StartAt, out var s) ? s : null ,
                 DateTime.TryParse(form.EndAt, out var e) ? e : null)
-                .OrderByDescending(i => i.HappenedAt).ToPage(form).CopyTo<LogEntity, LogListItem>();
+                .OrderByDescending(i => i.HappenedAt).ToPage(form, query => query.SelectAs());
         }
 
         public int Count(LogQueryForm form)
@@ -47,7 +48,7 @@ namespace NetDream.Modules.Finance.Repositories
         }
 
         private static IQueryable<LogEntity> BindQuery(IQueryable<LogEntity> builder, 
-            int type = 0, string keywords = "", 
+            int type = 0, string? keywords = "", 
             int account = 0, int budget = 0, DateTime? start_at = null, DateTime? end_at = null)
         {
             return builder.When(type > 0, i => i.Type == type - 1)
@@ -58,12 +59,11 @@ namespace NetDream.Modules.Finance.Repositories
                 .When(end_at is not null, i => i.HappenedAt <= end_at);
         }
 
-        /**
-         * 获取
-         * @param int id
-         * @return LogModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 获取
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IOperationResult<LogEntity> Get(int id)
         {
             var model = db.Log.Where(i => i.UserId == client.UserId && i.Id == id)
@@ -75,12 +75,11 @@ namespace NetDream.Modules.Finance.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 保存
-         * @param array data
-         * @return LogModel
-         * @throws Exception
-         */
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public IOperationResult<LogEntity> Save(LogForm data)
         {
             LogEntity? model;
@@ -118,16 +117,56 @@ namespace NetDream.Modules.Finance.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 删除产品
-         * @param int id
-         * @return mixed
-         */
-        public void Remove(int id)
+        /// <summary>
+        /// 删除产品
+        /// </summary>
+        /// <param name="idItems"></param>
+        public IOperationResult Remove(int[] idItems)
+        {
+            db.Log.Where(i => i.UserId == client.UserId && idItems.Contains(i.Id))
+               .ExecuteDelete();
+            db.SaveChanges();
+            return OperationResult.Ok();
+        }
+
+        public IOperationResult Remove(int id)
         {
             db.Log.Where(i => i.UserId == client.UserId && i.Id == id)
                .ExecuteDelete();
             db.SaveChanges();
+            return OperationResult.Ok();
+        }
+
+        public IOperationResult Merge(int[] idItems)
+        {
+            idItems = idItems.Where(i => i > 0).Distinct().ToArray();
+            if (idItems.Length == 0)
+            {
+                return OperationResult.Fail("数据错误");
+            }
+            var items = db.Log.Where(i => i.UserId == client.UserId && idItems.Contains(i.Id))
+                .OrderByDescending(i => i.HappenedAt)
+                .ToArray();
+            if (items.Length < 2)
+            {
+                return OperationResult.Fail("数据错误");
+            }
+            var target = items[0];
+            for (var i = 1; i < items.Length; i++)
+            {
+                var item = items[i];
+                if (item.Type != target.Type || item.AccountId != target.AccountId)
+                {
+                    return OperationResult.Fail("合并操作只能合并同类型|账户");
+                }
+                target.Money += item.Money;
+                target.FrozenMoney += item.FrozenMoney;
+            }
+            target.Remark = string.Format("合并{0}条, {1}", items.Length, target.Remark);
+            db.Log.Update(target);
+            db.Log.RemoveRange(items.Where(i => i.Id != target.Id));
+            db.SaveChanges();
+            return OperationResult.Ok();
         }
 
         public int BatchEdit(BatchLogForm form)
@@ -136,7 +175,11 @@ namespace NetDream.Modules.Finance.Repositories
             {
                 return 0;
             }
-            var data = new Dictionary<string, int>();
+            if (form.Operator == 1)
+            {
+                return MergeLogByMonth(form.Keywords);
+            }
+            var data = new Dictionary<string, object>();
             if (form.AccountId > 0)
             {
                 data.Add("account_id", form.AccountId);
@@ -152,6 +195,10 @@ namespace NetDream.Modules.Finance.Repositories
             if (form.BudgetId > 0)
             {
                 data.Add("budget_id", form.BudgetId);
+            }
+            if (!string.IsNullOrWhiteSpace(form.TradingObject))
+            {
+                data.Add("trading_object", form.TradingObject);
             }
             if (data.Count == 0)
             {
@@ -182,10 +229,50 @@ namespace NetDream.Modules.Finance.Repositories
                 parameters.ToArray());
         }
 
+        private int MergeLogByMonth(string keywords)
+        {
+            var today = DateTime.Today;
+            var endAt = today.AddDays(1 - today.Day);
+            var items = new Dictionary<string, LogEntity>();
+            var exclude = new List<int>();
+            var data = db.Log.Where(i => i.UserId == client.UserId && i.HappenedAt < endAt)
+                .Search(keywords, "remark")
+                .OrderByDescending(i => i.HappenedAt)
+                .ToArray();
+            foreach(var item in data)
+            {
+                var key = string.Format("{0}_{1}", item.HappenedAt.ToString("yyyyMM"), item.Type);
+                if (!items.TryGetValue(key, out var target))
+                {
+                    if (!item.Remark.StartsWith("月汇总:"))
+                    {
+                        item.Remark = $"月汇总: {item.Remark}";
+                    }
+                    items.Add(key, item);
+                    continue;
+                }
+                exclude.Add(item.Id);
+                target.Money += item.Money;
+                target.FrozenMoney += item.FrozenMoney;
+            }
+            foreach (var item in items)
+            {
+                db.Log.Update(item.Value);
+            }
+            db.Log.Where(i => i.UserId == client.UserId && exclude.Contains(i.Id))
+               .ExecuteDelete();
+            db.SaveChanges();
+            return data.Length;
+        }
+
 
         public IOperationResult SaveDay(DayLogForm form)
         {
-            var items = new LogPartialForm[] { form.Breakfast, form.Lunch, form.Dinner };
+            var items = new LogPartialForm[] { 
+                form.Breakfast, 
+                form.Lunch, 
+                form.Dinner
+            };
             foreach (var item in items)
             {
                 if (item is null || item.Money <= 0)
@@ -210,27 +297,63 @@ namespace NetDream.Modules.Finance.Repositories
             db.SaveChanges();
             return OperationResult.Ok();
         }
-        public IOperationResult Import(Stream input)
+        public IOperationResult<int> Import(IUploadFileCollection input, string password = "")
+        {
+            var success = 0;
+            foreach (var item in input)
+            {
+                if (item.Name.EndsWith(".csv") || item.Name.EndsWith(".xlsx"))
+                {
+                    using var fs = item.OpenRead();
+                    success += Import(fs, item.Name);
+                    continue;
+                }
+                if (item.Name.EndsWith(".zip"))
+                {
+                    using var archive = ZipArchive.OpenArchive(item.OpenRead(), new SharpCompress.Readers.ReaderOptions()
+                    {
+                        LeaveStreamOpen = false,
+                        Password = password.Trim()
+                    });
+                    foreach (var entity in archive.Entries)
+                    {
+                        if (!string.IsNullOrEmpty(entity.Key) && (entity.Key.EndsWith(".csv") || entity.Key.EndsWith(".xlsx")))
+                        {
+                            using var fs = item.OpenRead();
+                            success += Import(fs, entity.Key);
+                            continue;
+                        }
+                    }
+                    continue;
+                }
+            }
+            return OperationResult.Ok(success);
+        }
+
+        private int Import(Stream input, string fileName)
         {
             var items = new IImporter<LogEntity>[]
             {
                 new WxImporter(db, client),
                 new AlipayImporter(db, client),
+                new WxV2Importer(db, client),
             };
+            var success = 0;
             foreach (var importer in items)
             {
-                if (!importer.IsMatch(input, string.Empty))
+                if (!importer.IsMatch(input, fileName))
                 {
                     continue;
                 }
                 foreach (var item in importer.Read(input))
                 {
                     db.Log.Add(item);
+                    success++;
                 }
                 db.SaveChanges();
-                return OperationResult.Ok();
+                break;
             }
-            return OperationResult.Fail("不支持");
+            return success;
         }
 
         public void Export(Stream output)
@@ -309,6 +432,16 @@ namespace NetDream.Modules.Finance.Repositories
                 res.Add(i, val);
             }
             return res;
+        }
+
+        public IPage<LogListItem> Search(LogSearchForm form)
+        {
+            return db.Log.Search(form.Keywords, "remark", "trading_object")
+                .Where(i => i.UserId == client.UserId && i.ParentId == 0)
+                .When(form.Type > 0, i => i.Type == form.Type - 1)
+                .When(form.Id?.Length > 0, i => form.Id.Contains(i.Id))
+                .OrderByDescending(i => i.HappenedAt)
+                .ToPage(form, query => query.SelectAs());
         }
     }
 }

@@ -10,8 +10,14 @@ namespace NetDream.Modules.Finance.Forms
 
         public int Budget { get; set; }
 
-        public string StartAt { get; set; }
-        public string EndAt { get; set; }
+        public string StartAt { get; set; } = string.Empty;
+        public string EndAt { get; set; } = string.Empty;
+        public string Goto { get; set; } = string.Empty;
+    }
+
+    public class LogSearchForm : QueryBoundForm
+    {
+        public int Type { get; set; }
     }
 
 }

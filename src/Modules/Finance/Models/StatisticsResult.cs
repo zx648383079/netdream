@@ -17,6 +17,10 @@ namespace NetDream.Modules.Finance.Models
         public decimal IncomeCurrent { get; set; }
         public decimal IncomeLast { get; set; }
         public int IncomeCount { get; set; }
+
+
+        public decimal LendTotal { get; set; }
+        public decimal BorrowTotal { get; set; }
         public LogStageItem[] StageItems { get; set; }
     }
 
@@ -26,7 +30,6 @@ namespace NetDream.Modules.Finance.Models
         public decimal Income { get; set; }
         public decimal Expenditure { get; set; }
     }
-
     public class MoneyStatisticsResult
     {
         public MoneyAccountEntity[] AccountList { get; set; }

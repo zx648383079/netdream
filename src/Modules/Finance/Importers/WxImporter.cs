@@ -22,7 +22,7 @@ namespace NetDream.Modules.Finance.Importers
 
         public override bool IsMatch(Stream input, string fileName)
         {
-            return FirstRowContains(input, "微信");
+            return fileName.EndsWith(".csv") &&  fileName.StartsWith("微信");
         }
 
         protected override LogEntity? FormatData(string[] columns, string[] data)

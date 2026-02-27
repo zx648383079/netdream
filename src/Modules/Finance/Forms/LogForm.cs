@@ -34,12 +34,16 @@ namespace NetDream.Modules.Finance.Forms
 
     public class BatchLogForm
     {
+        [Required]
         public string Keywords { get; set; }
+
+        public int Operator { get; set; }
 
         public int AccountId { get; set; }
         public int ProjectId { get; set; }
         public int ChannelId { get; set; }
         public int BudgetId { get; set; }
+        public string? TradingObject { get; set; }
     }
 
     public class DayLogForm

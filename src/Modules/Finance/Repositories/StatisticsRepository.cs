@@ -12,6 +12,8 @@ namespace NetDream.Modules.Finance.Repositories
 {
     public class StatisticsRepository(FinanceContext db, IClientContext client)
     {
+        
+
         public IncomeStatisticsResult GetIncome(string month)
         {
             if (!DateTime.TryParse(month, out var now))
@@ -104,7 +106,15 @@ namespace NetDream.Modules.Finance.Repositories
                     && i.Type == LogRepository.TYPE_EXPENDITURE)
                     .When(startAt != DateTime.MinValue, i => i.HappenedAt >= startAt)
                     .When(endAt != DateTime.MaxValue, i => i.HappenedAt < endAt)
-                    .Sum(i => i.Money)
+                    .Sum(i => i.Money),
+                LendTotal = db.Log.Where(i =>
+                    i.UserId == client.UserId
+                    && i.Type == LogRepository.TYPE_LEND)
+                    .Sum(i => i.Money),
+                BorrowTotal = db.Log.Where(i =>
+                    i.UserId == client.UserId
+                    && i.Type == LogRepository.TYPE_BORROW)
+                    .Sum(i => i.Money),
             };
             var data = db.Log.Where(i =>
                     i.UserId == client.UserId && (i.Type == LogRepository.TYPE_EXPENDITURE || i.Type == LogRepository.TYPE_INCOME))
@@ -144,6 +154,47 @@ namespace NetDream.Modules.Finance.Repositories
             }
             res.StageItems = maps.Values.ToArray();
             return res;
+        }
+
+        public BudgetMonthStatistics[] BugetWithMonth(StatisticsForm form)
+        {
+            if (!DateTime.TryParse(form.StartAt, out var startAt))
+            {
+                startAt = DateTime.MinValue;
+            }
+            if (!DateTime.TryParse(form.EndAt, out var endAt))
+            {
+                endAt = DateTime.MaxValue;
+            }
+            if (string.IsNullOrWhiteSpace(form.StartAt) && string.IsNullOrWhiteSpace(form.EndAt))
+            {
+                startAt = new DateTime(DateTime.Now.Year, 1, 1);
+            }
+            var budgetItems = db.Budget.Where(i => i.UserId == client.UserId && i.DeletedAt == 0)
+                .OrderBy(i => i.Id).Select(i => new BudgetMonthStatistics(i.Id, i.Name))
+                .ToArray();
+            var logItems = db.Log.Where(i => i.UserId == client.UserId
+                && i.Type == LogRepository.TYPE_EXPENDITURE 
+                && i.BudgetId > 0
+                && i.HappenedAt >= startAt && i.HappenedAt < endAt)
+                .GroupBy(i => new {
+                    Month = QueryExtensions.DateFormat(i.HappenedAt, "%Y%m"),
+                    i.BudgetId
+                })
+                .Select(i => new {
+                    Date = i.Key.Month,
+                    i.Key.BudgetId,
+                    Money = i.Sum(j => j.Money)
+                }).OrderBy(i => i.Date).ToArray();
+            foreach (var item in budgetItems)
+            {
+                item.Items = logItems.Where(i => i.BudgetId == item.Id).Select(i => new LogSutotalItem()
+                {
+                    Date = i.Date,
+                    Money = i.Money,
+                }).ToArray();
+            }
+            return budgetItems;
         }
 
         private (DateTime currentStart, DateTime currentEnd, DateTime lastStart, DateTime lastEnd) GetTimeRange(DateTime now, int type)
