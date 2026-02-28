@@ -265,7 +265,7 @@ namespace NetDream.Shared.Providers
             return source.Where(isTure ? truePredicate : falsePredicate);
         }
 
-        public static IQueryable<TSource> When<TSource>(this IQueryable<TSource> source, string isTure, Expression<Func<TSource, bool>> predicate)
+        public static IQueryable<TSource> When<TSource>(this IQueryable<TSource> source, string? isTure, Expression<Func<TSource, bool>> predicate)
         {
             return source.When(!string.IsNullOrWhiteSpace(isTure), predicate);
         }

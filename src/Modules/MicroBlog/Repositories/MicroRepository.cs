@@ -16,7 +16,9 @@ using System.Web;
 namespace NetDream.Modules.MicroBlog.Repositories
 {
     public class MicroRepository(MicroBlogContext db, 
-        IClientContext client, IUserRepository userStore,
+        IClientContext client, 
+        IUserRepository userStore,
+        IZoneRepository zoneStore,
         ILinkRuler ruler,
         ISystemBulletin bulletin,
         IGlobeOption option)
@@ -38,6 +40,20 @@ namespace NetDream.Modules.MicroBlog.Repositories
             return new ActionLogProvider(db, client);
         }
 
+        private bool CheckZone(int blog)
+        {
+            return CheckZone(db.Blogs.Where(i => i.Id == blog).Single());
+        }
+
+        private bool CheckZone(BlogEntity blog)
+        {
+            if (blog.UserId == client.UserId)
+            {
+                return true;
+            }
+            return zoneStore.IsZone(client.UserId, blog.ZoneId);
+        }
+
         public IPage<PostListItem> GetSelfList(QueryForm form)
         {
             return GetList(new PostQueryForm()
@@ -51,7 +67,21 @@ namespace NetDream.Modules.MicroBlog.Repositories
 
         public IPage<PostListItem> GetList(PostQueryForm form)
         {
-            var query = db.Blogs.When(form.Id > 0, i => i.Id == form.Id);
+            if (client.UserId == 0)
+            {
+                return new Page<PostListItem>();
+            }
+            var zoneId = zoneStore.GetZone(client.UserId);
+            if (zoneId == 0)
+            {
+                if (form.User != client.UserId)
+                {
+                    return new Page<PostListItem>();
+                }
+                form.User = client.UserId;
+            }
+            var query = db.Blogs.When(form.Id > 0, i => i.Id == form.Id)
+                .Where(i => i.ZoneId == zoneId || i.UserId == client.UserId);
             if (form.Id == 0)
             {
                 query = query.Search(form.Keywords, "content")
@@ -94,8 +124,12 @@ namespace NetDream.Modules.MicroBlog.Repositories
 
         public IOperationResult<PostListItem> Get(int id)
         {
+            if (client.UserId == 0)
+            {
+                return OperationResult<PostListItem>.Fail("id 错误");
+            }
             var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
-            if (model is null)
+            if (model is null || !CheckZone(model))
             {
                 return OperationResult<PostListItem>.Fail("id 错误");
             }
@@ -158,6 +192,7 @@ namespace NetDream.Modules.MicroBlog.Repositories
             var model = new BlogEntity()
             {
                 UserId = client.UserId,
+                ZoneId = zoneStore.GetZone(client.UserId),
                 Content = HttpUtility.HtmlEncode(content),
                 Source = source,
                 CreatedAt = client.Now,
@@ -204,15 +239,11 @@ namespace NetDream.Modules.MicroBlog.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 评论
-         * @param string content
-         * @param int micro_id
-         * @param int parent_id
-         * @param bool is_forward 是否转发
-         * @return array
-         * @throws Exception
-         */
+        /// <summary>
+        /// 评论
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public IOperationResult<CommentListItem> CommentSave(CommentForm data)
         {
             var model = db.Blogs.Where(i => i.Id == data.MicroId).SingleOrDefault();
@@ -285,6 +316,10 @@ namespace NetDream.Modules.MicroBlog.Repositories
             if (model.UserId == client.UserId)
             {
                 return OperationResult<PostListItem>.Fail("自己无法收藏");
+            }
+            if (!CheckZone(model))
+            {
+                return OperationResult<PostListItem>.Fail("数据错误");
             }
             var res = new PostListItem(model);
             var status = Log().ToggleLog(LOG_TYPE_MICRO_BLOG, LOG_ACTION_COLLECT, id);
@@ -359,7 +394,7 @@ namespace NetDream.Modules.MicroBlog.Repositories
         public IOperationResult<BlogEntity> Recommend(int id)
         {
             var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
-            if (model is null)
+            if (model is null || !CheckZone(model))
             {
                 return OperationResult.Fail<BlogEntity>("id 错误");
             }
@@ -379,12 +414,13 @@ namespace NetDream.Modules.MicroBlog.Repositories
         public IOperationResult<BlogEntity> Forward(ForwardForm data)
         {
             var source = db.Blogs.Where(i => i.Id == data.Id).SingleOrDefault();
-            if (source is null)
+            if (source is null || !CheckZone(source))
             {
                 return OperationResult<BlogEntity>.Fail("id 错误");
             }
             var model = new BlogEntity()
             {
+                ZoneId = zoneStore.GetZone(client.UserId),
                 UserId = client.UserId,
                 Content = HttpUtility.HtmlEncode(data.Content),
                 ForwardId = source.Id,
@@ -426,13 +462,13 @@ namespace NetDream.Modules.MicroBlog.Repositories
         }
 
 
-        /**
-         * at 人
-         * @param string content
-         * @param int itemId
-         * @return array 返回规则
-         * @throws Exception
-         */
+        /// <summary>
+        /// at 人
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="itemId"></param>
+        /// <param name="itemType"></param>
+        /// <returns></returns>
         public LinkExtraRule[] At(string content, int itemId = 0, int itemType = 0)
         {
             if (string.IsNullOrWhiteSpace(content) || !content.Contains('@'))

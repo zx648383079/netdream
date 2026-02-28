@@ -45,10 +45,49 @@ namespace NetDream.Modules.Blog.Repositories
             return GetList(form);
         }
 
+        private static void CheckSortOrder(QueryForm form)
+        {
+            switch (form.Sort)
+            {
+                case "new":
+                    form.Sort = "created_at";
+                    form.Order = "desc";
+                    break;
+                case "recommend":
+                case "best":
+                    form.Sort = "recommend_count'";
+                    form.Order = "desc";
+                    break;
+                case "hot":
+                    form.Sort = "comment_count";
+                    form.Order = "desc";
+                    break;
+                default:
+                    SearchHelper.CheckSortOrder(form, ["id", "created_at"]);
+                    break;
+            }
+        }
+
         public IPage<BlogListItem> GetList(BlogQueryForm form)
         {
-            SearchHelper.CheckSortOrder(form, ["id", "created_at"]);
+            CheckSortOrder(form);
+            var include = Array.Empty<int>();
+            if (!string.IsNullOrWhiteSpace(form.Tag))
+            {
+                include = Tag().GetTagRelationList(form.Tag);
+                if (include.Length == 0)
+                {
+                    return new Page<BlogListItem>();
+                }
+            }
             var items = db.Blogs.Search(form.Keywords, "Title")
+                .Where(i => i.PublishStatus == PublishRepository.PUBLISH_STATUS_POSTED
+                && i.Status == (byte)ReviewStatus.Approved)
+                .When(form.Category > 0, i => i.TermId == form.Category)
+                .When(form.User > 0, i => i.UserId == form.User)
+                .When(!string.IsNullOrWhiteSpace(form.Language), i => i.Language == form.Language, i => i.ParentId == 0)
+                .When(form.ProgrammingLanguage, i => i.ProgrammingLanguage == form.ProgrammingLanguage)
+                .When(include.Length > 0, i => include.Contains(i.Id))
                 .OrderBy(form)
                 .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
@@ -58,8 +97,25 @@ namespace NetDream.Modules.Blog.Repositories
 
         public IPage<BlogListItem> ManageList(BlogQueryForm form)
         {
-            SearchHelper.CheckSortOrder(form, ["id", "created_at"]);
+            CheckSortOrder(form);
+            var include = Array.Empty<int>();
+            if (!string.IsNullOrWhiteSpace(form.Tag))
+            {
+                include = Tag().GetTagRelationList(form.Tag);
+                if (include.Length == 0)
+                {
+                    return new Page<BlogListItem>();
+                }
+            }
             var items = db.Blogs.Search(form.Keywords, "Title")
+                .Where(i => i.PublishStatus == PublishRepository.PUBLISH_STATUS_POSTED
+                && i.Status == (byte)ReviewStatus.Approved)
+                .When(form.Category > 0, i => i.TermId == form.Category)
+                .When(form.User > 0, i => i.UserId == form.User)
+                .When(!string.IsNullOrWhiteSpace(form.Language), i => i.Language == form.Language, i => i.ParentId == 0)
+                .When(form.ProgrammingLanguage, i => i.ProgrammingLanguage == form.ProgrammingLanguage)
+                .When(include.Length > 0, i => include.Contains(i.Id))
+                .OrderBy(form)
                 .OrderBy(form)
                 .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);

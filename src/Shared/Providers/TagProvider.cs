@@ -124,7 +124,11 @@ namespace NetDream.Shared.Providers
         {
             return db.TagLinks.Where(i => i.TagId == tagId).Select(i => i.TargetId).ToArray();
         }
-
+        /// <summary>
+        /// 根据标签获取关联的id
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
         public int[] GetTagRelationList(string tag)
         {
             var tagId = db.Tags.Where(i => i.Name == tag).Select(i => i.Id).FirstOrDefault();

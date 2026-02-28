@@ -197,10 +197,9 @@ namespace NetDream.Modules.UserAccount.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 标记全部已读
-         * @throws Exception
-         */
+        /// <summary>
+        /// 标记全部已读
+        /// </summary>
         public void ReadAll()
         {
             db.BulletinUsers.Where(i => i.UserId == environment.UserId && i.Status == 0)
