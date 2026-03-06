@@ -44,6 +44,22 @@ namespace NetDream.Modules.UserAccount
             });
         }
 
+        internal static IQueryable<IApplyListItem> SelectAs(this IQueryable<ApplyLogEntity> query)
+        {
+            return query.Select(i => new ApplyListItem()
+            {
+                Id = i.Id,
+                UserId = i.UserId,
+                ItemType = i.ItemType,
+                ItemId = i.Id,
+                Money = i.Money,
+                Remark = i.Remark,
+                Status = i.Status,
+                Type = i.Type,
+                CreatedAt = i.CreatedAt,
+            });
+        }
+
         internal static IQueryable<ActionLogListItem> SelectAs(this IQueryable<ActionLogEntity> query)
         {
             return query.Select(i => new ActionLogListItem()

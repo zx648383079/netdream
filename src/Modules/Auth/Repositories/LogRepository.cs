@@ -5,8 +5,6 @@ using NetDream.Modules.UserAccount.Forms;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.Auth.Repositories

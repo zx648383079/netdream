@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
     <PackageReference Include="Duende.IdentityModel" Version="8.0.0" />
-    <PackageReference Include="MediatR" Version="14.0.0" />
+    <PackageReference Include="MediatR" Version="14.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
@@ -46,6 +46,7 @@
     <ProjectReference Include="..\Modules\Plan\Plan.csproj" />
     <ProjectReference Include="..\Modules\Proxy\Proxy.csproj" />
     <ProjectReference Include="..\Modules\ResourceStore\ResourceStore.csproj" />
+    <ProjectReference Include="..\Modules\Team\Team.csproj" />
     <ProjectReference Include="..\Modules\TradeTracker\TradeTracker.csproj" />
     <ProjectReference Include="..\Modules\Trade\Trade.csproj" />
     <ProjectReference Include="..\Modules\UserAccount\UserAccount.csproj" />

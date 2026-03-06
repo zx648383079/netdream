@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151 d18.0
+VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetDream.Shared", "NetDream.Shared\NetDream.Shared.csproj", "{C153B9BA-2F3F-4639-BF05-126D709A446C}"
 EndProject
@@ -104,6 +104,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserIdentity", "Modules\UserIdentity\UserIdentity.csproj", "{508D2256-8CED-42B8-9DAF-AF7A6D1A0655}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications", "Shared\Notifications\Notifications.csproj", "{75F13305-DEA8-4B09-BB2D-ACED45F92F27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Team", "Modules\Team\Team.csproj", "{C6395FEF-67D8-4A78-A93F-40EE875AA771}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -303,6 +305,10 @@ Global
 		{75F13305-DEA8-4B09-BB2D-ACED45F92F27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75F13305-DEA8-4B09-BB2D-ACED45F92F27}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75F13305-DEA8-4B09-BB2D-ACED45F92F27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6395FEF-67D8-4A78-A93F-40EE875AA771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6395FEF-67D8-4A78-A93F-40EE875AA771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6395FEF-67D8-4A78-A93F-40EE875AA771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6395FEF-67D8-4A78-A93F-40EE875AA771}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -351,6 +357,7 @@ Global
 		{4CEBFF00-1E76-4DAD-BCC3-9CFFC4BF03FF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{508D2256-8CED-42B8-9DAF-AF7A6D1A0655} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{75F13305-DEA8-4B09-BB2D-ACED45F92F27} = {D4EF7F1B-6AF5-462A-8A3A-AA661E58F983}
+		{C6395FEF-67D8-4A78-A93F-40EE875AA771} = {03BF2D69-82E2-4D8A-9C22-F6DEF345541C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {137970B0-B381-4D3F-AD18-F22A2B0365E6}

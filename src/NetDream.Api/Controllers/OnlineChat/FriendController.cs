@@ -5,6 +5,7 @@ using NetDream.Modules.Chat.Forms;
 using NetDream.Modules.Chat.Models;
 using NetDream.Modules.Chat.Repositories;
 using NetDream.Modules.OpenPlatform;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 
@@ -72,7 +73,7 @@ namespace NetDream.Api.Controllers.OnlineChat
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<ApplyListItem>), 200)]
+        [ProducesResponseType(typeof(PageResponse<IApplyListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult ApplyLog([FromQuery] QueryForm form)
         {

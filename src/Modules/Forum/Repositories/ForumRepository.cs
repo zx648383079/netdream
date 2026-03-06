@@ -76,7 +76,7 @@ namespace NetDream.Modules.Forum.Repositories
                 userStore.Include(model.Moderators);
                 model.Children = Children(id, false);
                 //model.Path = ForumModel.FindPath(id);
-                model.ThreadTop = new ThreadRepository(db, userStore, client, null).TopList(id);
+                model.ThreadTop = new ThreadRepository(db, userStore, zoneStore, null,  client, null).TopList(id);
             }
             return OperationResult.Ok(model);
         }

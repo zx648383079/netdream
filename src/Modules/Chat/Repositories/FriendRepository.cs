@@ -2,11 +2,11 @@
 using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Forms;
 using NetDream.Modules.Chat.Models;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,7 +17,8 @@ namespace NetDream.Modules.Chat.Repositories
     public class FriendRepository(
         ChatContext db, 
         IClientContext client,
-        IUserRepository userStore)
+        IUserRepository userStore,
+        IApplyRepository applyStore)
     {
 
         public IPage<FriendListItem> GetList(
@@ -97,15 +98,13 @@ namespace NetDream.Modules.Chat.Repositories
                 BelongId = client.UserId,
                 Status = data.Group > 0 && count ? 1 : 0
             }, client.Now);
-            var logCount = db.Applies.Where(i => i.ItemId == client.UserId 
-            && i.ItemType == 0 && i.UserId == data.User).Any();
-            if (logCount) {
-                
-                db.Applies.Where(i => i.UserId == data.User && i.ItemType == 0 && i.ItemId == client.UserId && i.Status == 0)
-                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, 1)
-                .SetProperty(i => i.UpdatedAt, client.Now));
+            var logCount = applyStore.ReceiveAny(data.User, ModuleTargetType.Friend, client.UserId);
+            if (logCount) 
+            {
+                applyStore.Receive(data.User, ModuleTargetType.Friend, client.UserId, ReviewStatus.Approved);
             }
-            if (count) {
+            if (count) 
+            {
                 db.Friends.Where(i => i.BelongId == data.User && i.UserId == client.UserId)
                     .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, data.Group > 0 ? 1 : 0));
                 db.SaveChanges();
@@ -115,23 +114,15 @@ namespace NetDream.Modules.Chat.Repositories
                 db.SaveChanges();
                 return OperationResult.Ok();
             }
-            db.Applies.Save(new ApplyEntity()
-            {
-                ItemType = 0,
-                ItemId = userModel.Id,
-                Remark = data.Remark,
-                UserId = client.UserId,
-                Status = 0
-            }, client.Now);
+            applyStore.ReceiveCreate(client.UserId, ModuleTargetType.Friend, data.User, data.Remark);
             db.SaveChanges();
             return OperationResult.Ok();
         }
 
-        /**
-         * 取消关注
-         * @param int user
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 取消关注
+        /// </summary>
+        /// <param name="user"></param>
         public void Remove(int user) 
         {
             db.Friends.Where(i => i.UserId == user && i.BelongId == client.UserId).ExecuteDelete();
@@ -224,18 +215,18 @@ namespace NetDream.Modules.Chat.Repositories
             return OperationResult.Ok();
         }
 
-        public bool HasClassify(int id) {
+        public bool HasClassify(int id) 
+        {
             if (id < 10) {
                 return true;
             }
             return db.FriendClassifies.Where(i => i.UserId == client.UserId && i.Id == id).Any();
         }
 
-        /**
-         * 我关注的
-         * @return int
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 我关注的
+        /// </summary>
+        /// <returns></returns>
         public int FollowCount() 
         {
             return db.Friends.Where(i => i.BelongId == client.UserId && i.ClassifyId > 0).Count();
@@ -250,14 +241,9 @@ namespace NetDream.Modules.Chat.Repositories
             return db.Friends.Where(i => i.UserId == client.UserId && i.ClassifyId > 0).Count();
         }
 
-        public IPage<ApplyListItem> ApplyLog(QueryForm form) 
+        public IPage<IApplyListItem> ApplyLog(QueryForm form) 
         {
-            var items = db.Applies.Where(i => i.ItemType == 0 && i.ItemId == client.UserId)
-                .OrderBy(i => i.Status)
-                .OrderByDescending(i => i.Id)
-                .ToPage(form).CopyTo<ApplyEntity, ApplyListItem>();
-            userStore.Include(items.Items);
-            return items;
+            return applyStore.ReceiveSearch(ModuleTargetType.Friend, client.UserId, form);
         }
         
     }

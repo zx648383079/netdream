@@ -16,6 +16,7 @@ namespace NetDream.Modules.Shop.Backend.Repositories
     public class GoodsRepository(
         ShopContext db, 
         IClientContext client,
+        IIdentityRepository roleStore,
         IUserRepository userStore)
     {
         
@@ -306,7 +307,7 @@ namespace NetDream.Modules.Shop.Backend.Repositories
             {
                 return false;
             }
-            return userStore.IsRole(client.UserId, "administrator");
+            return roleStore.IsRole(client.UserId, "administrator");
         }
 
         public IPage<GoodsListItem> Search(QueryForm form,

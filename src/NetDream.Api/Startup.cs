@@ -31,6 +31,7 @@ using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Modules.Plan;
 using NetDream.Modules.SEO;
+using NetDream.Modules.Team;
 using NetDream.Modules.Trade;
 using NetDream.Modules.UserAccount;
 using NetDream.Modules.UserIdentity;
@@ -195,6 +196,7 @@ namespace NetDream.Api
             AddContext<NavigationContext>(services, connectString, serverVersion);
             AddContext<MicroBlogContext>(services, connectString, serverVersion);
             AddContext<ChatContext>(services, connectString, serverVersion);
+            AddContext<TeamContext>(services, connectString, serverVersion);
             AddContext<MessageServiceContext>(services, connectString, serverVersion);
             AddContext<OnlineServiceContext>(services, connectString, serverVersion);
             AddContext<PlanContext>(services, connectString, serverVersion);
@@ -244,6 +246,9 @@ namespace NetDream.Api
             services.ProvideDocumentRepositories();
             services.ProvideFinanceRepositories();
             services.ProvidePlanRepositories();
+            services.ProvideChatRepositories();
+            services.ProvideTeamRepositories();
+            services.ProvideMessageRepositories();
         }
     }
 }

@@ -6,9 +6,19 @@ using System.Text.RegularExpressions;
 
 namespace NetDream.Shared.Securities
 {
-    public class OwnEncoder(DateTime time) : ISecurity
+    public class OwnEncoder : ISecurity
     {
-        private readonly int[] _keyItems = CreateKeys(time);
+        public OwnEncoder(DateTime time)
+        {
+            _keyItems = CreateKeys(time);
+        }
+
+        public OwnEncoder(int time)
+        {
+            _keyItems = CreateKeys(time);
+        }
+
+        private readonly int[] _keyItems;
 
         public string Encrypt(string data)
         {

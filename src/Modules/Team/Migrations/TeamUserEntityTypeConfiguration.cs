@@ -1,17 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NetDream.Modules.Chat.Entities;
+using NetDream.Modules.Team.Entities;
 
-namespace NetDream.Modules.Chat.Migrations
+namespace NetDream.Modules.Team.Migrations
 {
-    public class GroupUserEntityTypeConfiguration : IEntityTypeConfiguration<GroupUserEntity>
+    public class TeamUserEntityTypeConfiguration : IEntityTypeConfiguration<TeamUserEntity>
     {
-        public void Configure(EntityTypeBuilder<GroupUserEntity> builder)
+        public void Configure(EntityTypeBuilder<TeamUserEntity> builder)
         {
-            builder.ToTable("chat_group_user", table => table.HasComment(""));
+            builder.ToTable("team_user", table => table.HasComment("团队成员系统"));
             builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
-            builder.Property(table => table.GroupId).HasColumnName("group_id").HasComment("群");
+            builder.Property(table => table.TeamId).HasColumnName("team_id").HasComment("群");
             builder.Property(table => table.UserId).HasColumnName("user_id").HasComment("用户");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(50)
                 .HasDefaultValue(string.Empty).HasComment("群备注");

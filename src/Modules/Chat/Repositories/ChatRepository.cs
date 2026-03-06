@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
@@ -13,7 +12,8 @@ namespace NetDream.Modules.Chat.Repositories
     public class ChatRepository(
         ChatContext db, 
         IUserRepository userStore,
-        IClientContext client)
+        IClientContext client,
+        ITeamRepository teamStore)
     {
         public IPage<HistoryListItem> Histories(QueryForm form)
         {
@@ -82,13 +82,9 @@ namespace NetDream.Modules.Chat.Repositories
             return db.Messages.Where(i => ids.Contains(i.Id)).SelectAsLabel().ToDictionary(i => i.Id);
         }
 
-        protected Dictionary<int, GroupLabelItem> GetGroup(params int[] ids)
+        protected Dictionary<int, IListLabelItem> GetGroup(params int[] ids)
         {
-            if (ids.Length == 0)
-            {
-                return [];
-            }
-            return db.Groups.Where(i => ids.Contains(i.Id)).SelectAsLabel().ToDictionary(i => i.Id);
+            return teamStore.Get(ids).ToDictionary(i => i.Id);
         }
 
         protected Dictionary<int, FriendLabelItem> GetFriend(params int[] ids)
@@ -110,9 +106,12 @@ namespace NetDream.Modules.Chat.Repositories
             return userStore.Get(ids).ToDictionary(i => i.Id);
         }
 
-        public object GetProfile()
+        public UserProfileModel GetProfile()
         {
-            return null;
+            return new UserProfileModel(userStore.Get(client.UserId))
+            {
+                NewCount = db.Messages.Where(i => i.ReceiveId == client.UserId && i.Status == 0).Count()
+            };
         }
     }
 }

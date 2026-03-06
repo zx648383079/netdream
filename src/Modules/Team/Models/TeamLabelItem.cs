@@ -1,6 +1,6 @@
-﻿namespace NetDream.Modules.Chat.Models
+﻿namespace NetDream.Modules.Team.Models
 {
-    public class GroupLabelItem
+    public class TeamLabelItem
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

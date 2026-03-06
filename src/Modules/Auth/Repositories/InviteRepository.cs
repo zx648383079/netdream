@@ -202,13 +202,12 @@ namespace NetDream.Modules.Auth.Repositories
             return $"auth/qr/authorize?token={token}";
         }
 
-        /**
-         * 发起人验证
-         * @param int type
-         * @param string token
-         * @return array 返回确认的用户id
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 发起人验证
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="token"></param>
+        /// <returns>返回确认的用户id</returns>
         public IOperationResult<int> CheckQr(byte type, string token)
         {
             var model = db.InviteCodes.
@@ -253,12 +252,12 @@ namespace NetDream.Modules.Auth.Repositories
             return model.ExpiredAt > 0 && model.ExpiredAt <= client.Now;
         }
 
-        /**
-         * 获取已授权的用户id
-         * @param int type
-         * @param string token
-         * @return array
-         */
+        /// <summary>
+        /// 获取已授权的用户id
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public int AuthorizedUser(byte type, string token)
         {
             var id = db.InviteCodes.Where(i => i.Type == type && i.Token == token)
@@ -270,14 +269,14 @@ namespace NetDream.Modules.Auth.Repositories
             return db.InviteLogs.Where(i => i.CodeId == id && i.Status == STATUS_SUCCESS)
                     .Select(i => i.UserId).Single();
         }
-        /**
-         * 接受人授权
-         * @param int type
-         * @param string token
-         * @param bool confirm
-         * @param bool reject
-         * @return ?bool
-         */
+        /// <summary>
+        /// 接受人授权
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="token"></param>
+        /// <param name="confirm"></param>
+        /// <param name="reject"></param>
+        /// <returns></returns>
         public IOperationResult<bool?> Authorize(byte type, string token, bool confirm = false, bool reject = false)
         {
             if (client.UserId == 0)

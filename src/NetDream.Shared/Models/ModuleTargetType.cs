@@ -3,6 +3,8 @@
     public enum ModuleTargetType: byte
     {
         User = 1,
+        Friend = 2,
+        Team = 3,
         UserUpdate = 5,
         /// <summary>
         /// 给账户充值
@@ -42,7 +44,7 @@
         Role = 83,
         RolePermission = 84,
 
-        SystemFriendLink = 84,
+        SystemFriendLink = 86,
         SystemFeedback = 85,
     }
 }

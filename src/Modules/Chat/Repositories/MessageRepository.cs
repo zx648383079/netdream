@@ -1,12 +1,10 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Forms;
 using NetDream.Modules.Chat.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
 using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System;
@@ -14,7 +12,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace NetDream.Modules.Chat.Repositories
 {
@@ -23,7 +20,8 @@ namespace NetDream.Modules.Chat.Repositories
         IUserRepository userStore,
         ILinkRuler ruler,
         FileRepository fileStore,
-        IMediator mediator)
+        IApplyRepository applyStore,
+        ITeamRepository teamStore)
     {
         public const int TYPE_TEXT = 0;
         public const int TYPE_IMAGE = 1;
@@ -41,8 +39,7 @@ namespace NetDream.Modules.Chat.Repositories
             var res = new PingResult();
             res.MessageCount = db.Messages.Where(i => i.ReceiveId == client.UserId && i.Status == STATUS_NONE)
                 .When(form.StartTime > 0, i => i.CreatedAt >= form.StartTime).Count();
-            res.ApplyCount = db.Applies.Where(i => i.ItemId == client.UserId && i.Status == 0 && i.ItemType==0)
-                .When(form.StartTime > 0, i => i.CreatedAt >= form.StartTime).Count();
+            res.ApplyCount = applyStore.ReceiveUnread(ModuleTargetType.Friend, client.UserId, form.StartTime);
             if (form.Id > 0) {
                 var messages = db.Messages.When(form.StartTime > 0, i => i.CreatedAt >= form.StartTime)
                     .When(form.Type > 0, i => i.GroupId == form.Id, 
@@ -93,51 +90,14 @@ namespace NetDream.Modules.Chat.Repositories
             if (itemType > 0)
             {
                 // 只有群才能at 群人名
-                extraRules.AddRange(At(content, id));
+                extraRules.AddRange(teamStore.At(ruler, content, id));
             }
             extraRules.AddRange(ruler.FormatEmoji(content));
             return Send(itemType, id, client.UserId,
                 TYPE_TEXT, content, [..extraRules]);
         }
 
-        public LinkExtraRule[] At(string content, int group) {
-            if (string.IsNullOrWhiteSpace(content) || !content.Contains('@')) {
-                return [];
-            }
-            var matches = Regex.Matches(content, @"@(\S+?)\s");
-            if (matches is null || matches.Count == 0)
-            {
-                return [];
-            }
-            var names = matches.ToDictionary(i => i.Groups[1].Value, i => i.Value);
-      
-            var users = db.GroupUsers.Where(i => names.Keys.Contains(i.Name))
-                .Select(i => new GroupUserEntity()
-                {
-                    UserId = i.UserId,
-                    Name = i.Name,
-                }).ToArray();
-            if (users.Length == 0) {
-                return [];
-            }
-            var rules = new List<LinkExtraRule>();
-            var currentUser = client.UserId;
-            var userIds = new List<int>();
-            foreach (var user in users) {
-                if (user.UserId != currentUser) {
-                    userIds.Add(user.UserId);
-                }
-                rules.Add(ruler.FormatUser(names[user.Name], user.Id));
-            }
-            if (userIds.Count > 0) {
-                var groupModel = db.Groups.Where(i => i.Id == group).Single();
-                mediator.Publish(BulletinRequest.Create([.. userIds],
-                    $"我在群【{groupModel.Name}】提到了你", "[回复]", [
-                        ruler.FormatLink("[回复]", "chat")
-                    ], BulletinType.ChatAt));
-            }
-            return [..rules];
-        }
+        
 
         public MessageEntity[] SendImage(int itemType, 
             int id,
@@ -304,15 +264,17 @@ namespace NetDream.Modules.Chat.Repositories
             return res;
         }
 
-        private GroupUserModel FormatGroupUser(Dictionary<int, GroupUserEntity> groupUsers, int id, IUser user) 
+        private ContactListItem FormatGroupUser(Dictionary<int, IUser> groupUsers, int id, IUser user) 
         {
             if (groupUsers.TryGetValue(id, out var u)) {
-                return new GroupUserModel(u) 
+                return new ContactListItem
                 {
+                    UserId = u.Id,
+                    Name = u.Name,
                     User = user
                 };
             }
-            return new GroupUserModel()
+            return new ContactListItem
             {
                 Name = "[]",
                 UserId = user.Id,
@@ -320,12 +282,9 @@ namespace NetDream.Modules.Chat.Repositories
             };
         }
 
-        protected Dictionary<int, GroupUserEntity> GetGroupUser(
+        private Dictionary<int, IUser> GetGroupUser(
             int id, params int[] ids) {
-            if (ids.Length == 0) {
-                return [];
-            }
-            return db.GroupUsers.Where(i => i.GroupId == id && ids.Contains(i.UserId)).ToDictionary(i => i.UserId);
+            return teamStore.Users(id, ids).ToDictionary(i => i.Id);
         }
 
         /// <summary>

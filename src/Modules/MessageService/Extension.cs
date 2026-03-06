@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.MessageService.Entities;
 using NetDream.Modules.MessageService.Models;
 using NetDream.Modules.MessageService.Repositories;
+using NetDream.Shared.Interfaces;
 using System.Linq;
 
 namespace NetDream.Modules.MessageService
@@ -10,7 +11,7 @@ namespace NetDream.Modules.MessageService
     {
         public static void ProvideMessageRepositories(this IServiceCollection service)
         {
-            service.AddScoped<MessageProtocol>();
+            service.AddScoped<IMessageProtocol, MessageProtocol>();
             service.AddScoped<MessageRepository>();
             service.AddScoped<StatisticsRepository>();
         }

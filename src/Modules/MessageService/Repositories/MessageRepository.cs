@@ -16,7 +16,7 @@ namespace NetDream.Modules.MessageService.Repositories
 {
     public partial class MessageRepository(MessageServiceContext db, 
         IGlobeOption option, IClientContext client,
-        MessageProtocol protocol)
+        IMessageProtocol protocol)
     {
         protected bool IsSystemTemplate(string name)
         {

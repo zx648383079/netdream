@@ -10,12 +10,13 @@ using System;
 using System.Linq;
 using NetDream.Shared.Providers;
 using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Securities;
 
 namespace NetDream.Modules.MessageService.Repositories
 {
     public class MessageProtocol(MessageServiceContext db, 
         IClientContext environment,
-        IGlobeOption option)
+        IGlobeOption option): IMessageProtocol
     {
         public const string SESSION_KEY = "ms_code";
 
@@ -42,6 +43,18 @@ namespace NetDream.Modules.MessageService.Repositories
         public const string EVENT_FIND_CODE = "find_code";
 
         private readonly MessageSetting _configs = new();
+
+        private ISecurity Security => new OwnEncoder(_configs.Everyday + _configs.Space + _configs.Everyone);
+
+        public string Encode(string text)
+        {
+            return Security.Encrypt(text);
+        }
+
+        public string Decode(string text)
+        {
+            return Security.Decrypt(text);
+        }
 
         /// <summary>
         /// 发送验证码

@@ -20,7 +20,7 @@ namespace NetDream.Modules.Chat.Entities
         public int GroupId { get; set; }
         
         public int UserId { get; set; }
-        public int Status { get; set; }
+        public byte Status { get; set; }
         
         public int DeletedAt { get; set; }
         

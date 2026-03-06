@@ -1,23 +1,25 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Forms;
-using NetDream.Modules.Chat.Models;
-using NetDream.Modules.Chat.Repositories;
 using NetDream.Modules.OpenPlatform;
+using NetDream.Modules.Team.Entities;
+using NetDream.Modules.Team.Forms;
+using NetDream.Modules.Team.Models;
+using NetDream.Modules.Team.Repositories;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.OnlineChat
 {
-    [Route("open/chat/[controller]")]
+    [Route("open/team")]
     [Authorize]
     [ApiController]
-    public class GroupController(GroupRepository repository) : JsonController
+    public class GroupController(TeamRepository repository) : JsonController
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(DataResponse<GroupListItem>), 200)]
+        [ProducesResponseType(typeof(DataResponse<TeamListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index()
         {
@@ -26,7 +28,7 @@ namespace NetDream.Api.Controllers.OnlineChat
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<GroupListItem>), 200)]
+        [ProducesResponseType(typeof(PageResponse<TeamListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Search([FromQuery] QueryForm form)
         {
@@ -35,7 +37,7 @@ namespace NetDream.Api.Controllers.OnlineChat
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(GroupModel), 200)]
+        [ProducesResponseType(typeof(TeamModel), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Detail(int id)
         {
@@ -53,7 +55,7 @@ namespace NetDream.Api.Controllers.OnlineChat
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Agree([FromBody] ApplyForm data)
         {
-            var res = repository.Agree(data);
+            var res = repository.Agree(data.User, data.Group);
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
@@ -67,7 +69,7 @@ namespace NetDream.Api.Controllers.OnlineChat
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Apply([FromBody] ApplyForm data)
         {
-            var res = repository.Apply(data);
+            var res = repository.Apply(data.User, data.Group, data.Remark);
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
@@ -77,7 +79,7 @@ namespace NetDream.Api.Controllers.OnlineChat
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<ApplyListItem>), 200)]
+        [ProducesResponseType(typeof(PageResponse<IApplyListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult ApplyLog([FromQuery] QueryForm form, int group)
         {
@@ -86,9 +88,9 @@ namespace NetDream.Api.Controllers.OnlineChat
 
         [HttpPost]
         [Route("[action]")]
-        [ProducesResponseType(typeof(GroupEntity), 200)]
+        [ProducesResponseType(typeof(TeamEntity), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Create([FromBody] GroupForm data)
+        public IActionResult Create([FromBody] TeamForm data)
         {
             var res = repository.Create(data);
             if (!res.Succeeded)

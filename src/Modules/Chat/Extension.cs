@@ -1,8 +1,11 @@
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Chat.Entities;
+using NetDream.Modules.Chat.Listeners;
 using NetDream.Modules.Chat.Models;
 using NetDream.Modules.Chat.Repositories;
 using NetDream.Shared.Models;
+using NetDream.Shared.Notifications;
 using System.Linq;
 
 namespace NetDream.Modules.Chat
@@ -12,10 +15,11 @@ namespace NetDream.Modules.Chat
         public static void ProvideChatRepositories(this IServiceCollection service)
         {
             service.AddScoped<ChatRepository>();
-            service.AddScoped<ApplyRepository>();
             service.AddScoped<FriendRepository>();
-            service.AddScoped<GroupRepository>();
             service.AddScoped<MessageRepository>();
+
+            service.AddTransient<INotificationHandler<CancelAccount>, CancelAccountListener>();
+            service.AddTransient<INotificationHandler<DisbandTeam>, DisbandTeamListener>();
         }
 
         internal static IQueryable<ListLabelItem> SelectAs(this IQueryable<FriendClassifyEntity> query)
@@ -24,21 +28,6 @@ namespace NetDream.Modules.Chat
             {
                 Id = i.Id,
                 Name = i.Name,
-            });
-        }
-
-        internal static IQueryable<ApplyListItem> SelectAs(this IQueryable<ApplyEntity> query)
-        {
-            return query.Select(i => new ApplyListItem()
-            {
-                Id = i.Id,
-                ItemId = i.ItemId,
-                ItemType = i.ItemType,
-                Remark = i.Remark,
-                Status = i.Status,
-                UserId = i.UserId,
-                UpdatedAt = i.UpdatedAt,
-                CreatedAt = i.CreatedAt,
             });
         }
         internal static IQueryable<HistoryListItem> SelectAs(this IQueryable<HistoryEntity> query)
@@ -110,27 +99,6 @@ namespace NetDream.Modules.Chat
             });
         }
 
-        internal static IQueryable<GroupLabelItem> SelectAsLabel(this IQueryable<GroupEntity> query)
-        {
-            return query.Select(i => new GroupLabelItem()
-            {
-                Id = i.Id,
-                Name = i.Name,
-                Logo = i.Logo,
-            });
-        }
 
-        internal static IQueryable<GroupListItem> SelectAs(this IQueryable<GroupEntity> query)
-        {
-            return query.Select(i => new GroupListItem()
-            {
-                Id = i.Id,
-                Name = i.Name,
-                Logo = i.Logo,
-                UserId = i.UserId,
-                CreatedAt = i.CreatedAt,
-                UpdatedAt = i.UpdatedAt,
-            });
-        }
     }
 }

@@ -8,6 +8,6 @@ namespace NetDream.Modules.Chat.Models
         public MessageLabelItem? Message { get; set; }
         public IUser? User { get; set; }
         public FriendLabelItem? Friend { get; set; }
-        public GroupLabelItem? Group { get; set; }
+        public IListLabelItem? Group { get; set; }
     }
 }

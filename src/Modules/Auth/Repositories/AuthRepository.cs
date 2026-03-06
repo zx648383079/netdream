@@ -22,7 +22,8 @@ namespace NetDream.Modules.Auth.Repositories
         UserContext userDB,
         AuthContext db, 
         IGlobeOption option, 
-        IClientContext client) : IContextRepository
+        IClientContext client,
+        IMessageProtocol message) : IContextRepository
     {
         internal const byte ACCOUNT_TYPE_NAME = 1;
         internal const byte ACCOUNT_TYPE_EMAIL = 2;
