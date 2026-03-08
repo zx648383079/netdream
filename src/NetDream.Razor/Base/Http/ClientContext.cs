@@ -1,11 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace NetDream.Razor.Base.Http
 {
@@ -90,6 +96,31 @@ namespace NetDream.Razor.Base.Http
             }
             user = _currentUser = userStore.GetProfile(userId);
             return user is not null;
+        }
+
+        public async Task LoginAsync(IUserProfile user)
+        {
+            _currentUser = user;
+            var claims = new List<Claim>(){
+                new(ClaimTypes.Name, user.Id.ToString()),
+                new(ClaimTypes.Role, "user"),
+            };
+
+            //init the identity instances 
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Customer"));
+            // sign in 
+            await _context?.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, userPrincipal, new AuthenticationProperties
+            {
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(30),
+                IsPersistent = false,
+                AllowRefresh = false
+            });
+        }
+        public async Task<string> LogoutAsync()
+        {
+            _currentUser = null;
+            await _context?.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return string.Empty;
         }
     }
 }

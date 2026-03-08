@@ -13,11 +13,14 @@ using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using NetDream.Shared.Notifications;
 using NetDream.Shared.Providers;
+using SkiaSharp.QrCode.Image;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NetDream.Modules.Auth.Repositories
 {
@@ -114,7 +117,7 @@ namespace NetDream.Modules.Auth.Repositories
         }
 
 
-        public IOperationResult<IUserProfile> Login(ISignInForm data)
+        public async Task<IOperationResult<IUserProfile>> LoginAsync(ISignInForm data)
         {
             if (data is not IContextForm form)
             {
@@ -123,18 +126,30 @@ namespace NetDream.Modules.Auth.Repositories
             var res = form.Verify(this);
             if (!string.IsNullOrWhiteSpace(data.Account) || res.Succeeded)
             {
-                LogLogin(data.Account, res.Result?.Id ?? 0, res.Succeeded);
+                await mediator.Publish(UserSignIn.Create(client, data.Account, res.Result?.Id ?? 0, res.Succeeded));
+            }
+            if (res.Succeeded)
+            {
+                await client.LoginAsync(res.Result);
+                if (res.Result is IUserToken u && !string.IsNullOrEmpty(u.Token))
+                {
+                    await mediator.Publish(new TokenCreated(u.Token, res.Result, 30 * 86400));
+                }
             }
             return res;
         }
 
-        public IOperationResult Logout()
+        public async Task<IOperationResult> LogoutAsync()
         {
-
+            var token = await client.LogoutAsync();
+            if (!string.IsNullOrEmpty(token))
+            {
+                await mediator.Publish(new TokenCancel(token));
+            }
             return OperationResult.Ok();
         }
 
-        public IOperationResult<IUserProfile> Register(ISignUpForm data)
+        public async Task<IOperationResult<IUserProfile>> RegisterAsync(ISignUpForm data)
         {
             if (data is not IContextForm form)
             {
@@ -143,7 +158,7 @@ namespace NetDream.Modules.Auth.Repositories
             var res = form.Verify(this);
             if (!string.IsNullOrWhiteSpace(data.Account) || res.Succeeded)
             {
-                LogLogin(data.Account, res.Result?.Id ?? 0, res.Succeeded);
+                await mediator.Publish(UserSignIn.Create(client, data.Account, res.Result?.Id ?? 0, res.Succeeded));
             }
             if (!res.Succeeded)
             {
@@ -158,6 +173,13 @@ namespace NetDream.Modules.Auth.Repositories
                     {"name", o.Name },
                     { "url", $"./register/verify?code={param}" }
                 });
+            } else
+            {
+                await client.LoginAsync(res.Result);
+                if (res.Result is IUserToken u && !string.IsNullOrEmpty(u.Token))
+                {
+                    await mediator.Publish(new TokenCreated(u.Token, res.Result, 30 * 86400));
+                }
             }
             return res;
         }
@@ -207,20 +229,7 @@ namespace NetDream.Modules.Auth.Repositories
             return db.BanAccounts.Where(i => i.ItemKey == account).Any();
         }
 
-        public void LogLogin(string account, int userId = 0, bool status = false)
-        {
-            db.LoginLogs.Add(new LoginLogEntity
-            {
-                Ip = client.Ip,
-                UserId = userId,
-                Mode = client.ClientName,
-                Status = status ? 1 : 0,
-                User = account,
-                CreatedAt = client.Now
-            });
-            db.SaveChanges();
-        }
-
+        
         public static string GetLastIp(AuthContext db, int user)
         {
             var ip = db.LoginLogs
@@ -303,17 +312,41 @@ namespace NetDream.Modules.Auth.Repositories
 
         public IOperationResult<QrResult> QrRefresh()
         {
-            throw new NotImplementedException();
+            var store = new InviteRepository(db, client, null);
+            var token = store.CreateNew(InviteRepository.TYPE_LOGIN, 1, 300);
+            return OperationResult.Ok(new QrResult()
+            {
+                Token = token,
+                Qr = $"data:image/png;base64,{Convert.ToBase64String(QRCodeImageBuilder.GetPngBytes(store.LoginQr(token)))}"
+            });
         }
 
-        public IOperationResult<UserProfileModel> QrCheck(string token)
+        public async Task<IOperationResult<UserProfileModel>> QrCheckAsync(string token)
         {
-            throw new NotImplementedException();
+            var res = new InviteRepository(db, client, null).CheckQr(InviteRepository.TYPE_LOGIN, token);
+            if (!res.Succeeded)
+            {
+                return OperationResult<UserProfileModel>.Fail(res);
+            }
+            var user = userDB.Users.Where(i => i.Id == res.Result).SingleOrDefault();
+            if (user is null)
+            {
+                return OperationResult<UserProfileModel>.Fail("account is error");
+            }
+            var model = new UserProfileModel(user);
+            await mediator.Publish(UserSignIn.Ok(client, "qr", model));
+            await client.LoginAsync(model);
+            if (!string.IsNullOrEmpty(model.Token))
+            {
+                await mediator.Publish(new TokenCreated(model.Token, model, 30 * 86400));
+            }
+            return OperationResult.Ok(model);
         }
 
         public IOperationResult QrAuthorize(QrAuthorizeForm data)
         {
-            throw new NotImplementedException();
+            return new InviteRepository(db, client, null)
+                .Authorize(InviteRepository.TYPE_LOGIN, data.Token, data.Confirm, data.Reject);
         }
         public IOperationResult SendFindEmail(string email)
         {

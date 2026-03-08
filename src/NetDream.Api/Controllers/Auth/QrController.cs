@@ -6,6 +6,7 @@ using NetDream.Modules.Auth.Models;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserAccount.Models;
+using System.Threading.Tasks;
 
 namespace NetDream.Api.Controllers.Auth
 {
@@ -32,9 +33,9 @@ namespace NetDream.Api.Controllers.Auth
         [Route("[action]")]
         [ProducesResponseType(typeof(UserProfileModel), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Check(string token)
+        public async Task<IActionResult> Check(string token)
         {
-            var res = repository.QrCheck(token);
+            var res = await repository.QrCheckAsync(token);
             if (!res.Succeeded)
             {
                 return RenderFailure(res);

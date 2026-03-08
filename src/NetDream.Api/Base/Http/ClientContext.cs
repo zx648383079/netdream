@@ -1,15 +1,30 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Duende.IdentityModel;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using NetDream.Api.Models;
+using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
-using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Shared.Interfaces.Entities;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace NetDream.Api.Base.Http
 {
-    public class ClientContext(IHttpContextAccessor contextAccessor, IUserRepository userStore) : IClientContext
+    public class ClientContext(
+        IHttpContextAccessor contextAccessor,
+        IOptions<JwtSettings> jwtSettingsAccessor,
+        IUserRepository userStore) : IClientContext
     {
         private readonly HttpContext? _context = contextAccessor.HttpContext;
         private IUserProfile? _currentUser;
@@ -81,6 +96,44 @@ namespace NetDream.Api.Base.Http
             }
             user = _currentUser = userStore.GetProfile(userId);
             return user is not null;
+        }
+
+        public Task LoginAsync(IUserProfile user)
+        {
+            _currentUser = user;
+            //获取JwtSettings对象信息
+            var jwtSettings = jwtSettingsAccessor.Value;
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+            var authTime = DateTime.Now;//授权时间
+            var expiresAt = authTime.AddDays(30);//过期时间
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity([
+                    new(JwtClaimTypes.Audience,jwtSettings.Audience),
+                    new(JwtClaimTypes.Issuer,jwtSettings.Issuer),
+                    new(JwtClaimTypes.Name, user.Id.ToString()),
+                ]),
+                Expires = expiresAt,
+                //对称秘钥SymmetricSecurityKey
+                //签名证书(秘钥，加密算法)SecurityAlgorithms
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            if (user is IUserToken u)
+            {
+                u.Token = tokenHandler.WriteToken(token);
+            }
+            return Task.CompletedTask;
+        }
+        public async Task<string> LogoutAsync()
+        {
+            _currentUser = null;
+            var token = _context?.Request.Headers["Authorization"].ToString();
+            await _context?.SignOutAsync(JwtBearerDefaults.AuthenticationScheme);
+            return string.IsNullOrEmpty(token) 
+                || !token.StartsWith(JwtBearerDefaults.AuthenticationScheme)
+                ? string.Empty : token[JwtBearerDefaults.AuthenticationScheme.Length..].Trim();
         }
     }
 }

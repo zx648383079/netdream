@@ -26,30 +26,15 @@ namespace NetDream.Web.Areas.Auth.Controllers
         [HttpPost]
         public async Task<IActionResult> LoginAsync([FromForm] EmailSignInForm form, string redirect_uri = "/")
         {
-            var res = repository.Login(form);
+            var res = await repository.LoginAsync(form);
             if (!res.Succeeded)
             {
                 return Json(JsonResponse.RenderFailure(res.Message));
             }
-            var user = res.Result!;
             if (string.IsNullOrWhiteSpace(redirect_uri))
             {
                 redirect_uri = "/";
             }
-            var claims = new List<Claim>(){
-                new(ClaimTypes.Name, user.Id.ToString()),
-                new(ClaimTypes.Role, "user"),
-            };
-
-            //init the identity instances 
-            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(claims, "Customer"));
-            // sign in 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, userPrincipal, new AuthenticationProperties
-            {
-                ExpiresUtc = DateTime.UtcNow.AddMinutes(30),
-                IsPersistent = false,
-                AllowRefresh = false
-            });
             return Json(JsonResponse.RenderData(new { 
                 url = redirect_uri,
             }, localizer["登录成功！"]));
@@ -59,12 +44,7 @@ namespace NetDream.Web.Areas.Auth.Controllers
         // [Authorize(Roles = "Administrator")]
         public async Task<JsonResult> Logout()
         {
-            var auth = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            if (auth.Succeeded)
-            {
-                var userId = auth.Principal.Identity?.Name;
-            }
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await repository.LogoutAsync();
             return Json(JsonResponse.RenderData(true, "退出成功"));
         }
     }
