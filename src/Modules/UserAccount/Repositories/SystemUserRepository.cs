@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.UserAccount.Models;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
@@ -17,6 +18,8 @@ namespace NetDream.Modules.UserAccount.Repositories
     /// <param name="db"></param>
     public class SystemUserRepository(UserContext db): IUserRepository, IZoneRepository
     {
+
+        const int PULSE_SPACE = 60000;
         public bool Exist(int userId)
         {
             if (userId <= 0)
@@ -33,11 +36,13 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return null;
             }
+            var lastAt = TimeHelper.TimestampNow() - PULSE_SPACE;
             return db.Users.Where(i => i.Id == userId).Select(i => new UserLabelItem()
             {
                 Id = i.Id,
                 Name = i.Name,
-                Avatar = i.Avatar
+                Avatar = i.Avatar,
+                IsOnline = i.ActivatedAt > lastAt
             }).SingleOrDefault();
         }
 
@@ -68,13 +73,14 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return [];
             }
-            
+            var lastAt = TimeHelper.TimestampNow() - PULSE_SPACE;
             return db.Users.Where(i => userItems.Contains(i.Id))
                 .Select(i => new UserLabelItem()
                 {
                     Id = i.Id,
                     Name = i.Name,
-                    Avatar = i.Avatar
+                    Avatar = i.Avatar,
+                    IsOnline = i.ActivatedAt > lastAt
                 })
                 .ToArray();
         }
@@ -96,12 +102,14 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return [];
             }
+            var lastAt = TimeHelper.TimestampNow() - PULSE_SPACE;
             return db.Users.Where(i => userItems.Contains(i.Name))
                 .Select(i => new UserLabelItem()
                 {
                     Id = i.Id,
                     Name = i.Name,
-                    Avatar = i.Avatar
+                    Avatar = i.Avatar,
+                    IsOnline = i.ActivatedAt > lastAt
                 }).ToArray();
         }
 
@@ -122,11 +130,13 @@ namespace NetDream.Modules.UserAccount.Repositories
                     query = query.Where(i => items.Contains(i.Id));
                 }
             }
+            var lastAt = TimeHelper.TimestampNow() - PULSE_SPACE;
             return query.Select(i => new UserLabelItem()
             {
                 Id = i.Id,
                 Name = i.Name,
-                Avatar = i.Avatar
+                Avatar = i.Avatar,
+                IsOnline = i.ActivatedAt > lastAt
             }).ToPage(form).ConvertTo<UserLabelItem, IUserSource>();
         }
 
@@ -201,6 +211,17 @@ namespace NetDream.Modules.UserAccount.Repositories
                 return null;
             }
             return db.Metas.Where(i => i.ItemId == user && i.Name == key).Value(i => i.Content);
+        }
+
+        public void Pulse(int user)
+        {
+            if (user <= 0)
+            {
+                return;
+            }
+            db.Users.Where(i => i.Id == user)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.ActivatedAt, TimeHelper.TimestampNow()));
+            db.SaveChanges();
         }
 
         public bool IsZone(int user, int zone)

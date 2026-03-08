@@ -12,7 +12,7 @@ namespace NetDream.Modules.UserAccount.Entities
         public string Email { get; set; } = string.Empty;
         public string Mobile { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public int Sex { get; set; }
+        public byte Sex { get; set; }
         public string Avatar { get; set; } = string.Empty;
         public DateOnly Birthday { get; set; }
         public int Money { get; set; }
@@ -20,7 +20,7 @@ namespace NetDream.Modules.UserAccount.Entities
         
         public int ParentId { get; set; }
         public string Token { get; set; } = string.Empty;
-        public int Status { get; set; }
+        public byte Status { get; set; }
 
         public int ActivatedAt { get; set; }
 

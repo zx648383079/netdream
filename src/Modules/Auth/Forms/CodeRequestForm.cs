@@ -2,7 +2,16 @@
 
 namespace NetDream.Modules.Auth.Forms
 {
-    public class CodeRequestForm
+    public interface ICodeRequestForm
+    {
+        public string ToType { get; set; }
+
+        public string To { get; set; }
+
+        public string Event { get; set; }
+    }
+
+    public class CodeRequestForm: ICodeRequestForm
     {
         [Required]
         public string ToType { get; set; }
@@ -12,7 +21,7 @@ namespace NetDream.Modules.Auth.Forms
         public string Event { get; set; }
     }
 
-    public class CodeVerifyForm
+    public class CodeVerifyForm: ICodeRequestForm
     {
         [Required]
         public string ToType { get; set; }

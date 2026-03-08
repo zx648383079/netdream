@@ -241,7 +241,7 @@ namespace NetDream.Modules.MessageService.Repositories
                 //}
             }
             var log = db.Logs.Where(i => i.Target == target && i.TemplateName == templateName && i.Status == STATUS_SENT)
-                .Single();
+                .SingleOrDefault();
        
             if (log is null)
             {
@@ -358,12 +358,12 @@ namespace NetDream.Modules.MessageService.Repositories
             db.SaveChanges();
         }
 
-        protected string RenderTemplateFile(string fileName, IDictionary<string, string> data)
+        private string RenderTemplateFile(string fileName, IDictionary<string, string> data)
         {
-                return "";//view().render("@root/Template/".fileName, data);
+            return "";//view().render("@root/Template/".fileName, data);
         }
 
-        protected OperationResult SendSMS(SmsProtocolSetting option, string target, TemplateEntity template, IDictionary<string, string> data)
+        private OperationResult SendSMS(SmsProtocolSetting option, string target, TemplateEntity template, IDictionary<string, string> data)
         {
             var api = SMSProtocol(option);
             //if (api.isOnlyTemplate())
@@ -375,7 +375,7 @@ namespace NetDream.Modules.MessageService.Repositories
             return OperationResult.Ok();
         }
 
-        protected object SMSProtocol(SmsProtocolSetting option)
+        private object SMSProtocol(SmsProtocolSetting option)
         {
             return null;
             //return match(option["protocol"] ?? string.Empty) {
@@ -386,7 +386,7 @@ namespace NetDream.Modules.MessageService.Repositories
             //};
         }
 
-        protected bool VerifyCount()
+        private bool VerifyCount()
         {
             if (_configs.Everyday < 1)
             {
@@ -397,7 +397,7 @@ namespace NetDream.Modules.MessageService.Repositories
             return count < _configs.Everyday;
         }
 
-        protected bool VerifySpace(string target)
+        private bool VerifySpace(string target)
         {
             if (environment.PlatformId == 0)
             {
@@ -412,7 +412,7 @@ namespace NetDream.Modules.MessageService.Repositories
             return environment.Now - last > _configs.Space;
         }
 
-        protected bool VerifyIp()
+        private bool VerifyIp()
         {
             if (_configs.Everyone < 1)
             {

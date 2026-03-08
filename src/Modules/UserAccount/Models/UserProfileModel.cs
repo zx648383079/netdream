@@ -16,7 +16,7 @@ namespace NetDream.Modules.UserAccount.Models
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Mobile { get; set; } = string.Empty;
-        public int Sex { get; set; }
+        public byte Sex { get; set; }
         public string Avatar { get; set; } = string.Empty;
         public DateOnly Birthday { get; set; }
         public int Money { get; set; }

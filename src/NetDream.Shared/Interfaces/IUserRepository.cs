@@ -84,8 +84,11 @@ namespace NetDream.Shared.Interfaces
         /// <param name="key"></param>
         /// <returns></returns>
         public string? GetAttached(int user, string key);
-
-
+        /// <summary>
+        /// 激活用户
+        /// </summary>
+        /// <param name="user"></param>
+        public void Pulse(int user);
     }
 
     public interface IZoneRepository

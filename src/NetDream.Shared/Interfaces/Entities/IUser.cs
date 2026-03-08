@@ -25,7 +25,7 @@ namespace NetDream.Shared.Interfaces.Entities
         public string Email { get; }
         public string Mobile { get; }
 
-        public int Sex { get; }
+        public byte Sex { get; }
         public DateOnly Birthday { get; }
 
         public int ParentId { get; }

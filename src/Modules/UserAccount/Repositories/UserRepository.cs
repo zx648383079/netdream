@@ -35,22 +35,22 @@ namespace NetDream.Modules.UserAccount.Repositories
         };
 
 
-        public bool IsVerified(UserEntity entity)
+        public static bool IsVerified(UserEntity entity)
         {
             return IsVerified(entity.Status);
         }
 
-        public bool IsVerified(int status)
+        public static bool IsVerified(int status)
         {
             return status == STATUS_ACTIVE_VERIFIED;
         }
 
-        public bool IsActive(UserEntity entity)
+        public static bool IsActive(UserEntity entity)
         {
             return IsActive(entity.Status);
         }
 
-        public bool IsActive(int status)
+        public static bool IsActive(int status)
         {
             return status >= STATUS_ACTIVE;
         }

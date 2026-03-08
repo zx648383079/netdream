@@ -18,5 +18,7 @@ namespace NetDream.Shared.Interfaces
         public void SendCustom(string target, string title, string content, bool isHtml = true);
 
         public void SendCustom(string target, string title, Func<string> cb, bool isHtml = true);
+
+        public string GenerateCode(int length, bool isNumeric = true);
     }
 }

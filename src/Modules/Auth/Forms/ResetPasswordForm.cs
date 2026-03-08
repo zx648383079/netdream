@@ -22,5 +22,7 @@ namespace NetDream.Modules.Auth.Forms
         public string Password { get; set; }
         [Required]
         public string ConfirmPassword { get; set; }
+
+        public string? OldPassword { get; set; } = string.Empty;
     }
 }

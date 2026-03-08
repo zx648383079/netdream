@@ -1,4 +1,5 @@
-﻿using NetDream.Modules.Auth.Entities;
+﻿using MediatR;
+using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Models;
 using NetDream.Modules.UserAccount;
@@ -10,8 +11,10 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
+using NetDream.Shared.Notifications;
 using NetDream.Shared.Providers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
@@ -23,6 +26,7 @@ namespace NetDream.Modules.Auth.Repositories
         AuthContext db, 
         IGlobeOption option, 
         IClientContext client,
+        IMediator mediator,
         IMessageProtocol message) : IContextRepository
     {
         internal const byte ACCOUNT_TYPE_NAME = 1;
@@ -140,6 +144,20 @@ namespace NetDream.Modules.Auth.Repositories
             if (!string.IsNullOrWhiteSpace(data.Account) || res.Succeeded)
             {
                 LogLogin(data.Account, res.Result?.Id ?? 0, res.Succeeded);
+            }
+            if (!res.Succeeded)
+            {
+                return res;
+            }
+            if (res.Result is UserEntity o && o.Status == UserRepository.STATUS_UN_CONFIRM)
+            {
+                var code = message.GenerateCode(16, false);
+                var param = message.Encode($"{o.Email}|{code}");
+                message.SendCode(o.Email, "register_email", code, new Dictionary<string, string>()
+                {
+                    {"name", o.Name },
+                    { "url", $"./register/verify?code={param}" }
+                });
             }
             return res;
         }
@@ -280,7 +298,7 @@ namespace NetDream.Modules.Auth.Repositories
 
         public bool VerifyCode(string target, string code)
         {
-            throw new NotImplementedException();
+            return message.VerifyCode(target, "login_code", code, true);
         }
 
         public IOperationResult<QrResult> QrRefresh()
@@ -299,27 +317,208 @@ namespace NetDream.Modules.Auth.Repositories
         }
         public IOperationResult SendFindEmail(string email)
         {
-            throw new NotImplementedException();
+            if (!Validator.IsEmail(email))
+            {
+                return OperationResult.Fail(FailureReasons.ValidateError, "email is empty");
+            }
+            if (IsBan(email))
+            {
+                return OperationResult.Fail("邮箱已列入黑名单");
+            }
+            var res = Find(i => i.Email == email);
+            if (!res.Succeeded)
+            {
+                return res;
+            }
+            var user = res.Result;
+            var code = message.GenerateCode(8);
+            var param = message.Encode($"{user.Email}|{code}");
+            return message.SendCode(user.Email, "find_code", code, new Dictionary<string, string>()
+            {
+                { "name", user.Name },
+                { "time", TimeHelper.Format()},
+                { "code", code },
+                { "url", $"./password?code={param}" }
+            });
         }
 
-        public IOperationResult SendCode(CodeRequestForm form)
+        public IOperationResult SendCode(CodeRequestForm data)
         {
-            throw new NotImplementedException();
+            var res = Validate(data);
+            if (!res.Succeeded) 
+            {
+                return res;
+            }
+            if (IsBan(data.To))
+            {
+                return OperationResult.Fail("已列入黑名单，禁止发送验证码");
+            }
+            var user = userDB.Users.When(data.ToType == "email", i => i.Email == data.To, i => i.Mobile == data.To)
+                .Select(i => new UserEntity()
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                }).SingleOrDefault();
+            if (user is not null && data.Event is "verify_new" or "register")
+            {
+                return OperationResult.Fail("已存在");
+            }
+            var code = message.GenerateCode(8);
+            res = message.SendCode(data.To, "login_code", code, new Dictionary<string, string>()
+            {
+                { "name", user.Name },
+                { "time", TimeHelper.Format()},
+                { "code", code },
+            });
+            if (!res.Succeeded)
+            {
+                return res;
+            }
+            return OperationResult.Ok();
         }
 
         public IOperationResult VerifyCode(CodeVerifyForm data)
         {
-            throw new NotImplementedException();
+            var res = Validate(data);
+            if (!res.Succeeded)
+            {
+                return res;
+            }
+            if (!message.VerifyCode(data.To, "login_code", data.Code, false))
+            {
+                return OperationResult.Fail("验证码错误");
+            }
+            return OperationResult.Ok();
+        }
+
+        private IOperationResult Validate(ICodeRequestForm data)
+        {
+            if (!(data.ToType is "email" or "mobile") 
+                || !(data.Event is "verify_old" or "verify_new" or "login" or "register"))
+            {
+                return OperationResult.Fail("check data error");
+            }
+            if (data.Event == "verify_old")
+            {
+                if (!client.TryGetUser(out var user))
+                {
+                    return OperationResult.Fail("请先登录");
+                }
+                if (data.ToType == "email")
+                {
+                    if (IsEmptyEmail(user.Email))
+                    {
+                        return OperationResult.Fail("email error");
+                    }
+                    data.To = user.Email;
+                } else
+                {
+                    if (string.IsNullOrWhiteSpace(user.Mobile))
+                    {
+                        return OperationResult.Fail("未绑定手机号");
+                    }
+                    data.To = user.Mobile;
+                }
+                return OperationResult.Ok();
+            }
+            if (data.ToType == "email" && !Validator.IsEmail(data.To))
+            {
+                return OperationResult.Fail("email is error");
+            }
+            if (data.ToType == "mobile" && !Validator.IsMobile(data.To))
+            {
+                return OperationResult.Fail("mobile is error");
+            }
+            return OperationResult.Ok();
         }
 
         public IOperationResult ResetPassword(ResetPasswordForm data)
         {
-            throw new NotImplementedException();
+            if (!Validator.IsEmail(data.Email))
+            {
+                return OperationResult.Fail(FailureReasons.ValidateError, "email is empty");
+            }
+            if (data.Password.Length < 6)
+            {
+                return OperationResult.Fail("密码长度必须不小于6位");
+            }
+            if (data.Password != data.ConfirmPassword)
+            {
+                return OperationResult.Fail("两次密码不一致");
+            }
+            if (message.VerifyCode(data.Email, "find_code", data.Code))
+            {
+                return OperationResult.Fail("邮箱或安全码不正确");
+            }
+            var user = userDB.Users.Where(i => i.Email == data.Email).FirstOrDefault();
+            if (user is null || UserRepository.IsActive(user) || user.Email != data.Email)
+            {
+                return OperationResult.Fail("邮箱或安全码不正确");
+            }
+            if (BCrypt.Net.BCrypt.Verify(data.Password, user.Password))
+            {
+                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "password is not changed");
+            }
+            user.Password = BCrypt.Net.BCrypt.HashPassword(data.Password);
+            userDB.Users.Save(user);
+            userDB.SaveChanges();
+            mediator.Publish(UserAction.Create(client, "password", "重置密码"));
+            return OperationResult.Ok();
         }
 
         public IOperationResult UpdatePassword(UpdatePasswordForm data)
         {
-            throw new NotImplementedException();
+            if (!string.IsNullOrEmpty(data.OldPassword))
+            {
+                data.VerifyType = "password";
+                data.Verify = data.OldPassword;
+            }
+            if (string.IsNullOrEmpty(data.Verify))
+            {
+                return OperationResult.Fail(FailureReasons.ValidateError, " is empty");
+            }
+            if (data.Password.Length < 6)
+            {
+                return OperationResult.Fail("密码长度必须不小于6位");
+            }
+            if (data.Password != data.ConfirmPassword)
+            {
+                return OperationResult.Fail("两次密码不一致");
+            }
+            var user = userDB.Users.Where(i => i.Id == client.UserId).FirstOrDefault();
+            if (user is null || UserRepository.IsActive(user))
+            {
+                return OperationResult.Fail("账户错误");
+            }
+            if (data.VerifyType == "password")
+            {
+                if (user.Password != UNSET_PASSWORD && !BCrypt.Net.BCrypt.Verify(data.Verify, user.Password))
+                {
+                    return OperationResult.Fail("密码不正确！");
+                }
+            } else if (data.VerifyType == "email")
+            {
+                if (!message.VerifyCode(user.Email, "login_code", data.Verify, true))
+                {
+                    return OperationResult.Fail("验证码不正确！");
+                }
+            }
+            else
+            {
+                if (!message.VerifyCode(user.Mobile, "login_code", data.Verify, true))
+                {
+                    return OperationResult.Fail("验证码不正确！");
+                }
+            }
+            if (BCrypt.Net.BCrypt.Verify(data.Password, user.Password))
+            {
+                return OperationResult<IUserProfile>.Fail(FailureReasons.ValidateError, "password is not changed");
+            }
+            user.Password = BCrypt.Net.BCrypt.HashPassword(data.Password);
+            userDB.Users.Save(user);
+            userDB.SaveChanges();
+            mediator.Publish(UserAction.Create(client, "password", "重置密码"));
+            return OperationResult.Ok();
         }
 
         [GeneratedRegex("^zreno_\\d{11}@zodream\\.cn$")]
