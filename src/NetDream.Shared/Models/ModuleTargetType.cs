@@ -26,7 +26,7 @@
         SearchSite = 30,
         SearchPage = 31,
         MicroBlog = 33,
-        MicroComment = 34,
+        Comment = 34,
         ShopGood = 35,
         ShopAd = 36,
 

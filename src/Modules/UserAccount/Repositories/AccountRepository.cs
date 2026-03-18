@@ -14,7 +14,7 @@ namespace NetDream.Modules.UserAccount.Repositories
     public class AccountRepository(UserContext db, 
         IClientContext client,
         IUserRepository userStore, 
-        IFundAccount account, 
+        IWallet account, 
         IMediator mediator,
         ILinkRuler ruler)
     {

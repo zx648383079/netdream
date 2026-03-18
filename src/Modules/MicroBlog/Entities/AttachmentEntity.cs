@@ -1,4 +1,3 @@
-
 namespace NetDream.Modules.MicroBlog.Entities
 {
     

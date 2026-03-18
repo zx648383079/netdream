@@ -28,7 +28,7 @@ namespace NetDream.Modules.Book.Entities
         public int OverAt { get; set; }
         public int Status { get; set; }
         
-        public int SourceType { get; set; }
+        public byte SourceType { get; set; }
         
         public int DeletedAt { get; set; }
         

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace NetDream.Modules.UserAccount.Repositories
 {
-    public class FundAccount(UserContext db): IFundAccount
+    public class FundAccount(UserContext db): IWallet
     {
         public const byte TYPE_SYSTEM = 1; // 系统自动
         public const byte TYPE_RECHARGE = 6; // 用户充值

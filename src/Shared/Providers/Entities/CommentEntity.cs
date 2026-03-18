@@ -9,9 +9,11 @@ namespace NetDream.Shared.Providers.Entities
         public string ExtraRule { get; set; } = string.Empty;
         public int ParentId { get; set; }
         public int UserId { get; set; }
-        public int TargetId { get; set; }
+
         public int AgreeCount { get; set; }
         public int DisagreeCount { get; set; }
+
+        public int TargetId { get; set; }
 
         public byte Status { get; set; }
         public int CreatedAt { get; set; }
