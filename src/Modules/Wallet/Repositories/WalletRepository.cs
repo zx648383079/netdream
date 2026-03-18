@@ -1,17 +1,17 @@
-﻿using NetDream.Shared.Helpers;
-using NetDream.Modules.UserAccount.Entities;
-using System;
-using NetDream.Shared.Interfaces;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using NetDream.Shared.Providers;
-using NetDream.Shared.Models;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using NetDream.Modules.Wallet.Entities;
+using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Providers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace NetDream.Modules.UserAccount.Repositories
+namespace NetDream.Modules.Wallet.Repositories
 {
-    public class FundAccount(UserContext db): IWallet
+    public class WalletRepository(WalletContext db) : IWallet
     {
         public const byte TYPE_SYSTEM = 1; // 系统自动
         public const byte TYPE_RECHARGE = 6; // 用户充值
@@ -29,7 +29,7 @@ namespace NetDream.Modules.UserAccount.Repositories
         public const byte STATUS_PAID = 1;
         public const byte STATUS_REFUND = 9;
 
-        public AccountLogEntity Log(int userId, byte type, int itemId, float money, float totalMoney, 
+        public AccountLogEntity Log(int userId, byte type, int itemId, float money, float totalMoney,
             string remark, byte status = 0)
         {
             return Log(new AccountLogEntity()
@@ -78,7 +78,7 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         public float GetUserMoney(int userId)
         {
-            return db.Users.Where(i => i.Id == userId).Value(i => i.Money);
+            return db.Wallets.Where(i => i.Id == userId).Value(i => i.Money);
         }
 
         public int Change(AccountLogEntity entity)
@@ -89,10 +89,11 @@ namespace NetDream.Modules.UserAccount.Repositories
             }
             var oldMoney = GetUserMoney(entity.UserId);
             var newMoney = oldMoney + entity.Money;
-            if (newMoney < 0) {
+            if (newMoney < 0)
+            {
                 return 0;
             }
-            db.Users.Where(i => i.Id == entity.UserId)
+            db.Wallets.Where(i => i.Id == entity.UserId)
                 .ExecuteUpdate(setters => setters.SetProperty(i => i.Money, newMoney));
             entity.TotalMoney = (int)newMoney;
             entity = Log(entity);
@@ -111,12 +112,12 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         public bool IsBought(int sourceId, byte sourceType)
         {
-            return db.AccountLogs.Where(i => i.ItemId == sourceId && i.Type == sourceType 
+            return db.AccountLogs.Where(i => i.ItemId == sourceId && i.Type == sourceType
             && i.Status != STATUS_REFUND).Any();
         }
     }
 
-    public class FundOperation<T>(UserContext db, T data) : IFundOperation<T>
+    public class FundOperation<T>(WalletContext db, T data) : IFundOperation<T>
         where T : IFundRequest
     {
         private IDbContextTransaction? _transaction;
@@ -139,7 +140,7 @@ namespace NetDream.Modules.UserAccount.Repositories
                 return OperationResult.Ok(_log.Id);
             }
             var money = (int)data.Value;
-            var oldData = db.Users.Where(i => i.Id == data.Payer || i.Id == data.Payee)
+            var oldData = db.Wallets.Where(i => i.Id == data.Payer || i.Id == data.Payee)
                 .Select(i => new KeyValuePair<int, int>(i.Id, i.Money)).ToDictionary();
             if (data.Payer > 0 && (!oldData.TryGetValue(data.Payer, out var m) || m < money))
             {
@@ -157,15 +158,15 @@ namespace NetDream.Modules.UserAccount.Repositories
                     UserId = data.Payer,
                     Type = (byte)data.SourceType,
                     ItemId = data.SourceId,
-                    Money = - money,
+                    Money = -money,
                     TotalMoney = oldData[data.Payer] - money,
                     Remark = data.Remark,
-                    Status = FundAccount.STATUS_PAID,
+                    Status = WalletRepository.STATUS_PAID,
                     CreatedAt = _timestamp,
                     UpdatedAt = _timestamp
                 };
                 db.AccountLogs.Add(_log);
-                db.Users.Where(i => i.Id == data.Payer)
+                db.Wallets.Where(i => i.Id == data.Payer)
                     .ExecuteUpdate(setters => setters.SetProperty(i => i.Money, _log.TotalMoney));
             }
             if (data.Payee > 0)
@@ -178,12 +179,12 @@ namespace NetDream.Modules.UserAccount.Repositories
                     Money = money,
                     TotalMoney = oldData[data.Payee] + money,
                     Remark = data.Remark,
-                    Status = FundAccount.STATUS_PAID,
+                    Status = WalletRepository.STATUS_PAID,
                     CreatedAt = _timestamp,
                     UpdatedAt = _timestamp
                 };
                 db.AccountLogs.Add(log);
-                db.Users.Where(i => i.Id == data.Payee)
+                db.Wallets.Where(i => i.Id == data.Payee)
                     .ExecuteUpdate(setters => setters.SetProperty(i => i.Money, log.TotalMoney));
                 _log ??= log;
             }

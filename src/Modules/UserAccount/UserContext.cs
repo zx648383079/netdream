@@ -10,12 +10,10 @@ namespace NetDream.Modules.UserAccount
     public class UserContext(DbContextOptions<UserContext> options) :
         DbContext(options), IMetaContext
     {
-        public DbSet<AccountLogEntity> AccountLogs { get; set; }
+        
         public DbSet<ActionLogEntity> ActionLogs { get; set; }
         public DbSet<AdminLogEntity> AdminLogs { get; set; }
         public DbSet<ApplyLogEntity> ApplyLogs { get; set; }
-
-        public DbSet<CreditLogEntity> CreditLogs { get; set; }
 
         public DbSet<RelationshipEntity> Relationships { get; set; }
         public DbSet<UserEntity> Users { get; set; }

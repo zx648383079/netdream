@@ -1,21 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NetDream.Modules.UserAccount.Entities;
+using NetDream.Modules.Wallet.Entities;
 
-namespace NetDream.Modules.UserAccount.Migrations
+namespace NetDream.Modules.Wallet.Migrations
 {
-    public class CreditLogEntityTypeConfiguration : IEntityTypeConfiguration<CreditLogEntity>
+    public class AccountLogEntityTypeConfiguration : IEntityTypeConfiguration<AccountLogEntity>
     {
-        public void Configure(EntityTypeBuilder<CreditLogEntity> builder)
+        public void Configure(EntityTypeBuilder<AccountLogEntity> builder)
         {
-            builder.ToTable("user_credit_log", table => table.HasComment("账户积分变动表"));
+            builder.ToTable("user_account_log", table => table.HasComment("账户资金变动表"));
             builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.UserId).HasColumnName("user_id").HasDefaultValue(0);
             builder.Property(table => table.Type).HasColumnName("type").HasMaxLength(1).HasDefaultValue(99);
             builder.Property(table => table.ItemId).HasColumnName("item_id").HasDefaultValue(0);
-            builder.Property(table => table.Credits).HasColumnName("credits").HasComment("本次发生积分");
-            builder.Property(table => table.TotalCredits).HasColumnName("total_credits").HasComment("当前账户积分");
+            builder.Property(table => table.Money).HasColumnName("money").HasComment("本次发生金额");
+            builder.Property(table => table.TotalMoney).HasColumnName("total_money").HasComment("当前账户余额");
             builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(2).HasDefaultValue(0);
             builder.Property(table => table.Remark).HasColumnName("remark").HasDefaultValue(string.Empty);
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");

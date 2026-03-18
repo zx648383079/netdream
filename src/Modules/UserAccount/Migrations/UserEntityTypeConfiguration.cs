@@ -21,8 +21,6 @@ namespace NetDream.Modules.UserAccount.Migrations
             builder.Property(table => table.Avatar).HasColumnName("avatar")
                 .HasDefaultValue(string.Empty);
             builder.Property(table => table.Birthday).HasColumnName("birthday").HasDefaultValue(DateOnly.FromDateTime(DateTime.Now));// .ToString("yyyy-MM-DD")
-            builder.Property(table => table.Money).HasColumnName("money").HasDefaultValue(0);
-            builder.Property(table => table.Credits).HasColumnName("credits").HasDefaultValue(0).HasComment("积分");
             builder.Property(table => table.ParentId).HasColumnName("parent_id").HasDefaultValue(0);
             builder.Property(table => table.Token).HasColumnName("token").HasMaxLength(60).HasDefaultValue(0);
             builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(2).HasDefaultValue(UserRepository.STATUS_ACTIVE);
