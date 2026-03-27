@@ -1,11 +1,12 @@
 ﻿using NetDream.Modules.Comment.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 using System.Text.Json;
 
 namespace NetDream.Modules.Comment.Models
 {
-    public class CommentListItem : IWithUserModel
+    public class CommentListItem : IWithUserModel, ICommentItem
     {
         public int Id { get; set; }
         public string Content { get; set; } = string.Empty;
@@ -41,6 +42,15 @@ namespace NetDream.Modules.Comment.Models
             AgreeCount = entity.AgreeCount;
             DisagreeCount = entity.DisagreeCount;
             CreatedAt = entity.CreatedAt;
+            if (UserId == 0)
+            {
+                User = new GuestUser()
+                {
+                    Email = entity.GuestEmail,
+                    Name = entity.GuestName,
+                    Url = entity.GuestUrl
+                };
+            }
         }
     }
 }

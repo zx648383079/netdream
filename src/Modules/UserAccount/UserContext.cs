@@ -14,6 +14,7 @@ namespace NetDream.Modules.UserAccount
         public DbSet<ActionLogEntity> ActionLogs { get; set; }
         public DbSet<AdminLogEntity> AdminLogs { get; set; }
         public DbSet<ApplyLogEntity> ApplyLogs { get; set; }
+        public DbSet<InteractLogEntity> InteractLogs { get; set; }
 
         public DbSet<RelationshipEntity> Relationships { get; set; }
         public DbSet<UserEntity> Users { get; set; }
@@ -23,11 +24,10 @@ namespace NetDream.Modules.UserAccount
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new AccountLogEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new InteractLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ActionLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AdminLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ApplyLogEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new CreditLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new RelationshipEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new BulletinEntityTypeConfiguration());

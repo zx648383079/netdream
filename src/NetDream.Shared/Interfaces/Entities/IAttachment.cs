@@ -9,5 +9,7 @@
         public string Thumb { get; }
         public byte FileType { get; }
         public string File { get; }
+        public string AccessPassword { get; }
+        public string ArchivePassword { get; }
     }
 }

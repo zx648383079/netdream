@@ -8,7 +8,7 @@ namespace NetDream.Modules.UserAccount.Migrations
     {
         public void Configure(EntityTypeBuilder<ActionLogEntity> builder)
         {
-            builder.ToTable("user_action_log", table => table.HasComment("操作记录"));
+            builder.ToTable("user_action_log", table => table.HasComment("用户对账户操作记录"));
             builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Ip).HasColumnName("ip").HasMaxLength(120);

@@ -10,7 +10,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="sourceId"></param>
         /// <param name="sourceType"></param>
         /// <returns></returns>
-        public bool IsBought(int sourceId, FundOperateType sourceType);
+        public bool IsBought(int user, int sourceId, FundOperateType sourceType);
         /// <summary>
         /// 创建交易
         /// </summary>

@@ -3,7 +3,7 @@ using NetDream.Shared.Interfaces.Entities;
 namespace NetDream.Modules.Forum.Entities
 {
     
-    public class ThreadLogEntity: IIdEntity, ICreatedEntity, IActionEntity
+    public class ThreadLogEntity: IIdEntity, ICreatedEntity, IInteractEntity
     {
         
         public int Id { get; set; }

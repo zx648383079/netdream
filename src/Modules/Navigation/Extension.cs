@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Navigation.Entities;
 using NetDream.Modules.Navigation.Models;
 using NetDream.Modules.Navigation.Repositories;
+using NetDream.Shared.Interfaces;
 using System.Linq;
 
 namespace NetDream.Modules.Navigation
@@ -17,6 +18,8 @@ namespace NetDream.Modules.Navigation
             service.AddScoped<PageRepository>();
             service.AddScoped<SearchRepository>();
             service.AddScoped<StatisticsRepository>();
+            service.AddScoped<IWebsiteRepository, SiteRepository>();
+            service.AddScoped<ISearcher, SearchRepository>();
         }
 
         internal static IQueryable<SiteListItem> SelectAs(this IQueryable<SiteEntity> query)

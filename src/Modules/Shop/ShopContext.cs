@@ -78,8 +78,6 @@ namespace NetDream.Modules.Shop
             modelBuilder.ApplyConfiguration(new CartEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CollectEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new CommentEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new CommentImageEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CouponEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CouponLogEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new DeliveryEntityTypeConfiguration());

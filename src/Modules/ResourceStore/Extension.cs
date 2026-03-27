@@ -2,6 +2,7 @@
 using NetDream.Modules.ResourceStore.Entities;
 using NetDream.Modules.ResourceStore.Models;
 using NetDream.Modules.ResourceStore.Repositories;
+using NetDream.Shared.Interfaces;
 using System.Linq;
 
 namespace NetDream.Modules.ResourceStore
@@ -11,6 +12,7 @@ namespace NetDream.Modules.ResourceStore
         public static void ProvideResourceRepositories(this IServiceCollection service)
         {
             service.AddScoped<ResourceRepository>();
+            service.AddScoped<IAttachRepository, AttachRepository>();
         }
 
         internal static IQueryable<ResourceListItem> SelectAs(this IQueryable<ResourceEntity> query)

@@ -1,15 +1,20 @@
 ﻿using NetDream.Shared.Models;
-using System;
+using NetDream.Shared.Repositories;
 using System.Collections.Generic;
-using System.Text;
 
 namespace NetDream.Shared.Interfaces
 {
     public interface ISearcher
     {
 
-        public void Index(string id, object data);
+        public void Index(ModuleTargetType type, int id, string[] words);
         public void Search(PaginationForm form);
 
+        /// <summary>
+        /// 分词
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public IEnumerable<string> Cut(string text);
     }
 }

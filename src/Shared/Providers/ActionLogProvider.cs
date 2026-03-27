@@ -2,8 +2,6 @@
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Providers.Context;
-using NetDream.Shared.Providers.Entities;
-using NetDream.Shared.Providers.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

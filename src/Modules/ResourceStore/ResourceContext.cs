@@ -8,7 +8,7 @@ using NetDream.Shared.Providers.Migrations;
 namespace NetDream.Modules.ResourceStore;
 public class ResourceContext(DbContextOptions<ResourceContext> options) 
     : DbContext(options), ITagContext, ICommentContext, 
-    ILogContext, ISoreContext, IMetaContext
+    ILogContext, IMetaContext
 {
     public DbSet<CategoryEntity> Categories { get; set; }
     public DbSet<CommentEntity> Comments { get; set; }
@@ -16,7 +16,6 @@ public class ResourceContext(DbContextOptions<ResourceContext> options)
     public DbSet<ResourceEntity> Resources { get; set; }
     public DbSet<ResourceFileEntity> ResourceFiles { get; set; }
     public DbSet<MetaEntity> Metas { get; set; }
-    public DbSet<ScoreLogEntity> ScoreLogs { get; set; }
     public DbSet<TagEntity> Tags { get; set; }
     public DbSet<TagLinkEntity> TagLinks { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -27,7 +26,6 @@ public class ResourceContext(DbContextOptions<ResourceContext> options)
         modelBuilder.ApplyConfiguration(new ResourceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ResourceFileEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new MetaEntityTypeConfiguration("res_resource_"));
-        modelBuilder.ApplyConfiguration(new ScoreLogEntityTypeConfiguration("res_"));
         modelBuilder.ApplyConfiguration(new TagEntityTypeConfiguration("res_"));
         modelBuilder.ApplyConfiguration(new TagLinkEntityTypeConfiguration("res_"));
         base.OnModelCreating(modelBuilder);

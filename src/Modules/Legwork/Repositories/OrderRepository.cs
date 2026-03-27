@@ -2,8 +2,6 @@
 using NetDream.Modules.Legwork.Entities;
 using NetDream.Modules.Legwork.Forms;
 using NetDream.Modules.Legwork.Models;
-using NetDream.Modules.Trade.Forms;
-using NetDream.Modules.Trade.Listeners;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;

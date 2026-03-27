@@ -19,11 +19,6 @@ namespace NetDream.Modules.Document.Repositories
 
         public const byte TYPE_NONE = 0;
         public const byte TYPE_API = 1;
-        public CommentProvider Comment(IUserRepository userStore)
-        {
-            return new CommentProvider(db, client, userStore);
-        }
-
         public ActionLogProvider Log()
         {
             return new ActionLogProvider(db, client);

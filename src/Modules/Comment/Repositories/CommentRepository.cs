@@ -22,8 +22,7 @@ namespace NetDream.Modules.Comment.Repositories
         IClientContext client,
         IGlobeOption option,
         ILinkRuler ruler,
-        IMediator mediator,
-        LogRepository logStore)
+        IMediator mediator): ICommentRepository
     {
         public IPage<CommentListItem> GetList(CommentQueryForm form, bool isHot = false)
         {

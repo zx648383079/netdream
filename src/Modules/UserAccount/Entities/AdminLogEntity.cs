@@ -2,7 +2,9 @@ using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.UserAccount.Entities
 {
-    
+    /// <summary>
+    /// 管理员审核记录，删除用户、文章等
+    /// </summary>
     public class AdminLogEntity : IIdEntity, ICreatedEntity
     {
         

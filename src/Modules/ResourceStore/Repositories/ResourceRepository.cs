@@ -8,7 +8,6 @@ using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 
@@ -27,14 +26,6 @@ namespace NetDream.Modules.ResourceStore.Repositories
         public ActionLogProvider Log()
         {
             return new ActionLogProvider(db, client);
-        }
-        public CommentProvider Comment()
-        {
-            return new CommentProvider(db, client, userStore);
-        }
-        public ScoreProvider Score()
-        {
-            return new ScoreProvider(db, client, userStore);
         }
 
         public IPage<ResourceListItem> GetList(QueryForm form, 

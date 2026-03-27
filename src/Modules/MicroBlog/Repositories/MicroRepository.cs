@@ -30,15 +30,6 @@ namespace NetDream.Modules.MicroBlog.Repositories
         public const byte LOG_ACTION_COLLECT = 2;
         public const byte LOG_ACTION_AGREE = 3;
         public const byte LOG_ACTION_DISAGREE = 4;
-        public CommentProvider Comment()
-        {
-            return new CommentProvider(db, client, userStore);
-        }
-
-        public ActionLogProvider Log()
-        {
-            return new ActionLogProvider(db, client);
-        }
 
         private bool CheckZone(int blog)
         {

@@ -8,13 +8,14 @@ using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.Navigation.Repositories
 {
     public class SiteRepository(NavigationContext db, 
         IUserRepository userStore,
-        IClientContext client)
+        IClientContext client): IWebsiteRepository
     {
         public TagProvider Tag()
         {
@@ -236,6 +237,16 @@ namespace NetDream.Modules.Navigation.Repositories
                     item.Site = res;
                 }
             }
+        }
+
+        public IWebsiteLabelItem Recognize(string link)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDictionary<string, IWebsiteLabelItem> Recognize(IEnumerable<string> items)
+        {
+            throw new NotImplementedException();
         }
     }
 }
