@@ -10,5 +10,9 @@ namespace NetDream.Modules.Comment.Forms
         [Required]
         public int TargetId { get; set; }
         public byte TargetType { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
     }
 }

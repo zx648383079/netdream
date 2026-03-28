@@ -1,4 +1,4 @@
-﻿namespace NetDream.Shared.Repositories
+﻿namespace NetDream.Shared.Models
 {
     public enum ModuleTargetType: byte
     {

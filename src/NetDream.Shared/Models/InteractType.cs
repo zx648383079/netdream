@@ -8,5 +8,6 @@
         Collect,
         Like,
         Dislike,
+        Bought
     }
 }

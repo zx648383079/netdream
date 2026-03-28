@@ -9,6 +9,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Migrations\ClanEntityTypeConfiguration.cs~RFa3fdad9.TMP" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
@@ -16,6 +20,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Repositories\" />
 	</ItemGroup>
 
 </Project>

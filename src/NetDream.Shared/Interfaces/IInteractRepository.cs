@@ -1,5 +1,4 @@
 ﻿using NetDream.Shared.Models;
-using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 
 namespace NetDream.Shared.Interfaces
@@ -13,7 +12,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="target"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public int Count(ModuleTargetType itemType, int target, InteractType action);
+        public int Count(ModuleTargetType type, int target, InteractType action);
         /// <summary>
         /// 当前用户是否执行操作
         /// </summary>
@@ -22,7 +21,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="target"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public bool Has(int user, ModuleTargetType itemType, int target, InteractType action);
+        public bool Has(int user, ModuleTargetType type, int target, InteractType action);
         /// <summary>
         /// 仅执行 action,不做取消操作
         /// </summary>
@@ -31,7 +30,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="target"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public bool Add(int user, ModuleTargetType itemType, int target, InteractType action);
+        public bool Add(int user, ModuleTargetType type, int target, InteractType action);
         /// <summary>
         /// 判断当前用户执行了那一个操作
         /// </summary>
@@ -40,7 +39,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="target"></param>
         /// <param name="onlyAction"></param>
         /// <returns></returns>
-        public byte Get(int user, ModuleTargetType itemType, int target, IEnumerable<InteractType> onlyAction);
+        public byte Get(int user, ModuleTargetType type, int target, IEnumerable<InteractType> onlyAction);
         /// <summary>
         /// 判断当前用户执行了那一个操作
         /// </summary>
@@ -48,7 +47,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="itemType"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public byte Get(int user, ModuleTargetType itemType, int target);
+        public byte Get(int user, ModuleTargetType type, int target);
         /// <summary>
         /// 取消或执行某个操作
         /// </summary>
@@ -57,8 +56,8 @@ namespace NetDream.Shared.Interfaces
         /// <param name="target"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public bool Toggle(int user, ModuleTargetType itemType, int target, InteractType action);
-        public byte Update(int user, ModuleTargetType itemType, int target, InteractType action);
-        public byte Update(int user, ModuleTargetType itemType, int target, InteractType action, IEnumerable<InteractType> searchAction);
+        public bool Toggle(int user, ModuleTargetType type, int target, InteractType action);
+        public byte Update(int user, ModuleTargetType type, int target, InteractType action);
+        public byte Update(int user, ModuleTargetType type, int target, InteractType action, IEnumerable<InteractType> searchAction);
     }
 }

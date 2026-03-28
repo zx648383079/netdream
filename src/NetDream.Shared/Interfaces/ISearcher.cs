@@ -1,5 +1,4 @@
 ﻿using NetDream.Shared.Models;
-using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 
 namespace NetDream.Shared.Interfaces
@@ -7,7 +6,7 @@ namespace NetDream.Shared.Interfaces
     public interface ISearcher
     {
 
-        public void Index(ModuleTargetType type, int id, string[] words);
+        public void Index(ModuleTargetType type, int target, string[] words);
         public void Search(PaginationForm form);
 
         /// <summary>

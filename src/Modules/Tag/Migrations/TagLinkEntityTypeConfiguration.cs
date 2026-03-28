@@ -11,7 +11,8 @@ namespace NetDream.Modules.Tag.Migrations
             builder.ToTable("tag_link", table => table.HasComment("±êÇ©¹ØÁª"));
             builder.HasNoKey();
             builder.Property(table => table.TagId).HasColumnName("tag_id");
-            builder.Property(table => table.TargetId).HasColumnName("target_id");
+            builder.Property(table => table.ItemType).HasColumnName("item_type");
+            builder.Property(table => table.ItemId).HasColumnName("item_id");
         }
     }
 }

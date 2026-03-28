@@ -1,11 +1,16 @@
 ﻿using NetDream.Modules.Blog.Models;
 using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using System;
 using System.Linq;
 
 namespace NetDream.Modules.Blog.Repositories
 {
-    public class StatisticsRepository(BlogContext db)
+    public class StatisticsRepository(
+        BlogContext db,
+        ICounter counter,
+        ICommentRepository commentStore)
     {
         public StatisticsResult Subtotal()
         {
@@ -20,13 +25,12 @@ namespace NetDream.Modules.Blog.Repositories
             res.ViewCount = db.Blogs.Sum(i => i.ClickCount);
             if (res.ViewCount > 0)
             {
-                var today = DateTime.Today.ToString("yyyy-MM-dd");
-                res.ViewToday = db.DayLogs.Where(i => i.HappenDay == today).Sum(i => i.HappenCount);
+                res.ViewToday = counter.Count(ModuleTargetType.Blog, DateTime.Today);
             }
-            res.CommentCount = db.Comments.Count();
+            res.CommentCount = commentStore.Count(ModuleTargetType.Blog);
             if (res.CommentCount > 0)
             {
-                res.CommentToday = db.Comments.Where(i => i.CreatedAt >= todayStart).Count();
+                res.CommentToday = commentStore.Count(ModuleTargetType.Blog, DateTime.Today);
             }
             return res;
         }

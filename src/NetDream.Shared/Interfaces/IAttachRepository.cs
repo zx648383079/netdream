@@ -1,15 +1,16 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Models;
 using System.Collections.Generic;
 
 namespace NetDream.Shared.Interfaces
 {
     public interface IAttachRepository
     {
-        public IEnumerable<IAttachment> Get(byte itemType, int itemId);
+        public IEnumerable<IAttachment> Get(ModuleTargetType type, int target);
         public IAttachment Get(int id);
-        public void Add(byte itemType, int itemId, byte fileType, string file);
+        public void Add(ModuleTargetType type, int target, byte fileType, string file);
         public void Update(int id, byte fileType, string file);
-        public void Remove(byte itemType, int itemId);
+        public void Remove(ModuleTargetType type, int target);
         public void Remove(int id);
     }
 }

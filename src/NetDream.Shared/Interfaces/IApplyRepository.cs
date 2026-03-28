@@ -1,23 +1,22 @@
 ﻿using NetDream.Shared.Models;
-using NetDream.Shared.Repositories;
 
 namespace NetDream.Shared.Interfaces
 {
     public interface IApplyRepository
     {
-        public void ReceiveCancel(int user, ModuleTargetType itemType, int itemId);
+        public void ReceiveCancel(int user, ModuleTargetType type, int target);
 
-        public void ReceiveClear(ModuleTargetType itemType, int itemId);
+        public void ReceiveClear(ModuleTargetType type, int target);
 
-        public void Receive(int user, ModuleTargetType itemType, int itemId, ReviewStatus status);
+        public void Receive(int user, ModuleTargetType type, int target, ReviewStatus status);
 
-        public void ReceiveCreate(int user, ModuleTargetType itemType, int itemId, string remark);
+        public void ReceiveCreate(int user, ModuleTargetType type, int target, string remark);
 
 
-        public IPage<IApplyListItem> ReceiveSearch(ModuleTargetType itemType, int itemId, PaginationForm form);
+        public IPage<IApplyListItem> ReceiveSearch(ModuleTargetType type, int target, PaginationForm form);
 
-        public int ReceiveUnread(ModuleTargetType itemType, int itemId, int lastAt = 0);
+        public int ReceiveUnread(ModuleTargetType type, int target, int lastAt = 0);
 
-        public bool ReceiveAny(int user, ModuleTargetType itemType, int itemId);
+        public bool ReceiveAny(int user, ModuleTargetType type, int target);
     }
 }

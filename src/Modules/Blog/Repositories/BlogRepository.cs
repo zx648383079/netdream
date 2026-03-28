@@ -8,7 +8,6 @@ using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
-using NetDream.Shared.Providers.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +18,8 @@ namespace NetDream.Modules.Blog.Repositories
         BlogContext db, 
         IClientContext client,
         IUserRepository userStore, 
+        ITagRepository tagStore,
+        IInteractRepository interactStore,
         IDeeplink deeplink)
     {
         public const byte TYPE_BLOG = 0;
@@ -29,15 +30,6 @@ namespace NetDream.Modules.Blog.Repositories
         public const byte ACTION_DISAGREE = 2;
 
         public const byte ACTION_REAL_RULE = 3; // 是否能阅读
-        public TagProvider Tag()
-        {
-            return new TagProvider(db);
-        }
-
-        public ActionLogProvider Log()
-        {
-            return new ActionLogProvider(db, client);
-        }
 
         public IPage<BlogListItem> SelfList(BlogQueryForm form)
         {
@@ -74,7 +66,7 @@ namespace NetDream.Modules.Blog.Repositories
             var include = Array.Empty<int>();
             if (!string.IsNullOrWhiteSpace(form.Tag))
             {
-                include = Tag().GetTagRelationList(form.Tag);
+                include = tagStore.Get(ModuleTargetType.Blog, form.Tag);
                 if (include.Length == 0)
                 {
                     return new Page<BlogListItem>();
@@ -101,7 +93,7 @@ namespace NetDream.Modules.Blog.Repositories
             var include = Array.Empty<int>();
             if (!string.IsNullOrWhiteSpace(form.Tag))
             {
-                include = Tag().GetTagRelationList(form.Tag);
+                include = tagStore.Get(ModuleTargetType.Blog, form.Tag);
                 if (include.Length == 0)
                 {
                     return new Page<BlogListItem>();
@@ -146,8 +138,7 @@ namespace NetDream.Modules.Blog.Repositories
 
         public BlogListItem[] GetRelationBlogs(int sourceId)
         {
-            var provider = Tag();
-            var items = provider.GetRelationList(sourceId); ;
+            var items = tagStore.GetRelation(ModuleTargetType.Blog, sourceId);
             if (items.Length == 0)
             {
                 return [];
@@ -159,28 +150,9 @@ namespace NetDream.Modules.Blog.Repositories
                 .SelectAsLabel().ToArray();
         }
 
-        public TagListItem[] GetTags()
+        public StatisticsItem[] GetTags()
         {
-            var items = db.Tags.Select(i => new TagListItem()
-            {
-                Id = i.Id,
-                Name = i.Name,
-            }).ToArray();
-            if (items.Length == 0)
-            {
-                return items;
-            }
-            var data = db.TagLinks.GroupBy(i => i.TagId)
-                .Select(i => new KeyValuePair<int, int>(i.Key, i.Count()))
-                .ToDictionary();
-            foreach (var item in items)
-            {
-                if (data.TryGetValue(item.Id, out var res))
-                {
-                    item.TargetCount = res;
-                }
-            }
-            return items;
+            return tagStore.Get(ModuleTargetType.Blog);
         }
 
         public CategoryLabelItem[] Categories()
@@ -336,14 +308,15 @@ namespace NetDream.Modules.Blog.Repositories
             {
                 return OperationResult<BlogModel>.Fail("数据错误");
             }
-            var res = Log().ToggleLog(TYPE_BLOG, ACTION_RECOMMEND, id);
-            model.RecommendCount += res > 0 ? 1 : -1;
+            var res = interactStore.Toggle(client.UserId, 
+                ModuleTargetType.Blog, id, InteractType.Like);
+            model.RecommendCount += res ? 1 : -1;
             db.Blogs.Update(model);
             return OperationResult.Ok(new BlogModel()
             {
                 Id = id,
                 RecommendCount = model.RecommendCount,
-                IsLocalization = res > 0
+                IsRecommended = res
             });
         }
 
