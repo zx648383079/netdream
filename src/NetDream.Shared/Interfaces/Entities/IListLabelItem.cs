@@ -5,15 +5,15 @@
     /// </summary>
     public interface IListLabelItem
     {
-        public int Id { get; set; }
+        public int Id { get; }
 
-        public string Name { get; set; }
+        public string Name { get; }
     }
 
     public interface IListArticleItem
     {
-        public int Id { get; set; }
+        public int Id { get; }
 
-        public string Title { get; set; }
+        public string Title { get; }
     }
 }

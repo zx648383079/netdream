@@ -11,20 +11,20 @@ namespace NetDream.Shared.Interfaces
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public bool Exist(int userId);
+        public bool Exist(int user);
 
         /// <summary>
         /// 获取简单版用户信息
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public IUserSource? Get(int userId);
+        public IUserSource? Get(int user);
         /// <summary>
         /// web 内部调用
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public IUserProfile? GetProfile(int userId);
+        public IUserProfile? GetProfile(int user);
 
 
         /// <summary>

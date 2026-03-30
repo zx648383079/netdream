@@ -1,4 +1,5 @@
 ﻿using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using System;
 
@@ -11,9 +12,9 @@ namespace NetDream.Shared.Interfaces
         public int Count(ModuleTargetType type, DateTime startAt);
         public int Count(ModuleTargetType type, DateTime startAt, DateTime endAt);
 
-        public IPage<ICommentItem> Search(ModuleTargetType type, int article, QueryForm form);
-        public ICommentItem[] Get(ModuleTargetType type, int article, QueryForm form);
-        public ICommentItem[] Get(ModuleTargetType type, QueryForm form);
+        public IPage<ICommentItem> Search(ModuleTargetType type, int article, IQueryForm form);
+        public ICommentItem[] Get(ModuleTargetType type, int article, IQueryForm form);
+        public ICommentItem[] Get(ModuleTargetType type, IQueryForm form);
 
         public IOperationResult Create(int user, ModuleTargetType type, int article, string content, int parent = 0);
         public IOperationResult Create(int user, ModuleTargetType type, int article, ICommentForm form);
@@ -22,6 +23,9 @@ namespace NetDream.Shared.Interfaces
         public IOperationResult<IUser> LastCommentator(string email);
         public IOperationResult<AgreeResult> Toggle(int user, ModuleTargetType type, int comment, bool agree);
         public IOperationResult Report(int user, ModuleTargetType type, int comment);
+        public IScoreSubtotal Score(ModuleTargetType type, int article);
+
+
     }
 
     public interface ICommentForm
@@ -34,5 +38,16 @@ namespace NetDream.Shared.Interfaces
         public string Content { get; set; }
 
         public IUser? User { get; set; }
+    }
+
+    public interface IScoreSubtotal
+    {
+        public int Total { get; }
+        public int Good { get; }
+        public int Middle { get; }
+        public int Bad { get; }
+        public float Avg { get; }
+
+        public float FavorableRate { get; }
     }
 }

@@ -25,12 +25,12 @@ namespace NetDream.Modules.Blog.Repositories
             res.ViewCount = db.Blogs.Sum(i => i.ClickCount);
             if (res.ViewCount > 0)
             {
-                res.ViewToday = counter.Count(ModuleTargetType.Blog, DateTime.Today);
+                res.ViewToday = counter.Count(ModuleTargetType.Article, DateTime.Today);
             }
-            res.CommentCount = commentStore.Count(ModuleTargetType.Blog);
+            res.CommentCount = commentStore.Count(ModuleTargetType.Article);
             if (res.CommentCount > 0)
             {
-                res.CommentToday = commentStore.Count(ModuleTargetType.Blog, DateTime.Today);
+                res.CommentToday = commentStore.Count(ModuleTargetType.Article, DateTime.Today);
             }
             return res;
         }

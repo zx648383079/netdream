@@ -4,7 +4,6 @@ using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Listeners;
 using NetDream.Modules.Blog.Models;
 using NetDream.Modules.Blog.Repositories;
-using NetDream.Shared.Notifications;
 using System.Linq;
 
 namespace NetDream.Modules.Blog
@@ -14,9 +13,6 @@ namespace NetDream.Modules.Blog
         public static void ProvideBlogRepositories(this IServiceCollection service)
         {
             service.AddScoped<BlogRepository>();
-            service.AddScoped<CommentRepository>();
-            service.AddScoped<CategoryRepository>();
-            service.AddScoped<LogRepository>();
             service.AddScoped<MetaRepository>();
             service.AddScoped<PublishRepository>();
 
@@ -79,22 +75,6 @@ namespace NetDream.Modules.Blog
             });
         }
 
-        internal static IQueryable<CommentListItem> SelectAs(this IQueryable<CommentEntity> query)
-        {
-            return query.Select(i => new CommentListItem()
-            {
-                Id = i.Id,
-                Content = i.Content,
-                AgreeCount = i.AgreeCount,
-                BlogId = i.BlogId,
-                DisagreeCount = i.DisagreeCount,
-                ExtraRule = i.ExtraRule,
-                Name = i.Name,
-                ParentId = i.ParentId,
-                Position = i.Position,
-                UserId = i.UserId,
-                CreatedAt = i.CreatedAt,
-            });
-        }
+        
     }
 }

@@ -1,11 +1,13 @@
-﻿using NetDream.Shared.Helpers;
+﻿using NetDream.Modules.UserAccount.Entities;
+using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Modules.UserAccount.Repositories
 {
-    public class InteractRepository(ILogContext db) : IInteractRepository
+    public class InteractRepository(UserContext db) : IInteractRepository
     {
 
         /// <summary>
@@ -15,9 +17,9 @@ namespace NetDream.Modules.UserAccount.Repositories
         /// <param name="itemType"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public int ActionCount(int itemId, byte itemType, byte action)
+        public int Count(ModuleTargetType type, int target, InteractType action)
         {
-            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.Action == action).Count();
+            return db.InteractLogs.Where(i => i.ItemId == target && i.ItemType == (byte)type && i.Action == (byte)action).Count();
         }
         /// <summary>
         /// 当前用户是否执行操作
@@ -27,13 +29,13 @@ namespace NetDream.Modules.UserAccount.Repositories
         /// <param name="itemType"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public bool UserHasAction(int userId, int itemId, byte itemType, byte action)
+        public bool Has(int user, ModuleTargetType type, int target, InteractType action)
         {
-            if (userId <= 0)
+            if (user <= 0)
             {
                 return false;
             }
-            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.Action == action && i.UserId == userId).Any(); ;
+            return db.InteractLogs.Where(i => i.ItemId == target && i.ItemType == (byte)type && i.Action == (byte)action && i.UserId == user).Any();
         }
 
         /// <summary>
@@ -44,26 +46,25 @@ namespace NetDream.Modules.UserAccount.Repositories
         /// <param name="itemType"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public bool UserOnlyAction(int userId, int itemId,
-            byte itemType, byte action)
+        public bool Add(int user, ModuleTargetType type, int target, InteractType action)
         {
-            if (userId <= 0)
+            if (user <= 0)
             {
                 return false;
             }
-            if (UserHasAction(userId, itemId, itemType, action))
+            if (Has(user, type, target, action))
             {
                 return true;
             }
-            var log = new LogEntity()
+            var log = new InteractLogEntity()
             {
-                UserId = userId,
-                ItemId = itemId,
-                ItemType = itemType,
-                Action = action,
+                UserId = user,
+                ItemId = target,
+                ItemType = (byte)type,
+                Action = (byte)action,
                 CreatedAt = TimeHelper.TimestampNow()
             };
-            db.Logs.Add(log);
+            db.InteractLogs.Add(log);
             db.SaveChanges();
             return true;
         }
@@ -76,9 +77,10 @@ namespace NetDream.Modules.UserAccount.Repositories
         /// <param name="itemType"></param>
         /// <param name="onlyAction"></param>
         /// <returns></returns>
-        public byte UserActionValue(int userId, int itemId, byte itemType, IList<byte> onlyAction)
+        public InteractType Get(int user, ModuleTargetType type, int target, InteractType[] onlyAction)
         {
-            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId && onlyAction.Contains(i.Action)).Select(i => i.Action).SingleOrDefault();
+            var maps = Array.ConvertAll(onlyAction, i => (byte)i);
+            return (InteractType)db.InteractLogs.Where(i => i.ItemId == target && i.ItemType == (byte)type && i.UserId == user && maps.Contains(i.Action)).Select(i => i.Action).SingleOrDefault();
         }
 
         /// <summary>
@@ -88,9 +90,9 @@ namespace NetDream.Modules.UserAccount.Repositories
         /// <param name="itemId"></param>
         /// <param name="itemType"></param>
         /// <returns></returns>
-        public byte UserActionValue(int userId, int itemId, byte itemType)
+        public InteractType Get(int user, ModuleTargetType type, int target)
         {
-            return db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId).Select(i => i.Action).SingleOrDefault();
+            return (InteractType)db.InteractLogs.Where(i => i.ItemId == target && i.ItemType == (byte)type && i.UserId == user).Select(i => i.Action).SingleOrDefault();
         }
         /// <summary>
         /// 取消或执行某个操作
@@ -100,49 +102,49 @@ namespace NetDream.Modules.UserAccount.Repositories
         /// <param name="itemType"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public bool ToggleAction(int userId, int itemId, byte itemType, byte action)
+        public bool Toggle(int user, ModuleTargetType type, int target, InteractType action)
         {
-            return ToggleLog(userId, itemId, itemType, action) > 0;
+            return Update(user, type, target, action) > 0;
         }
 
 
-        public byte ToggleLog(int userId, int itemId, byte itemType, byte action)
+        public RecordToggleType Update(int user, ModuleTargetType type, int target, InteractType action)
         {
-            return ToggleLog(userId, itemId, itemType, action, [action]);
+            return Update(user, type, target, action, [action]);
         }
 
-        public byte ToggleLog(
-            int userId, int itemId, byte itemType, byte action, IList<byte> searchAction)
+        public RecordToggleType Update(int user, ModuleTargetType type, int target, InteractType action, InteractType[] searchAction)
         {
-            if (userId <= 0)
+            if (user <= 0)
             {
-                return 0;
+                return RecordToggleType.Deleted;
             }
-            var log = db.Logs.Where(i => i.ItemId == itemId && i.ItemType == itemType && i.UserId == userId && searchAction.Contains(i.Action)).Single();
+            var maps = Array.ConvertAll(searchAction, i => (byte)i);
+            var log = db.InteractLogs.Where(i => i.ItemId == target && i.ItemType == (byte)type && i.UserId == user && maps.Contains(i.Action)).SingleOrDefault();
             if (log == null)
             {
-                log = new LogEntity
+                log = new InteractLogEntity
                 {
-                    UserId = userId,
-                    ItemId = itemId,
-                    ItemType = itemType,
-                    Action = action,
+                    UserId = user,
+                    ItemId = target,
+                    ItemType = (byte)type,
+                    Action = (byte)action,
                     CreatedAt = TimeHelper.TimestampNow()
                 };
-                db.Logs.Add(log);
+                db.InteractLogs.Add(log);
                 db.SaveChanges();
-                return 2;
+                return RecordToggleType.Added;
             }
-            if (log.Action == action)
+            if (log.Action == (byte)action)
             {
-                db.Logs.Remove(log);
+                db.InteractLogs.Remove(log);
                 db.SaveChanges();
-                return 0;
+                return RecordToggleType.Deleted;
             }
-            log.Action = action;
+            log.Action = (byte)action;
             log.CreatedAt = TimeHelper.TimestampNow();
             db.SaveChanges();
-            return 1;
+            return RecordToggleType.Updated;
         }
     }
 }

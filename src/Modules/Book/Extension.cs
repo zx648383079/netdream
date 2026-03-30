@@ -10,7 +10,7 @@ namespace NetDream.Modules.Book
     {
         public static void ProvideBookRepositories(this IServiceCollection service)
         {
-            service.AddScoped<CategoryRepository>();
+            service.AddScoped<BookRepository>();
         }
 
         internal static IQueryable<HistoryListItem> SelectAs(this IQueryable<HistoryEntity> query)
@@ -24,16 +24,6 @@ namespace NetDream.Modules.Book
                 UserId = i.UserId,
                 Progress = i.Progress,
                 UpdatedAt = i.UpdatedAt,
-                CreatedAt = i.CreatedAt,
-            });
-        }
-
-        internal static IQueryable<CategoryListItem> SelectAs(this IQueryable<CategoryEntity> query)
-        {
-            return query.Select(i => new CategoryListItem()
-            {
-                Id = i.Id,
-                Name = i.Name,
                 CreatedAt = i.CreatedAt,
             });
         }

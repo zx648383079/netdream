@@ -23,14 +23,14 @@ namespace NetDream.Shared.Interfaces
     public interface IStorageFolder
     {
         public bool Exist(string fileName);
-        public Stream OpenRead(string fileName);
-        public Stream Create(string fileName);
+        public Stream? OpenRead(string fileName);
+        public Stream? Create(string fileName);
         public void Create(string fileName, Stream data);
 
         public void Delete(string fileName);
 
-        public FileInfo File(string fileName);
-        public DirectoryInfo Directory(string directory);
+        public FileInfo? File(string fileName);
+        public DirectoryInfo? Directory(string directory);
 
         public IEnumerable<string> Directories();
         public IEnumerable<string> Directories(string directory);

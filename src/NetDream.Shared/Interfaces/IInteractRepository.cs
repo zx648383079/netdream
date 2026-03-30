@@ -39,7 +39,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="target"></param>
         /// <param name="onlyAction"></param>
         /// <returns></returns>
-        public byte Get(int user, ModuleTargetType type, int target, IEnumerable<InteractType> onlyAction);
+        public InteractType Get(int user, ModuleTargetType type, int target, InteractType[] onlyAction);
         /// <summary>
         /// 判断当前用户执行了那一个操作
         /// </summary>
@@ -47,7 +47,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="itemType"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public byte Get(int user, ModuleTargetType type, int target);
+        public InteractType Get(int user, ModuleTargetType type, int target);
         /// <summary>
         /// 取消或执行某个操作
         /// </summary>
@@ -57,7 +57,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="action"></param>
         /// <returns></returns>
         public bool Toggle(int user, ModuleTargetType type, int target, InteractType action);
-        public byte Update(int user, ModuleTargetType type, int target, InteractType action);
-        public byte Update(int user, ModuleTargetType type, int target, InteractType action, IEnumerable<InteractType> searchAction);
+        public RecordToggleType Update(int user, ModuleTargetType type, int target, InteractType action);
+        public RecordToggleType Update(int user, ModuleTargetType type, int target, InteractType action, InteractType[] searchAction);
     }
 }

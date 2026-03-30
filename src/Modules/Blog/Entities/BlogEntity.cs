@@ -18,13 +18,13 @@ namespace NetDream.Modules.Blog.Entities
         public string Language { get; set; } = string.Empty;
         public string Thumb { get; set; } = string.Empty;
         
-        public int EditType { get; set; }
+        public byte EditType { get; set; }
         public string Content { get; set; } = string.Empty;
         
         public int UserId { get; set; }
         
         public int TermId { get; set; }
-        public int Type { get; set; }
+        public byte Type { get; set; }
         
         public int RecommendCount { get; set; }
         
@@ -32,7 +32,7 @@ namespace NetDream.Modules.Blog.Entities
         
         public int ClickCount { get; set; }
         
-        public int OpenType { get; set; }
+        public byte OpenType { get; set; }
         
         public string OpenRule { get; set; } = string.Empty;
         

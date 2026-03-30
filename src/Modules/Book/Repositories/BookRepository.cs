@@ -29,16 +29,6 @@ namespace NetDream.Modules.Book.Repositories
         public const int LOG_ACTION_AGREE = 1;
         public const int LOG_ACTION_DISAGREE = 2;
 
-        public ActionLogProvider Log()  
-        {
-            return new ActionLogProvider(db, client);
-        }
-
-        public TagProvider Tag() 
-        {
-            return new TagProvider(db);
-        }
-
         public DayLogProvider ClickLog() 
         {
             return new DayLogProvider(db, client);

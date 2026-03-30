@@ -66,7 +66,7 @@ namespace NetDream.Modules.Blog.Repositories
             var include = Array.Empty<int>();
             if (!string.IsNullOrWhiteSpace(form.Tag))
             {
-                include = tagStore.Get(ModuleTargetType.Blog, form.Tag);
+                include = tagStore.Get(ModuleTargetType.Article, form.Tag);
                 if (include.Length == 0)
                 {
                     return new Page<BlogListItem>();
@@ -93,7 +93,7 @@ namespace NetDream.Modules.Blog.Repositories
             var include = Array.Empty<int>();
             if (!string.IsNullOrWhiteSpace(form.Tag))
             {
-                include = tagStore.Get(ModuleTargetType.Blog, form.Tag);
+                include = tagStore.Get(ModuleTargetType.Article, form.Tag);
                 if (include.Length == 0)
                 {
                     return new Page<BlogListItem>();
@@ -138,7 +138,7 @@ namespace NetDream.Modules.Blog.Repositories
 
         public BlogListItem[] GetRelationBlogs(int sourceId)
         {
-            var items = tagStore.GetRelation(ModuleTargetType.Blog, sourceId);
+            var items = tagStore.GetRelation(ModuleTargetType.Article, sourceId);
             if (items.Length == 0)
             {
                 return [];
@@ -152,7 +152,7 @@ namespace NetDream.Modules.Blog.Repositories
 
         public StatisticsItem[] GetTags()
         {
-            return tagStore.Get(ModuleTargetType.Blog);
+            return tagStore.Get(ModuleTargetType.Article);
         }
 
         public CategoryLabelItem[] Categories()
@@ -309,7 +309,7 @@ namespace NetDream.Modules.Blog.Repositories
                 return OperationResult<BlogModel>.Fail("数据错误");
             }
             var res = interactStore.Toggle(client.UserId, 
-                ModuleTargetType.Blog, id, InteractType.Like);
+                ModuleTargetType.Article, id, InteractType.Like);
             model.RecommendCount += res ? 1 : -1;
             db.Blogs.Update(model);
             return OperationResult.Ok(new BlogModel()

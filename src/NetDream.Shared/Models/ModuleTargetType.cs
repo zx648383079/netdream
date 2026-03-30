@@ -10,10 +10,12 @@
         /// 给账户充值
         /// </summary>
         UserRecharge = 6,
-        Blog = 10,
-        BlogComment = 11,
+        Article = 10,
+        
 
+        Author = 13,
         Book = 14,
+        Document = 17,
 
         ExamQuestion = 20,
         ExamPage = 21,

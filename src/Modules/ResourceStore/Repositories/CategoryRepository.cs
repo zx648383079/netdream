@@ -22,10 +22,6 @@ namespace NetDream.Modules.ResourceStore.Repositories
                 .ToPage(form);
         }
 
-        public CategoryEntity? Get(int id)
-        {
-            return db.Categories.Where(i => i.Id == id).Single();
-        }
         public IOperationResult<CategoryEntity> Save(CategoryForm data)
         {
             var model = data.Id > 0 ? db.Categories.Where(i => i.Id == data.Id)
@@ -93,13 +89,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
             return TreeHelper.Create(data);
         }
 
-
-        public IPage<CategoryEntity> Search(QueryForm form, int[] idItems)
-        {
-            return db.Categories.Search(form.Keywords, "name")
-                .When(idItems?.Length > 0, i => idItems.Contains(i.Id))
-                .ToPage(form);
-        }
+        
 
         public CategoryModel[] Recommend(string extra = "")
         {

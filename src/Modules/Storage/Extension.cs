@@ -9,6 +9,7 @@ namespace NetDream.Modules.Storage
         public static void ProvideStorageRepositories(this IServiceCollection service)
         {
             service.AddScoped<IStorageRepository, FileRepository>();
+            service.AddScoped<ISystemStorage, SystemStorage>();
         }
     }
 }

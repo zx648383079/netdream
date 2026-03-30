@@ -30,20 +30,6 @@ namespace NetDream.Modules.UserAccount
             service.AddTransient<INotificationHandler<UserProfileCardRequest>, UserProfileCardHandler>();
         }
 
-        internal static IQueryable<AccountLogListItem> SelectAs(this IQueryable<AccountLogEntity> query)
-        {
-            return query.Select(i => new AccountLogListItem()
-            {
-                Id = i.Id,
-                UserId = i.UserId,
-                ItemId = i.Id,
-                Money = i.Money,
-                Remark = i.Remark,
-                Status = i.Status,
-                Type = i.Type,
-                CreatedAt = i.CreatedAt,
-            });
-        }
 
         internal static IQueryable<IApplyListItem> SelectAs(this IQueryable<ApplyLogEntity> query)
         {
@@ -108,9 +94,7 @@ namespace NetDream.Modules.UserAccount
                 Avatar = i.Avatar,
                 Birthday = i.Birthday,
                 Sex = i.Sex,
-                Credits = i.Credits,
                 Mobile = i.Mobile,
-                Money = i.Money,
                 Email = i.Email,
                 ParentId = i.ParentId,
                 Status = i.Status,

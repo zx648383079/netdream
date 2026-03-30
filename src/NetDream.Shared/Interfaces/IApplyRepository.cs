@@ -1,4 +1,5 @@
-﻿using NetDream.Shared.Models;
+﻿using NetDream.Shared.Interfaces.Forms;
+using NetDream.Shared.Models;
 
 namespace NetDream.Shared.Interfaces
 {
@@ -13,7 +14,7 @@ namespace NetDream.Shared.Interfaces
         public void ReceiveCreate(int user, ModuleTargetType type, int target, string remark);
 
 
-        public IPage<IApplyListItem> ReceiveSearch(ModuleTargetType type, int target, PaginationForm form);
+        public IPage<IApplyListItem> ReceiveSearch(ModuleTargetType type, int target, IPaginationForm form);
 
         public int ReceiveUnread(ModuleTargetType type, int target, int lastAt = 0);
 

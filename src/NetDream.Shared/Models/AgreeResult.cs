@@ -2,10 +2,10 @@
 {
     public class AgreeResult
     {
-        public bool IsAgree => AgreeType == 1;
-        public bool IsDisagree => AgreeType == 2;
+        public bool IsAgree => AgreeType == AgreeType.Agree;
+        public bool IsDisagree => AgreeType == AgreeType.Disagree;
 
-        public byte AgreeType { get; set; }
+        public AgreeType AgreeType { get; set; }
 
         public int AgreeCount { get; set; }
         public int DisagreeCount { get; set; }
@@ -17,9 +17,16 @@
 
         public AgreeResult(bool isAgree, int agreeCount, int disagreeCount)
         {
-            AgreeType = (byte)(isAgree ? 1 : 2);
+            AgreeType = isAgree ? AgreeType.Agree : AgreeType.Disagree;
             AgreeCount = agreeCount;
             DisagreeCount = disagreeCount;
         }
+    }
+
+    public enum AgreeType: byte
+    {
+        None,
+        Agree,
+        Disagree,
     }
 }

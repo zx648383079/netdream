@@ -10,5 +10,6 @@ namespace NetDream.Modules.Comment
         {
             service.AddScoped<ICommentRepository, CommentRepository>();
         }
+
     }
 }

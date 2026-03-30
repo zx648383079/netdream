@@ -1,31 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Document.Entities;
 using NetDream.Modules.Document.Migrations;
-using NetDream.Shared.Providers.Context;
-using NetDream.Shared.Providers.Entities;
-using NetDream.Shared.Providers.Migrations;
 
 namespace NetDream.Modules.Document
 {
     public class DocumentContext(DbContextOptions<DocumentContext> options): 
-        DbContext(options), ILogContext
+        DbContext(options)
     {
         public DbSet<ApiEntity> Apies {get; set; }
-        public DbSet<CategoryEntity> Categories {get; set; }
         public DbSet<FieldEntity> Fields {get; set; }
         public DbSet<PageEntity> Pages {get; set; }
         public DbSet<ProjectEntity> Projects {get; set; }
         public DbSet<ProjectVersionEntity> Versions {get; set; }
-        public DbSet<LogEntity> Logs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new ApiEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new FieldEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new PageEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ProjectEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ProjectVersionEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new LogEntityTypeConfiguration("doc"));
             base.OnModelCreating(modelBuilder);
         }
     }

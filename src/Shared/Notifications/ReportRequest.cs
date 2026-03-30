@@ -1,5 +1,5 @@
 ﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Repositories;
+using NetDream.Shared.Models;
 
 namespace NetDream.Shared.Notifications
 {

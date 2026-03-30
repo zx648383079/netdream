@@ -21,7 +21,7 @@ namespace NetDream.Modules.Blog.Repositories
     {
         public IPage<ICommentItem> GetList(CommentQueryForm form)
         {
-            return commentStore.Search(ModuleTargetType.Blog, form.Target, form);
+            return commentStore.Search(ModuleTargetType.Article, form.Target, form);
         }
 
         private void WithBlog(IEnumerable<CommentListItem> items)
@@ -60,12 +60,12 @@ namespace NetDream.Modules.Blog.Repositories
             {
                 return OperationResult.Fail("不允许评论！");
             }
-            return commentStore.Create(client.UserId, ModuleTargetType.Blog, target, form);
+            return commentStore.Create(client.UserId, ModuleTargetType.Article, target, form);
         }
 
         public ICommentItem[] GetHot(int target, int limit = 4)
         {
-            return commentStore.Get(ModuleTargetType.Blog, target, new QueryForm()
+            return commentStore.Get(ModuleTargetType.Article, target, new QueryForm()
             {
                 Sort = "hot",
                 PerPage = 4,
@@ -80,7 +80,7 @@ namespace NetDream.Modules.Blog.Repositories
         /// <returns></returns>
         public IOperationResult RemoveSelf(int id)
         {
-            return commentStore.Remove(client.UserId, ModuleTargetType.Blog, id);
+            return commentStore.Remove(client.UserId, ModuleTargetType.Article, id);
         }
 
         public bool IsSelfBlog(int blogId)
@@ -90,7 +90,7 @@ namespace NetDream.Modules.Blog.Repositories
 
         public CommentListItem[] NewList()
         {
-            var items = commentStore.Get(ModuleTargetType.Blog, new QueryForm()
+            var items = commentStore.Get(ModuleTargetType.Article, new QueryForm()
             {
                 Sort = "new",
                 PerPage = 4,
@@ -101,17 +101,17 @@ namespace NetDream.Modules.Blog.Repositories
 
         public IOperationResult Report(int id)
         {
-            return commentStore.Report(client.UserId, ModuleTargetType.Blog, id);
+            return commentStore.Report(client.UserId, ModuleTargetType.Article, id);
         }
 
         public IOperationResult<AgreeResult> Disagree(int id)
         {
-            return commentStore.Toggle(client.UserId, ModuleTargetType.Blog, id, false);
+            return commentStore.Toggle(client.UserId, ModuleTargetType.Article, id, false);
         }
 
         public IOperationResult<AgreeResult> Agree(int id)
         {
-            return commentStore.Toggle(client.UserId, ModuleTargetType.Blog, id, true);
+            return commentStore.Toggle(client.UserId, ModuleTargetType.Article, id, true);
         }
 
         public bool CanComment(int blogId)

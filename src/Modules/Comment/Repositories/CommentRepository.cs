@@ -8,7 +8,6 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Notifications;
 using NetDream.Shared.Providers;
-using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +18,7 @@ namespace NetDream.Modules.Comment.Repositories
 {
     public class CommentRepository(CommentContext db, 
         IUserRepository userStore,
+        IInteractRepository interact,
         IClientContext client,
         IGlobeOption option,
         ILinkRuler ruler,
@@ -38,7 +38,7 @@ namespace NetDream.Modules.Comment.Repositories
             {
                 query = query.OrderBy(form);
             }
-            var items = query.ToPage(form, i => i.SelectAs());
+            var items = query.ToPage(form);
             userStore.Include(items.Items);
             if (form.Parent == 0)
             {
@@ -54,8 +54,7 @@ namespace NetDream.Modules.Comment.Repositories
             {
                 return;
             }
-            var data = db.Comments.Where(i => idItems.Contains(i.ParentId))
-                .SelectAs().ToArray();
+            var data = db.Comments.Where(i => idItems.Contains(i.ParentId)).ToArray();
             if (!data.Any())
             {
                 return;
@@ -183,7 +182,7 @@ namespace NetDream.Modules.Comment.Repositories
         {
             var items = db.Comments.Where(i => i.ItemId == targetId && i.ParentId == 0 && i.AgreeCount > 0)
                 .OrderByDescending(i => i.AgreeCount)
-                .Take(limit).SelectAs().ToArray();
+                .Take(limit).ToArray();
             userStore.Include(items);
             return items;
         }
@@ -202,7 +201,7 @@ namespace NetDream.Modules.Comment.Repositories
             var items = db.Comments.When(form.TargetId > 0, i => i.ItemId == form.TargetId && i.ItemType == form.TargetType)
                 .Search(form.Keywords, "content")
                 .OrderByDescending(i => i.Id)
-                .ToPage(form, i => i.SelectAs());
+                .ToPage(form);
             userStore.Include(items.Items);
             return items;
         }
@@ -241,7 +240,7 @@ namespace NetDream.Modules.Comment.Repositories
         {
             var items = db.Comments.Where(i => i.Status == (byte)ReviewStatus.Approved)
                 .OrderByDescending(i => i.CreatedAt)
-                .Take(4).SelectAs().ToArray();
+                .Take(4).ToArray();
             return items;
         }
 
@@ -260,29 +259,30 @@ namespace NetDream.Modules.Comment.Repositories
             {
                 return OperationResult<AgreeResult>.Fail("评论不存在");
             }
-            var res = logStore.ToggleLog(client.UserId, id, 0,
-                LogRepository.ACTION_DISAGREE, 
-                [LogRepository.ACTION_AGREE, LogRepository.ACTION_DISAGREE]);
+            var res = interact.Update(client.UserId, ModuleTargetType.Comment, id,
+                InteractType.Disagree, 
+                [InteractType.Disagree, InteractType.Agree]);
             var data = new AgreeResult()
             {
                 AgreeCount = model.AgreeCount,
                 DisagreeCount = model.DisagreeCount,
             };
-            if (res < 1)
+            switch(res)
             {
-                data.DisagreeCount--;
-                data.AgreeType = 0;
-            }
-            else if (res == 1)
-            {
-                data.AgreeCount--;
-                data.DisagreeCount++;
-                data.AgreeType = 2;
-            }
-            else if (res == 2)
-            {
-                data.DisagreeCount++;
-                data.AgreeType = 2;
+                case RecordToggleType.Updated:
+                    data.AgreeCount--;
+                    data.DisagreeCount++;
+                    data.AgreeType = AgreeType.Disagree;
+                    break;
+                case RecordToggleType.Added:
+                    data.DisagreeCount++;
+                    data.AgreeType = AgreeType.Disagree;
+                    break;
+                default:
+                    data.DisagreeCount--;
+                    data.AgreeType = AgreeType.None;
+                    break;
+
             }
             db.Comments.Where(i => i.Id == model.Id)
                   .ExecuteUpdate(setters => setters
@@ -298,29 +298,30 @@ namespace NetDream.Modules.Comment.Repositories
             {
                 return OperationResult<AgreeResult>.Fail("评论不存在");
             }
-            var res = logStore.ToggleLog(client.UserId, id, 0,
-                LogRepository.ACTION_AGREE,
-                [LogRepository.ACTION_AGREE, LogRepository.ACTION_DISAGREE]);
+            var res = interact.Update(client.UserId, ModuleTargetType.Comment, id,
+                InteractType.Agree,
+                [InteractType.Disagree, InteractType.Agree]);
             var data = new AgreeResult()
             {
                 AgreeCount = model.AgreeCount,
                 DisagreeCount = model.DisagreeCount,
             };
-            if (res < 1)
+            switch (res)
             {
-                data.AgreeCount--;
-                data.AgreeType = 0;
-            }
-            else if (res == 1)
-            {
-                data.AgreeCount++;
-                data.DisagreeCount--;
-                data.AgreeType = 1;
-            }
-            else if (res == 2)
-            {
-                data.AgreeCount++;
-                data.AgreeType = 1;
+                case RecordToggleType.Updated:
+                    data.AgreeCount++;
+                    data.DisagreeCount--;
+                    data.AgreeType = AgreeType.Agree;
+                    break;
+                case RecordToggleType.Added:
+                    data.AgreeCount++;
+                    data.AgreeType = AgreeType.Agree;
+                    break;
+                default:
+                    data.AgreeCount--;
+                    data.AgreeType = AgreeType.None;
+                    break;
+
             }
             db.Comments.Where(i => i.Id == model.Id)
                 .ExecuteUpdate(setters => setters
@@ -363,5 +364,39 @@ namespace NetDream.Modules.Comment.Repositories
             }
             return OperationResult.Ok(data);
         }
+
+        public ScoreSubtotal Count(int itemId, byte itemType = 0)
+        {
+            var data = db.Comments.Where(i => i.ItemId == itemId && i.ItemType == itemType)
+                .GroupBy(i => i.Score)
+                .Select(i => new ScoreCount()
+                {
+                    Score = i.Key,
+                    Count = i.Count()
+                }).ToArray();
+            var args = new ScoreSubtotal();
+            var total = 0;
+            foreach (var item in data)
+            {
+                total += item.Count * item.Score;
+                args.Total += item.Count;
+                if (item.Score > 7)
+                {
+                    args.Good += item.Count;
+                    continue;
+                }
+                if (item.Score < 3)
+                {
+                    args.Bad += item.Count;
+                    continue;
+                }
+                args.Middle += item.Count;
+            }
+            args.Avg = args.Total > 0 ? total / args.Total : 10;
+            args.FavorableRate = args.Total > 0 ?
+                (float)Math.Ceiling((double)(args.Good * 100 / args.Total)) : 100;
+            return args;
+        }
+
     }
 }

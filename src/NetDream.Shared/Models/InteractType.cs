@@ -10,4 +10,11 @@
         Dislike,
         Bought
     }
+
+    public enum RecordToggleType : byte
+    {
+        Deleted,
+        Updated,
+        Added,
+    }
 }
