@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using NetDream.Shared.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace NetDream.Modules.Comment.Forms
 {
-    public class CommentForm
+    public class CommentForm: ICommentForm
     {
         [Required]
         public string Content { get; set; } = string.Empty;

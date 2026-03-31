@@ -22,7 +22,10 @@ namespace NetDream.Modules.Counter.Entities
 
 
         public int UserId { get; set; }
-        
+
+        public int ItemId { get; set; }
+        public byte ItemType { get; set; }
+
         public string SessionId { get; set; } = string.Empty;
         public string Language { get; set; } = string.Empty;
         public string Latitude { get; set; } = string.Empty;

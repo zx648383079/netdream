@@ -23,6 +23,7 @@ namespace NetDream.Modules.Comment.Models
         public int ReplyCount { get; set; }
 
         public byte AgreeType { get; set; }
+        public CommentListItem[] Replies { get; internal set; } = [];
 
         public CommentListItem()
         {

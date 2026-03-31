@@ -56,27 +56,15 @@ namespace NetDream.Modules.Article.Repositories
             throw new NotImplementedException();
         }
 
-        private static void CheckSortOrder(QueryForm form)
+        private static (string, string) CheckSortOrder(IQueryForm form)
         {
-            switch (form.Sort)
+            return form.Sort switch
             {
-                case "new":
-                    form.Sort = "created_at";
-                    form.Order = "desc";
-                    break;
-                case "recommend":
-                case "best":
-                    form.Sort = "recommend_count'";
-                    form.Order = "desc";
-                    break;
-                case "hot":
-                    form.Sort = "comment_count";
-                    form.Order = "desc";
-                    break;
-                default:
-                    SearchHelper.CheckSortOrder(form, ["id", "created_at"]);
-                    break;
-            }
+                "new" => ("created_at", "desc"),
+                "recommend" or "best" => ("recommend_count", "desc"),
+                "hot" => ("comment_count", "desc"),
+                _ => SearchHelper.CheckSortOrder(form, ["id", "created_at"]),
+            };
         }
     }
 }

@@ -302,6 +302,19 @@ namespace NetDream.Shared.Providers
             return res;
         }
 
+        public static IPage<TTarget> ToPage<TSource, TTarget>(this IQueryable<TSource> source, 
+            IPaginationForm pagination, Converter<TSource, TTarget> converter)
+            where TSource : class
+        {
+            var res = new Page<TTarget>(source.Count(), pagination);
+            if (!res.IsEmpty)
+            {
+                res.Items = Array.ConvertAll(source.Skip(res.ItemsOffset).Take(res.ItemsPerPage)
+                    .ToArray(), converter);
+            }
+            return res;
+        }
+
         public static IPage<TTarget> ToPage<TSource, TTarget>(this IQueryable<TSource> source, PaginationForm pagination, Func<IQueryable<TSource>, IQueryable<TTarget>> cb)
         {
             var res = new Page<TTarget>(source.Count(), pagination);

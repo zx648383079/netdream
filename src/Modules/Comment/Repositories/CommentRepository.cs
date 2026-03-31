@@ -5,6 +5,8 @@ using NetDream.Modules.Comment.Forms;
 using NetDream.Modules.Comment.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using NetDream.Shared.Notifications;
 using NetDream.Shared.Providers;
@@ -24,28 +26,6 @@ namespace NetDream.Modules.Comment.Repositories
         ILinkRuler ruler,
         IMediator mediator): ICommentRepository
     {
-        public IPage<CommentListItem> GetList(CommentQueryForm form, bool isHot = false)
-        {
-            SearchHelper.CheckSortOrder(form, ["created_at", "id", "agree_count"]);
-            var query = db.Comments.Where(i => i.Status == (byte)ReviewStatus.Approved 
-            && i.ItemType == form.TargetType && i.ItemId == form.TargetId
-            && i.ParentId == form.Parent);
-            if (isHot)
-            {
-                query = query.Where(i => i.AgreeCount > 0)
-                    .OrderByDescending(i => i.AgreeCount);
-            } else
-            {
-                query = query.OrderBy(form);
-            }
-            var items = query.ToPage(form);
-            userStore.Include(items.Items);
-            if (form.Parent == 0)
-            {
-                IncludeReply(items.Items);
-            }
-            return items;
-        }
 
         private void IncludeReply(IEnumerable<CommentListItem> items)
         {
@@ -54,15 +34,16 @@ namespace NetDream.Modules.Comment.Repositories
             {
                 return;
             }
-            var data = db.Comments.Where(i => idItems.Contains(i.ParentId)).ToArray();
-            if (!data.Any())
+            var data = db.Comments.Where(i => idItems.Contains(i.ParentId)).ToArray()
+                .Select(i => new CommentListItem(i)).ToArray();
+            if (data.Length == 0)
             {
                 return;
             }
             userStore.Include(data);
             foreach (var item in items)
             {
-                //item.Replies = [..data.Where(i => i.ParentId == item.Id)];
+                item.Replies = [..data.Where(i => i.ParentId == item.Id)];
             }
         }
 
@@ -70,6 +51,8 @@ namespace NetDream.Modules.Comment.Repositories
         {
             var model = new CommentEntity()
             {
+                ItemId = data.TargetId,
+                ItemType = data.TargetType,
                 Content = data.Content,
             };
             if (client.UserId > 0)
@@ -79,15 +62,15 @@ namespace NetDream.Modules.Comment.Repositories
             }
             if (data.Parent > 0)
             {
-                var parent = db.Comments.Where(i => i.Id == data.Parent).Single();
-                if (parent.ParentId > 0)
+                var parent = db.Comments.Where(i => i.Id == data.Parent).SingleOrDefault();
+                if (parent?.ParentId > 0)
                 {
-                    parent = db.Comments.Where(i => i.Id == parent.ParentId).Single();
+                    parent = db.Comments.Where(i => i.Id == parent.ParentId).SingleOrDefault();
                 }
-                model.ParentId = parent.Id;
+                model.ParentId = parent?.Id ?? 0;
             }
             var last = db.Comments.Where(i => i.ItemId == data.TargetId && i.ItemType == data.TargetType && i.ParentId == model.ParentId)
-                .OrderByDescending(i => i.Position).Single();
+                .OrderByDescending(i => i.Position).SingleOrDefault();
             model.Position = last is null ? 1 : (last.Position + 1);
             model.Status = (byte)ReviewStatus.None;
             db.Comments.Save(model);
@@ -178,14 +161,6 @@ namespace NetDream.Modules.Comment.Repositories
             return rules;
         }
 
-        public CommentListItem[] GetHot(int targetId, int limit = 4)
-        {
-            var items = db.Comments.Where(i => i.ItemId == targetId && i.ParentId == 0 && i.AgreeCount > 0)
-                .OrderByDescending(i => i.AgreeCount)
-                .Take(limit).ToArray();
-            userStore.Include(items);
-            return items;
-        }
 
         /// <summary>
         /// 用于后台管理
@@ -196,141 +171,24 @@ namespace NetDream.Modules.Comment.Repositories
         /// <param name="name"></param>
         /// <param name="page"></param>
         /// <returns></returns>
-        public IPage<CommentListItem> ManageList(CommentQueryForm form)
+        public IPage<CommentListItem> AdvancedList(CommentQueryForm form)
         {
             var items = db.Comments.When(form.TargetId > 0, i => i.ItemId == form.TargetId && i.ItemType == form.TargetType)
                 .Search(form.Keywords, "content")
                 .OrderByDescending(i => i.Id)
-                .ToPage(form);
+                .ToPage(form, i => new CommentListItem(i));
             userStore.Include(items.Items);
             return items;
         }
 
-        public void ManageRemove(int id)
+        public void AdvancedRemove(int id)
         {
             db.Comments.Where(i => i.Id == id).ExecuteDelete();
             db.SaveChanges();
         }
 
-        /// <summary>
-        /// 前台删除，博主或发表人
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public IOperationResult RemoveSelf(int id)
-        {
-            var model = db.Comments.Where(i => i.Id == id).SingleOrDefault();
-            if (model is null)
-            {
-                return OperationResult.Fail("评论删除失败");
-            }
-            if (model.UserId > 0 && model.UserId == client.UserId)
-            {
-                db.Comments.Remove(model);
-                db.SaveChanges();
-                return OperationResult.Ok();
-            }
-            db.Comments.Remove(model);
-            db.SaveChanges();
-            return OperationResult.Ok();
-        }
 
-
-        public CommentListItem[] NewList()
-        {
-            var items = db.Comments.Where(i => i.Status == (byte)ReviewStatus.Approved)
-                .OrderByDescending(i => i.CreatedAt)
-                .Take(4).ToArray();
-            return items;
-        }
-
-        public IOperationResult Report(int id)
-        {
-            var model = db.Comments.Where(i => i.Id == id).Single();
-            mediator.Publish(ReportRequest.Create(client, ModuleTargetType.Comment, id,
-                string.Format("“{0}”", model.Content), "举报博客评论"));
-            return OperationResult.Ok();
-        }
-
-        public IOperationResult<AgreeResult> Disagree(int id)
-        {
-            var model = db.Comments.Where(i => i.Id == id).Single();
-            if (model is null)
-            {
-                return OperationResult<AgreeResult>.Fail("评论不存在");
-            }
-            var res = interact.Update(client.UserId, ModuleTargetType.Comment, id,
-                InteractType.Disagree, 
-                [InteractType.Disagree, InteractType.Agree]);
-            var data = new AgreeResult()
-            {
-                AgreeCount = model.AgreeCount,
-                DisagreeCount = model.DisagreeCount,
-            };
-            switch(res)
-            {
-                case RecordToggleType.Updated:
-                    data.AgreeCount--;
-                    data.DisagreeCount++;
-                    data.AgreeType = AgreeType.Disagree;
-                    break;
-                case RecordToggleType.Added:
-                    data.DisagreeCount++;
-                    data.AgreeType = AgreeType.Disagree;
-                    break;
-                default:
-                    data.DisagreeCount--;
-                    data.AgreeType = AgreeType.None;
-                    break;
-
-            }
-            db.Comments.Where(i => i.Id == model.Id)
-                  .ExecuteUpdate(setters => setters
-                  .SetProperty(i => i.AgreeCount, data.AgreeCount)
-                  .SetProperty(i => i.DisagreeCount, data.DisagreeCount));
-            return OperationResult.Ok(data);
-        }
-
-        public IOperationResult<AgreeResult> Agree(int id)
-        {
-            var model = db.Comments.Where(i => i.Id == id).Single();
-            if (model is null)
-            {
-                return OperationResult<AgreeResult>.Fail("评论不存在");
-            }
-            var res = interact.Update(client.UserId, ModuleTargetType.Comment, id,
-                InteractType.Agree,
-                [InteractType.Disagree, InteractType.Agree]);
-            var data = new AgreeResult()
-            {
-                AgreeCount = model.AgreeCount,
-                DisagreeCount = model.DisagreeCount,
-            };
-            switch (res)
-            {
-                case RecordToggleType.Updated:
-                    data.AgreeCount++;
-                    data.DisagreeCount--;
-                    data.AgreeType = AgreeType.Agree;
-                    break;
-                case RecordToggleType.Added:
-                    data.AgreeCount++;
-                    data.AgreeType = AgreeType.Agree;
-                    break;
-                default:
-                    data.AgreeCount--;
-                    data.AgreeType = AgreeType.None;
-                    break;
-
-            }
-            db.Comments.Where(i => i.Id == model.Id)
-                .ExecuteUpdate(setters => setters
-                .SetProperty(i => i.AgreeCount, data.AgreeCount)
-                .SetProperty(i => i.DisagreeCount, data.DisagreeCount));
-            return OperationResult.Ok(data);
-        }
-
-        public IOperationResult<CommentEntity> ManageToggle(int id)
+        public IOperationResult<CommentEntity> AdvancedToggle(int id)
         {
             var model = db.Comments.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)
@@ -343,12 +201,160 @@ namespace NetDream.Modules.Comment.Repositories
             return OperationResult.Ok(model);
         }
 
-        /// <summary>
-        /// 获取用户的最后使用信息
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns></returns>
-        public IOperationResult<GuestUser> LastCommentator(string email)
+
+
+        public int Count(ModuleTargetType type)
+        {
+            return db.Comments.Where(i => i.ItemType == (byte)type).Count();
+        }
+
+        public int Count(ModuleTargetType type, DateTime startAt)
+        {
+            var start = TimeHelper.TimestampFrom(startAt);
+            return db.Comments.Where(i => i.ItemType == (byte)type && i.CreatedAt >= start).Count();
+        }
+
+        public int Count(ModuleTargetType type, DateTime startAt, DateTime endAt)
+        {
+            var start = TimeHelper.TimestampFrom(startAt);
+            var end = TimeHelper.TimestampFrom(endAt);
+            return db.Comments.Where(i => i.ItemType == (byte)type && i.CreatedAt >= start && i.CreatedAt <= end).Count();
+        }
+
+        public IPage<ICommentItem> Search(ModuleTargetType type, int article, IQueryForm form)
+        {
+            var (sort, order) = CheckSortOrder(form);
+            var parent = 0;
+            var user = 0;
+            if (form is CommentQueryForm q)
+            {
+                parent = q.Parent;
+                user = q.User;
+                if (q.TargetId > 0)
+                {
+                    article = q.TargetId;
+                    type = (ModuleTargetType)q.TargetType;
+                }
+            }
+            var query = db.Comments.Where(i => i.Status == (byte)ReviewStatus.Approved
+            && i.ItemType == (byte)type && i.ItemId == article)
+                .When(parent >= 0, i => i.ParentId == parent)
+                .When(user > 0, i => i.UserId == user);
+            query = query.OrderBy<CommentEntity, int>(sort, order);
+            var data = query.ToPage(form, i => new CommentListItem(i));
+            userStore.Include(data.Items);
+            if (parent == 0)
+            {
+                IncludeReply(data.Items);
+            }
+            return data.Cast<ICommentItem>();
+        }
+
+        public ICommentItem[] Get(ModuleTargetType type, int article, IQueryForm form)
+        {
+            var (sort, order) = CheckSortOrder(form);
+            var parent = 0;
+            var user = 0;
+            if (form is CommentQueryForm q)
+            {
+                parent = q.Parent;
+                user = q.User;
+                if (q.TargetId > 0)
+                {
+                    article = q.TargetId;
+                    type = (ModuleTargetType)q.TargetType;
+                }
+            }
+            var query = db.Comments.Where(i => i.Status == (byte)ReviewStatus.Approved
+            && i.ItemType == (byte)type)
+                .When(article > 0, i => i.ItemId == article)
+                .When(parent >= 0, i => i.ParentId == parent)
+                .When(user > 0, i => i.UserId == user);
+            query = query.OrderBy<CommentEntity, int>(sort, order);
+            var data = query.Take(form.PerPage).ToArray();
+            var items = data.Select(i => new CommentListItem(i)).ToArray();
+            userStore.Include(items);
+            return items;
+        }
+
+        public ICommentItem[] Get(ModuleTargetType type, IQueryForm form)
+        {
+            return Get(type, 0, form);
+        }
+
+        public IOperationResult Create(int user, ModuleTargetType type, int article, string content, int parent = 0)
+        {
+            return Create(user, type, article, new CommentForm()
+            {
+                Content = content,
+                Parent = parent,
+            });
+        }
+
+        public IOperationResult Create(int user, ModuleTargetType type, int article, ICommentForm form)
+        {
+            var model = new CommentEntity()
+            {
+                ItemId = article,
+                ItemType = (byte)type,
+                Content = form.Content,
+            };
+            if (client.UserId > 0)
+            {
+                model.UserId = client.UserId;
+                model.GuestName = userStore.Get(client.UserId).Name;
+            }
+            if (form is CommentForm f && f.Parent > 0)
+            {
+                var parent = db.Comments.Where(i => i.Id == f.Parent).SingleOrDefault();
+                if (parent?.ParentId > 0)
+                {
+                    parent = db.Comments.Where(i => i.Id == parent.ParentId).SingleOrDefault();
+                }
+                model.ParentId = parent?.Id ?? 0;
+            }
+            var last = db.Comments.Where(i => i.ItemId == model.ItemId && i.ItemType == model.ItemType && i.ParentId == model.ParentId)
+                .OrderByDescending(i => i.Position).SingleOrDefault();
+            model.Position = last is null ? 1 : (last.Position + 1);
+            model.Status = (byte)ReviewStatus.None;
+            db.Comments.Save(model);
+            db.SaveChanges();
+            LinkExtraRule[] extraRules = [..
+                At(model.Content, model.ItemId, model.ParentId),
+                ..ruler.FormatEmoji(model.Content)
+            ];
+            if (extraRules.Length != 0)
+            {
+                model.ExtraRule = JsonSerializer.Serialize(extraRules);
+                db.Comments.Save(model);
+                db.SaveChanges();
+            }
+            return OperationResult.Ok(model);
+        }
+
+        public IOperationResult Reply(int user, ModuleTargetType type, int article, int parent, string content)
+        {
+            return Create(user, type, article, new CommentForm()
+            {
+                Content = content,
+                Parent = parent,
+            });
+        }
+
+        public IOperationResult Remove(int user, ModuleTargetType type, int comment)
+        {
+            
+            var model = db.Comments.Where(i => i.Id == comment).When(user > 0, i => i.UserId == user).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult.Fail("评论删除失败");
+            }
+            db.Comments.Remove(model);
+            db.SaveChanges();
+            return OperationResult.Ok();
+        }
+
+        public IOperationResult<IUser> LastCommentator(string email)
         {
             var data = db.Comments.Where(i => i.GuestEmail == email)
                 .OrderByDescending(i => i.CreatedAt)
@@ -360,14 +366,72 @@ namespace NetDream.Modules.Comment.Repositories
                 }).SingleOrDefault();
             if (data is null)
             {
-                return OperationResult.Fail<GuestUser>("not found");
+                return OperationResult.Fail<IUser>("not found");
             }
+            return OperationResult.Ok<IUser>(data);
+        }
+
+        public IOperationResult<AgreeResult> Toggle(int user, ModuleTargetType type, 
+            int comment, bool agree)
+        {
+            var model = db.Comments.Where(i => i.Id == comment).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult<AgreeResult>.Fail("评论不存在");
+            }
+            var res = interact.Update(user, ModuleTargetType.Comment, comment,
+                agree ? InteractType.Agree : InteractType.Disagree,
+                [InteractType.Disagree, InteractType.Agree]);
+            var data = new AgreeResult()
+            {
+                AgreeCount = model.AgreeCount,
+                DisagreeCount = model.DisagreeCount,
+            };
+            if (res == RecordToggleType.Deleted)
+            {
+                data.AgreeType = AgreeType.None;
+            } else
+            {
+                data.AgreeType = agree ? AgreeType.Agree : AgreeType.Disagree;
+            }
+            switch (data.AgreeType)
+            {
+                case AgreeType.Agree:
+                    data.AgreeCount++;
+                    if (res == RecordToggleType.Updated)
+                    {
+                        data.DisagreeCount--;
+                    }
+                    break;
+                case AgreeType.Disagree:
+                    data.DisagreeCount++;
+                    if (res == RecordToggleType.Updated)
+                    {
+                        data.AgreeCount--;
+                    }
+                    break;
+                default:
+                    break;
+
+            }
+            db.Comments.Where(i => i.Id == model.Id)
+                  .ExecuteUpdate(setters => setters
+                  .SetProperty(i => i.AgreeCount, data.AgreeCount)
+                  .SetProperty(i => i.DisagreeCount, data.DisagreeCount));
             return OperationResult.Ok(data);
         }
 
-        public ScoreSubtotal Count(int itemId, byte itemType = 0)
+        public IOperationResult Report(int user, ModuleTargetType type, int comment)
         {
-            var data = db.Comments.Where(i => i.ItemId == itemId && i.ItemType == itemType)
+            var model = db.Comments.Where(i => i.Id == comment).Single();
+            mediator.Publish(ReportRequest.Create(client, ModuleTargetType.Comment, comment,
+                string.Format("“{0}”", model.Content), "举报博客评论"));
+            return OperationResult.Ok();
+        }
+
+        public IScoreSubtotal Score(ModuleTargetType type, int article)
+        {
+            var data = db.Comments.Where(i => i.ItemId == article && i.ItemType == (byte)type && i.ParentId == 0 && i.Score > 0)
                 .GroupBy(i => i.Score)
                 .Select(i => new ScoreCount()
                 {
@@ -398,5 +462,14 @@ namespace NetDream.Modules.Comment.Repositories
             return args;
         }
 
+        private static (string, string) CheckSortOrder(IQueryForm form)
+        {
+            return form.Sort switch
+            {
+                "new" => ("created_at", "desc"),
+                "recommend" or "best" or "hot" => ("agree_count", "desc"),
+                _ => SearchHelper.CheckSortOrder(form, ["created_at", "id", "agree_count"]),
+            };
+        }
     }
 }

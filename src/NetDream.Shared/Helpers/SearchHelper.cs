@@ -48,7 +48,13 @@ namespace NetDream.Shared.Helpers
         }
         public static (string, string) CheckSortOrder(IQueryForm form, string[] sortItems, string defaultOrder = "desc")
         {
-            return CheckSortOrder(form.Sort, form.Order, sortItems, defaultOrder);
+            var res = CheckSortOrder(form.Sort, form.Order, sortItems, defaultOrder);
+            if (form is QueryForm f)
+            {
+                f.Sort = res.Item1;
+                f.Order = res.Item2;
+            }
+            return res;
         }
 
         public static (string, string) CheckSortOrder(string sort,
