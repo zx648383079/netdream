@@ -1,11 +1,11 @@
-﻿using MediatR;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.UserIdentity.Entities;
 using NetDream.Modules.UserIdentity.Listeners;
 using NetDream.Modules.UserIdentity.Models;
 using NetDream.Modules.UserIdentity.Repositories;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Notifications;
 using System.Linq;
 
 namespace NetDream.Modules.UserIdentity

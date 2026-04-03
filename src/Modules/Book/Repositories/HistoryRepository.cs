@@ -3,10 +3,9 @@ using NetDream.Modules.Book.Entities;
 using NetDream.Modules.Book.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 
 namespace NetDream.Modules.Book.Repositories
 {

@@ -1,5 +1,5 @@
-﻿using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Models;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Entities;
 
 namespace NetDream.Modules.ResourceStore.Models
 {
@@ -24,6 +24,6 @@ namespace NetDream.Modules.ResourceStore.Models
         public int UpdatedAt { get; set; }
         public int CreatedAt { get; set; }
         public IUser? User { get; set; }
-        public ListLabelItem? Category { get; set; }
+        public IListLabelItem? Category { get; set; }
     }
 }

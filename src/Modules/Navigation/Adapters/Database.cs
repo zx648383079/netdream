@@ -4,7 +4,7 @@ using NetDream.Modules.Navigation.Models;
 using NetDream.Modules.Navigation.Repositories;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.Navigation.Adapters

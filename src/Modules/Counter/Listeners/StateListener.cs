@@ -1,8 +1,8 @@
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Counter.Events;
 using NetDream.Modules.Counter.Repositories;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Events;
+using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
 using System.Threading;

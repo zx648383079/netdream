@@ -1,5 +1,5 @@
 ﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.UserIdentity.Repositories

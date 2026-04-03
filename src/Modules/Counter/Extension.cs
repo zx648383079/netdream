@@ -1,10 +1,10 @@
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Counter.Entities;
 using NetDream.Modules.Counter.Events;
 using NetDream.Modules.Counter.Listeners;
 using NetDream.Modules.Counter.Models;
 using NetDream.Modules.Counter.Repositories;
+using NetDream.Shared.Events;
 using System.Linq;
 
 namespace NetDream.Modules.Counter

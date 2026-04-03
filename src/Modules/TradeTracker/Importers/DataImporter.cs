@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.TradeTracker.Entities;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

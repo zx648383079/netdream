@@ -3,7 +3,7 @@ using NetDream.Modules.Chat.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 

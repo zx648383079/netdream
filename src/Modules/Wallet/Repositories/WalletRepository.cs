@@ -4,7 +4,7 @@ using NetDream.Modules.Wallet.Entities;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +28,27 @@ namespace NetDream.Modules.Wallet.Repositories
         public const byte STATUS_WAITING_PAY = 0;
         public const byte STATUS_PAID = 1;
         public const byte STATUS_REFUND = 9;
+
+
+        public IPage<AccountLogListItem> LogList(LogQueryForm form)
+        {
+            var items = db.AccountLogs.Search(form.Keywords, "remark")
+                .When(form.User > 0, i => i.UserId == form.User)
+                .When(form.Type > 0, i => i.Type == form.Type)
+                .OrderByDescending(i => i.Id)
+                .ToPage(form, i => i.SelectAs());
+            userStore.Include(items.Items);
+            return items;
+        }
+
+        public IPage<AccountLogListItem> SelfLogList(LogQueryForm form)
+        {
+            return db.AccountLogs.Search(form.Keywords, "remark")
+                .Where(i => i.UserId == client.UserId)
+                .When(form.Type > 0, i => i.Type == form.Type)
+                .OrderByDescending(i => i.Id)
+                .ToPage(form, i => i.SelectAs()); ;
+        }
 
         public AccountLogEntity Log(int userId, byte type, int itemId, float money, float totalMoney,
             string remark, byte status = 0)

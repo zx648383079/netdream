@@ -1,9 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Migrations;
-using NetDream.Shared.Providers.Context;
-using NetDream.Shared.Providers.Entities;
-using NetDream.Shared.Providers.Migrations;
 
 namespace NetDream.Modules.Auth
 {

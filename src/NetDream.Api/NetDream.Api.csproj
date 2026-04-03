@@ -9,7 +9,6 @@
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
     <PackageReference Include="Duende.IdentityModel" Version="8.1.0" />
-    <PackageReference Include="MediatR" Version="14.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
@@ -26,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Modules\AdSense\AdSense.csproj" />
+    <ProjectReference Include="..\Modules\Article\Article.csproj" />
     <ProjectReference Include="..\Modules\Bot\Bot.csproj" />
     <ProjectReference Include="..\Modules\Career\Career.csproj" />
     <ProjectReference Include="..\Modules\Catering\Catering.csproj" />

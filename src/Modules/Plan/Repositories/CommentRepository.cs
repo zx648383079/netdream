@@ -1,7 +1,7 @@
 ﻿using NetDream.Modules.Plan.Forms;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.Plan.Repositories

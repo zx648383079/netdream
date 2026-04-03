@@ -5,7 +5,7 @@ using NetDream.Modules.ResourceStore.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,14 +19,6 @@ namespace NetDream.Modules.ResourceStore.Repositories
         public const byte LOG_TYPE_RES = 0;
         public const byte LOG_ACTION_BUY = 66;
         public const byte LOG_ACTION_DOWNLOAD = 1;
-        public TagProvider Tag()
-        {
-            return new TagProvider(db);
-        }
-        public ActionLogProvider Log()
-        {
-            return new ActionLogProvider(db, client);
-        }
 
         public IPage<ResourceListItem> GetList(QueryForm form, 
             int category = 0, int user = 0, string tag = "", 

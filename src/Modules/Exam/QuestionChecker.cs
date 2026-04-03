@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Exam.Entities;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
 using System.Text.Json.Nodes;

@@ -1,8 +1,6 @@
-﻿using NetDream.Shared.Providers.Entities;
-
-namespace NetDream.Modules.ResourceStore.Models
+﻿namespace NetDream.Modules.ResourceStore.Models
 {
-    public class ScoreModel : ScoreLogEntity
+    public class ScoreModel
     {
         public float Avg { get; set; }
     }

@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
-using NetDream.Modules.Blog;
 using NetDream.Shared.Interfaces;
 using System.Data.Common;
 using System;
@@ -15,6 +14,7 @@ using System.IO;
 using NetDream.Modules.Auth;
 using NetDream.Modules.SEO;
 using NetDream.Razor.Base.Http;
+using NetDream.Shared.Events;
 
 namespace NetDream.Razor
 {
@@ -43,6 +43,7 @@ namespace NetDream.Razor
             #endregion
             services.AddMemoryCache();
             services.AddRazorPages();
+            services.AddEventBus();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -108,7 +109,7 @@ namespace NetDream.Razor
         private static void RegisterRepositories(IServiceCollection services)
         {
             services.ProvideAuthRepositories();
-            services.ProvideBlogRepositories();
+            services.ProvideArticleRepositories();
         }
     }
 }

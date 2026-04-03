@@ -14,7 +14,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
-	  <ProjectReference Include="..\Providers\Providers.csproj" />
 	</ItemGroup>
 
 </Project>

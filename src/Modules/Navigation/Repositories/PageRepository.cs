@@ -4,7 +4,7 @@ using NetDream.Modules.Navigation.Forms;
 using NetDream.Modules.Navigation.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.Navigation.Repositories
@@ -69,7 +69,7 @@ namespace NetDream.Modules.Navigation.Repositories
             }
             if (checkSite)
             {
-                var site = new SiteRepository(db, null, null).FindIdByLink(model.Link);
+                var site = new SiteRepository(db, null, null, null).FindIdByLink(model.Link);
                 if (site is not null)
                 {
                     model.SiteId = site.Id;

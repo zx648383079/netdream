@@ -8,16 +8,14 @@ using System.Data;
 using System;
 using NetDream.Shared.Repositories;
 using NetDream.Modules.UserAccount.Forms;
-using MediatR;
-using NetDream.Shared.Providers;
 using Microsoft.EntityFrameworkCore;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
+using NetDream.Shared.Events;
 
 namespace NetDream.Modules.UserAccount.Repositories
 {
-    public class UserRepository(UserContext db, IClientContext client, IMediator mediator) 
-        : MetaRepository(db)
+    public class UserRepository(UserContext db, IClientContext client, IEventBus mediator) 
+        
     {
         public const int STATUS_DELETED = 0; // 已删除
         public const int STATUS_FROZEN = 2; // 账户已冻结

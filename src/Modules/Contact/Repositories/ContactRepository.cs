@@ -4,7 +4,7 @@ using NetDream.Modules.Contact.Forms;
 using NetDream.Modules.Contact.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.Contact.Repositories
@@ -69,7 +69,7 @@ namespace NetDream.Modules.Contact.Repositories
             };
             db.FriendLinks.Save(model, client.Now);
             db.SaveChanges();
-            bulletin.SendAdministrator("友情链接申请", "[马上查看]", 98, [
+            bulletin.SendAdministrator("友情链接申请", "[马上查看]", ModuleTargetType.SystemFriendLink, [
                 bulletin.Ruler.FormatLink("[马上查看]", "b/friend_link")
             ]);
             return OperationResult.Ok(model);

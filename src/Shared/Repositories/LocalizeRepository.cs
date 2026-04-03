@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories.Models;
 using System;
 using System.Collections.Generic;
@@ -112,9 +110,9 @@ namespace NetDream.Shared.Repositories
         public void AddTableColumn<TEntity>(EntityTypeBuilder<TEntity> builder)
             where TEntity : class
         {
-            builder.Column<TEntity, string>(LANGUAGE_COLUMN_KEY)
-                .HasDefaultValue(FirstLanguage())
-                .HasComment("多语言配置");
+            builder.Column<TEntity, string>(LANGUAGE_COLUMN_KEY);
+                //.HasDefaultValue(FirstLanguage())
+                //.HasComment("多语言配置");
         }
 
         /// <summary>

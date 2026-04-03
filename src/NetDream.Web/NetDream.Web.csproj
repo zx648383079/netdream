@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
-    <PackageReference Include="MediatR" Version="14.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.5" />
@@ -29,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Article\Article.csproj" />
     <ProjectReference Include="..\Modules\Bot\Bot.csproj" />
     <ProjectReference Include="..\Modules\CMS\CMS.csproj" />
     <ProjectReference Include="..\Modules\Counter\Counter.csproj" />
@@ -42,7 +42,6 @@
     <ProjectReference Include="..\Modules\OnlineService\OnlineService.csproj" />
     <ProjectReference Include="..\NetDream.Shared\NetDream.Shared.csproj" />
 	  <ProjectReference Include="..\Modules\Auth\Auth.csproj" />
-	  <ProjectReference Include="..\Modules\Blog\Blog.csproj" />
 	  <ProjectReference Include="..\Modules\Book\Book.csproj" />
 	  <ProjectReference Include="..\Modules\Chat\Chat.csproj" />
 	  <ProjectReference Include="..\Modules\Contact\Contact.csproj" />
@@ -51,6 +50,7 @@
 	  <ProjectReference Include="..\Modules\OpenPlatform\OpenPlatform.csproj" />
 	  <ProjectReference Include="..\Modules\SEO\SEO.csproj" />
 	  <ProjectReference Include="..\Modules\Shop\Shop.csproj" />
+	  <ProjectReference Include="..\Shared\Events\Events.csproj" />
   </ItemGroup>
 
   <ItemGroup>

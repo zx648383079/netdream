@@ -4,7 +4,7 @@ using NetDream.Modules.Contact.Forms;
 using NetDream.Modules.Contact.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
 

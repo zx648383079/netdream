@@ -3,7 +3,6 @@ using NetDream.Modules.Finance.Entities;
 using NetDream.Modules.Finance.Forms;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
 using System.Linq;
 
 namespace NetDream.Modules.Finance.Repositories

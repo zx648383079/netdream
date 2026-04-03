@@ -1,8 +1,8 @@
-﻿using MediatR;
-using NetDream.Modules.UserAccount.Models;
+﻿using NetDream.Modules.UserAccount.Models;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
 using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace NetDream.Modules.UserAccount.Repositories
     public class SpaceRepository(UserContext db, 
         IClientContext client, 
         UserRepository repository,
-        IMediator mediator)
+        IEventBus mediator)
     {
         public IOperationResult<UserProfile> Get(int userId)
         {

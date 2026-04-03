@@ -1,6 +1,6 @@
 ﻿using NetDream.Modules.TradeTracker.Entities;
 using NetDream.Shared.Helpers;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.IO;

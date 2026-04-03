@@ -1,13 +1,13 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Team.Entities;
 using NetDream.Modules.Team.Forms;
 using NetDream.Modules.Team.Models;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace NetDream.Modules.Team.Repositories
         IClientContext client,
         IUserRepository userStore,
         IApplyRepository applyStore,
-        IMediator mediator): ITeamRepository
+        IEventBus mediator): ITeamRepository
     {
         public TeamListItem[] All()
         {

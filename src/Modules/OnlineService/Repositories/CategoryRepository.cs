@@ -4,7 +4,7 @@ using NetDream.Modules.OnlineService.Forms;
 using NetDream.Modules.OnlineService.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

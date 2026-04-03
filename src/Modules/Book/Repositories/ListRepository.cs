@@ -4,7 +4,7 @@ using NetDream.Modules.Book.Forms;
 using NetDream.Modules.Book.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace NetDream.Modules.Book.Repositories
 {
     public class ListRepository(BookContext db, 
         IClientContext client,
-        BookRepository bookStore,
+        IInteractRepository interact,
         HistoryRepository historyStore,
         IUserRepository userStore)
     {
@@ -31,12 +31,12 @@ namespace NetDream.Modules.Book.Repositories
                 return OperationResult<ListModel>.Fail("书单不存在");
             }
             var model = entity.CopyTo<ListModel>();
-            model.IsCollected = HasLog(BookRepository.LOG_TYPE_LIST,
-                [BookRepository.LOG_ACTION_COLLECT], model.Id);
+            model.IsCollected = interact.Has(client.UserId, ModuleTargetType.BookList,
+                model.Id, InteractType.Collect);
             var items = db.ListItems.Where(i => i.ListId == id).Select<ListItemEntity, ListItemModel>().ToArray();
             foreach (var item in items)
             {
-                item.IsAgree = HasLog(BookRepository.LOG_TYPE_LIST, [BookRepository.LOG_ACTION_AGREE, BookRepository.LOG_ACTION_DISAGREE], id);
+                item.IsAgree = interact.Has(client.UserId, ModuleTargetType.BookListItem, item.Id, InteractType.Agree);
                 item.OnShelf = historyStore.HasBook(item.BookId);
             }
             model.User = userStore.Get(model.UserId);
@@ -45,12 +45,6 @@ namespace NetDream.Modules.Book.Repositories
             db.Lists.Update(entity);
             db.SaveChanges();
             return OperationResult.Ok(model);
-        }
-
-        private bool HasLog(byte type, byte[] action, int id)
-        {
-            var res = bookStore.Log().GetAction(type, id, action);
-            return action.Length > 0 ? res > 0 : res is not null;
         }
 
         public IOperationResult<ListEntity> Save(ListForm data)
@@ -145,9 +139,9 @@ namespace NetDream.Modules.Book.Repositories
                 return OperationResult<ListModel>.Fail("书单不存在");
             }
             var model = entity.CopyTo<ListModel>();
-            var res = bookStore.Log().ToggleLog(BookRepository.LOG_TYPE_LIST,
-                BookRepository.LOG_ACTION_COLLECT, id);
-            if (res > 0)
+            var res = interact.Toggle(client.UserId, ModuleTargetType.BookList,
+                id, InteractType.Collect);
+            if (res)
             {
                 model.CollectCount++;
                 model.IsCollected = true;
@@ -170,27 +164,29 @@ namespace NetDream.Modules.Book.Repositories
             {
                 return OperationResult<AgreeResult>.Fail("书单不存在");
             }
-            var res = bookStore.Log().ToggleLog(BookRepository.LOG_TYPE_LIST,
-                BookRepository.LOG_ACTION_AGREE, id,
-                [BookRepository.LOG_ACTION_AGREE, BookRepository.LOG_ACTION_DISAGREE]);
+            var res = interact.Update(client.UserId, ModuleTargetType.BookList,
+                id,
+                InteractType.Agree, [InteractType.Agree, InteractType.Disagree]);
             var data = new AgreeResult()
             {
                 AgreeCount = model.AgreeCount,
                 DisagreeCount = model.DisagreeCount,
             };
-            if (res < 1)
+            switch (res)
             {
-                data.AgreeCount--;
-                data.AgreeType = 0;
-            }
-            else if(res == 1) {
-                data.AgreeCount++;
-                data.DisagreeCount--;
-                data.AgreeType = 1;
-            }
-            else if(res == 2) {
-                data.AgreeCount++;
-                data.AgreeType = 1;
+                case RecordToggleType.Deleted:
+                    data.AgreeCount--;
+                    data.AgreeType = AgreeType.None;
+                    break;
+                case RecordToggleType.Updated:
+                    data.AgreeCount++;
+                    data.DisagreeCount--;
+                    data.AgreeType = AgreeType.Agree;
+                    break;
+                case RecordToggleType.Added:
+                    data.AgreeCount++;
+                    data.AgreeType = AgreeType.Agree;
+                    break;
             }
             db.ListItems.Where(i => i.Id == model.Id)
                 .ExecuteUpdate(setters => setters
@@ -206,27 +202,29 @@ namespace NetDream.Modules.Book.Repositories
             {
                 return OperationResult<AgreeResult>.Fail("书单不存在");
             }
-            var res = bookStore.Log().ToggleLog(BookRepository.LOG_TYPE_LIST,
-                BookRepository.LOG_ACTION_DISAGREE, id,
-                [BookRepository.LOG_ACTION_AGREE, BookRepository.LOG_ACTION_DISAGREE]);
+            var res = interact.Update(client.UserId, ModuleTargetType.BookList,
+                id,
+                InteractType.Disagree, [InteractType.Agree, InteractType.Disagree]);
             var data = new AgreeResult()
             {
                 AgreeCount = model.AgreeCount,
                 DisagreeCount = model.DisagreeCount,
             };
-            if (res < 1)
+            switch (res)
             {
-                data.DisagreeCount--;
-                data.AgreeType = 0;
-            }
-            else if(res == 1) {
-                data.AgreeCount--;
-                data.DisagreeCount++;
-                data.AgreeType = 2;
-            }
-            else if(res == 2) {
-                data.DisagreeCount++;
-                data.AgreeType = 2;
+                case RecordToggleType.Deleted:
+                    data.DisagreeCount--;
+                    data.AgreeType = AgreeType.None;
+                    break;
+                case RecordToggleType.Updated:
+                    data.AgreeCount--;
+                    data.DisagreeCount++;
+                    data.AgreeType = AgreeType.Disagree;
+                    break;
+                case RecordToggleType.Added:
+                    data.DisagreeCount++;
+                    data.AgreeType = AgreeType.Disagree;
+                    break;
             }
             db.ListItems.Where(i => i.Id == model.Id)
                    .ExecuteUpdate(setters => setters

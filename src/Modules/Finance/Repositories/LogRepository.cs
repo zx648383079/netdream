@@ -5,7 +5,7 @@ using NetDream.Modules.Finance.Importers;
 using NetDream.Modules.Finance.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using OfficeOpenXml;
 using SharpCompress.Archives.Zip;
 using System;

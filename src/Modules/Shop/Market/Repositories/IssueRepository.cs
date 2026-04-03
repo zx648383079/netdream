@@ -2,7 +2,7 @@
 using NetDream.Modules.Shop.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.Shop.Market.Repositories

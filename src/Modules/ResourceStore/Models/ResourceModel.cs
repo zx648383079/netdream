@@ -2,7 +2,6 @@
 using NetDream.Shared.Converters;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers.Entities;
 using System.Collections.Generic;
 
 namespace NetDream.Modules.ResourceStore.Models
@@ -10,7 +9,7 @@ namespace NetDream.Modules.ResourceStore.Models
     public class ResourceModel : ResourceEntity
     {
 
-        public TagEntity[] Tags { get; set; }
+        public string[] Tags { get; set; }
         public ResourceFileEntity[] Files { get; set; }
         public IUser? User { get; internal set; }
         public ListLabelItem? Category { get; internal set; }

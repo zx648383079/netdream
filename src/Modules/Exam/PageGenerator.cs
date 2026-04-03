@@ -3,7 +3,7 @@ using NetDream.Modules.Exam.Entities;
 using NetDream.Modules.Exam.Models;
 using NetDream.Modules.Exam.Repositories;
 using NetDream.Shared.Helpers;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Data;

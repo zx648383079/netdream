@@ -5,7 +5,7 @@ using NetDream.Modules.TradeTracker.Importers;
 using NetDream.Modules.TradeTracker.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.IO;

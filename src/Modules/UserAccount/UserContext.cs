@@ -1,14 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.UserAccount.Entities;
 using NetDream.Modules.UserAccount.Migrations;
-using NetDream.Shared.Providers.Context;
-using NetDream.Shared.Providers.Entities;
-using NetDream.Shared.Providers.Migrations;
 
 namespace NetDream.Modules.UserAccount
 {
     public class UserContext(DbContextOptions<UserContext> options) :
-        DbContext(options), IMetaContext
+        DbContext(options)
     {
         
         public DbSet<ActionLogEntity> ActionLogs { get; set; }
@@ -20,7 +17,6 @@ namespace NetDream.Modules.UserAccount
         public DbSet<UserEntity> Users { get; set; }
         public DbSet<BulletinEntity> Bulletins { get; set; }
         public DbSet<BulletinUserEntity> BulletinUsers { get; set; }
-        public DbSet<MetaEntity> Metas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,7 +28,6 @@ namespace NetDream.Modules.UserAccount
             modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new BulletinEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new BulletinUserEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new MetaEntityTypeConfiguration("user"));
             base.OnModelCreating(modelBuilder);
         }
     }

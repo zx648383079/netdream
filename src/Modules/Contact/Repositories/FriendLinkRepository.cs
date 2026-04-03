@@ -1,18 +1,17 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Contact.Entities;
 using NetDream.Modules.Contact.Forms;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
-using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.Contact.Repositories
 {
     public class FriendLinkRepository(ContactContext db, 
-        IClientContext client, IMediator mediator)
+        IClientContext client, IEventBus mediator)
     {
         public IPage<FriendLinkEntity> GetList(QueryForm form)
         {

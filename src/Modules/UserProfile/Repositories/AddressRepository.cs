@@ -4,7 +4,7 @@ using NetDream.Modules.UserProfile.Forms;
 using NetDream.Modules.UserProfile.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
 

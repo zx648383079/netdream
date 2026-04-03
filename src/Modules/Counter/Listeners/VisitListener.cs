@@ -1,5 +1,5 @@
-using MediatR;
 using NetDream.Modules.Counter.Events;
+using NetDream.Shared.Events;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

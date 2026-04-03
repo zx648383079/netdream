@@ -1,15 +1,15 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Comment.Entities;
 using NetDream.Modules.Comment.Forms;
 using NetDream.Modules.Comment.Models;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +24,7 @@ namespace NetDream.Modules.Comment.Repositories
         IClientContext client,
         IGlobeOption option,
         ILinkRuler ruler,
-        IMediator mediator): ICommentRepository
+        IEventBus mediator): ICommentRepository
     {
 
         private void IncludeReply(IEnumerable<CommentListItem> items)
@@ -291,6 +291,38 @@ namespace NetDream.Modules.Comment.Repositories
             });
         }
 
+        public IOperationResult Create(int user, ModuleTargetType type, int article, string content, LinkExtraRule[] rules, int parent = 0)
+        {
+            var model = new CommentEntity()
+            {
+                ItemId = article,
+                ItemType = (byte)type,
+                Content = content,
+            };
+            if (client.UserId > 0)
+            {
+                model.UserId = client.UserId;
+                model.GuestName = userStore.Get(client.UserId).Name;
+            }
+            if (parent > 0)
+            {
+                var next = db.Comments.Where(i => i.Id == parent).SingleOrDefault();
+                if (next?.ParentId > 0)
+                {
+                    next = db.Comments.Where(i => i.Id == next.ParentId).SingleOrDefault();
+                }
+                model.ParentId = next?.Id ?? 0;
+            }
+            var last = db.Comments.Where(i => i.ItemId == model.ItemId && i.ItemType == model.ItemType && i.ParentId == model.ParentId)
+                .OrderByDescending(i => i.Position).SingleOrDefault();
+            model.Position = last is null ? 1 : (last.Position + 1);
+            model.Status = (byte)ReviewStatus.None;
+            model.ExtraRule = JsonSerializer.Serialize(rules);
+            db.Comments.Save(model);
+            db.SaveChanges();
+            return OperationResult.Ok(model);
+        }
+
         public IOperationResult Create(int user, ModuleTargetType type, int article, ICommentForm form)
         {
             var model = new CommentEntity()
@@ -470,6 +502,23 @@ namespace NetDream.Modules.Comment.Repositories
                 "recommend" or "best" or "hot" => ("agree_count", "desc"),
                 _ => SearchHelper.CheckSortOrder(form, ["created_at", "id", "agree_count"]),
             };
+        }
+
+        public int Count(int user, ModuleTargetType type)
+        {
+            return db.Comments.Where(i => i.UserId == user && i.ItemType == (byte)type).Count();
+        }
+
+        public IOperationResult<ICommentSource> GetSource(ModuleTargetType type, int comment)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult RemoveArticle(int user, ModuleTargetType type, int article)
+        {
+            db.Comments.Where(i => i.ItemType == (byte)type && i.ItemId == article).ExecuteDelete();
+            db.SaveChanges();
+            return OperationResult.Ok();
         }
     }
 }

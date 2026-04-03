@@ -2,7 +2,7 @@
 using NetDream.Modules.Shop.Market.Models;
 using NetDream.Modules.UserProfile;
 using NetDream.Modules.UserProfile.Entities;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
 

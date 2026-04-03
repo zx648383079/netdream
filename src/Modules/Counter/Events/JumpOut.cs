@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using NetDream.Shared.Events;
 
 namespace NetDream.Modules.Counter.Events
 {

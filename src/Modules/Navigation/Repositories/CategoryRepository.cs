@@ -5,7 +5,7 @@ using NetDream.Modules.Navigation.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
 
@@ -69,6 +69,7 @@ namespace NetDream.Modules.Navigation.Repositories
                 return;
             }
             var data = db.Categories.Where(i => idItems.Contains(i.Id))
+                .Select(i => new ListLabelItem(i.Id, i.Name))
                 .ToDictionary(i => i.Id);
             if (data.Count == 0)
             {

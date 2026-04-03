@@ -3,7 +3,7 @@ using NetDream.Modules.SEO.Entities;
 using NetDream.Modules.SEO.Forms;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.SEO.Repositories

@@ -4,7 +4,7 @@ using NetDream.Modules.MicroBlog.Forms;
 using NetDream.Modules.MicroBlog.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

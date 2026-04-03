@@ -1,7 +1,6 @@
 ﻿using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
 using System.Linq;
 
 namespace NetDream.Modules.Document.Repositories

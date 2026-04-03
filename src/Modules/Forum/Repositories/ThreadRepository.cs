@@ -1,14 +1,12 @@
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Forum.Entities;
 using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
+using NetDream.Shared.Events;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
-using NetDream.Shared.Providers;
-using NetDream.Shared.Providers.Entities;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +18,7 @@ namespace NetDream.Modules.Forum.Repositories
         IUserRepository userStore,
         IZoneRepository zoneStore,
         IIdentityRepository roleStore,
-        IClientContext client, IMediator mediator)
+        IClientContext client, IEventBus mediator)
     {
 
         private bool CheckThreadZone(int thread)

@@ -4,7 +4,7 @@ using NetDream.Modules.Bot.Forms;
 using NetDream.Modules.Bot.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.Bot.Repositories

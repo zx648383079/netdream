@@ -1,6 +1,6 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
-using NetDream.Shared.Notifications;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;

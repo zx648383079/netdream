@@ -13,8 +13,8 @@ using MySqlConnector;
 using NetDream.Api.Base.Http;
 using NetDream.Api.Base.Middleware;
 using NetDream.Api.Models;
+using NetDream.Modules.Article;
 using NetDream.Modules.Auth;
-using NetDream.Modules.Blog;
 using NetDream.Modules.Chat;
 using NetDream.Modules.Contact;
 using NetDream.Modules.Counter;
@@ -37,6 +37,7 @@ using NetDream.Modules.UserIdentity;
 using NetDream.Modules.UserProfile;
 using NetDream.Modules.Wallet;
 using NetDream.Shared.Converters;
+using NetDream.Shared.Events;
 using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
@@ -150,7 +151,7 @@ namespace NetDream.Api
             });
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Startup>());
+            services.AddEventBus();
             services.AddOpenApi();
         }
 
@@ -186,7 +187,7 @@ namespace NetDream.Api
             AddContext<IdentityContext>(services, connectString, serverVersion);
             AddContext<ProfileContext>(services, connectString, serverVersion);
             AddContext<SEOContext>(services, connectString, serverVersion);
-            AddContext<BlogContext>(services, connectString, serverVersion);
+            AddContext<ArticleContext>(services, connectString, serverVersion);
             AddContext<ContactContext>(services, connectString, serverVersion);
             AddContext<OpenContext>(services, connectString, serverVersion);
             AddContext<NoteContext>(services, connectString, serverVersion);
@@ -239,7 +240,7 @@ namespace NetDream.Api
             services.ProvideIdentityRepositories();
             services.ProvideProfileRepositories();
             services.ProvideOpenRepositories();
-            services.ProvideBlogRepositories();
+            services.ProvideArticleRepositories();
             services.ProvideGzoRepositories();
             services.ProvideContactRepositories();
             services.ProvideOpenRepositories();

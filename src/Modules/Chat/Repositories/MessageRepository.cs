@@ -5,7 +5,6 @@ using NetDream.Modules.Chat.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
@@ -19,7 +18,7 @@ namespace NetDream.Modules.Chat.Repositories
         IClientContext client,
         IUserRepository userStore,
         ILinkRuler ruler,
-        FileRepository fileStore,
+        IStorageRepository fileStore,
         IApplyRepository applyStore,
         ITeamRepository teamStore)
     {
@@ -102,10 +101,10 @@ namespace NetDream.Modules.Chat.Repositories
         public MessageEntity[] SendImage(int itemType, 
             int id,
             IUploadFileCollection items) {
-            var images = fileStore.UploadImages(items);
+            var images = fileStore.UploadImages(client.UserId, items);
             var word = "[图片]";
             return SendBatch(itemType, id, client.UserId,
-                images.Select(i => new MessageForm()
+                images.Result.Select(i => new MessageForm()
                 {
                     Type = TYPE_IMAGE,
                     Content = word,
@@ -118,12 +117,12 @@ namespace NetDream.Modules.Chat.Repositories
         public IOperationResult<MessageEntity> SendFile(int itemType,
             int id,
             IUploadFile file) {
-            var res = fileStore.UploadFile(file);
+            var res = fileStore.UploadFile(client.UserId, file);
             if (!res.Succeeded)
             {
                 return OperationResult<MessageEntity>.Fail(res);
             }
-            var word = $"[{res.Result.Original}]";
+            var word = $"[{res.Result.Name}]";
             return Send(itemType, id, client.UserId,
                     TYPE_FILE, word, [
                     ruler.FormatFile(word, res.Result.Url)
@@ -133,7 +132,7 @@ namespace NetDream.Modules.Chat.Repositories
         public IOperationResult<MessageEntity> SendVideo(int itemType,
             int id,
             IUploadFile file) {
-            var res = fileStore.UploadVideo(file);
+            var res = fileStore.UploadVideo(client.UserId, file);
             if (!res.Succeeded)
             {
                 return OperationResult<MessageEntity>.Fail(res);
@@ -148,7 +147,7 @@ namespace NetDream.Modules.Chat.Repositories
         public IOperationResult<MessageEntity> SendAudio(int itemType, 
             int id,
             IUploadFile file) {
-            var res = fileStore.UploadAudio(file);
+            var res = fileStore.UploadAudio(client.UserId, file);
             if (!res.Succeeded)
             {
                 return OperationResult<MessageEntity>.Fail(res);

@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.SEO.Entities;
 using NetDream.Modules.SEO.Forms;
-using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;

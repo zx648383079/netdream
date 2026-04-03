@@ -2,13 +2,13 @@
 using NetDream.Modules.Shop.Market.Forms;
 using NetDream.Modules.Shop.Market.Models;
 using NetDream.Modules.Shop.Models;
-using NetDream.Modules.Trade.Models;
 using NetDream.Modules.UserProfile;
 using NetDream.Modules.UserProfile.Entities;
 using NetDream.Modules.UserProfile.Forms;
+using NetDream.Modules.Wallet.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

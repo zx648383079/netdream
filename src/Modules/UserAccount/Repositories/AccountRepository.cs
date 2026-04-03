@@ -1,10 +1,9 @@
-﻿using MediatR;
-using NetDream.Modules.UserAccount.Forms;
+﻿using NetDream.Modules.UserAccount.Forms;
 using NetDream.Modules.UserAccount.Models;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
-using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
@@ -15,28 +14,9 @@ namespace NetDream.Modules.UserAccount.Repositories
         IClientContext client,
         IUserRepository userStore, 
         IWallet account, 
-        IMediator mediator,
+        IEventBus mediator,
         ILinkRuler ruler)
     {
-        public IPage<AccountLogListItem> LogList(LogQueryForm form)
-        {
-            var items = db.AccountLogs.Search(form.Keywords, "remark")
-                .When(form.User > 0, i => i.UserId == form.User)
-                .When(form.Type > 0, i => i.Type == form.Type)
-                .OrderByDescending(i => i.Id)
-                .ToPage(form, i => i.SelectAs());
-            userStore.Include(items.Items);
-            return items;
-        }
-
-        public IPage<AccountLogListItem> SelfLogList(LogQueryForm form)
-        {
-            return db.AccountLogs.Search(form.Keywords, "remark")
-                .Where(i => i.UserId == client.UserId)
-                .When(form.Type > 0, i => i.Type == form.Type)
-                .OrderByDescending(i => i.Id)
-                .ToPage(form, i => i.SelectAs()); ;
-        }
 
         public IPage<ActionLogListItem> ActionLog(LogQueryForm form)
         {
@@ -106,14 +86,5 @@ namespace NetDream.Modules.UserAccount.Repositories
             return OperationResult.Ok();
         }
 
-        public UserSubtotalResult SelfSubtotal()
-        {
-            var model = db.Users.Where(i => i.Id == client.UserId).Single();
-            return new UserSubtotalResult()
-            {
-                Money = model.Money,
-                Integral = model.Credits
-            };
-        }
     }
 }

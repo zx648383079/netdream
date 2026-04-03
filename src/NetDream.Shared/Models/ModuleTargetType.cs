@@ -15,6 +15,8 @@
 
         Author = 13,
         Book = 14,
+        BookList = 15,
+        BookListItem = 16,
         Document = 17,
 
         ExamQuestion = 20,
@@ -48,5 +50,7 @@
 
         SystemFriendLink = 86,
         SystemFeedback = 85,
+
+
     }
 }

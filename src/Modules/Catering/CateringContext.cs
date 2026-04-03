@@ -1,13 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Catering.Entities;
 using NetDream.Modules.Catering.Migrations;
-using NetDream.Shared.Providers.Context;
-using NetDream.Shared.Providers.Entities;
-using NetDream.Shared.Providers.Migrations;
 
 namespace NetDream.Modules.Catering;
 public class CateringContext(DbContextOptions<CateringContext> options) 
-    : DbContext(options), IMetaContext
+    : DbContext(options)
 {
     public DbSet<AddressEntity> Address { get; set; }
     public DbSet<CartEntity> Cart { get; set; }
@@ -25,7 +22,6 @@ public class CateringContext(DbContextOptions<CateringContext> options)
     public DbSet<RecipeMaterialEntity> RecipeMaterial { get; set; }
     public DbSet<StoreEntity> Store { get; set; }
     public DbSet<StoreFloorEntity> StoreFloor { get; set; }
-    public DbSet<MetaEntity> Metas { get; set; }
     public DbSet<StorePatronEntity> StorePatron { get; set; }
     public DbSet<StorePatronGroupEntity> StorePatronGroup { get; set; }
     public DbSet<StorePlaceEntity> StorePlace { get; set; }
@@ -50,7 +46,6 @@ public class CateringContext(DbContextOptions<CateringContext> options)
         modelBuilder.ApplyConfiguration(new RecipeMaterialEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new StoreEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new StoreFloorEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new MetaEntityTypeConfiguration("eat_store_"));
         modelBuilder.ApplyConfiguration(new StorePatronEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new StorePatronGroupEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new StorePlaceEntityTypeConfiguration());

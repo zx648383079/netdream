@@ -1,6 +1,6 @@
-﻿using MediatR;
-using NetDream.Modules.UserAccount.Repositories;
-using NetDream.Shared.Notifications;
+﻿using NetDream.Modules.UserAccount.Repositories;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using System;
 using System.Linq;
 using System.Threading;

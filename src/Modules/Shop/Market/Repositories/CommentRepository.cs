@@ -2,8 +2,7 @@
 using NetDream.Modules.Shop.Market.Forms;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
-using NetDream.Shared.Providers.Models;
+using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
 using CommentListItem = NetDream.Modules.Shop.Market.Models.CommentListItem;

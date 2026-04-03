@@ -4,14 +4,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using NetDream.Shared.Interfaces;
 using NetDream.Modules.Auth;
-using NetDream.Modules.Blog;
+using NetDream.Modules.Article;
+using NetDream.Shared.Events;
 using NetDream.Modules.Contact;
 using NetDream.Modules.Gzo;
 using NetDream.Modules.OpenPlatform;
@@ -101,11 +101,10 @@ namespace NetDream.Web
                     // 如字段为 null值，该字段不会返回到前端
                     // options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 });
-            services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
             services.AddSingleton(Configuration);
             services.AddMemoryCache();
             services.AddLogging();
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Startup>());
+            services.AddEventBus();
             //services.AddWebSocketManager();
         }
 
@@ -196,7 +195,7 @@ namespace NetDream.Web
         {
             services.ProvideAuthRepositories();
             services.ProvideOpenRepositories();
-            services.ProvideBlogRepositories();
+            services.ProvideArticleRepositories();
             services.ProvideGzoRepositories();
             services.ProvideContactRepositories();
             services.ProvideOpenRepositories();

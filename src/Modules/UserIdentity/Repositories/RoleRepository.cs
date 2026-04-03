@@ -1,22 +1,21 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.UserIdentity.Models;
 using NetDream.Modules.UserIdentity.Entities;
 using NetDream.Modules.UserIdentity.Forms;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Providers;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using NetDream.Shared.Repositories;
-using NetDream.Shared.Notifications;
 using NetDream.Shared.Models;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 
 namespace NetDream.Modules.UserIdentity.Repositories
 {
-    public class RoleRepository(IdentityContext db, IClientContext client, IMediator mediator)
+    public class RoleRepository(IdentityContext db, IClientContext client, IEventBus mediator)
     {
         public IPage<RoleEntity> RoleList(QueryForm form)
         {

@@ -1,5 +1,5 @@
-﻿using MediatR;
-using NetDream.Shared.Notifications;
+﻿using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using System.Threading;
 using System.Threading.Tasks;
 

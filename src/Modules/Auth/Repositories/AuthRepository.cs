@@ -1,19 +1,19 @@
-﻿using MediatR;
-using NetDream.Modules.Auth.Entities;
+﻿using NetDream.Modules.Auth.Entities;
 using NetDream.Modules.Auth.Forms;
 using NetDream.Modules.Auth.Models;
 using NetDream.Modules.UserAccount;
 using NetDream.Modules.UserAccount.Entities;
 using NetDream.Modules.UserAccount.Models;
 using NetDream.Modules.UserAccount.Repositories;
+using NetDream.Shared.Drawing;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
-using NetDream.Shared.Providers;
-using SkiaSharp.QrCode.Image;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +28,7 @@ namespace NetDream.Modules.Auth.Repositories
         AuthContext db, 
         IGlobeOption option, 
         IClientContext client,
-        IMediator mediator,
+        IEventBus mediator,
         IMessageProtocol message) : IContextRepository
     {
         internal const byte ACCOUNT_TYPE_NAME = 1;
@@ -241,6 +241,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return string.Empty;
             }
+            
             return StrHelper.HideIp(ip);
         }
 
@@ -316,7 +317,7 @@ namespace NetDream.Modules.Auth.Repositories
             return OperationResult.Ok(new QrResult()
             {
                 Token = token,
-                Qr = $"data:image/png;base64,{Convert.ToBase64String(QRCodeImageBuilder.GetPngBytes(store.LoginQr(token)))}"
+                Qr = QRCode.ToBase64String(store.LoginQr(token))
             });
         }
 

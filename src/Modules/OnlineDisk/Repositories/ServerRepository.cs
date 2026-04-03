@@ -4,7 +4,7 @@ using NetDream.Modules.OnlineDisk.Forms;
 using NetDream.Modules.OnlineDisk.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
 using FileListItem = NetDream.Modules.OnlineDisk.Models.FileListItem;

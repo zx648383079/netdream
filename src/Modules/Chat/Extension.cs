@@ -1,11 +1,11 @@
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Listeners;
 using NetDream.Modules.Chat.Models;
 using NetDream.Modules.Chat.Repositories;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
 using System.Linq;
 
 namespace NetDream.Modules.Chat

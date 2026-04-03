@@ -9,7 +9,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MediatR" Version="14.1.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
@@ -21,7 +20,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
-		<ProjectReference Include="..\..\Shared\Notifications\Notifications.csproj" />
+		<ProjectReference Include="..\..\Shared\Events\Events.csproj" />
 		<ProjectReference Include="..\..\Shared\Repositories\Repositories.csproj" />
 	</ItemGroup>
 

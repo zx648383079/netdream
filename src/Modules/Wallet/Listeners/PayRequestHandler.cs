@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using NetDream.Shared.Events;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

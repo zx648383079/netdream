@@ -3,7 +3,7 @@ using NetDream.Modules.UserProfile.Entities;
 using NetDream.Modules.UserProfile.Forms;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Linq;
 
 namespace NetDream.Modules.UserProfile.Repositories

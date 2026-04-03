@@ -4,7 +4,7 @@ using NetDream.Modules.OnlineMedia.Forms;
 using NetDream.Modules.OnlineMedia.Importers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.IO;
 using System.Linq;
 

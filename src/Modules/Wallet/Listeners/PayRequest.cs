@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using NetDream.Shared.Events;
 using System;
 
 namespace NetDream.Modules.Wallet.Listeners

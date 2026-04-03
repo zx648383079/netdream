@@ -2,8 +2,8 @@
 using NetDream.Modules.UserAccount.Entities;
 using NetDream.Modules.UserAccount.Forms;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
@@ -102,6 +102,11 @@ namespace NetDream.Modules.UserAccount.Repositories
         {
             return db.ApplyLogs.Where(i => i.ItemType == (byte)itemType && i.ItemId == itemId
                 && i.UserId == user).Any();
+        }
+
+        public IPage<IApplyListItem> ReceiveSearch(ModuleTargetType type, int target, IPaginationForm form)
+        {
+            throw new NotImplementedException();
         }
     }
 }

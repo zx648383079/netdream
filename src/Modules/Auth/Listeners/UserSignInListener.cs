@@ -1,6 +1,6 @@
-﻿using MediatR;
-using NetDream.Modules.Auth.Entities;
-using NetDream.Shared.Notifications;
+﻿using NetDream.Modules.Auth.Entities;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using System.Threading;
 using System.Threading.Tasks;
 

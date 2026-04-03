@@ -1,8 +1,6 @@
-﻿using NetDream.Shared.Repositories;
-
-namespace NetDream.Modules.Forum.Repositories
+﻿namespace NetDream.Modules.Forum.Repositories
 {
-    public class LogRepository(ForumContext db) : ActionRepository(db)
+    public class LogRepository(ForumContext db)
     {
 
         public const byte TYPE_FORUM = 0;
