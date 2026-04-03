@@ -2,7 +2,6 @@
 using NetDream.Modules.Navigation.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 
 namespace NetDream.Modules.Navigation.Repositories

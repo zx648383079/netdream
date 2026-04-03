@@ -32,10 +32,10 @@ using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Modules.Plan;
 using NetDream.Modules.SEO;
 using NetDream.Modules.Team;
-using NetDream.Modules.Trade;
 using NetDream.Modules.UserAccount;
 using NetDream.Modules.UserIdentity;
 using NetDream.Modules.UserProfile;
+using NetDream.Modules.Wallet;
 using NetDream.Shared.Converters;
 using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
@@ -56,9 +56,11 @@ namespace NetDream.Api
             var env = configuration.GetSection(EnvironmentConfiguration.EnvironmentKey)
             .Get<EnvironmentConfiguration>() ?? new EnvironmentConfiguration();
             var currentFolder = Directory.GetCurrentDirectory();
-            env.Root = Path.Combine(currentFolder, env.Root);
-            env.PublicRoot = Path.Combine(currentFolder, env.PublicRoot);
-            env.CacheRoot = Path.Combine(currentFolder, env.CacheRoot);
+            env.Root = Path.GetFullPath(env.Root, currentFolder);
+            env.PublicRoot = Path.GetFullPath(env.PublicRoot, currentFolder);
+            env.CacheRoot = Path.GetFullPath(env.CacheRoot, currentFolder);
+            env.BackupRoot = Path.GetFullPath(env.BackupRoot, currentFolder);
+            env.AssetRoot = Path.GetFullPath(env.AssetRoot, currentFolder);
             _environment = env;
         }
         public IConfiguration Configuration { get; private set; }
@@ -192,7 +194,7 @@ namespace NetDream.Api
             AddContext<CounterContext>(services, connectString, serverVersion);
             AddContext<FinanceContext>(services, connectString, serverVersion);
             AddContext<DocumentContext>(services, connectString, serverVersion);
-            AddContext<TradeContext>(services, connectString, serverVersion);
+            AddContext<WalletContext>(services, connectString, serverVersion);
             AddContext<NavigationContext>(services, connectString, serverVersion);
             AddContext<MicroBlogContext>(services, connectString, serverVersion);
             AddContext<ChatContext>(services, connectString, serverVersion);
@@ -213,7 +215,7 @@ namespace NetDream.Api
                             options => options.UseMySql(connectString, serverVersion, builder =>
                             {
                                 // 允许主键使用 in 查询
-                                builder.TranslateParameterizedCollectionsToConstants();
+                                builder.UseParameterizedCollectionMode(ParameterTranslationMode.Parameter);
                             })
 #if DEBUG
                             .LogTo(Console.WriteLine, LogLevel.Information)

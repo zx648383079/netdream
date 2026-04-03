@@ -21,7 +21,7 @@
         ExamPage = 21,
         CMSContent = 23,
 
-        Demo = 24,
+        Plan = 24,
         ForumThread = 27,
         ForumPost = 28,
 

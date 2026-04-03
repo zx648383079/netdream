@@ -1,5 +1,6 @@
 ﻿using NetDream.Modules.OnlineDisk.Entities;
 using NetDream.Modules.OnlineDisk.Forms;
+using NetDream.Modules.Storage.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
@@ -97,7 +98,7 @@ namespace NetDream.Modules.OnlineDisk.Repositories
             {
                 return OperationResult<IDownloadFile>.Fail("file error");
             }
-            return OperationResult.Ok<IDownloadFile>(new FileResult(model.Name, model.Location));
+            return OperationResult.Ok<IDownloadFile>(new FileOutputResult(model.Name, model.Location));
         }
     }
 }

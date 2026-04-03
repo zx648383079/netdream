@@ -115,6 +115,12 @@ namespace NetDream.Modules.Wallet.Repositories
             return db.AccountLogs.Where(i => i.ItemId == sourceId && i.Type == sourceType
             && i.Status != STATUS_REFUND).Any();
         }
+
+        public bool IsBought(int user, int sourceId, FundOperateType sourceType)
+        {
+            return db.AccountLogs.Where(i => i.UserId == user && i.ItemId == sourceId && i.Type == (byte)sourceType
+            && i.Status != STATUS_PAID).Any();
+        }
     }
 
     public class FundOperation<T>(WalletContext db, T data) : IFundOperation<T>

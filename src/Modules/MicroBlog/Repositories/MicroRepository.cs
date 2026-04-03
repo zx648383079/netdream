@@ -5,7 +5,6 @@ using NetDream.Modules.MicroBlog.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
-using NetDream.Shared.Providers.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +20,8 @@ namespace NetDream.Modules.MicroBlog.Repositories
         IZoneRepository zoneStore,
         ILinkRuler ruler,
         ISystemBulletin bulletin,
+        ICommentRepository comment,
+        IInteractRepository interact,
         IGlobeOption option)
     {
         public const byte LOG_TYPE_MICRO_BLOG = 0;
@@ -235,30 +236,25 @@ namespace NetDream.Modules.MicroBlog.Repositories
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public IOperationResult<CommentListItem> CommentSave(CommentForm data)
+        public IOperationResult CommentSave(CommentForm data)
         {
             var model = db.Blogs.Where(i => i.Id == data.MicroId).SingleOrDefault();
             if (model is null)
             {
-                return OperationResult<CommentListItem>.Fail("id 错误");
+                return OperationResult<ICommentItem>.Fail("id 错误");
             }
             var content = HttpUtility.HtmlEncode(data.Content);
             LinkExtraRule[] extraRules = [
                 .. At(content, 0, 1),
                 ..ruler.FormatEmoji(content)
             ];
-            var res = Comment().Save(new Shared.Providers.Forms.CommentEditForm()
-            {
-                Content = content,
-                ParentId = data.ParentId,
-                TargetId = model.Id,
-                ExtraRule = extraRules
-            });
+
+            var res = comment.Create(client.UserId, ModuleTargetType.MicroBlog, model.Id,
+                content, extraRules, data.ParentId);
             if (!res.Succeeded)
             {
-                return OperationResult<CommentListItem>.Fail("id 错误");
+                return OperationResult<ICommentItem>.Fail("id 错误");
             }
-            var comment = res.Result;
             if (data.IsForward)
             {
                 if (model.ForwardId > 0)
@@ -294,7 +290,7 @@ namespace NetDream.Modules.MicroBlog.Repositories
             model.CommentCount++;
             db.Blogs.Save(model, client.Now);
             db.SaveChanges();
-            return OperationResult.Ok(comment);
+            return res;
         }
 
         public IOperationResult<PostListItem> Collect(int id)
@@ -313,8 +309,8 @@ namespace NetDream.Modules.MicroBlog.Repositories
                 return OperationResult<PostListItem>.Fail("数据错误");
             }
             var res = new PostListItem(model);
-            var status = Log().ToggleLog(LOG_TYPE_MICRO_BLOG, LOG_ACTION_COLLECT, id);
-            if (status > 0)
+            var status = interact.Toggle(client.UserId, ModuleTargetType.MicroBlog, id, InteractType.Collect);
+            if (status)
             {
                 model.CollectCount++;
                 res.IsCollected = true;
@@ -337,7 +333,7 @@ namespace NetDream.Modules.MicroBlog.Repositories
                 return OperationResult.Fail("id 错误");
             }
             db.Blogs.Remove(model);
-            Comment().RemoveByTarget(id);
+            comment.RemoveArticle(client.UserId, ModuleTargetType.MicroBlog, id);
             db.BlogTopics.Where(i => i.MicroId == id).ExecuteDelete();
             db.Attachments.Where(i => i.MicroId == id).ExecuteDelete();
             db.SaveChanges();
@@ -352,7 +348,7 @@ namespace NetDream.Modules.MicroBlog.Repositories
                 return OperationResult.Fail("id 错误");
             }
             db.Blogs.Remove(model);
-            Comment().RemoveByTarget(id);
+            comment.RemoveArticle(client.UserId, ModuleTargetType.MicroBlog, id);
             db.BlogTopics.Where(i => i.MicroId == id).ExecuteDelete();
             db.Attachments.Where(i => i.MicroId == id).ExecuteDelete();
             db.SaveChanges();
@@ -361,17 +357,17 @@ namespace NetDream.Modules.MicroBlog.Repositories
 
         public IOperationResult DeleteComment(int id)
         {
-            var comment = Comment().Get(id);
-            if (comment is null)
+            var res = comment.GetSource(ModuleTargetType.MicroBlog, id);
+            if (!res.Succeeded)
             {
-                return OperationResult.Fail("id 错误");
+                return res;
             }
-            var model = db.Blogs.Where(i => i.Id == comment.TargetId).SingleOrDefault();
-            if (model?.UserId != client.UserId && comment.UserId != client.UserId)
+            var model = db.Blogs.Where(i => i.Id == res.Result.Article).SingleOrDefault();
+            if (model?.UserId != client.UserId && res.Result.User != client.UserId)
             {
                 return OperationResult.Fail("无法删除");
             }
-            Comment().Remove(comment.Id);
+            comment.Remove(client.UserId, ModuleTargetType.MicroBlog, id);
             if (model is not null)
             {
                 model.CommentCount--;
@@ -389,8 +385,9 @@ namespace NetDream.Modules.MicroBlog.Repositories
             {
                 return OperationResult.Fail<BlogEntity>("id 错误");
             }
-            var res = Log().ToggleLog(LOG_TYPE_MICRO_BLOG, LOG_ACTION_RECOMMEND, id);
-            model.RecommendCount += res > 0 ? 1 : -1;
+            var res = interact.Toggle(client.UserId, ModuleTargetType.MicroBlog, 
+                id, InteractType.Like);
+            model.RecommendCount += res ? 1 : -1;
             db.Blogs.Update(model);
             db.SaveChanges();
             return OperationResult.Ok(model);
@@ -437,12 +434,7 @@ namespace NetDream.Modules.MicroBlog.Repositories
             }
             if (data.IsComment)
             {
-                Comment().Save(new Shared.Providers.Forms.CommentEditForm()
-                {
-                    Content = model.Content,
-                    ExtraRule = extraRules,
-                    TargetId = source.Id,
-                });
+                comment.Create(client.UserId, ModuleTargetType.MicroBlog, source.Id, model.Content, extraRules);
                 source.CommentCount++;
             }
             source.ForwardCount++;

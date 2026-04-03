@@ -7,6 +7,7 @@ namespace NetDream.Shared.Models
         public const string EnvironmentKey = "Environment";
         public string Root { get; set; } = string.Empty;
         public string CacheRoot { get; set; } = string.Empty;
+        public string BackupRoot { get; set; } = string.Empty;
 
         public string PublicRoot { get; set; } = string.Empty;
 

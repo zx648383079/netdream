@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NetDream.Shared.Models;
+﻿using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Blog.Forms
 {
@@ -12,7 +11,6 @@ namespace NetDream.Modules.Blog.Forms
         public int Status { get; set; }
         public int Type { get; set; }
         public string? Language { get; set; } = string.Empty;
-        [BindProperty(Name = "programming_language", SupportsGet = true)]
         public string? ProgrammingLanguage { get; set; } = string.Empty;
     }
 }

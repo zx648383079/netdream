@@ -1,22 +1,22 @@
 ﻿using NetDream.Shared.Interfaces;
 using System.IO;
 
-namespace NetDream.Shared.Models
+namespace NetDream.Modules.Storage.Models
 {
-    public class FileResult : IDownloadFile
+    public class FileOutputResult : IDownloadFile
     {
         public string Name { get; set; }
 
         public string FullPath { get; set; }
         public string FileType { get; set; } = "application/force-download";
 
-        public FileResult(string fullPath)
+        public FileOutputResult(string fullPath)
             : this (Path.GetFileName(fullPath), fullPath)
         {
             
         }
 
-        public FileResult(string name, string fullPath)
+        public FileOutputResult(string name, string fullPath)
         {
             Name = name;
             FullPath = fullPath;

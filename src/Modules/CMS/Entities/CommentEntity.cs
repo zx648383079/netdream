@@ -1,4 +1,3 @@
-
 namespace NetDream.Modules.CMS.Entities
 {
     public class CommentEntity

@@ -42,6 +42,7 @@ namespace NetDream.Shared.Interfaces
         /// <param name="tags"></param>
         /// <returns></returns>
         public IOperationResult Remove(ModuleTargetType type, int target, IEnumerable<string> tags);
+        public IOperationResult Remove(ModuleTargetType type, int target);
         /// <summary>
         /// 获取文章所有标签下的其他文章
         /// </summary>

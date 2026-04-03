@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="1.1.2" />
+    <PackageReference Include="MediatR" Version="14.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.5" />
@@ -19,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
+    <ProjectReference Include="..\..\Shared\Notifications\Notifications.csproj" />
     <ProjectReference Include="..\..\Shared\Providers\Providers.csproj" />
     <ProjectReference Include="..\..\Shared\Repositories\Repositories.csproj" />
   </ItemGroup>

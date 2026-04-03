@@ -346,31 +346,31 @@ namespace NetDream.Modules.Counter.Repositories
         //    return [];
         //}
 
-        public void MergeTask(byte itemType, int itemId, byte action)
-        {
-            var today = TimeHelper.TimestampFrom(DateTime.Today);
-            var yesterday = today - 86400;
-            AddCount(itemType, itemId, action,
-                TimeHelper.TimestampTo(yesterday).ToString("yyyy-MM-dd"),
-                yesterday, today - 1);
-            // 合并上个月
-            var lastMonth = DateTime.Now.AddMonths(-1);
-            var month = lastMonth.ToString("yyyy-MM");
-            var dayItems = new string[TimeHelper.MonthMaxDay(lastMonth)];
-            for (var i = 0; i < dayItems.Length; i++)
-            {
-                dayItems[i] = string.Format("{0}-{1:d2}", month, i + 1);
-            }
-            MergeCount(itemType, itemId, action, month, [.. dayItems]);
-            // 合并去年
-            var year = DateTime.Now.Year - 1;
-            var monthItems = new string[12];
-            for (var i = 0; i < monthItems.Length; i++)
-            {
-                monthItems[i] = string.Format("{0}-{1:d2}", year, i + 1);
-            }
-            MergeCount(itemType, itemId, action, year.ToString(), monthItems);
-        }
+        //public void MergeTask(byte itemType, int itemId, byte action)
+        //{
+        //    var today = TimeHelper.TimestampFrom(DateTime.Today);
+        //    var yesterday = today - 86400;
+        //    AddCount(itemType, itemId, action,
+        //        TimeHelper.TimestampTo(yesterday).ToString("yyyy-MM-dd"),
+        //        yesterday, today - 1);
+        //    // 合并上个月
+        //    var lastMonth = DateTime.Now.AddMonths(-1);
+        //    var month = lastMonth.ToString("yyyy-MM");
+        //    var dayItems = new string[TimeHelper.MonthMaxDay(lastMonth)];
+        //    for (var i = 0; i < dayItems.Length; i++)
+        //    {
+        //        dayItems[i] = string.Format("{0}-{1:d2}", month, i + 1);
+        //    }
+        //    MergeCount(itemType, itemId, action, month, [.. dayItems]);
+        //    // 合并去年
+        //    var year = DateTime.Now.Year - 1;
+        //    var monthItems = new string[12];
+        //    for (var i = 0; i < monthItems.Length; i++)
+        //    {
+        //        monthItems[i] = string.Format("{0}-{1:d2}", year, i + 1);
+        //    }
+        //    MergeCount(itemType, itemId, action, year.ToString(), monthItems);
+        //}
 
         public int Count(DateOnly date)
         {

@@ -1,4 +1,5 @@
 ﻿using MimeMapping;
+using NetDream.Modules.Storage.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
@@ -69,68 +70,68 @@ namespace NetDream.Modules.Storage.Repositories
             return string.Empty;
         }
 
-        public IPage<FileListItem> Search(IQueryForm form)
+        public IPage<IFileListItem> Search(IQueryForm form)
         {
             throw new NotImplementedException();
         }
 
-        public IPage<FileListItem> SearchImages(IQueryForm form)
+        public IPage<IFileListItem> SearchImages(IQueryForm form)
         {
             throw new NotImplementedException();
         }
 
-        public IOperationResult<FileUploadResult> UploadAudio(int user, IUploadFile file)
+        public IOperationResult<IFileListItem> UploadAudio(int user, IUploadFile file)
         {
             if (!file.FileType.StartsWith("audio/"))
             {
-                return OperationResult<FileUploadResult>.Fail("只允许音频");
+                return OperationResult<IFileListItem>.Fail("只允许音频");
             }
             return UploadFile(user, file, GetRandomName());
         }
 
-        public IOperationResult<FileUploadResult> UploadVideo(int user, IUploadFile file)
+        public IOperationResult<IFileListItem> UploadVideo(int user, IUploadFile file)
         {
             if (!file.FileType.StartsWith("video/"))
             {
-                return OperationResult<FileUploadResult>.Fail("只允许视频");
+                return OperationResult<IFileListItem>.Fail("只允许视频");
             }
             return UploadFile(user, file, GetRandomName());
         }
 
-        public IOperationResult<FileUploadResult[]> UploadImages(int user, IUploadFileCollection files)
+        public IOperationResult<IFileListItem[]> UploadImages(int user, IUploadFileCollection files)
         {
             if (files.Where(i => !i.FileType.StartsWith("image/")).Any())
             {
-                return OperationResult<FileUploadResult[]>.Fail("只允许图片");
+                return OperationResult<IFileListItem[]>.Fail("只允许图片");
             }
             return UploadFiles(user, files);
         }
 
-        public IOperationResult<FileUploadResult> UploadImage(int user, IUploadFile file)
+        public IOperationResult<IFileListItem> UploadImage(int user, IUploadFile file)
         {
             if (!file.FileType.StartsWith("image/"))
             {
-                return OperationResult<FileUploadResult>.Fail("只允许图片");
+                return OperationResult<IFileListItem>.Fail("只允许图片");
             }
             return UploadFile(user, file, GetRandomName());
         }
 
-        public IOperationResult<FileUploadResult> UploadBase64(int user, string content)
+        public IOperationResult<IFileListItem> UploadBase64(int user, string content)
         {
             // data:image/png;base64,
             if (!content.StartsWith("data:image/"))
             {
-                return OperationResult<FileUploadResult>.Fail("只允许图片");
+                return OperationResult<IFileListItem>.Fail("只允许图片");
             }
             var i = content.IndexOf(";base64,");
             if (i <= 0)
             {
-                return OperationResult<FileUploadResult>.Fail("不是base64");
+                return OperationResult<IFileListItem>.Fail("不是base64");
             }
             var extension = MimeUtility.GetExtensions(content[5..(i - 1)])?.FirstOrDefault();
             if (string.IsNullOrWhiteSpace(extension))
             {
-                return OperationResult<FileUploadResult>.Fail("只允许图片");
+                return OperationResult<IFileListItem>.Fail("只允许图片");
             }
             try
             {
@@ -138,21 +139,20 @@ namespace NetDream.Modules.Storage.Repositories
                 var fileName = $"{GetRandomName()}.{extension}";
                 using var fs = Folder.Create(fileName);
                 fs?.Write(data, 0, data.Length);
-                return OperationResult.Ok(new FileUploadResult()
+                return OperationResult.Ok<IFileListItem>(new FileUploadResult(Path.GetFileName(fileName))
                 {
-                    Title = Path.GetFileName(fileName),
                     Size = data.Length,
                 });
             }
             catch (Exception)
             {
-                return OperationResult<FileUploadResult>.Fail("不是base64");
+                return OperationResult<IFileListItem>.Fail("不是base64");
             }
         }
 
-        public IOperationResult<FileUploadResult[]> UploadFiles(int user, IUploadFileCollection files)
+        public IOperationResult<IFileListItem[]> UploadFiles(int user, IUploadFileCollection files)
         {
-            var items = new List<FileUploadResult>(files.Count);
+            var items = new List<IFileListItem>(files.Count);
             foreach (var file in files)
             {
                 var extension = MimeUtility.GetExtensions(file.FileType)?.FirstOrDefault();
@@ -165,9 +165,8 @@ namespace NetDream.Modules.Storage.Repositories
                     using var fs = file.OpenRead();
                     var fileName = $"{GetRandomName()}_{items.Count}.{extension}";
                     Folder.Create(fileName, fs);
-                    items.Add(new FileUploadResult()
+                    items.Add(new FileUploadResult(Path.GetFileName(fileName))
                     {
-                        Title = Path.GetFileName(fileName),
                         Original = file.Name,
                         Size = file.Size,
                     });
@@ -180,33 +179,32 @@ namespace NetDream.Modules.Storage.Repositories
             return OperationResult.Ok(items.ToArray());
         }
 
-        public IOperationResult<FileUploadResult> UploadFile(int user, IUploadFile file)
+        public IOperationResult<IFileListItem> UploadFile(int user, IUploadFile file)
         {
             return UploadFile(user, file, GetRandomName());
         }
 
-        private IOperationResult<FileUploadResult> UploadFile(int user, IUploadFile file, string fileName)
+        private IOperationResult<IFileListItem> UploadFile(int user, IUploadFile file, string fileName)
         {
             var extension = MimeUtility.GetExtensions(file.FileType)?.FirstOrDefault();
             if (string.IsNullOrWhiteSpace(extension))
             {
-                return OperationResult<FileUploadResult>.Fail("不支持此格式");
+                return OperationResult<IFileListItem>.Fail("不支持此格式");
             }
             try
             {
                 using var fs = file.OpenRead();
                 fileName = $"{fileName}.{extension}";
                 Folder.Create(fileName, fs);
-                return OperationResult.Ok(new FileUploadResult()
+                return OperationResult.Ok<IFileListItem>(new FileUploadResult(Path.GetFileName(fileName))
                 {
-                    Title = Path.GetFileName(fileName),
                     Original = file.Name,
                     Size = file.Size,
                 });
             }
             catch (Exception ex)
             {
-                return OperationResult<FileUploadResult>.Fail(ex.Message);
+                return OperationResult<IFileListItem>.Fail(ex.Message);
             }
         }
 
@@ -216,6 +214,22 @@ namespace NetDream.Modules.Storage.Repositories
             return $"{now:yyyyMM}/{now:ddHHmmss}{Random.Shared.Next()}";
         }
 
+        public IOperationResult Remove(string fileName)
+        {
+            return OperationResult.Ok();
+        }
 
+        public IOperationResult Remove(int[] idItems)
+        {
+            return OperationResult.Ok();
+        }
+
+        public void Reload()
+        {
+        }
+
+        public void Reload(int[] idItems)
+        {
+        }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using NetDream.Modules.Navigation.Entities;
 using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Providers.Entities;
 
 namespace NetDream.Modules.Navigation.Models
 {
@@ -10,6 +9,6 @@ namespace NetDream.Modules.Navigation.Models
         public CategoryEntity? Category { get; set; }
         public IUser? User { get; set; }
 
-        public TagEntity[] Tags { get; set; }
+        public string[] Tags { get; set; }
     }
 }

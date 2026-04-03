@@ -15,13 +15,9 @@ namespace NetDream.Modules.Navigation.Repositories
 {
     public class SiteRepository(NavigationContext db, 
         IUserRepository userStore,
+        ITagRepository tagStore,
         IClientContext client): IWebsiteRepository
     {
-        public TagProvider Tag()
-        {
-            return new TagProvider(db);
-        }
-
         public IPage<SiteListItem> GetList(SiteQueryForm form)
         {
             return db.Sites.Search(form.Keywords, "name", "domain")
@@ -39,7 +35,7 @@ namespace NetDream.Modules.Navigation.Repositories
                 return OperationResult<SiteModel>.Fail("id is error");
             }
             var res = model.CopyTo<SiteModel>();
-            res.Tags = Tag().GetTags(model.Id);
+            res.Tags = tagStore.Get(ModuleTargetType.SearchSite, model.Id);
             return OperationResult.Ok(res);
         }
 
@@ -94,10 +90,9 @@ namespace NetDream.Modules.Navigation.Repositories
                 .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
             CategoryRepository.Include(db, items.Items);
-            var tagStore = Tag();
             foreach (var item in items.Items)
             {
-                item.Tags = tagStore.GetTags(item.Id);
+                item.Tags = tagStore.Get(ModuleTargetType.SearchSite, item.Id);
             }
             return items;
         }
@@ -127,7 +122,7 @@ namespace NetDream.Modules.Navigation.Repositories
             }
             db.Sites.Save(model, client.Now);
             db.SaveChanges();
-            Tag().BindTag(model.Id, data.Tags);
+            tagStore.Bind(ModuleTargetType.SearchSite, model.Id, data.Tags);
             if (data.Id < 1 && data.AlsoPage > 0)
             {
                 new PageRepository(db, userStore, client).Save(new PageForm()
@@ -164,7 +159,7 @@ namespace NetDream.Modules.Navigation.Repositories
         public void Remove(int id)
         {
             db.Sites.Where(i => i.Id == id).ExecuteDelete();
-            Tag().RemoveLink(id);
+            tagStore.Remove(ModuleTargetType.SearchSite, id);
         }
 
         public SiteEntity? FindIdByLink(string link)

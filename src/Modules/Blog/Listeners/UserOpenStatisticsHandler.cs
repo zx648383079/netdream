@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using NetDream.Modules.Blog.Repositories;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Notifications;
 using System.Linq;
 using System.Threading;
@@ -7,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace NetDream.Modules.Blog.Listeners
 {
-    public class UserStatisticsHandler(BlogContext db) : INotificationHandler<UserStatisticsRequest>
+    public class UserStatisticsHandler(BlogContext db, ICommentRepository comment) : INotificationHandler<UserStatisticsRequest>
     {
 
         public Task Handle(UserStatisticsRequest request, CancellationToken cancellationToken)
         {
             request.Add(new("博文数量", db.Blogs.Where(i => i.UserId == request.UserId).Count(), "篇"));
-            request.Add(new("博文评论", db.Comments.Where(i => i.UserId == request.UserId).Count(), "条"));
+            request.Add(new("博文评论", comment.Count(request.UserId, ModuleTargetType.Article), "条"));
             return Task.CompletedTask;
         }
     }

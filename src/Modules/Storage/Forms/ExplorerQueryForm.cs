@@ -1,6 +1,6 @@
 ﻿using NetDream.Shared.Models;
 
-namespace NetDream.Shared.Repositories.Forms
+namespace NetDream.Modules.Storage.Forms
 {
     public class ExplorerQueryForm : QueryForm
     {

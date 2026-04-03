@@ -1,6 +1,6 @@
-﻿namespace NetDream.Shared.Repositories.Models
+﻿namespace NetDream.Modules.Storage.Models
 {
-    public class VirtualFileItem(string name, string path): FileItem(name)
+    public class VirtualFileItem(string name, string path): FileListItem(name)
     {
         public string Path { get; set; } = path;
 

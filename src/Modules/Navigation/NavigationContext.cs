@@ -1,13 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Navigation.Entities;
 using NetDream.Modules.Navigation.Migrations;
-using NetDream.Shared.Providers.Context;
-using NetDream.Shared.Providers.Entities;
-using NetDream.Shared.Providers.Migrations;
 
 namespace NetDream.Modules.Navigation
 {
-    public class NavigationContext(DbContextOptions<NavigationContext> options): DbContext(options), ITagContext
+    public class NavigationContext(DbContextOptions<NavigationContext> options): DbContext(options)
     {
         public DbSet<CategoryEntity> Categories {get; set; }
         public DbSet<CollectEntity> Collects {get; set; }
@@ -17,8 +14,6 @@ namespace NetDream.Modules.Navigation
         public DbSet<PageKeywordEntity> PageKeywords {get; set; }
         public DbSet<SiteEntity> Sites {get; set; }
         public DbSet<SiteScoringLogEntity> SiteScoringLogs {get; set; }
-        public DbSet<TagEntity> Tags {get; set; }
-        public DbSet<TagLinkEntity> TagLinks {get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
@@ -29,8 +24,6 @@ namespace NetDream.Modules.Navigation
             modelBuilder.ApplyConfiguration(new PageKeywordEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SiteEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SiteScoringLogEntityTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new TagEntityTypeConfiguration("search"));
-            modelBuilder.ApplyConfiguration(new TagLinkEntityTypeConfiguration("search"));
             base.OnModelCreating(modelBuilder);
         }
     }

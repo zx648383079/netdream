@@ -1,6 +1,5 @@
 ﻿using NetDream.Modules.Blog.Repositories;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers.Models;
 
 namespace NetDream.Modules.Blog.Models
 {
@@ -13,7 +12,7 @@ namespace NetDream.Modules.Blog.Models
         ];
         public OptionItem<string>[] Weathers { get; set; }
         public LinkOptionItem[] Licenses { get; set; }
-        public TagListItem[] Tags { get; set; }
+        public string[] Tags { get; set; }
         public CategoryLabelItem[] Categories { get; set; }
         public OptionItem<int>[] OpenTypes { get; set; } = [
             new("Is Public", PublishRepository.OPEN_PUBLIC),

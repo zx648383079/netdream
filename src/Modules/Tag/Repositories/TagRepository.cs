@@ -4,7 +4,6 @@ using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Providers;
-using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -150,6 +149,14 @@ namespace NetDream.Modules.Tag.Repositories
                 return [];
             }
             return items.Select(i => new StatisticsItem(i.Name, data[i.Id])).ToArray();
+        }
+
+        public IOperationResult Remove(ModuleTargetType type, int target)
+        {
+            db.TagLinks.Where(i => i.ItemType == (byte)type && i.ItemId == target)
+                .ExecuteDelete();
+            db.SaveChanges();
+            return OperationResult.Ok();
         }
     }
 }

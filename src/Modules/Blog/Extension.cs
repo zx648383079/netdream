@@ -4,6 +4,7 @@ using NetDream.Modules.Blog.Entities;
 using NetDream.Modules.Blog.Listeners;
 using NetDream.Modules.Blog.Models;
 using NetDream.Modules.Blog.Repositories;
+using NetDream.Shared.Notifications;
 using System.Linq;
 
 namespace NetDream.Modules.Blog

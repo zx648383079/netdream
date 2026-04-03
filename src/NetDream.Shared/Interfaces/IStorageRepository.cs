@@ -1,5 +1,4 @@
 ﻿using NetDream.Shared.Interfaces.Forms;
-using NetDream.Shared.Models;
 
 namespace NetDream.Shared.Interfaces
 {
@@ -26,27 +25,64 @@ namespace NetDream.Shared.Interfaces
 
         public string TypeExtension(string type);
 
-        public IPage<FileListItem> Search(IQueryForm form);
+        public IPage<IFileListItem> Search(IQueryForm form);
 
-        public IPage<FileListItem> SearchImages(IQueryForm form);
+        public IPage<IFileListItem> SearchImages(IQueryForm form);
 
-        public IOperationResult<FileUploadResult> UploadAudio(int user, IUploadFile file);
+        public IOperationResult<IFileListItem> UploadAudio(int user, IUploadFile file);
 
-        public IOperationResult<FileUploadResult> UploadVideo(int user, IUploadFile file);
+        public IOperationResult<IFileListItem> UploadVideo(int user, IUploadFile file);
 
-        public IOperationResult<FileUploadResult[]> UploadImages(int user, IUploadFileCollection files);
+        public IOperationResult<IFileListItem[]> UploadImages(int user, IUploadFileCollection files);
 
-        public IOperationResult<FileUploadResult> UploadImage(int user, IUploadFile file);
+        public IOperationResult<IFileListItem> UploadImage(int user, IUploadFile file);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="user"></param>
         /// <param name="content">data:image/png;base64,</param>
         /// <returns></returns>
-        public IOperationResult<FileUploadResult> UploadBase64(int user, string content);
+        public IOperationResult<IFileListItem> UploadBase64(int user, string content);
 
-        public IOperationResult<FileUploadResult[]> UploadFiles(int user, IUploadFileCollection files);
+        public IOperationResult<IFileListItem[]> UploadFiles(int user, IUploadFileCollection files);
 
-        public IOperationResult<FileUploadResult> UploadFile(int user, IUploadFile file);
+        public IOperationResult<IFileListItem> UploadFile(int user, IUploadFile file);
+        /// <summary>
+        /// 根据文件名移除
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public IOperationResult Remove(string fileName);
+        /// <summary>
+        /// 根据 id 删除文件 
+        /// </summary>
+        /// <param name="idItems"></param>
+        /// <returns></returns>
+        public IOperationResult Remove(int[] idItems);
+
+        /// <summary>
+        /// 更新文件的属性
+        /// </summary>
+        public void Reload();
+        /// <summary>
+        /// 根据部分 id 更新文件的属性
+        /// </summary>
+        /// <param name="idItems"></param>
+        public void Reload(int[] idItems);
+    }
+
+
+    public interface IFileListItem
+    {
+        public string Name { get; }
+
+        public long Size { get; }
+
+        public string Type { get; }
+
+        public string Url { get; }
+
+        public int UpdatedAt { get; }
+        public int CreatedAt { get; }
     }
 }

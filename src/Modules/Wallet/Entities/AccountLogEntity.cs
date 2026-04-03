@@ -17,6 +17,7 @@ namespace NetDream.Modules.Wallet.Entities
         public int Money { get; set; }
         
         public int TotalMoney { get; set; }
+        public int Credits { get; set; }
         public int TotalCredits { get; set; }
         public byte Status { get; set; }
         public string Remark { get; set; } = string.Empty;

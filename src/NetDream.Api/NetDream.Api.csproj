@@ -53,6 +53,7 @@
     <ProjectReference Include="..\Modules\UserIdentity\UserIdentity.csproj" />
     <ProjectReference Include="..\Modules\UserProfile\UserProfile.csproj" />
     <ProjectReference Include="..\Modules\VisualEditor\VisualEditor.csproj" />
+    <ProjectReference Include="..\Modules\Wallet\Wallet.csproj" />
     <ProjectReference Include="..\NetDream.Shared\NetDream.Shared.csproj" />
     <ProjectReference Include="..\Modules\Auth\Auth.csproj" />
     <ProjectReference Include="..\Modules\Blog\Blog.csproj" />

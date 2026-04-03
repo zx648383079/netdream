@@ -8,7 +8,6 @@ using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 using NetDream.Shared.Notifications;
 using NetDream.Shared.Providers;
-using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

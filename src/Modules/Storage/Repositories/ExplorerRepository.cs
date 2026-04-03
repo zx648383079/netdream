@@ -1,15 +1,17 @@
 ﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Modules.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NetDream.Modules.Storage.Forms;
+using NetDream.Modules.Storage.Models;
+using NetDream.Shared.Interfaces.Forms;
 
 namespace NetDream.Modules.Storage.Repositories
 {
-    public class ExplorerRepository(StorageProvider storage, IEnvironment environment)
+    public class ExplorerRepository(IStorageRepository storage, IEnvironment environment)
     {
         /// <summary>
         /// 备份的文件夹
@@ -18,12 +20,11 @@ namespace NetDream.Modules.Storage.Repositories
         /// <returns></returns>
         public string BakPath(string fileName = "")
         {
-            var root = "data/bak";
             if (string.IsNullOrWhiteSpace(fileName))
             {
-                return Path.Combine(environment.Root, root);
+                return environment.BackupRoot;
             }
-            return Path.Combine(environment.Root, root, fileName);
+            return Path.Combine(environment.BackupRoot, fileName);
         }
 
         /// <summary>
@@ -31,26 +32,26 @@ namespace NetDream.Modules.Storage.Repositories
         /// </summary>
         /// <param name="prefix"></param>
         /// <returns></returns>
-        public IList<FileItem> BakFiles(string prefix)
+        public IFileListItem[] BakFiles(string prefix)
         {
             var root = new DirectoryInfo(BakPath());
             if (!root.Exists)
             {
                 return [];
             }
-            var items = new List<FileItem>();
+            var items = new List<IFileListItem>();
             foreach (var item in root.EnumerateFiles())
             {
                 if (item.Name.StartsWith(prefix))
                 {
-                    items.Add(new(item.Name)
+                    items.Add(new FileListItem(item.Name)
                     {
                         Size = item.Length,
                         CreatedAt = TimeHelper.TimestampFrom(item.CreationTime)
                     });
                 }
             }
-            return items;
+            return [.. items];
         }
 
         /// <summary>
@@ -73,15 +74,15 @@ namespace NetDream.Modules.Storage.Repositories
             }
         }
 
-        protected StorageProvider? Storage(string tag)
+        private IStorageRepository? Storage(string tag)
         {
             return Storage(tag.ToLower()[0] - 96);
         }
-        protected StorageProvider? Storage(int tag)
+        private IStorageRepository? Storage(int tag)
         {
             return tag switch {
-                1 => storage.PublicStore(),
-                2 => storage.PrivateStore(),
+                1 => storage.Open,
+                2 => storage.Secret,
                 _ => null,
             };
         }
@@ -202,7 +203,7 @@ namespace NetDream.Modules.Storage.Repositories
             {
                 return;
             }
-            storage.RemoveFile(path);
+            storage.Remove(path);
         }
 
         /**
@@ -289,15 +290,15 @@ namespace NetDream.Modules.Storage.Repositories
             {
                 filter = filter[0.. i];
             }
-            return FileRepository.IsTypeExtension(ext, filter);
+            return storage.IsTypeExtension(ext, filter);
         }
 
         public IPage<VirtualFileItem> SearchWithType(ExplorerQueryForm form)
         {
-            var provider = storage.PublicStore();
+            var provider = storage.Open;
             var items = provider.Search(new StorageQueryForm(form)
             {
-                Extension = FileRepository.TypeExtension(form.Type).Split('|')
+                Extension = storage.TypeExtension(form.Type).Split('|')
             });
             //foreach (var item in items.Items)
             //{
@@ -308,60 +309,30 @@ namespace NetDream.Modules.Storage.Repositories
             //}
             return new Page<VirtualFileItem>(items.TotalItems, items.CurrentPage, items.ItemsPerPage)
             {
-                Items = items.Items.Select(item => new VirtualFileItem(item.Name, item.Path)).ToArray(),
+                Items = items.Items.Select(item => new VirtualFileItem(item.Name, item.Url)).ToArray(),
             };
         }
 
 
-        public IPage<FileEntity> StorageSearch(StorageQueryForm form)
+        public IPage<IFileListItem> StorageSearch(IQueryForm form)
         {
             return storage.Search(form);
         }
 
-        public void StorageRemove(int[] id)
+        public IOperationResult StorageRemove(int[] id)
         {
-            var items = storage.Context.Files.Where(i => id.Contains(i.Id)).ToArray();
-            if (items is null || items.Length == 0)
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                var storage = Storage(item.Folder);
-                if (storage is null)
-                {
-                    throw new Exception("unknown folder");
-                }
-                storage.Remove(item);
-            }
+            return storage.Remove(id);
         }
 
         public void StorageReload(int tag)
         {
             var storage = Storage(tag);
-            if (storage is null)
-            {
-                throw new Exception("unknown folder");
-            }
-            storage.Reload();
+            storage?.Reload();
         }
 
         public void StorageSync(int[] id)
         {
-            var items = storage.Context.Files.Where(i => id.Contains(i.Id)).ToArray();
-            if (items is null || items.Length == 0)
-            {
-                return;
-            }
-            foreach (var item in items)
-            {
-                var storage = Storage(item.Folder);
-                if (storage is null)
-                {
-                    throw new Exception("unknown folder");
-                }
-                storage.SyncFile(item.Path);
-            }
+            storage.Reload(id);
         }
     }
 }
