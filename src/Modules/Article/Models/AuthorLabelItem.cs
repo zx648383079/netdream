@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Article.Entities;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Article.Models
 {

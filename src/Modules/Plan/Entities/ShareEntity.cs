@@ -1,4 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Plan.Entities;
 public class ShareEntity : IIdEntity, ITimestampEntity

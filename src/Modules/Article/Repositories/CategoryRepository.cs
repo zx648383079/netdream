@@ -4,9 +4,8 @@ using NetDream.Modules.Article.Forms;
 using NetDream.Modules.Article.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -113,7 +112,7 @@ namespace NetDream.Modules.Article.Repositories
             return TreeHelper.Create(data);
         }
 
-        public void Include(IEnumerable<IWithCategoryModel> items)
+        public void Include(ModuleTargetType type, IEnumerable<IWithCategoryModel> items)
         {
             var idItems = items.Select(item => item.CatId).Where(i => i > 0)
                 .Distinct().ToArray();
@@ -121,7 +120,7 @@ namespace NetDream.Modules.Article.Repositories
             {
                 return;
             }
-            var data = db.Categories.Where(i => idItems.Contains(i.Id)).Select(i => new ListLabelItem(i.Id, i.Name))
+            var data = db.Categories.Where(i => i.Type == (byte)type && idItems.Contains(i.Id)).Select(i => new ListLabelItem(i.Id, i.Name))
                 .ToDictionary(i => i.Id);
             if (data.Count == 0)
             {
@@ -129,9 +128,9 @@ namespace NetDream.Modules.Article.Repositories
             }
             foreach (var item in items)
             {
-                if (item.CatId > 0 && data.TryGetValue(item.CatId, out var user))
+                if (item.CatId > 0 && data.TryGetValue(item.CatId, out var cat))
                 {
-                    item.Category = user;
+                    item.Category = cat;
                 }
             }
         }

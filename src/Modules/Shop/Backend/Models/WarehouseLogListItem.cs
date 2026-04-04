@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Shop.Entities;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Shop.Backend.Models

@@ -5,7 +5,7 @@ using NetDream.Modules.Legwork.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,8 @@ namespace NetDream.Modules.Legwork.Repositories
 {
     public class ProviderRepository(LegworkContext db, 
         IClientContext client,
-        IUserRepository userStore)
+        IUserRepository userStore,
+        ICategoryRepository categoryStore)
     {
         public IPage<ProviderEntity> GetList(QueryForm form)
         {
@@ -201,7 +202,7 @@ namespace NetDream.Modules.Legwork.Repositories
                 .When(status > 0, i => i.Status == 1)
                 .Where(i => i.UserId == user_id)
                 .Select(i => new KeyValuePair<int, byte>(i.CatId, i.Status)).ToDictionary();
-            var res = db.Categories.Search(form.Keywords, "name")
+            var res = categoryStore.Search(form.Keywords, "name")
                 .When(!all, i => links.Keys.Contains(i.Id))
                 .ToPage(form).CopyTo<CategoryEntity, CategoryListItem>();
             foreach (var item in res.Items)

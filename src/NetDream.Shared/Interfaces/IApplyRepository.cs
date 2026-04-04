@@ -1,5 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Forms;
-using NetDream.Shared.Models;
+﻿using NetDream.Shared.Models;
 
 namespace NetDream.Shared.Interfaces
 {

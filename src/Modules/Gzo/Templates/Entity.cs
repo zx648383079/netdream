@@ -19,7 +19,7 @@ namespace NetDream.Modules.Gzo.Templates
             var impl = FormatImplement(columns);
             if (!string.IsNullOrWhiteSpace(impl))
             {
-                writer.Write("using NetDream.Shared.Interfaces.Entities;")
+                writer.Write("using NetDream.Shared.Interfaces;")
                 .WriteLine(true)
                 .WriteLine(true);
             }

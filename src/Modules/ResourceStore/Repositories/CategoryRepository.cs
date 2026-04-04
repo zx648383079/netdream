@@ -4,7 +4,7 @@ using NetDream.Modules.ResourceStore.Forms;
 using NetDream.Modules.ResourceStore.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using System;

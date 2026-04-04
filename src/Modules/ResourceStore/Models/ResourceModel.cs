@@ -1,6 +1,6 @@
 ﻿using NetDream.Modules.ResourceStore.Entities;
 using NetDream.Shared.Converters;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using System.Collections.Generic;
 

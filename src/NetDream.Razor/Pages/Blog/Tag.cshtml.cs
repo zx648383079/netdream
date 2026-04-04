@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NetDream.Modules.Blog.Repositories;
-using NetDream.Shared.Providers.Models;
+using NetDream.Modules.Article.Repositories;
 
 namespace NetDream.Razor.Pages.Blog
 {

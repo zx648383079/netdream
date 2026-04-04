@@ -11,6 +11,7 @@ using NetDream.Modules.UserAccount.Forms;
 using Microsoft.EntityFrameworkCore;
 using NetDream.Shared.Models;
 using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 
 namespace NetDream.Modules.UserAccount.Repositories
 {
@@ -26,7 +27,7 @@ namespace NetDream.Modules.UserAccount.Repositories
         public const int SEX_MALE = 1; // 性别男
         public const int SEX_FEMALE = 2; //性别女
 
-        protected override Dictionary<string, string> DefaultItems => new()
+        protected Dictionary<string, string> DefaultItems => new()
         {
             { "address_id", "0" }, // 默认收货地址
             { "id_card", "" } // 身份证

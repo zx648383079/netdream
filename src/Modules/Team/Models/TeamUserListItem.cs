@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Team.Entities;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Team.Models
 {

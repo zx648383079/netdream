@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using NetDream.Shared.Interfaces.Forms;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Shared.Helpers
 {

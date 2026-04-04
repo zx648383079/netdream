@@ -1,13 +1,15 @@
-﻿namespace NetDream.Shared.Models
+﻿using NetDream.Shared.Interfaces;
+
+namespace NetDream.Shared.Models
 {
-    public class OptionItem(string name, object value)
+    public class OptionItem(string name, object value) : IOptionItem<object>
     {
         public string Name { get; set; } = name;
 
         public object Value { get; set; } = value;
     }
 
-    public class OptionItem<T>(string name, T value)
+    public class OptionItem<T>(string name, T value) : IOptionItem<T>
     {
         public string Name { get; set; } = name;
 

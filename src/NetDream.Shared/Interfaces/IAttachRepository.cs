@@ -1,5 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Models;
+﻿using NetDream.Shared.Models;
 using System.Collections.Generic;
 
 namespace NetDream.Shared.Interfaces

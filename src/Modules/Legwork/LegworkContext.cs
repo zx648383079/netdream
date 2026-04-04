@@ -5,7 +5,6 @@ using NetDream.Modules.Legwork.Migrations;
 namespace NetDream.Modules.Legwork;
 public class LegworkContext(DbContextOptions<LegworkContext> options) : DbContext(options)
 {
-    public DbSet<CategoryEntity> Categories { get; set; }
     public DbSet<CategoryProviderEntity> CategoryProvider { get; set; }
     public DbSet<OrderEntity> Order { get; set; }
     public DbSet<OrderLogEntity> OrderLog { get; set; }
@@ -16,7 +15,6 @@ public class LegworkContext(DbContextOptions<LegworkContext> options) : DbContex
     public DbSet<WaiterEntity> Waiter { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryProviderEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new OrderEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new OrderLogEntityTypeConfiguration());

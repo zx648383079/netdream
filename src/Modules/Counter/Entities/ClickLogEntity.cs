@@ -1,4 +1,4 @@
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Counter.Entities
 {
@@ -11,11 +11,11 @@ namespace NetDream.Modules.Counter.Entities
         public string X { get; set; } = string.Empty;
         public string Y { get; set; } = string.Empty;
         /// <summary>
-        /// µã»÷µÄÎ»ÖÃ±êÇ©
+        /// ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã±ï¿½Ç©
         /// </summary>
         public string Tag { get; set; } = string.Empty;
         /// <summary>
-        /// µã»÷µÄ±êÇ©Á´½Ó
+        /// ï¿½ï¿½ï¿½ï¿½Ä±ï¿½Ç©ï¿½ï¿½ï¿½ï¿½
         /// </summary>
         public string TagUrl { get; set; } = string.Empty;
         

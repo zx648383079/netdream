@@ -1,4 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Forms;
+﻿using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Auth.Forms
 {

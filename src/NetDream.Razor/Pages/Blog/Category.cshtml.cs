@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NetDream.Modules.Blog.Models;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Models;
+using NetDream.Modules.Article.Repositories;
 
 namespace NetDream.Razor.Pages.Blog
 {

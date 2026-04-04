@@ -1,5 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Forms;
-
+﻿
 namespace NetDream.Shared.Interfaces
 {
     public interface IStorageRepository

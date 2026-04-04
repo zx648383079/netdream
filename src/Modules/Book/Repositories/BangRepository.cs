@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Modules.Book.Entities;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Linq;
 
@@ -81,9 +81,7 @@ namespace NetDream.Modules.Book.Repositories
 
         private BookEntity[] Query(Func<IQueryable<BookEntity>, IQueryable<BookEntity>> cb)
         {
-            var query = db.Books
-                .Include(i => i.Author)
-                .Include(i => i.Category).When(client.UserId == 0, i =>i.Classify == 0 && i.Status == 1);
+            var query = db.Books.When(client.UserId == 0, i =>i.Classify == 0 && i.Status == 1);
             return cb.Invoke(query)
                 .ToArray();
         }

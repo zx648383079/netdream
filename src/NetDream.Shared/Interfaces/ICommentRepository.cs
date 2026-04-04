@@ -1,6 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Interfaces.Forms;
-using NetDream.Shared.Models;
+﻿using NetDream.Shared.Models;
 using System;
 
 namespace NetDream.Shared.Interfaces
@@ -48,6 +46,13 @@ namespace NetDream.Shared.Interfaces
         public string Content { get; set; }
 
         public IUser? User { get; set; }
+    }
+
+    public interface IWithArticleModel
+    {
+        public int ArticleId { get; }
+
+        public IListArticleItem? Article { set; }
     }
 
     public interface ICommentSource

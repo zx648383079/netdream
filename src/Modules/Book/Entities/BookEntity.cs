@@ -1,5 +1,4 @@
-
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using System.Collections.Generic;
 
 namespace NetDream.Modules.Book.Entities
@@ -36,8 +35,6 @@ namespace NetDream.Modules.Book.Entities
         
         public int CreatedAt { get; set; }
 
-        public AuthorEntity? Author { get; set; }
-        public CategoryEntity? Category { get; set; }
         public ICollection<ChapterEntity>? Chapters { get; set; }
         public ICollection<SourceEntity>? Sources { get; set; }
     }

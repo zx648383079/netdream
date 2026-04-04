@@ -1,6 +1,6 @@
 ﻿using NetDream.Modules.UserAccount.Entities;
 using NetDream.Shared.Helpers;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using System.Text.Json;
 

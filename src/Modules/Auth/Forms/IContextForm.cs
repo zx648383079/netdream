@@ -1,4 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Shared.Interfaces;
 using NetDream.Shared.Interfaces;
 using NetDream.Modules.Auth.Repositories;
 

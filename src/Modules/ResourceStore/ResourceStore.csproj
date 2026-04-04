@@ -18,6 +18,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\NetDream.Shared\NetDream.Shared.csproj" />
 		<ProjectReference Include="..\..\Shared\Repositories\Repositories.csproj" />
+		<ProjectReference Include="..\Storage\Storage.csproj" />
 	</ItemGroup>
 
 </Project>

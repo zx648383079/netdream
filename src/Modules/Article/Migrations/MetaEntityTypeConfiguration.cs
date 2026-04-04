@@ -4,13 +4,15 @@ using NetDream.Modules.Article.Entities;
 
 namespace NetDream.Modules.Article.Migrations
 {
-    public class MetaEntityTypeConfiguration(string prefix) : IEntityTypeConfiguration<MetaEntity>
+    public class MetaEntityTypeConfiguration : IEntityTypeConfiguration<MetaEntity>
     {
         public void Configure(EntityTypeBuilder<MetaEntity> builder)
         {
-            builder.ToTable(prefix + "_meta", table => table.HasComment("附加内容表"));
+            builder.ToTable("article_meta", table => table.HasComment("附加内容表"));
             builder.HasKey(i => i.Id);
             builder.Property(table => table.Id).HasColumnName("id");
+            builder.Property(table => table.Language).HasColumnName("language").HasMaxLength(10);
+            builder.Property(table => table.ItemType).HasColumnName("item_type");
             builder.Property(table => table.ItemId).HasColumnName("item_id");
             builder.Property(table => table.Name).HasColumnName("name").HasMaxLength(100);
             builder.Property(table => table.Content).HasColumnName("content");

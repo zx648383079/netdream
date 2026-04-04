@@ -3,7 +3,7 @@ using NetDream.Modules.Document.Entities;
 using NetDream.Modules.Document.Forms;
 using NetDream.Modules.Document.Models;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using System;

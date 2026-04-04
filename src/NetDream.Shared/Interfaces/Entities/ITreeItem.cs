@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace NetDream.Shared.Interfaces.Entities
+namespace NetDream.Shared.Interfaces
 {
     public interface ITreeLinkItem
     {

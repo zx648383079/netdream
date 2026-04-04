@@ -1,14 +1,14 @@
-﻿using MediatR;
-using NetDream.Modules.MicroBlog.Models;
+﻿using NetDream.Modules.MicroBlog.Models;
+using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
 
 namespace NetDream.Modules.MicroBlog.Repositories
 {
     public class UserRepository(MicroBlogContext db,
         IUserRepository userStore,
-        IMediator mediator)
+        IEventBus mediator)
     {
 
         public IOperationResult<UserOpenResult> Get(int user)

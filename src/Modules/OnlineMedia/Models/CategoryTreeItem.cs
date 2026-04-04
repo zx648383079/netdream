@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.OnlineMedia.Entities;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using System.Collections.Generic;
 
 namespace NetDream.Modules.OnlineMedia.Models

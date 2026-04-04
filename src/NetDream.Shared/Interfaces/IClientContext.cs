@@ -1,5 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Entities;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace NetDream.Shared.Interfaces

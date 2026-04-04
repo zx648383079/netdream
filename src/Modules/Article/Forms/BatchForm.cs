@@ -1,6 +1,8 @@
-﻿using NetDream.Modules.Blog.Models;
+﻿using NetDream.Modules.Article.Models;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 
-namespace NetDream.Modules.Blog.Forms
+namespace NetDream.Modules.Article.Forms
 {
     public class BlogBatchForm
     {
@@ -14,12 +16,12 @@ namespace NetDream.Modules.Blog.Forms
 
     public class BlogBatchResult
     {
-        public CategoryLabelItem[]? Categories { get; set; }
-        public BlogListItem[]? NewBlog { get; set; }
-        public CommentListItem[]? NewComment { get; set; }
+        public ListLabelItem[]? Categories { get; set; }
+        public ArticleListItem[]? NewBlog { get; set; }
+        public ICommentItem[]? NewComment { get; set; }
 
-        public BlogModel? Detail { get; set; }
-        public BlogListItem[]? Relation { get; set; }
+        public ArticleModel? Detail { get; set; }
+        public ArticleListItem[]? Relation { get; set; }
     }
 
     public class BlogDetailForm

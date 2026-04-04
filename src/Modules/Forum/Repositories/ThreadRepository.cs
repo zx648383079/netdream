@@ -3,6 +3,7 @@ using NetDream.Modules.Forum.Entities;
 using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
 using NetDream.Shared.Events;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
@@ -18,6 +19,7 @@ namespace NetDream.Modules.Forum.Repositories
         IUserRepository userStore,
         IZoneRepository zoneStore,
         IIdentityRepository roleStore,
+        IInteractRepository interact,
         IClientContext client, IEventBus mediator)
     {
 
@@ -337,9 +339,7 @@ namespace NetDream.Modules.Forum.Repositories
 
         public bool ToggleCollectThread(ThreadEntity model)
         {
-            var yes = new LogRepository(db)
-                .ToggleAction(client.UserId, model.Id, LogRepository.TYPE_THREAD, 
-                LogRepository.ACTION_COLLECT);
+            var yes = interact.Toggle(client.UserId, ModuleTargetType.ForumThread, model.Id, InteractType.Collect);
             model.CollectCount += (yes ? 1 : -1);
             db.Update(model);
             return yes;
@@ -358,39 +358,40 @@ namespace NetDream.Modules.Forum.Repositories
             {
                 return OperationResult<AgreeResult>.Fail("回复不存在");
             }
-            var action = agree ? LogRepository.ACTION_AGREE : LogRepository.ACTION_DISAGREE;
-            var res = new LogRepository(db).ToggleLog(
+            var res = interact.Update(
                 client.UserId,
+                ModuleTargetType.ForumPost,
                 model.Id,
-                LogRepository.TYPE_THREAD_POST,
-                action,
-                [LogRepository.ACTION_AGREE, LogRepository.ACTION_DISAGREE]);
-            if (res < 1)
+                agree ? InteractType.Agree : InteractType.Disagree,
+                [InteractType.Agree, InteractType.Disagree]);
+            switch(res)
             {
-                if (action == LogRepository.ACTION_AGREE)
-                {
-                    model.AgreeCount--;
-                }
-                else
-                {
-                    model.DisagreeCount--;
-                }
-            }
-            else if(res == 1) {
-                var plus = action == LogRepository.ACTION_AGREE ? 1 : -1;
-                model.AgreeCount += plus;
-                model.DisagreeCount -= plus;
-            } else
-            {
-                if (action == LogRepository.ACTION_AGREE)
-                {
-                    model.AgreeCount++;
-                }
-                else
-                {
-                    model.DisagreeCount++;
-                }
-            }
+                case RecordToggleType.Deleted:
+                    if (agree)
+                    {
+                        model.AgreeCount--;
+                    }
+                    else
+                    {
+                        model.DisagreeCount--;
+                    }
+                    break;
+                case RecordToggleType.Updated:
+                    var plus = agree ? 1 : -1;
+                    model.AgreeCount += plus;
+                    model.DisagreeCount -= plus;
+                    break;
+                case RecordToggleType.Added:
+                    if (agree)
+                    {
+                        model.AgreeCount++;
+                    }
+                    else
+                    {
+                        model.DisagreeCount++;
+                    }
+                    break;
+            };
             db.Update(model);
             return OperationResult.Ok(new AgreeResult(agree, model.AgreeCount, model.DisagreeCount));
         }
@@ -519,13 +520,11 @@ namespace NetDream.Modules.Forum.Repositories
             
             model.LastPost = LastPost(model.Id, false);
             model.IsNew = IsNew(model);
-            var logStore = new LogRepository(db);
-            model.LikeType = logStore.UserActionValue(client.UserId, id, LogRepository.TYPE_THREAD,
-                [LogRepository.ACTION_AGREE, LogRepository.ACTION_DISAGREE]);
-            model.IsCollected = logStore.UserHasAction(client.UserId, id, LogRepository.TYPE_THREAD,
-                LogRepository.ACTION_COLLECT);
-            model.IsReward = logStore.UserHasAction(client.UserId, id, LogRepository.TYPE_THREAD,
-                LogRepository.ACTION_REWARD);
+            model.LikeType = (byte)interact.Get(client.UserId, ModuleTargetType.ForumThread, 
+                id, 
+                [InteractType.Agree, InteractType.Disagree]);
+            model.IsCollected = interact.Has(client.UserId, ModuleTargetType.ForumThread, id, InteractType.Collect);
+            model.IsReward = interact.Has(client.UserId, ModuleTargetType.ForumThread, id, InteractType.Bought);
             model.RewardCount = db.ThreadLogs
                     .Where(i => i.ItemType == LogRepository.TYPE_THREAD
                         && i.ItemId == id && i.Action == LogRepository.ACTION_REWARD).Count();
@@ -628,15 +627,15 @@ namespace NetDream.Modules.Forum.Repositories
                 field.SetValue(thread, (byte)((byte)field.GetValue(thread) > 0 ? 0 : 1));
             }
             db.Threads.Save(thread, client.Now);
-            db.Logs.Add(new LogEntity()
-            {
-                ItemType = LogRepository.TYPE_THREAD,
-                ItemId = thread.Id,
-                Action = 1,
-                Data = JsonSerializer.Serialize(data),
-                UserId = client.UserId,
-                CreatedAt = client.Now,
-            });
+            //db.Logs.Add(new LogEntity()
+            //{
+            //    ItemType = LogRepository.TYPE_THREAD,
+            //    ItemId = thread.Id,
+            //    Action = 1,
+            //    Data = JsonSerializer.Serialize(data),
+            //    UserId = client.UserId,
+            //    CreatedAt = client.Now,
+            //});
             db.SaveChanges();
             return OperationResult.Ok(thread);
         }
@@ -689,15 +688,15 @@ namespace NetDream.Modules.Forum.Repositories
                 field.SetValue(thread, (byte)(action.Value > 0 ? 1 : 0));
             }
             db.Threads.Save(thread, client.Now);
-            db.Logs.Add(new LogEntity()
-            {
-                ItemType = LogRepository.TYPE_THREAD,
-                ItemId = thread.Id,
-                Action = 1,
-                Data = JsonSerializer.Serialize(data),
-                UserId = client.UserId,
-                CreatedAt = client.Now,
-            });
+            //db.Logs.Add(new LogEntity()
+            //{
+            //    ItemType = LogRepository.TYPE_THREAD,
+            //    ItemId = thread.Id,
+            //    Action = 1,
+            //    Data = JsonSerializer.Serialize(data),
+            //    UserId = client.UserId,
+            //    CreatedAt = client.Now,
+            //});
             db.SaveChanges();
             return OperationResult.Ok(thread);
         }
@@ -771,13 +770,13 @@ namespace NetDream.Modules.Forum.Repositories
             var repository = new ForumRepository(db, userStore, zoneStore, client);
             repository.UpdateCount(thread.ForumId, "thread_count", -1);
             repository.UpdateCount(thread.ForumId, "post_count", -count);
-            db.Logs.Add(new LogEntity() { 
-                ItemType = LogRepository.TYPE_THREAD,
-                ItemId = id,
-                Action = LogRepository.ACTION_DELETE,
-                UserId = client.UserId,
-                CreatedAt = client.Now,
-            });
+            //db.Logs.Add(new LogEntity() { 
+            //    ItemType = LogRepository.TYPE_THREAD,
+            //    ItemId = id,
+            //    Action = LogRepository.ACTION_DELETE,
+            //    UserId = client.UserId,
+            //    CreatedAt = client.Now,
+            //});
             db.SaveChanges();
             return OperationResult.Ok();
         }
@@ -806,11 +805,11 @@ namespace NetDream.Modules.Forum.Repositories
 
         private byte ToggleLike(ThreadEntity thread)
         {
-            return new LogRepository(db).ToggleLog(client.UserId,
+            return (byte)interact.Update(client.UserId,
+                ModuleTargetType.ForumThread,
                 thread.Id,
-                LogRepository.TYPE_THREAD,
-                LogRepository.ACTION_AGREE, [
-                LogRepository.ACTION_AGREE, LogRepository.ACTION_DISAGREE
+                InteractType.Agree, [
+                InteractType.Agree, InteractType.Disagree
             ]);
         }
 
@@ -848,15 +847,15 @@ namespace NetDream.Modules.Forum.Repositories
             }
             model.Status = status;
             db.ThreadPosts.Save(model, client.Now);
-            db.Logs.Add(new LogEntity()
-            {
-                ItemType = LogRepository.TYPE_POST,
-                ItemId = id,
-                Action = LogRepository.ACTION_STATUS,
-                Data = status.ToString(),
-                UserId = client.UserId,
-                CreatedAt = client.Now,
-            });
+            //db.Logs.Add(new LogEntity()
+            //{
+            //    ItemType = LogRepository.TYPE_POST,
+            //    ItemId = id,
+            //    Action = LogRepository.ACTION_STATUS,
+            //    Data = status.ToString(),
+            //    UserId = client.UserId,
+            //    CreatedAt = client.Now,
+            //});
             db.SaveChanges();
             return OperationResult.Ok(model);
         }

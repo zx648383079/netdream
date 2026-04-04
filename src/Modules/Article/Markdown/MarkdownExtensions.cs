@@ -1,5 +1,5 @@
 ﻿using Markdig;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Repositories;
 
 namespace NetDream.Modules.Blog.Markdown
 {

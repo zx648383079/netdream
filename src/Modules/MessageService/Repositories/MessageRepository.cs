@@ -1,6 +1,5 @@
 ﻿using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using NetDream.Modules.MessageService.Entities;
 using NetDream.Modules.MessageService.Forms;

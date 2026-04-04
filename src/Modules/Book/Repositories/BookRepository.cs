@@ -4,17 +4,16 @@ using NetDream.Modules.Book.Forms;
 using NetDream.Modules.Book.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
-using NetDream.Shared.Providers.Models;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.Book.Repositories
 {
-    public class BookRepository(BookContext db, IClientContext client)
+    public class BookRepository(
+        BookContext db, IClientContext client, ICounter counter)
     {
         public const int CHAPTER_TYPE_FREE_CHAPTER = 0;
         public const int CHAPTER_TYPE_VIP_CHAPTER = 1;
@@ -29,10 +28,6 @@ namespace NetDream.Modules.Book.Repositories
         public const int LOG_ACTION_AGREE = 1;
         public const int LOG_ACTION_DISAGREE = 2;
 
-        public DayLogProvider ClickLog() 
-        {
-            return new DayLogProvider(db, client);
-        }
 
         /// <summary>
         /// 前台请求
@@ -41,8 +36,7 @@ namespace NetDream.Modules.Book.Repositories
         /// <returns></returns>
         public IPage<BookEntity> GetList(BookQueryForm form)
         {
-            return db.Books.Include(i => i.Author)
-                .Include(i => i.Category)
+            return db.Books
                 .Search(form.Keywords, "name")
                 .When(client.UserId == 0, i => i.Classify == 0)
                 .When(form.Category > 0, i => i.CatId == form.Category)
@@ -58,13 +52,13 @@ namespace NetDream.Modules.Book.Repositories
             string type, PaginationForm form)
         {
             var logs = ClickLogs(type);
-            var res = new Page<BookEntity>(logs.Count, form);
-            if (logs.Count == 0 || res.IsEmpty)
+            var res = new Page<BookEntity>(logs.Length, form);
+            if (logs.Length == 0 || res.IsEmpty)
             {
                 return res;
             }
             var items = logs.Skip(res.ItemsOffset).Take(res.ItemsPerPage)
-                .ToDictionary(i => i.ItemId, i => i.Count);
+                .ToDictionary(i => i.Key, i => i.Value);
             if (items.Count == 0)
             {
                 return res;
@@ -84,21 +78,20 @@ namespace NetDream.Modules.Book.Repositories
             return res;
         }
 
-        public IList<LogCount> ClickLogs(string type)
+        public KeyValuePair<int, int>[] ClickLogs(string type)
         {
             return type switch
             {
-                "month" => ClickLog().SortByMonth(LOG_TYPE_BOOK, LOG_ACTION_CLICK),
-                "week" => ClickLog().SortByWeek(LOG_TYPE_BOOK, LOG_ACTION_CLICK),
-                "day" => ClickLog().SortByDay(LOG_TYPE_BOOK, LOG_ACTION_CLICK),
+                "month" => counter.Count(ModuleTargetType.Book, StatisticalPeriodType.Month),
+                "week" => counter.Count(ModuleTargetType.Book, StatisticalPeriodType.Week),
+                "day" => counter.Count(ModuleTargetType.Book, StatisticalPeriodType.Day),
                 _ => [],
             };
         }
 
         public IPage<BookEntity> GetManageList(BookQueryForm form)
         {
-            return db.Books.Include(i => i.Author)
-                .Include(i => i.Category)
+            return db.Books
                 .Search(form.Keywords, "name")
                 .Where(i => i.Classify == form.Classify)
                 .When(form.Category > 0, i => i.CatId == form.Category)
@@ -109,8 +102,7 @@ namespace NetDream.Modules.Book.Repositories
 
         public IPage<BookEntity> GetSelfList(BookQueryForm form)
         {
-            return db.Books.Include(i => i.Author)
-                .Include(i => i.Category)
+            return db.Books
                 .Search(form.Keywords, "name")
                 .When(form.Category > 0, i => i.CatId == form.Category)
                 .Where(i => i.UserId == client.UserId)
@@ -119,8 +111,7 @@ namespace NetDream.Modules.Book.Repositories
 
         public IOperationResult<BookEntity> Detail(int id)
         {
-            var model = db.Books.Include(i => i.Author)
-                .Include(i => i.Category)
+            var model = db.Books
                 .Where(i => i.Id == id).Single();
             if (model is null)
             {
@@ -136,8 +127,7 @@ namespace NetDream.Modules.Book.Repositories
 
         public IOperationResult<BookEntity> GetManage(int id)
         {
-            var model = db.Books.Include(i => i.Author)
-                .Include(i => i.Category)
+            var model = db.Books
                 .Where(i => i.Id == id).Single();
             if (model is null)
             {
@@ -245,7 +235,7 @@ namespace NetDream.Modules.Book.Repositories
             {
                 return OperationResult.Fail<ChapterModel>("章节错误");
             }
-            ClickLog().Add(LOG_TYPE_BOOK, model.BookId, 0);
+            counter.Add(ModuleTargetType.Book, model.BookId);
             var data = model.CopyTo<ChapterModel>();
             data.Content = model.Type < 1 ? db.ChapterBodies.Where(i => i.Id == model.Id).Select(i => i.Content)
                 .Single() : string.Empty;
@@ -379,9 +369,9 @@ namespace NetDream.Modules.Book.Repositories
                 .Select(i => i.Name).Take(4).ToArray();
         }
 
-        /**
-         * 整理小说id，及目录id
-         */
+        /// <summary>
+        /// 整理小说id，及目录id
+        /// </summary>
         public void SortOut()
         {
             db.Books.RefreshPk((oldId, newId) => {
@@ -391,8 +381,8 @@ namespace NetDream.Modules.Book.Repositories
                 db.BuyLogs.Where(i => i.BookId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, newId));
                 db.Roles.Where(i => i.BookId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, newId));
                 db.ListItems.Where(i => i.BookId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.BookId, newId));
-                db.Logs.Where(i => i.ItemId == oldId && i.ItemType == LOG_TYPE_BOOK).ExecuteUpdate(setters => setters.SetProperty(i => i.ItemId, newId));
-                db.DayLogs.Where(i => i.ItemId == oldId && i.ItemType == LOG_TYPE_BOOK).ExecuteUpdate(setters => setters.SetProperty(i => i.ItemId, newId));
+                // db.Logs.Where(i => i.ItemId == oldId && i.ItemType == LOG_TYPE_BOOK).ExecuteUpdate(setters => setters.SetProperty(i => i.ItemId, newId));
+                // db.DayLogs.Where(i => i.ItemId == oldId && i.ItemType == LOG_TYPE_BOOK).ExecuteUpdate(setters => setters.SetProperty(i => i.ItemId, newId));
             });
             db.Chapters.RefreshPk((oldId, newId) => {
                 db.Histories.Where(i => i.ChapterId == oldId).ExecuteUpdate(setters => setters.SetProperty(i => i.ChapterId, newId));

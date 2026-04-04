@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetDream.Modules.Wallet.Entities;
+using NetDream.Modules.Wallet.Forms;
+using NetDream.Modules.Wallet.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
@@ -11,7 +13,9 @@ using System.Linq;
 
 namespace NetDream.Modules.Wallet.Repositories
 {
-    public class WalletRepository(WalletContext db) : IWallet
+    public class WalletRepository(WalletContext db, 
+        IUserRepository userStore,
+        IClientContext client) : IWallet
     {
         public const byte TYPE_SYSTEM = 1; // 系统自动
         public const byte TYPE_RECHARGE = 6; // 用户充值

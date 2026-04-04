@@ -1,5 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Models;
+﻿using NetDream.Shared.Models;
 using System.Collections.Generic;
 
 namespace NetDream.Shared.Interfaces
@@ -15,7 +14,7 @@ namespace NetDream.Shared.Interfaces
 
         public ILevelItem[] All(ModuleTargetType type);
 
-        public void Include(IEnumerable<IWithCategoryModel> items);
+        public void Include(ModuleTargetType type, IEnumerable<IWithCategoryModel> items);
     }
 
     public interface IWithCategoryModel

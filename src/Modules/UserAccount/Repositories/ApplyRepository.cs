@@ -2,7 +2,6 @@
 using NetDream.Modules.UserAccount.Entities;
 using NetDream.Modules.UserAccount.Forms;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using System;

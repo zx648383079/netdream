@@ -1,5 +1,5 @@
 
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Shop.Entities
 {
@@ -15,7 +15,7 @@ namespace NetDream.Modules.Shop.Entities
         public string Description { get; set; } = string.Empty;
         public int Position { get; set; }
         /// <summary>
-        /// ÊÇ·ñÖ§³Ö»õµ½¸¶¿î
+        /// ï¿½Ç·ï¿½Ö§ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         /// </summary>
 
         public bool CodEnabled { get; set; }

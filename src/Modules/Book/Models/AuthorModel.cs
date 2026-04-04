@@ -1,9 +1,10 @@
-﻿using NetDream.Modules.Book.Entities;
+﻿using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Book.Models
 {
-    public class AuthorModel: AuthorEntity
+    public class AuthorModel
     {
+        public IUser User { get; set; }
 
         public int BookCount { get; set; }
 
@@ -15,16 +16,9 @@ namespace NetDream.Modules.Book.Models
         {
             
         }
-        public AuthorModel(AuthorEntity entity)
+        public AuthorModel(IUser entity)
         {
-            Id = entity.Id;
-            Name = entity.Name;
-            Avatar = entity.Avatar;
-            Description = entity.Description;
-            UserId = entity.UserId;
-            CreatedAt = entity.CreatedAt;
-            Status = entity.Status;
-            UpdatedAt = entity.UpdatedAt;
+            User = entity;
         }
     }
 }

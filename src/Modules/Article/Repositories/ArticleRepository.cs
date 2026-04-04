@@ -1,20 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Article.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.Article.Repositories
 {
-    public class ArticleRepository(ArticleContext db) : IArticleRepository
+    public class ArticleRepository(ArticleContext db, 
+        ICategoryRepository categoryStore, 
+        IUserRepository userStore) : IArticleRepository
     {
-        public const byte PUBLISH_STATUS_DRAFT = 0; // 草稿
-        public const byte PUBLISH_STATUS_POSTED = 5; // 已发布
-        public const byte PUBLISH_STATUS_TRASH = 9; // 垃圾箱
-        public const byte PUBLISH_STATUS_AUTO_SAVE = 8; // 自动保存
 
         public const byte TYPE_ORIGINAL = 0; // 原创
         public const byte TYPE_REPRINT = 1; // 转载
@@ -32,12 +30,21 @@ namespace NetDream.Modules.Article.Repositories
 
         public IListArticleItem[] Get(ModuleTargetType type)
         {
-            throw new NotImplementedException();
+            return db.Articles.Where(i => i.Type == (byte)type
+            && i.PublishStatus == (byte)PublishStatus.Posted && i.Status == (byte)ReviewStatus.Approved)
+                .OrderByDescending(i => i.CreatedAt)
+                .SelectAsLabel().ToArray();
         }
 
         public IOperationResult<IArticle> Get(ModuleTargetType type, int id)
         {
-            throw new NotImplementedException();
+            var model = db.Articles.Where(i => i.Type == (byte)type && i.Id == id 
+            && i.PublishStatus == (byte)PublishStatus.Posted && i.Status == (byte)ReviewStatus.Approved).SingleOrDefault();
+            if (model is null)
+            {
+                return OperationResult<IArticle>.Fail("id is error");
+            }
+            return OperationResult.Ok<IArticle>(new ArticleOpenModel(model));
         }
 
         public void Remove(int user, ModuleTargetType type, int id)
@@ -65,6 +72,29 @@ namespace NetDream.Modules.Article.Repositories
                 "hot" => ("comment_count", "desc"),
                 _ => SearchHelper.CheckSortOrder(form, ["id", "created_at"]),
             };
+        }
+
+        public void Include(ModuleTargetType type, IEnumerable<IWithArticleModel> items)
+        {
+            var idItems = items.Select(item => item.ArticleId).Where(i => i > 0)
+                .Distinct().ToArray();
+            if (idItems.Length == 0)
+            {
+                return;
+            }
+            var data = db.Articles.Where(i => i.Type == (byte)type && idItems.Contains(i.Id)).Select(i => new ListArticleItem(i.Id, i.Title))
+                .ToDictionary(i => i.Id);
+            if (data.Count == 0)
+            {
+                return;
+            }
+            foreach (var item in items)
+            {
+                if (item.ArticleId > 0 && data.TryGetValue(item.ArticleId, out var article))
+                {
+                    item.Article = article;
+                }
+            }
         }
     }
 }

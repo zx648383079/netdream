@@ -4,6 +4,8 @@ using NetDream.Modules.Article.Listeners;
 using NetDream.Modules.Article.Models;
 using NetDream.Shared.Events;
 using NetDream.Shared.Events.Notifications;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using System.Linq;
 
 namespace NetDream.Modules.Article
@@ -30,29 +32,28 @@ namespace NetDream.Modules.Article
             });
         }
 
-        internal static IQueryable<BlogListItem> SelectAs(this IQueryable<BlogEntity> query)
+        internal static IQueryable<ArticleListItem> SelectAs(this IQueryable<ArticleEntity> query)
         {
-            return query.Select(i => new BlogListItem()
+            return query.Select(i => new ArticleListItem()
             {
                 Id = i.Id,
                 Title = i.Title,
                 Language = i.Language,
                 Description = i.Description,
-                ProgrammingLanguage = i.ProgrammingLanguage,
                 Thumb = i.Thumb,
-                TermId = i.TermId,
+                CatId = i.CatId,
                 ParentId = i.ParentId,
                 OpenType = i.OpenType,
                 UserId = i.UserId,
                 CommentCount = i.CommentCount,
                 ClickCount = i.ClickCount,
-                RecommendCount = i.RecommendCount,
+                LikeCount = i.LikeCount,
                 CreatedAt = i.CreatedAt,
             });
         }
-        internal static IQueryable<BlogListItem> SelectAsLabel(this IQueryable<BlogEntity> query)
+        internal static IQueryable<ArticleListItem> SelectAsLabel(this IQueryable<ArticleEntity> query)
         {
-            return query.Select(i => new BlogListItem()
+            return query.Select(i => new ArticleListItem()
             {
                 Id = i.Id,
                 Title = i.Title,
@@ -61,24 +62,22 @@ namespace NetDream.Modules.Article
             });
         }
 
-        internal static IQueryable<CategoryListItem> SelectAs(this IQueryable<CategoryEntity> query)
+        internal static IQueryable<CategoryEntity> SelectAs(this IQueryable<CategoryEntity> query)
         {
-            return query.Select(i => new CategoryListItem()
+            return query.Select(i => new CategoryEntity()
             {
                 Id = i.Id,
                 Name = i.Name,
                 EnName = i.EnName,
-                Keywords = i.Keywords,
                 ParentId = i.ParentId,
                 Thumb = i.Thumb,
-                Styles = i.Styles,
                 Description = i.Description,
             });
         }
 
-        internal static IQueryable<CategoryLabelItem> SelectAsLabel(this IQueryable<CategoryEntity> query)
+        internal static IQueryable<IListLabelItem> SelectAsLabel(this IQueryable<CategoryEntity> query)
         {
-            return query.Select(i => new CategoryLabelItem()
+            return query.Select(i => new ListLabelItem()
             {
                 Id = i.Id,
                 Name = i.Name,

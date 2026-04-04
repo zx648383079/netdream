@@ -1,7 +1,7 @@
 ﻿using Markdig;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Repositories;
 
 namespace NetDream.Modules.Blog.Markdown
 {

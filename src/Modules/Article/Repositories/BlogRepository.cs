@@ -1,22 +1,26 @@
 using Markdig;
 using Microsoft.EntityFrameworkCore;
-using NetDream.Modules.Blog.Forms;
+using NetDream.Modules.Article.Entities;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Models;
 using NetDream.Modules.Blog.Markdown;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NetDream.Modules.Blog.Repositories
+namespace NetDream.Modules.Article.Repositories
 {
     public class BlogRepository(
-        BlogContext db, 
+        ArticleContext db, 
         IClientContext client,
         IUserRepository userStore, 
         ITagRepository tagStore,
         IInteractRepository interactStore,
+        ICategoryRepository categoryStore,
         IDeeplink deeplink)
     {
         public const byte TYPE_BLOG = 0;
@@ -28,7 +32,7 @@ namespace NetDream.Modules.Blog.Repositories
 
         public const byte ACTION_REAL_RULE = 3; // 是否能阅读
 
-        public IPage<BlogListItem> SelfList(BlogQueryForm form)
+        public IPage<ArticleListItem> SelfList(BlogQueryForm form)
         {
             form.User = client.UserId;
             return GetList(form);
@@ -57,7 +61,7 @@ namespace NetDream.Modules.Blog.Repositories
             }
         }
 
-        public IPage<BlogListItem> GetList(BlogQueryForm form)
+        public IPage<ArticleListItem> GetList(BlogQueryForm form)
         {
             CheckSortOrder(form);
             var include = Array.Empty<int>();
@@ -66,25 +70,25 @@ namespace NetDream.Modules.Blog.Repositories
                 include = tagStore.Get(ModuleTargetType.Article, form.Tag);
                 if (include.Length == 0)
                 {
-                    return new Page<BlogListItem>();
+                    return new Page<ArticleListItem>();
                 }
             }
-            var items = db.Blogs.Search(form.Keywords, "Title")
-                .Where(i => i.PublishStatus == PublishRepository.PUBLISH_STATUS_POSTED
+            var items = db.Articles.Search(form.Keywords, "Title")
+                .Where(i => i.PublishStatus == (byte)PublishStatus.Posted
                 && i.Status == (byte)ReviewStatus.Approved)
-                .When(form.Category > 0, i => i.TermId == form.Category)
+                .When(form.Category > 0, i => i.CatId == form.Category)
                 .When(form.User > 0, i => i.UserId == form.User)
                 .When(!string.IsNullOrWhiteSpace(form.Language), i => i.Language == form.Language, i => i.ParentId == 0)
-                .When(form.ProgrammingLanguage, i => i.ProgrammingLanguage == form.ProgrammingLanguage)
+                //.When(form.ProgrammingLanguage, i => i.ProgrammingLanguage == form.ProgrammingLanguage)
                 .When(include.Length > 0, i => include.Contains(i.Id))
                 .OrderBy(form)
                 .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
-            CategoryRepository.Include(db, items.Items);
+            categoryStore.Include(ModuleTargetType.Article, items.Items);
             return items;
         }
 
-        public IPage<BlogListItem> ManageList(BlogQueryForm form)
+        public IPage<ArticleListItem> ManageList(BlogQueryForm form)
         {
             CheckSortOrder(form);
             var include = Array.Empty<int>();
@@ -93,32 +97,33 @@ namespace NetDream.Modules.Blog.Repositories
                 include = tagStore.Get(ModuleTargetType.Article, form.Tag);
                 if (include.Length == 0)
                 {
-                    return new Page<BlogListItem>();
+                    return new Page<ArticleListItem>();
                 }
             }
-            var items = db.Blogs.Search(form.Keywords, "Title")
-                .Where(i => i.PublishStatus == PublishRepository.PUBLISH_STATUS_POSTED
+            var items = db.Articles.Search(form.Keywords, "Title")
+                .Where(i => i.PublishStatus == (byte)PublishStatus.Posted
                 && i.Status == (byte)ReviewStatus.Approved)
-                .When(form.Category > 0, i => i.TermId == form.Category)
+                .When(form.Category > 0, i => i.CatId == form.Category)
                 .When(form.User > 0, i => i.UserId == form.User)
                 .When(!string.IsNullOrWhiteSpace(form.Language), i => i.Language == form.Language, i => i.ParentId == 0)
-                .When(form.ProgrammingLanguage, i => i.ProgrammingLanguage == form.ProgrammingLanguage)
+                // .When(form.ProgrammingLanguage, i => i.ProgrammingLanguage == form.ProgrammingLanguage)
                 .When(include.Length > 0, i => include.Contains(i.Id))
                 .OrderBy(form)
                 .OrderBy(form)
                 .ToPage(form, i => i.SelectAs());
             userStore.Include(items.Items);
-            CategoryRepository.Include(db, items.Items);
+            categoryStore.Include(ModuleTargetType.Article, items.Items);
             return items;
         }
 
-        public BlogListItem[] GetList(int[] items)
+        public ArticleListItem[] GetList(int[] items)
         {
             if (items.Length == 0)
             {
                 return [];
             }
-            var data = db.Blogs.Where(i => items.Contains(i.Id))
+            var data = db.Articles.Where(i => items.Contains(i.Id) && i.PublishStatus == (byte)PublishStatus.Posted
+                && i.Status == (byte)ReviewStatus.Approved)
                 .SelectAsLabel().ToArray();
             foreach (var item in data)
             {
@@ -127,21 +132,23 @@ namespace NetDream.Modules.Blog.Repositories
             return data;
         }
 
-        public BlogListItem[] GetNewBlogs(int count = 8)
+        public ArticleListItem[] GetNewBlogs(int count = 8)
         {
-            return db.Blogs.OrderByDescending(i => i.CreatedAt)
+            return db.Articles.Where(i => i.PublishStatus == (byte)PublishStatus.Posted
+                && i.Status == (byte)ReviewStatus.Approved).OrderByDescending(i => i.CreatedAt)
                 .SelectAsLabel().Take(count).ToArray();
         }
 
-        public BlogListItem[] GetRelationBlogs(int sourceId)
+        public ArticleListItem[] GetRelationBlogs(int sourceId)
         {
             var items = tagStore.GetRelation(ModuleTargetType.Article, sourceId);
             if (items.Length == 0)
             {
                 return [];
             }
-            return db.Blogs.Where(i => items.Contains(i.Id) &&
-            i.PublishStatus == PublishRepository.PUBLISH_STATUS_POSTED)
+            return db.Articles.Where(i => items.Contains(i.Id) &&
+                i.PublishStatus == (byte)PublishStatus.Posted
+                && i.Status == (byte)ReviewStatus.Approved)
                 .OrderByDescending(i => i.CreatedAt)
                 .Take(5)
                 .SelectAsLabel().ToArray();
@@ -152,7 +159,7 @@ namespace NetDream.Modules.Blog.Repositories
             return tagStore.Get(ModuleTargetType.Article);
         }
 
-        public CategoryLabelItem[] Categories()
+        public IListLabelItem[] Categories()
         {
             return db.Categories.SelectAsLabel().ToArray();
         }
@@ -163,74 +170,81 @@ namespace NetDream.Modules.Blog.Repositories
         /// <param name="id"></param>
         /// <param name="openKey"></param>
         /// <returns></returns>
-        public IOperationResult<BlogModel> Get(int id, string openKey = "")
+        public IOperationResult<ArticleOpenModel> Get(int id, string openKey = "")
         {
             if (id <= 0)
             {
-                return OperationResult<BlogModel>.Fail("数据错误");
+                return OperationResult<ArticleOpenModel>.Fail("数据错误");
             }
-            var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
+            var model = db.Articles.Where(i => i.Id == id &&
+                i.PublishStatus == (byte)PublishStatus.Posted
+                && i.Status == (byte)ReviewStatus.Approved).SingleOrDefault();
             if (model is null)
             {
-                return OperationResult<BlogModel>.Fail("数据错误");
+                return OperationResult<ArticleOpenModel>.Fail("数据错误");
             }
             var pipeline = new MarkdownPipelineBuilder()
                     .UseAdvancedExtensions()
                     .UseNetDreamExtensions(this) // 添加自定义代码块渲染器
                     .Build();
-            return OperationResult.Ok(new BlogModel()
+            return OperationResult.Ok(new ArticleOpenModel()
             {
                 Id = model.Id,
                 Title = model.Title,
                 Description = model.Description,
-                Content = Markdig.Markdown.ToHtml(model.Content, pipeline),
+                Content = Markdown.ToHtml(model.Content, pipeline),
                 ClickCount = model.ClickCount,
-                RecommendCount = model.RecommendCount,
+                LikeCount = model.LikeCount,
                 CommentCount = model.CommentCount,
                 CreatedAt = model.CreatedAt,
                 User = userStore.Get(model.Id),
-                Term = db.Categories.Where(i => i.Id == model.TermId)
+                Category = db.Categories.Where(i => i.Id == model.CatId)
                     .SelectAsLabel().SingleOrDefault()
             });
         }
 
-        public IOperationResult<BlogModel> GetBody(int id, string openKey = "")
+        public IOperationResult<ArticleOpenModel> GetBody(int id, string openKey = "")
         {
-            var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
+            var model = db.Articles.Where(i => i.Id == id &&
+                i.PublishStatus == (byte)PublishStatus.Posted
+                && i.Status == (byte)ReviewStatus.Approved).SingleOrDefault();
             if (model is null)
             {
-                return OperationResult<BlogModel>.Fail("数据错误");
+                return OperationResult<ArticleOpenModel>.Fail("数据错误");
             }
             var pipeline = new MarkdownPipelineBuilder()
                     .UseAdvancedExtensions()
                     .UseNetDreamExtensions(this) // 添加自定义代码块渲染器
                     .Build();
-            return OperationResult.Ok(new BlogModel()
+            return OperationResult.Ok(new ArticleOpenModel()
             {
                 Id = model.Id,
-                Content = Markdig.Markdown.ToHtml(model.Content, pipeline),
+                Content = Markdown.ToHtml(model.Content, pipeline),
                 ClickCount = model.ClickCount,
-                RecommendCount = model.RecommendCount,
+                LikeCount = model.LikeCount,
                 CommentCount = model.CommentCount,
             });
         }
 
-        public IOperationResult<BlogModel> OpenBody(int id, string openKey = "")
+        public IOperationResult<ArticleOpenModel> OpenBody(int id, string openKey = "")
         {
             return GetBody(id, openKey);
         }
 
-        public BlogArchiveItem[] GetArchives()
+        public ArchiveListItem[] GetArchives()
         {
-            var data = db.Blogs.OrderByDescending(i => i.CreatedAt)
-                .Select(i => new BlogListItem()
+            var data = db.Articles.Where(i =>
+                i.PublishStatus == (byte)PublishStatus.Posted
+                && i.Status == (byte)ReviewStatus.Approved)
+                .OrderByDescending(i => i.CreatedAt)
+                .Select(i => new ArchiveLabelItem()
                 {
                     Id = i.Id,
                     Title = i.Title,
                     CreatedAt = i.CreatedAt
                 }).ToArray();
-            var items = new List<BlogArchiveItem>();
-            BlogArchiveItem? last = null;
+            var items = new List<ArchiveListItem>();
+            ArchiveListItem? last = null;
             foreach (var item in data)
             {
                 var date = TimeHelper.TimestampTo(item.CreatedAt);
@@ -239,7 +253,7 @@ namespace NetDream.Modules.Blog.Repositories
                     last.Children.Add(item);
                     continue;
                 }
-                last = new BlogArchiveItem
+                last = new ArchiveListItem
                 {
                     Year = date.Year
                 };
@@ -249,42 +263,42 @@ namespace NetDream.Modules.Blog.Repositories
             return [..items];
         }
 
-        internal static int PublishCount(BlogContext db, int userId)
+        internal static int PublishCount(ArticleContext db, int userId)
         {
-            return db.Blogs.Where(i => i.UserId == userId && 
-            i.ParentId == 0 && i.PublishStatus == PublishRepository.PUBLISH_STATUS_POSTED)
+            return db.Articles.Where(i => i.UserId == userId && 
+            i.ParentId == 0 && i.PublishStatus == (byte)PublishStatus.Posted)
                 .Count();
         }
 
-        public IOperationResult<BlogModel> ManageGet(int id)
+        public IOperationResult<ArticleModel> ManageGet(int id)
         {
-            var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
+            var model = db.Articles.Where(i => i.Id == id).SingleOrDefault();
             if (model == null)
             {
-                return OperationResult<BlogModel>.Fail("数据错误");
+                return OperationResult<ArticleModel>.Fail("数据错误");
             }
-            return OperationResult.Ok(new BlogModel()
+            return OperationResult.Ok(new ArticleModel()
             {
                 Id = model.Id,
                 Title = model.Title,
                 Description = model.Description,
                 Content = model.Content,
                 ClickCount = model.ClickCount,
-                RecommendCount = model.RecommendCount,
+                LikeCount = model.LikeCount,
                 CommentCount = model.CommentCount,
                 CreatedAt = model.CreatedAt,
                 User = userStore.Get(model.Id),
-                Term = db.Categories.Where(i => i.Id == model.TermId)
+                Category = db.Categories.Where(i => i.Id == model.CatId)
                     .SelectAsLabel().SingleOrDefault()
             });
         }
 
-        public IOperationResult<BlogEntity> ManageChange(int id, byte status)
+        public IOperationResult<ArticleEntity> ManageChange(int id, byte status)
         {
-            var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
+            var model = db.Articles.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)
             {
-                return OperationResult<BlogEntity>.Fail("id is error");
+                return OperationResult<ArticleEntity>.Fail("id is error");
             }
             model.Status = status;
             db.Update(model);
@@ -294,32 +308,32 @@ namespace NetDream.Modules.Blog.Repositories
 
         public void ManageRemove(int id)
         {
-            db.Blogs.Where(i => i.Id == id).ExecuteDelete();
+            db.Articles.Where(i => i.Id == id).ExecuteDelete();
             db.SaveChanges();
         }
 
-        public IOperationResult<BlogModel> Recommend(int id)
+        public IOperationResult<ArticleOpenModel> Recommend(int id)
         {
-            var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
+            var model = db.Articles.Where(i => i.Id == id).SingleOrDefault();
             if (model == null)
             {
-                return OperationResult<BlogModel>.Fail("数据错误");
+                return OperationResult<ArticleOpenModel>.Fail("数据错误");
             }
             var res = interactStore.Toggle(client.UserId, 
                 ModuleTargetType.Article, id, InteractType.Like);
-            model.RecommendCount += res ? 1 : -1;
-            db.Blogs.Update(model);
-            return OperationResult.Ok(new BlogModel()
+            model.LikeCount += res ? 1 : -1;
+            db.Articles.Update(model);
+            return OperationResult.Ok(new ArticleOpenModel()
             {
                 Id = id,
-                RecommendCount = model.RecommendCount,
-                IsRecommended = res
+                LikeCount = model.LikeCount,
+                IsLiked = res
             });
         }
 
-        public ListArticleItem[] Suggest(string keywords)
+        public IListArticleItem[] Suggest(string keywords)
         {
-            return db.Blogs.Search(keywords, "title").Take(4).Select(i => new ListArticleItem()
+            return db.Articles.Search(keywords, "title").Take(4).Select(i => new ListArticleItem()
             {
                 Id = i.Id,
                 Title = i.Title,

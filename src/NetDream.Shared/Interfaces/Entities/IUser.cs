@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetDream.Shared.Interfaces.Entities
+namespace NetDream.Shared.Interfaces
 {
     public interface IUser
     {

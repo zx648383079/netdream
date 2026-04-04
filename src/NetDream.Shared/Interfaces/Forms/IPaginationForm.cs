@@ -1,4 +1,4 @@
-﻿namespace NetDream.Shared.Interfaces.Forms
+﻿namespace NetDream.Shared.Interfaces
 {
     public interface IPaginationForm
     {

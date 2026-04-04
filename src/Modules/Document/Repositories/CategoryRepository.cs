@@ -1,5 +1,5 @@
 ﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using System.Linq;
 

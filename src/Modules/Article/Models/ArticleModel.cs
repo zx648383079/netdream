@@ -1,5 +1,5 @@
-﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Modules.Article.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Article.Models
 {
@@ -44,5 +44,35 @@ namespace NetDream.Modules.Article.Models
         public bool IsLocalization { get; set; }
 
         public bool IsLiked { get; set; }
-}
+
+
+        public ArticleModel()
+        {
+            
+        }
+
+        public ArticleModel(ArticleEntity entity)
+        {
+            Id = entity.Id;
+            Title = entity.Title;
+            Keywords = entity.Keywords;
+            Thumb = entity.Thumb;
+            Description = entity.Description;
+            EditType = entity.EditType;
+            OriginalType = entity.OriginalType;
+            Content = entity.Content;
+            OpenType = entity.OpenType;
+            Language = entity.Language;
+            UserId = entity.UserId;
+            CatId = entity.CatId;
+            CreatedAt = entity.CreatedAt;
+            UpdatedAt = entity.UpdatedAt;
+            LikeCount = entity.LikeCount;
+            CommentCount = entity.CommentCount;
+            ClickCount = entity.ClickCount;
+            OpenRule  = entity.OpenRule;
+            PublishStatus = entity.PublishStatus;
+            ParentId = entity.ParentId;
+        }
+    }
 }

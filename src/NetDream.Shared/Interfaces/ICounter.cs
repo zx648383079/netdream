@@ -1,5 +1,6 @@
 ﻿using NetDream.Shared.Models;
 using System;
+using System.Collections.Generic;
 
 namespace NetDream.Shared.Interfaces
 {
@@ -33,5 +34,13 @@ namespace NetDream.Shared.Interfaces
         public int Count(ModuleTargetType type, int target, DateTime startAt);
         public int Count(ModuleTargetType type, int target, DateTime startAt, DateTime endAt);
         public void Add(ModuleTargetType type, int target);
+        /// <summary>
+        /// 按周期统计，并排序，从多到少
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="periodType"></param>
+        /// <returns>(target, count)</returns>
+        public KeyValuePair<int, int>[] Count(ModuleTargetType type, StatisticalPeriodType periodType);
+        public KeyValuePair<int, int>[] Count(ModuleTargetType type, StatisticalPeriodType periodType, DateTime startAt);
     }
 }

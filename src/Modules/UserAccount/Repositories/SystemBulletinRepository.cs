@@ -99,5 +99,9 @@ namespace NetDream.Modules.UserAccount.Repositories
             return bulletin.Id;
         }
 
+        public int SendAdministrator(string title, string content, ModuleTargetType type, IEnumerable<LinkExtraRule>? extraRule = null)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

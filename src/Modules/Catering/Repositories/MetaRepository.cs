@@ -2,10 +2,10 @@
 
 namespace NetDream.Modules.Catering.Repositories
 {
-    public class MetaRepository(CateringContext db): Shared.Repositories.MetaRepository(db)
+    public class MetaRepository(CateringContext db)
     {
 
-        protected override Dictionary<string, string> DefaultItems => new()
+        protected Dictionary<string, string> DefaultItems => new()
         {
             {"is_open_live", "1" }, // 是否支持到店点餐
             {"is_open_ship", "0" }, // 是否支持外送

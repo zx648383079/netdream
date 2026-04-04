@@ -7,7 +7,6 @@ public class MediaContext(DbContextOptions<MediaContext> options)
     : DbContext(options)
 {
     public DbSet<AreaEntity> Areas { get; set; }
-    public DbSet<CategoryEntity> Categories { get; set; }
     public DbSet<LiveEntity> Lives { get; set; }
     public DbSet<MovieEntity> Movies { get; set; }
     public DbSet<MovieFileEntity> MovieFiles { get; set; }
@@ -20,7 +19,6 @@ public class MediaContext(DbContextOptions<MediaContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new AreaEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new LiveEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new MovieEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new MovieFileEntityTypeConfiguration());

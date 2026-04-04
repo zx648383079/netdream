@@ -8,7 +8,6 @@ namespace NetDream.Modules.UserProfile
         public static void ProvideProfileRepositories(this IServiceCollection service)
         {
             service.AddScoped<AddressRepository>();
-            service.AddScoped<BankCardRepository>();
             service.AddScoped<CertificationRepository>();
             service.AddScoped<RegionRepository>();
         }

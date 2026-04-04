@@ -1,13 +1,12 @@
-﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Providers.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.Article.Entities;
+using NetDream.Shared.Interfaces;
+using System.Linq;
 using System.Text.Json;
 
 namespace NetDream.Modules.Article.Repositories
 {
-    public class SketchBox(SketchContext db,
+    public class SketchBox(ArticleContext db,
         IClientContext environment,
         byte itemType, int maxUndoCount = 1) : ISketchBox
     {
@@ -45,12 +44,11 @@ namespace NetDream.Modules.Article.Repositories
             db.SaveChanges();
         }
 
-        /**
-         * 获取保存的全部记录
-         * @param int target
-         * @return array
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 获取保存的全部记录
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public SketchLogEntity[] Stack(int target = 0)
         {
             return db.SketchLogs.Where(i => i.ItemType == itemType && i.ItemId == target && i.UserId == environment.UserId)
@@ -84,11 +82,13 @@ namespace NetDream.Modules.Article.Repositories
             db.SketchLogs.Where(i => i.ItemType == itemType
             && i.ItemId == target && i.UserId == environment.UserId)
                 .ExecuteDelete();
+            db.SaveChanges();
         }
 
         public void Clear()
         {
             db.SketchLogs.Where(i => i.ItemType == itemType).ExecuteDelete();
+            db.SaveChanges();
         }
     }
 }

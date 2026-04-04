@@ -1,8 +1,6 @@
 ﻿using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.UserAccount.Entities;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using System.ComponentModel.DataAnnotations;
 

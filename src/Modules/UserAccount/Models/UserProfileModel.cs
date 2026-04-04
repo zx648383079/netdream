@@ -1,6 +1,6 @@
 ﻿using NetDream.Modules.UserAccount.Entities;
 using NetDream.Shared.Converters;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;

@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Chat.Entities;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,4 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Catering.Entities;
 public class StoreStaffEntity : IIdEntity, ITimestampEntity

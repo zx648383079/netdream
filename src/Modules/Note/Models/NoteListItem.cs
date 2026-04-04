@@ -1,6 +1,6 @@
 ﻿using NetDream.Modules.Note.Entities;
 using NetDream.Modules.Note.Repositories;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Note.Models
 {

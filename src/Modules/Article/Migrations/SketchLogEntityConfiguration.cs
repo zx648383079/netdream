@@ -4,7 +4,7 @@ using NetDream.Modules.Article.Entities;
 
 namespace NetDream.Modules.Article.Migrations
 {
-    public class SketchLogEntityMigration
+    public class SketchLogEntityConfiguration
         : IEntityTypeConfiguration<SketchLogEntity>
     {
         public void Configure(EntityTypeBuilder<SketchLogEntity> builder)

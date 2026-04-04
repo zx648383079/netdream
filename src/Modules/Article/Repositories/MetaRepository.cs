@@ -1,13 +1,16 @@
-﻿using NetDream.Shared.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 
-namespace NetDream.Modules.Blog.Repositories
+namespace NetDream.Modules.Article.Repositories
 {
-    public class MetaRepository(BlogContext db): IMetaRepository
+    public class MetaRepository(ArticleContext db): IMetaRepository
     {
 
-        protected override Dictionary<string, string> DefaultItems => new()
+        internal static Dictionary<string, string> ArticleDefaultItems => new()
         {
             { "is_hide", "0" }, // 如果是转载文章是否只显示部分，并链接到原文
             { "source_url", string.Empty }, // 原文链接
@@ -30,7 +33,7 @@ namespace NetDream.Modules.Blog.Repositories
         /// <returns></returns>
         public IDictionary<string, string> GetOrDefault(int id)
         {
-            return GetMap(id, DefaultItems);
+            return GetMap(id, ArticleDefaultItems);
         }
 
         /// <summary>
@@ -84,7 +87,7 @@ namespace NetDream.Modules.Blog.Repositories
             {
                 return;
             }
-            var metaKeys = defItems.Count == 0 ? DefaultItems.Keys : defItems.Keys;
+            var metaKeys = defItems.Count == 0 ? ArticleDefaultItems.Keys : defItems.Keys;
             var items = GetMap(id);
             foreach (var item in data)
             {
@@ -124,13 +127,30 @@ namespace NetDream.Modules.Blog.Repositories
             db.SaveChanges();
         }
 
-        /// <summary>
-        /// 根据主id删除 meta
-        /// </summary>
-        /// <param name="id"></param>
-        public void DeleteBatch(int id)
+
+        public IDictionary<string, string> Get(ModuleTargetType type, int target, string language)
         {
-            db.Metas.Where(i => i.ItemId == id).ExecuteDelete();
+            throw new System.NotImplementedException();
+        }
+
+        public IDictionary<string, string> Get(ModuleTargetType type, int target, string language, IDictionary<string, string> def)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public IOperationResult Replace(ModuleTargetType type, int target, string language, IDictionary<string, string> data)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public IOperationResult Update(ModuleTargetType type, int target, string language, IDictionary<string, string> data)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Remove(ModuleTargetType type, int target)
+        {
+            db.Metas.Where(i => i.ItemId == target && i.ItemType == (byte)type).ExecuteDelete();
             db.SaveChanges();
         }
     }

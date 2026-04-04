@@ -2,8 +2,6 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
-using NetDream.Shared.Interfaces.Forms;
 using NetDream.Shared.Models;
 using System;
 using System.Collections.Generic;

@@ -1,10 +1,9 @@
-﻿using MediatR;
-using NetDream.Modules.Legwork.Entities;
+﻿using NetDream.Modules.Legwork.Entities;
 using NetDream.Modules.Legwork.Forms;
 using NetDream.Modules.Legwork.Models;
+using NetDream.Shared.Events;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ namespace NetDream.Modules.Legwork.Repositories
     public class OrderRepository(LegworkContext db, 
         IClientContext client,
         IUserRepository userStore,
-        IMediator mediator)
+        IWallet wallet)
     {
         public const byte STATUS_CANCEL = 1;
         public const byte STATUS_INVALID = 2;
@@ -87,21 +86,22 @@ namespace NetDream.Modules.Legwork.Repositories
 
         public async Task<object> PayAsync(OrderEntity order)
         {
-            var res = await mediator.Send(new PayRequest()
-            {
-                Payment = "wechat",
-                SourceType = ModuleModelType.TYPE_LEGWORK,
-                SourceId = order.Id,
-                BuyerId = client.UserId,
-                TotalAmount = order.OrderAmount,
-                Subject = "代取件订单支付",
-                ReferenceType = "web"
-            });
-            if (res.Status == PayOperateStatus.Success)
-            {
+            //var res = wallet.Trading(new PayRequest()
+            //{
+            //    Payment = "wechat",
+            //    SourceType = ModuleModelType.TYPE_LEGWORK,
+            //    SourceId = order.Id,
+            //    BuyerId = client.UserId,
+            //    TotalAmount = order.OrderAmount,
+            //    Subject = "代取件订单支付",
+            //    ReferenceType = "web"
+            //});
+            //if (res.Status == PayOperateStatus.Success)
+            //{
 
-            }
-            return res;
+            //}
+            //return res;
+            return null;
         }
 
         public IOperationResult<OrderEntity> Comment(int id, byte rank = 10)

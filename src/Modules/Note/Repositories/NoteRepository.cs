@@ -4,7 +4,6 @@ using NetDream.Modules.Note.Forms;
 using NetDream.Modules.Note.Models;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
 using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
@@ -15,7 +14,7 @@ namespace NetDream.Modules.Note.Repositories
 {
     public class NoteRepository(NoteContext db, 
         IClientContext client, IUserRepository userStore,
-        LocalizeRepository localize)
+        ILocalizeRepository localize)
     {
         public const int STATUS_VISIBLE = 1;
         public const int STATUS_HIDE = 0;
@@ -119,7 +118,7 @@ namespace NetDream.Modules.Note.Repositories
 
         public NoteModel[] GetNewList(int limit = 5)
         {
-            var notice = localize.BrowserLanguageIsDefault ? 2 : 1;
+            var notice = localize.Language == localize.Default ? 2 : 1;
             var items = db.Notes.Where(i => i.IsNotice == notice)
                 .OrderByDescending(i => i.Id).Take(limit > 0 ? limit : 5)
                 .ToArray().Select(i => i.CopyTo<NoteModel>()).ToArray();

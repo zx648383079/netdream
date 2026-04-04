@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.UserAccount.Entities;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.UserAccount.Models
 {

@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Finance.Models;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Finance.Entities;
 public class BudgetEntity : IIdEntity, ITimestampEntity, IBudget

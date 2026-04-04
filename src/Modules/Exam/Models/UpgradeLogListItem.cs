@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Exam.Entities;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Exam.Models
 {

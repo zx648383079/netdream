@@ -8,7 +8,14 @@
         Collect,
         Like,
         Dislike,
-        Bought
+        /// <summary>
+        /// 打赏
+        /// </summary>
+        Reward,
+        /// <summary>
+        /// 购买
+        /// </summary>
+        Bought,
     }
 
     public enum RecordToggleType : byte

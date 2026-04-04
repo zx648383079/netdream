@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Forum.Entities;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Forum.Models
 {

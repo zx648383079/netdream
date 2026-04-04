@@ -1,6 +1,6 @@
 ﻿using NetDream.Modules.Comment.Entities;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using System.Text.Json;
 

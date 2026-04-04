@@ -1,5 +1,5 @@
 using NetDream.Shared.Converters;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using System.Text.Json.Serialization;
 
 namespace NetDream.Modules.Contact.Entities

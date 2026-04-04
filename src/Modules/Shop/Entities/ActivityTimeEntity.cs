@@ -1,4 +1,4 @@
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using System;
 
 namespace NetDream.Modules.Shop.Entities

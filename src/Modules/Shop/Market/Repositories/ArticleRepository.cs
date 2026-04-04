@@ -1,5 +1,5 @@
 ﻿using NetDream.Modules.Shop.Models;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using System.Linq;
 
 namespace NetDream.Modules.Shop.Market.Repositories

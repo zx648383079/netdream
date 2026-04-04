@@ -5,7 +5,7 @@ using NetDream.Modules.Legwork.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers;
+using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,8 @@ namespace NetDream.Modules.Legwork.Repositories
 {
     public class ServiceRepository(LegworkContext db, 
         IClientContext client,
-        IUserRepository userStore)
+        IUserRepository userStore,
+        ICategoryRepository categoryStore)
     {
 
 
@@ -168,7 +169,7 @@ namespace NetDream.Modules.Legwork.Repositories
 
         public IOperationResult WaiterChange(int id, int[] users, byte status = 0)
         {
-            if (!new ProviderRepository(db, client, userStore).HasService(id))
+            if (!new ProviderRepository(db, client, userStore, categoryStore).HasService(id))
             {
                 return OperationResult.Fail("服务错误");
             }
@@ -180,7 +181,7 @@ namespace NetDream.Modules.Legwork.Repositories
 
         public IOperationResult WaiterAdd(int id, int[] users, byte status = 0)
         {
-            if (!new ProviderRepository(db, client, userStore).HasService(id))
+            if (!new ProviderRepository(db, client, userStore, categoryStore).HasService(id))
             {
                 return OperationResult.Fail("服务错误");
             }
@@ -213,7 +214,7 @@ namespace NetDream.Modules.Legwork.Repositories
 
         public IOperationResult WaiterRemove(int id, int[] users)
         {
-            if (!new ProviderRepository(db, client, userStore).HasService(id))
+            if (!new ProviderRepository(db, client, userStore, categoryStore).HasService(id))
             {
                 return OperationResult.Fail("服务错误");
             }

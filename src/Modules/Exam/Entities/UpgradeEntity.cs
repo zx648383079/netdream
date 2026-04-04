@@ -1,4 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Entities;
+﻿using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Exam.Entities;
 public class UpgradeEntity : IIdEntity, ITimestampEntity

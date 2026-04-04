@@ -11,7 +11,9 @@ using System.Linq;
 
 namespace NetDream.Modules.OnlineMedia.Repositories
 {
-    public class MovieRepository(MediaContext db, IClientContext client)
+    public class MovieRepository(MediaContext db, 
+        IClientContext client,
+        ITagRepository tagStore)
     {
         public IPage<MovieEntity> GetList(QueryForm form)
         {
@@ -157,7 +159,7 @@ namespace NetDream.Modules.OnlineMedia.Repositories
                 return OperationResult<MovieModel>.Fail("数据有误");
             }
             var res = model.CopyTo<MovieModel>();
-            res.Tags = new TVRepository(db, client).Tag().GetTags(id);
+            res.Tags = tagStore.Get(ModuleTargetType.Video, id);
             return OperationResult.Ok(res);
         }
 
@@ -204,7 +206,7 @@ namespace NetDream.Modules.OnlineMedia.Repositories
             var res = model.CopyTo<MovieModel>();
             res.Category = db.Categories.Where(i => i.Id == model.CatId).SingleOrDefault();
             res.Area = db.Areas.Where(i => i.Id == model.AreaId).SingleOrDefault();
-            res.Tags = new TVRepository(db, client).Tag().GetTags(id);
+            res.Tags = tagStore.Get(ModuleTargetType.Video, id);
             if (model.SeriesCount > 1)
             {
                 res.Series = db.MovieSeries.Where(i => i.MovieId == model.Id).ToArray();

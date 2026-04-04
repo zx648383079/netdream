@@ -1,4 +1,4 @@
-﻿using NetDream.Shared.Interfaces.Forms;
+﻿using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using System.Collections.Generic;
 using System.Linq;

@@ -5,7 +5,7 @@ using NetDream.Modules.Shop.Entities;
 using NetDream.Modules.Shop.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using System;

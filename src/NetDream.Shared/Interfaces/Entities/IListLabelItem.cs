@@ -1,4 +1,4 @@
-﻿namespace NetDream.Shared.Interfaces.Entities
+﻿namespace NetDream.Shared.Interfaces
 {
     /// <summary>
     /// 用在列表的附属标记
@@ -15,5 +15,11 @@
         public int Id { get; }
 
         public string Title { get; }
+    }
+
+    public interface IOptionItem<T>
+    {
+        public string Name { get; }
+        public T Value { get; }
     }
 }

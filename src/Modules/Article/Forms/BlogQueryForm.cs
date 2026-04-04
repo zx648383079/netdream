@@ -1,6 +1,6 @@
 ﻿using NetDream.Shared.Models;
 
-namespace NetDream.Modules.Blog.Forms
+namespace NetDream.Modules.Article.Forms
 {
     public class BlogQueryForm : QueryForm
     {

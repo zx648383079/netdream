@@ -2,7 +2,7 @@
 using NetDream.Modules.Shop.Market.Models;
 using NetDream.Modules.Shop.Models;
 using NetDream.Shared.Helpers;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using System;
 using System.Linq;
 

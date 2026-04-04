@@ -10,6 +10,9 @@ namespace NetDream.Modules.Article
         public DbSet<ArticleEntity> Articles { get; set; }
         public DbSet<AuthorEntity> Authors { get; set; }
 
+        public DbSet<MetaEntity> Metas { get; set; }
+
+        public DbSet<SketchLogEntity> SketchLogs { get; set; }
         public DbSet<CategoryEntity> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -17,6 +20,8 @@ namespace NetDream.Modules.Article
             modelBuilder.ApplyConfiguration(new ArticleEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new AuthorEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new MetaEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new SketchLogEntityConfiguration());
             base.OnModelCreating(modelBuilder);
         }
     }
