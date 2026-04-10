@@ -8,4 +8,11 @@
 
         public string? Order { get; }
     }
+
+    public interface ISourceQueryForm: IQueryForm
+    {
+        public int User { get; }
+
+        public int Type { get; }
+    }
 }

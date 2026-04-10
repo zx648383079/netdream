@@ -88,7 +88,7 @@ namespace NetDream.Modules.Article.Repositories
             return items;
         }
 
-        public IPage<ArticleListItem> ManageList(BlogQueryForm form)
+        public IPage<ArticleListItem> AdvancedList(BlogQueryForm form)
         {
             CheckSortOrder(form);
             var include = Array.Empty<int>();
@@ -270,7 +270,7 @@ namespace NetDream.Modules.Article.Repositories
                 .Count();
         }
 
-        public IOperationResult<ArticleModel> ManageGet(int id)
+        public IOperationResult<ArticleModel> AdvancedGet(int id)
         {
             var model = db.Articles.Where(i => i.Id == id).SingleOrDefault();
             if (model == null)
@@ -293,7 +293,7 @@ namespace NetDream.Modules.Article.Repositories
             });
         }
 
-        public IOperationResult<ArticleEntity> ManageChange(int id, byte status)
+        public IOperationResult<ArticleEntity> AdvancedChange(int id, byte status)
         {
             var model = db.Articles.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)
@@ -306,7 +306,7 @@ namespace NetDream.Modules.Article.Repositories
             return OperationResult.Ok(model);
         }
 
-        public void ManageRemove(int id)
+        public void AdvancedRemove(int id)
         {
             db.Articles.Where(i => i.Id == id).ExecuteDelete();
             db.SaveChanges();

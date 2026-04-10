@@ -14,11 +14,22 @@ using System.Text.Json;
 namespace NetDream.Modules.ResourceStore.Repositories
 {
     public class ResourceRepository(ResourceContext db, 
-        IClientContext client, IUserRepository userStore)
+        IClientContext client, IUserRepository userStore,
+        ITagRepository tagStore,
+        IMetaRepository metaStore,
+        IInteractRepository interact,
+        ICommentRepository comment,
+        IStorageRepository storage)
     {
         public const byte LOG_TYPE_RES = 0;
         public const byte LOG_ACTION_BUY = 66;
         public const byte LOG_ACTION_DOWNLOAD = 1;
+
+        private Dictionary<string, string> MetaDefaultItems => new()
+        {
+            { "preview_file", string.Empty }, // 预览文件地址
+            { "file_catalog", string.Empty },  // 文件目录缓存
+        };
 
         public IPage<ResourceListItem> GetList(QueryForm form, 
             int category = 0, int user = 0, string tag = "", 
@@ -45,8 +56,8 @@ namespace NetDream.Modules.ResourceStore.Repositories
             .Search(keywords, "title");
             if (!string.IsNullOrWhiteSpace(tag))
             {
-                var tags = Tag().SearchTag(tag);
-                if (tags.Count == 0)
+                var tags = tagStore.Search(ModuleTargetType.ResourceStore, tag);
+                if (tags.Length == 0)
                 {
                     return null;
                 }
@@ -110,9 +121,9 @@ namespace NetDream.Modules.ResourceStore.Repositories
                 return OperationResult<ResourceModel>.Fail("资源不存在");
             }
             var res = model.CopyTo<ResourceModel>();
-            res.Tags = Tag().GetTags(id);
+            res.Tags = tagStore.Get(ModuleTargetType.ResourceStore, id);
             res.Files = db.ResourceFiles.Where(i => i.ResId == id).ToArray();
-            res.MetaItems = new MetaRepository(db).GetOrDefault(id);
+            res.MetaItems = metaStore.Get(ModuleTargetType.ResourceStore, id, string.Empty, MetaDefaultItems);
             return OperationResult.Ok(res);
         }
 
@@ -131,9 +142,9 @@ namespace NetDream.Modules.ResourceStore.Repositories
             res.Category = db.Categories.Where(i => i.Id == model.CatId)
                 .Select(i => new ListLabelItem(i.Id, i.Name)).SingleOrDefault();
             res.IsGradable = IsGradable(id);
-            res.Tags = Tag().GetTags(id);
+            res.Tags = tagStore.Get(ModuleTargetType.ResourceStore, id);
             res.Files = db.ResourceFiles.Where(i => i.ResId == id).ToArray();
-            res.MetaItems = new MetaRepository(db).GetOrDefault(id);
+            res.MetaItems = metaStore.Get(ModuleTargetType.ResourceStore, id, string.Empty, MetaDefaultItems);
             if (res.MetaItems.TryGetValue("file_catalog", out var text))
             {
                 res.FileCatalog = JsonSerializer.Deserialize<CatalogItem[]>(text);
@@ -157,12 +168,12 @@ namespace NetDream.Modules.ResourceStore.Repositories
 
         public bool IsGradable(int id)
         {
-            if (!Log().Has(LOG_TYPE_RES, id,
-                LOG_ACTION_DOWNLOAD))
+            if (!interact.Has(client.UserId, ModuleTargetType.ResourceStore, id,
+                InteractType.Bought))
             {
                 return false;
             }
-            return !Score().Has(id);
+            return !comment.Has(client.UserId, ModuleTargetType.ResourceStore, id);
         }
 
         public IOperationResult<ScoreModel> GradeScore(int id, byte score)
@@ -171,28 +182,27 @@ namespace NetDream.Modules.ResourceStore.Repositories
             {
                 return OperationResult<ScoreModel>.Fail("分数不正确");
             }
-            if (!Log().Has(LOG_TYPE_RES, id,
-                LOG_ACTION_DOWNLOAD))
+            if (!interact.Has(client.UserId, ModuleTargetType.ResourceStore, id,
+                InteractType.Bought))
             {
                 return OperationResult<ScoreModel>.Fail("请先使用后再来评价");
             }
-            var provider = Score();
-            if (provider.Has(id))
+            if (comment.Has(client.UserId, ModuleTargetType.ResourceStore, id))
             {
                 return OperationResult<ScoreModel>.Fail("已评价过，不能更改");
             }
-            var data = provider.Add(new Shared.Providers.Forms.ScoreForm()
+            var data = comment.Scoring(client.UserId, ModuleTargetType.ResourceStore, id, score);
+            if (!data.Succeeded)
             {
-                ItemId = id,
-                Score = score,
-            });
-
-            var avg = provider.Avg(id);
+                return OperationResult.Fail<ScoreModel>(data);
+            }
+            var avg = comment.Avg(ModuleTargetType.ResourceStore, id);
             db.Resources.Where(i => i.Id == id)
                 .ExecuteUpdate(setters => setters.SetProperty(i => i.Score, avg));
-            var res = data.CopyTo<ScoreModel>();
-            res.Avg = avg;
-            return OperationResult.Ok(res);
+            return OperationResult.Ok(new ScoreModel()
+            {
+                Avg = avg
+            });
         }
 
         public IOperationResult<ResourceEntity> Save(ResourceForm data)
@@ -211,7 +221,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
             db.SaveChanges();
             if (data.Tags?.Length > 0)
             {
-                Tag().BindTag(model.Id, data.Tags, null);
+                tagStore.Bind(ModuleTargetType.ResourceStore, model.Id, data.Tags);
             }
             var fileId = new List<int>();
             if (data.Files?.Length > 0)
@@ -297,8 +307,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
 
         public CatalogItem[] GetCatalog(int id)
         {
-            var text = db.Metas.Where(i => i.ItemId == id && i.Name == "file_catalog")
-                .Select(i => i.Content).FirstOrDefault();
+            var text = metaStore.Get(ModuleTargetType.ResourceStore, id, string.Empty, "file_catalog");
             if (string.IsNullOrWhiteSpace(text))
             {
                 return [];
@@ -313,7 +322,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
                 .ToArray();
         }
 
-        public IPage<ResourceListItem> GetManageList(ResourceQueryForm form)
+        public IPage<ResourceListItem> AdvancedList(ResourceQueryForm form)
         {
             var res = db.Resources
                 .When(form.Category > 0, i => i.CatId == form.Category)
@@ -375,19 +384,19 @@ namespace NetDream.Modules.ResourceStore.Repositories
             return OperationResult.Ok();
         }
 
-        public IOperationResult<FileResult> Download(int id, int file = 0)
+        public IOperationResult<IDownloadFile> Download(int id, int file = 0)
         {
             var model = db.Resources.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)
             {
-                return OperationResult<FileResult>.Fail("资源不存在");
+                return OperationResult<IDownloadFile>.Fail("资源不存在");
             }
-            Log().Insert(new()
-            {
-                ItemType = LOG_TYPE_RES,
-                ItemId = id,
-                Action = LOG_ACTION_DOWNLOAD
-            });
+            //Log().Insert(new()
+            //{
+            //    ItemType = LOG_TYPE_RES,
+            //    ItemId = id,
+            //    Action = LOG_ACTION_DOWNLOAD
+            //});
 
             var fileModel = file > 0 ?
                 db.ResourceFiles.Where(i => i.ResId == id && i.Id == file).FirstOrDefault() :
@@ -395,18 +404,17 @@ namespace NetDream.Modules.ResourceStore.Repositories
                 .FirstOrDefault();
             if (fileModel is null)
             {
-                return OperationResult<FileResult>.Fail("没有可下载的文件");
+                return OperationResult<IDownloadFile>.Fail("没有可下载的文件");
             }
             model.DownloadCount++;
             db.Resources.Save(model);
             db.SaveChanges();
-            return UploadRepository.File(fileModel);
+            return storage.Secret.Output(fileModel.File);
         }
 
-        public IOperationResult<FileUploadResult> Upload(IUploadFile input)
+        public IOperationResult<IFileListItem> Upload(IUploadFile input)
         {
-            // TODO
-            return OperationResult<FileUploadResult>.Fail("未实现");
+            return storage.Secret.UploadFile(client.UserId, input);
         }
     }
 }

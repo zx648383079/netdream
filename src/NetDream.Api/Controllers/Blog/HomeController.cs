@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Blog.Forms;
-using NetDream.Modules.Blog.Models;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Models;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers.Models;
 
 namespace NetDream.Api.Controllers.Blog
 {
@@ -14,7 +13,7 @@ namespace NetDream.Api.Controllers.Blog
     public class HomeController(BlogRepository repository) : JsonController
     {
         [Route("")]
-        [ProducesResponseType(typeof(PageResponse<BlogListItem>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ArticleListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] BlogQueryForm form)
         {
@@ -23,7 +22,7 @@ namespace NetDream.Api.Controllers.Blog
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<BlogModel>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ArticleOpenModel>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Detail(int id, string open_key = "")
         {
@@ -37,7 +36,7 @@ namespace NetDream.Api.Controllers.Blog
 
         [HttpPost]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<BlogModel>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ArticleOpenModel>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Content(int id, string open_key = "")
         {
@@ -51,7 +50,7 @@ namespace NetDream.Api.Controllers.Blog
 
         [HttpPost]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<BlogModel>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ArticleOpenModel>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Open(int id, string open_key = "")
         {
@@ -65,7 +64,7 @@ namespace NetDream.Api.Controllers.Blog
 
         [HttpPost]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<BlogModel>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ArticleOpenModel>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Recommend(int id)
         {
@@ -78,7 +77,7 @@ namespace NetDream.Api.Controllers.Blog
         }
 
         [Route("[action]")]
-        [ProducesResponseType(typeof(DataResponse<BlogArchiveItem>), 200)]
+        [ProducesResponseType(typeof(DataResponse<ArchiveListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Archives()
         {
@@ -86,7 +85,7 @@ namespace NetDream.Api.Controllers.Blog
         }
 
         [Route("[action]")]
-        [ProducesResponseType(typeof(DataResponse<TagListItem>), 200)]
+        [ProducesResponseType(typeof(DataResponse<StatisticsItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Tag()
         {

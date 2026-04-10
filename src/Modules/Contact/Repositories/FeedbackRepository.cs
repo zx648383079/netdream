@@ -10,7 +10,7 @@ namespace NetDream.Modules.Contact.Repositories
 {
     public class FeedbackRepository(ContactContext db)
     {
-        public IPage<FeedbackEntity> ManageList(QueryForm form)
+        public IPage<FeedbackEntity> AdvancedList(QueryForm form)
         {
             return db.Feedbacks.Search(form.Keywords, "name", "email", "content")
                 .OrderBy(i => i.Status)

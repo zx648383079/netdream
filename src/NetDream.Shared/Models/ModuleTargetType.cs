@@ -43,6 +43,9 @@
         AppStore = 50,
         ResourceStore = 55,
 
+        Store = 56,
+        Catering = 57,
+
         Legwork = 69,
         System = 80,
         Role = 83,

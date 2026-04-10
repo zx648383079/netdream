@@ -13,7 +13,8 @@ namespace NetDream.Modules.OnlineMedia.Repositories
 {
     public class MovieRepository(MediaContext db, 
         IClientContext client,
-        ITagRepository tagStore)
+        ITagRepository tagStore,
+        ICategoryRepository categoryStore)
     {
         public IPage<MovieEntity> GetList(QueryForm form)
         {
@@ -192,7 +193,7 @@ namespace NetDream.Modules.OnlineMedia.Repositories
                     UpdatedAt = i.UpdatedAt
                 }).ToPage(form);
             AreaRepository.Include(db, res.Items);
-            CategoryRepository.Include(db, res.Items);
+            categoryStore.Include(ModuleTargetType.Video, res.Items);
             return res;
         }
 
@@ -204,7 +205,7 @@ namespace NetDream.Modules.OnlineMedia.Repositories
                 return OperationResult<MovieModel>.Fail("数据有误");
             }
             var res = model.CopyTo<MovieModel>();
-            res.Category = db.Categories.Where(i => i.Id == model.CatId).SingleOrDefault();
+            res.Category = categoryStore.Get(ModuleTargetType.Video, model.CatId).Result;
             res.Area = db.Areas.Where(i => i.Id == model.AreaId).SingleOrDefault();
             res.Tags = tagStore.Get(ModuleTargetType.Video, id);
             if (model.SeriesCount > 1)

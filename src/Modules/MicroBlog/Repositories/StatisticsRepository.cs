@@ -1,11 +1,14 @@
 ﻿using NetDream.Modules.MicroBlog.Models;
 using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using System;
 using System.Linq;
 
 namespace NetDream.Modules.MicroBlog.Repositories
 {
-    public class StatisticsRepository(MicroBlogContext db)
+    public class StatisticsRepository(MicroBlogContext db,
+        ICommentRepository comment)
     {
         public StatisticsResult Subtotal()
         {
@@ -21,10 +24,10 @@ namespace NetDream.Modules.MicroBlog.Repositories
             {
                 res.TopicToday = db.Topics.Where(i => i.CreatedAt >= todayStart).Count();
             }
-            res.CommentCount = db.Comments.Count();
+            res.CommentCount = comment.Count(ModuleTargetType.MicroBlog);
             if (res.CommentCount > 0)
             {
-                res.CommentToday = db.Comments.Where(i => i.CreatedAt >= todayStart).Count();
+                res.CommentToday = comment.Count(ModuleTargetType.MicroBlog, DateTime.Today);
             }
             return res;
         }

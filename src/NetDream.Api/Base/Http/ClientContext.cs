@@ -1,6 +1,5 @@
 ﻿using Duende.IdentityModel;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
@@ -11,7 +10,6 @@ using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;

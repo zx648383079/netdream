@@ -1,18 +1,20 @@
-﻿using NetDream.Modules.SEO.Entities;
-using System.Linq;
-using NetDream.Shared.Repositories;
-using NetDream.Shared.Interfaces;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using NetDream.Modules.SEO.Entities;
 using NetDream.Modules.SEO.Forms;
-using NetDream.Shared.Models;
 using NetDream.Modules.SEO.Models;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Shared.Repositories;
+using NetDream.Shared.Repositories.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NetDream.Modules.SEO.Repositories
 {
     public class AgreementRepository(
         SEOContext db, 
         IClientContext client,
-        LocalizeRepository localize)
+        ILocalizeRepository localize)
     {
 
         public IPage<AgreementListItem> GetList(QueryForm form)
@@ -64,18 +66,25 @@ namespace NetDream.Modules.SEO.Repositories
                 return OperationResult.Fail<AgreementEntity>("id error");
             }
             var items = db.Agreements.Where(i => i.Name == model.Name && i.Status == model.Status)
-                .OrderByDescending(i => i.CreatedAt).ToArray();
-            var Languages = localize.FormatLanguageList(items, false);
+                .OrderByDescending(i => i.CreatedAt)
+                .Select(i => new KeyValuePair<string, int>(i.Language, i.Id))
+                .ToDictionary();
+            var Languages = localize.Items.Select(i => {
+                var item = (LanguageFormatted)i;
+                if (items.TryGetValue(item.Value, out var id))
+                {
+                    item.Id = id;
+                }
+                return item;
+            }).ToArray();
             return OperationResult.Ok(model);
         }
 
         public IOperationResult<AgreementModel> GetByName(string name)
         {
-            var model = localize.GetByKey(
-                db.Agreements.Where(i => i.Status == 1),
-                "name",
-                name
-            ).Take(1).SingleOrDefault();
+            var model = db.Agreements
+                .Where(i => i.Status == (byte)ReviewStatus.Approved && i.Name == name && i.Language == localize.Language)
+                .SingleOrDefault();
             if (model is null)
             {
                 return OperationResult.Fail<AgreementModel>("Service agreement does not exist");

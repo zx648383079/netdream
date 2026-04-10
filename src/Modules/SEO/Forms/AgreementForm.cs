@@ -11,6 +11,6 @@ namespace NetDream.Modules.SEO.Forms
         public string Language { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
-        public int Status { get; set; }
+        public byte Status { get; set; }
     }
 }

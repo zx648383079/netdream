@@ -68,6 +68,12 @@ namespace NetDream.Shared.Interfaces
         /// </summary>
         /// <param name="idItems"></param>
         public void Reload(int[] idItems);
+        /// <summary>
+        /// 输出文件
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public IOperationResult<IDownloadFile> Output(string fileName);
     }
 
 

@@ -1,6 +1,5 @@
 ﻿using NetDream.Modules.Article.Models;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Article.Forms
 {
@@ -16,11 +15,11 @@ namespace NetDream.Modules.Article.Forms
 
     public class BlogBatchResult
     {
-        public ListLabelItem[]? Categories { get; set; }
+        public IListLabelItem[]? Categories { get; set; }
         public ArticleListItem[]? NewBlog { get; set; }
         public ICommentItem[]? NewComment { get; set; }
 
-        public ArticleModel? Detail { get; set; }
+        public ArticleOpenModel? Detail { get; set; }
         public ArticleListItem[]? Relation { get; set; }
     }
 

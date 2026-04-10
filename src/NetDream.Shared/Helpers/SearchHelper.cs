@@ -1,5 +1,6 @@
 ﻿using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -81,6 +82,15 @@ namespace NetDream.Shared.Helpers
                 sort = sortItems.First();
             }
             return (sort, order.ToUpper());
+        }
+
+        public static bool IsMatch(string text, string? keywords)
+        {
+            if (string.IsNullOrWhiteSpace(keywords))
+            {
+                return true;
+            }
+            return text.Contains(keywords);
         }
     }
 }

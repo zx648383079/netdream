@@ -1,4 +1,5 @@
-﻿using NetDream.Shared.Models;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.OnlineMedia.Models
 {
@@ -25,7 +26,7 @@ namespace NetDream.Modules.OnlineMedia.Models
         public int UpdatedAt { get; set; }
         public int CreatedAt { get; set; }
 
-        public ListLabelItem? Category { get; set; }
-        public ListLabelItem? Area { get; set; }
+        public IListLabelItem? Category { get; set; }
+        public IListLabelItem? Area { get; set; }
     }
 }

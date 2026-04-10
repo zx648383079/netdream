@@ -6,6 +6,7 @@ using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NetDream.Modules.Counter.Repositories
@@ -472,6 +473,16 @@ namespace NetDream.Modules.Counter.Repositories
         }
 
         public void Add(ModuleTargetType type, int target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public KeyValuePair<int, int>[] Count(ModuleTargetType type, StatisticalPeriodType periodType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public KeyValuePair<int, int>[] Count(ModuleTargetType type, StatisticalPeriodType periodType, DateTime startAt)
         {
             throw new NotImplementedException();
         }

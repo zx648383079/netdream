@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Blog.Forms;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Repositories;
+using NetDream.Modules.Comment.Repositories;
+using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.Blog
 {
@@ -26,7 +28,11 @@ namespace NetDream.Api.Controllers.Blog
             }
             if (form.NewComment is not null)
             {
-                res.NewComment = comment.NewList();
+                res.NewComment = comment.Get(ModuleTargetType.Article, new QueryForm()
+                {
+                    Sort = "new",
+                    PerPage = 4
+                });
             }
             if (form.Detail is not null)
             {

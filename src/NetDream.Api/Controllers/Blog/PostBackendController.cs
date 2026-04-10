@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Blog.Forms;
-using NetDream.Modules.Blog.Models;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
 
@@ -20,7 +18,7 @@ namespace NetDream.Api.Controllers.Blog
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] BlogQueryForm form)
         {
-            return RenderPage(repository.ManageList(form));
+            return RenderPage(repository. AdvancedList(form));
         }
 
         [HttpGet]
@@ -29,7 +27,7 @@ namespace NetDream.Api.Controllers.Blog
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Detail(int id)
         {
-            var res = repository.ManageGet(id);
+            var res = repository. AdvancedGet(id);
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
@@ -44,7 +42,7 @@ namespace NetDream.Api.Controllers.Blog
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            repository.ManageRemove(id);
+            repository. AdvancedRemove(id);
             return RenderData(true);
         }
     }

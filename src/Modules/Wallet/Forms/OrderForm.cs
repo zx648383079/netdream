@@ -5,11 +5,6 @@ namespace NetDream.Modules.Wallet.Forms
 {
     public class OrderForm
     {
-        [Required]
-        public int ServiceId { get; set; }
 
-        public IDictionary<string, string> Remark { get; set; }
-
-        public int Amount { get; set; }
     }
 }

@@ -19,8 +19,6 @@ namespace NetDream.Modules.UserAccount.Models
         public byte Sex { get; set; }
         public string Avatar { get; set; } = string.Empty;
         public DateOnly Birthday { get; set; }
-        public int Money { get; set; }
-        public int Credits { get; set; }
 
         public int ParentId { get; set; }
 
@@ -52,8 +50,6 @@ namespace NetDream.Modules.UserAccount.Models
             Sex = entity.Sex;
             Avatar = entity.Avatar;
             Birthday = entity.Birthday;
-            Money = entity.Money;
-            Credits = entity.Credits;
             ParentId = entity.ParentId;
             UpdatedAt = entity.UpdatedAt;
             CreatedAt = entity.CreatedAt;

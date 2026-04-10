@@ -19,7 +19,7 @@ namespace NetDream.Modules.Bot.Repositories
                 .Search(form.Keywords, "name").ToPage(form);
         }
 
-        public IPage<QrcodeEntity> ManageList(int bot_id, QueryForm form)
+        public IPage<QrcodeEntity> AdvancedList(int bot_id, QueryForm form)
         {
             return db.Qrcode.When(bot_id > 0, i => i.BotId == bot_id)
                 .Search(form.Keywords, "name").ToPage(form);

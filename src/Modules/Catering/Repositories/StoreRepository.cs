@@ -13,9 +13,19 @@ namespace NetDream.Modules.Catering.Repositories
 {
     public class StoreRepository(CateringContext db, 
         IClientContext client,
-        IUserRepository userStore)
+        IUserRepository userStore,
+        IMetaRepository metaStore)
     {
-        public IPage<StoreListItem> ManageGetList(QueryForm form, int user = 0)
+        private Dictionary<string, string> MetaDefaultItems => new()
+        {
+            {"is_open_live", "1" }, // 是否支持到店点餐
+            {"is_open_ship", "0" }, // 是否支持外送
+            {"is_ship_self", "0" }, // 是否支持外卖订单上门自取
+            {"is_open_reserve", "0" }, // 是否支持提前预定
+            {"reserve_time", "0" }, // 支持提前多久预定
+        };
+
+        public IPage<StoreListItem> AdvancedGetList(QueryForm form, int user = 0)
         {
             var res = db.Store.Search(form.Keywords, "name")
                 .When(user > 0, i => i.UserId == user)
@@ -25,7 +35,7 @@ namespace NetDream.Modules.Catering.Repositories
             return res;
         }
 
-        public IOperationResult<StoreListItem> ManageGet(int id)
+        public IOperationResult<StoreListItem> AdvancedGet(int id)
         {
             var model = db.Store.Where(i => i.Id == id).FirstOrDefault();
             if (model is null)
@@ -37,7 +47,7 @@ namespace NetDream.Modules.Catering.Repositories
             return OperationResult.Ok(res);
         }
 
-        public IOperationResult<StoreEntity> ManageSave(StoreForm data)
+        public IOperationResult<StoreEntity> AdvancedSave(StoreForm data)
         {
             var model = data.Id > 0 ? db.Store.Where(i => i.Id == data.Id)
                 .FirstOrDefault() : new StoreEntity();
@@ -56,7 +66,7 @@ namespace NetDream.Modules.Catering.Repositories
             return OperationResult.Ok(model);
         }
 
-        public void ManageRemove(int id)
+        public void AdvancedRemove(int id)
         {
             db.Store.Where(i => i.Id == id).ExecuteDelete();
             db.SaveChanges();
@@ -85,7 +95,7 @@ namespace NetDream.Modules.Catering.Repositories
                 return OperationResult<StoreModel>.Fail("store is error");
             }
             var data = model.CopyTo<StoreModel>();
-            data.MetaItems = new MetaRepository(db).GetOrDefault(model.Id);
+            data.MetaItems = metaStore.Get(ModuleTargetType.Catering, model.Id, string.Empty, MetaDefaultItems);
             return OperationResult.Ok(data);
         }
 

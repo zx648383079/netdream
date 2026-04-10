@@ -20,7 +20,7 @@ namespace NetDream.Api.Controllers.Forum
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] ThreadQueryForm form)
         {
-            return RenderPage(repository.ManageList(form));
+            return RenderPage(repository.AdvancedList(form));
         }
 
         [HttpDelete]
@@ -29,7 +29,7 @@ namespace NetDream.Api.Controllers.Forum
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            repository.ManageRemove(id);
+            repository.AdvancedRemove(id);
             return RenderData(true);
         }
     }

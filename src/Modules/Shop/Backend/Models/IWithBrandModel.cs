@@ -1,4 +1,4 @@
-﻿using NetDream.Shared.Models;
+﻿using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Shop.Backend.Models
 {
@@ -6,6 +6,6 @@ namespace NetDream.Modules.Shop.Backend.Models
     {
         public int BrandId { get; }
 
-        public ListLabelItem? Brand { set; }
+        public IListLabelItem? Brand { set; }
     }
 }

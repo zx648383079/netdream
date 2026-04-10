@@ -30,6 +30,7 @@
     <ProjectReference Include="..\Modules\Career\Career.csproj" />
     <ProjectReference Include="..\Modules\Catering\Catering.csproj" />
     <ProjectReference Include="..\Modules\CMS\CMS.csproj" />
+    <ProjectReference Include="..\Modules\Comment\Comment.csproj" />
     <ProjectReference Include="..\Modules\Counter\Counter.csproj" />
     <ProjectReference Include="..\Modules\Exam\Exam.csproj" />
     <ProjectReference Include="..\Modules\Finance\Finance.csproj" />
@@ -46,6 +47,7 @@
     <ProjectReference Include="..\Modules\Plan\Plan.csproj" />
     <ProjectReference Include="..\Modules\Proxy\Proxy.csproj" />
     <ProjectReference Include="..\Modules\ResourceStore\ResourceStore.csproj" />
+    <ProjectReference Include="..\Modules\Tag\Tag.csproj" />
     <ProjectReference Include="..\Modules\Team\Team.csproj" />
     <ProjectReference Include="..\Modules\TradeTracker\TradeTracker.csproj" />
     <ProjectReference Include="..\Modules\Trade\Wallet.csproj" />

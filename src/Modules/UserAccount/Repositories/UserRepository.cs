@@ -15,14 +15,11 @@ using NetDream.Shared.Events.Notifications;
 
 namespace NetDream.Modules.UserAccount.Repositories
 {
-    public class UserRepository(UserContext db, IClientContext client, IEventBus mediator) 
-        
+    public class UserRepository(UserContext db, 
+        IClientContext client, 
+        IEventBus mediator,
+        IMetaRepository metaStore) 
     {
-        public const int STATUS_DELETED = 0; // 已删除
-        public const int STATUS_FROZEN = 2; // 账户已冻结
-        public const int STATUS_UN_CONFIRM = 9; // 邮箱注册，未确认邮箱
-        public const int STATUS_ACTIVE = 10; // 账户正常
-        public const int STATUS_ACTIVE_VERIFIED = 15; // 账户正常&实名认证了
 
         public const int SEX_MALE = 1; // 性别男
         public const int SEX_FEMALE = 2; //性别女
@@ -39,9 +36,9 @@ namespace NetDream.Modules.UserAccount.Repositories
             return IsVerified(entity.Status);
         }
 
-        public static bool IsVerified(int status)
+        public static bool IsVerified(byte status)
         {
-            return status == STATUS_ACTIVE_VERIFIED;
+            return status == (byte)AccountStatus.ActiveVerified;
         }
 
         public static bool IsActive(UserEntity entity)
@@ -49,9 +46,9 @@ namespace NetDream.Modules.UserAccount.Repositories
             return IsActive(entity.Status);
         }
 
-        public static bool IsActive(int status)
+        public static bool IsActive(byte status)
         {
-            return status >= STATUS_ACTIVE;
+            return status >= (byte)AccountStatus.Active;
         }
 
         public UserProfileModel? GetCurrentProfile(string extra = "")
@@ -124,13 +121,13 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         public IOperationResult SaveIDCard(int id, string idCard = "")
         {
-            SaveBatch(id, new Dictionary<string, string>()
+            metaStore.Update(ModuleTargetType.User, id, string.Empty, new Dictionary<string, string>()
             {
                 {"id_card", idCard }
             });
-            var status = string.IsNullOrWhiteSpace(idCard) ? STATUS_ACTIVE : STATUS_ACTIVE_VERIFIED;
-            db.Users.Where(i => i.Id == id && i.Status >= STATUS_ACTIVE)
-                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, status));
+            var status = string.IsNullOrWhiteSpace(idCard) ? AccountStatus.Active : AccountStatus.ActiveVerified;
+            db.Users.Where(i => i.Id == id && i.Status >= (byte)AccountStatus.Active)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, (byte)status));
             return OperationResult.Ok();
         }
 
@@ -241,7 +238,7 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         public IDictionary<string, string> SettingGet()
         {
-            return GetMap(client.UserId, new Dictionary<string, string>()
+            return metaStore.Get(ModuleTargetType.User, client.UserId, string.Empty, new Dictionary<string, string>()
             {
                 {"accept_new_bulletin", "1" },
                 {"open_not_disturb", "0" },
@@ -251,12 +248,7 @@ namespace NetDream.Modules.UserAccount.Repositories
 
         public IOperationResult SettingSave(IDictionary<string, string> data)
         {
-            SaveBatch(client.UserId, data, new Dictionary<string, string>()
-            {
-                {"accept_new_bulletin", "1" },
-                {"open_not_disturb", "0" },
-                {"post_expiration", "0" },
-            });
+            metaStore.Update(ModuleTargetType.User, client.UserId, string.Empty, data);
             return OperationResult.Ok();
         }
     }

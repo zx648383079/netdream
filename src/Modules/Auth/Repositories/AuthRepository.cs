@@ -161,7 +161,7 @@ namespace NetDream.Modules.Auth.Repositories
             {
                 return res;
             }
-            if (res.Result is UserEntity o && o.Status == UserRepository.STATUS_UN_CONFIRM)
+            if (res.Result is UserEntity o && o.Status == (byte)AccountStatus.Unconfirm)
             {
                 var code = message.GenerateCode(16, false);
                 var param = message.Encode($"{o.Email}|{code}");
@@ -252,11 +252,11 @@ namespace NetDream.Modules.Auth.Repositories
             if (string.IsNullOrWhiteSpace(user.Email))
             {
                 user.Email = EmptyEmail;
-                user.Status = UserRepository.STATUS_ACTIVE;
+                user.Status = (byte)AccountStatus.Active;
             } 
             else
             {
-                user.Status = UserRepository.STATUS_UN_CONFIRM;
+                user.Status = (byte)AccountStatus.Unconfirm;
             }
             if (string.IsNullOrWhiteSpace(user.Password))
             {

@@ -3,10 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
-using NetDream.Modules.Plan.Entities;
 using NetDream.Modules.Plan.Forms;
-using NetDream.Modules.Plan.Models;
 using NetDream.Modules.Plan.Repositories;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Api.Controllers.Plan
 {
@@ -17,7 +16,7 @@ namespace NetDream.Api.Controllers.Plan
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(PageResponse<CommentListItem>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ICommentItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] CommentQueryForm form)
         {
@@ -26,7 +25,7 @@ namespace NetDream.Api.Controllers.Plan
 
         [HttpPost]
         [Route("[action]")]
-        [ProducesResponseType(typeof(CommentEntity), 200)]
+        [ProducesResponseType(typeof(DataOneResponse<bool>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Save([FromBody] CommentForm form, IFormFile? file = null)
         {
@@ -37,7 +36,7 @@ namespace NetDream.Api.Controllers.Plan
             var res = repository.Create(form);
             if (res.Succeeded)
             {
-                return Render(res.Result);
+                return RenderData(true);
             }
             return RenderFailure(res.Message);
         }

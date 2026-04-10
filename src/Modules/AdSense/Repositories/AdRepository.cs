@@ -19,7 +19,7 @@ namespace NetDream.Modules.AdSense.Repositories
         public const int TYPE_HTML = 2;
         public const int TYPE_VIDEO = 3;
 
-        public void ManagePositionRemove(int id)
+        public void AdvancedPositionRemove(int id)
         {
             db.Positions.Where(i => i.Id == id).ExecuteDelete();
             db.Ads.Where(i => i.PositionId == id).ExecuteDelete();
@@ -160,7 +160,7 @@ namespace NetDream.Modules.AdSense.Repositories
             }
             return [..data];
         }
-        public IPage<AdEntity> ManageList(AdQueryForm form)
+        public IPage<AdEntity> AdvancedList(AdQueryForm form)
         {
             var id = 0;
             var positionId = Validator.IsInt(form.Position) ? int.Parse(form.Position) : 0;
@@ -179,7 +179,7 @@ namespace NetDream.Modules.AdSense.Repositories
                 .ThenByDescending(i => i.Id).ToPage(form);
         }
 
-        public IOperationResult<AdEntity> ManageGet(int id)
+        public IOperationResult<AdEntity> AdvancedGet(int id)
         {
             var res = db.Ads.Where(i => i.Id == id).Single();
             if (res is null)
@@ -189,7 +189,7 @@ namespace NetDream.Modules.AdSense.Repositories
             return OperationResult.Ok(res);
         }
 
-        public IOperationResult<AdEntity> ManageSave(AdForm data)
+        public IOperationResult<AdEntity> AdvancedSave(AdForm data)
         {
             var model = data.Id > 0 ? db.Ads.Where(i => i.Id == data.Id).Single() :
                 new AdEntity();
@@ -221,19 +221,19 @@ namespace NetDream.Modules.AdSense.Repositories
             return OperationResult.Ok(model);
         }
 
-        public void ManageRemove(int id)
+        public void AdvancedRemove(int id)
         {
             db.Ads.Where(i => i.Id == id).ExecuteDelete();
         }
 
-        public IPage<PositionEntity> ManagePositionList(QueryForm form)
+        public IPage<PositionEntity> AdvancedPositionList(QueryForm form)
         {
             return db.Positions.When(form.Keywords, i => i.Name.Contains(form.Keywords))
                 .OrderByDescending(i => i.Status)
                 .ThenByDescending(i => i.Id).ToPage(form);
         }
 
-        public IOperationResult<PositionEntity> ManagePosition(int id)
+        public IOperationResult<PositionEntity> AdvancedPosition(int id)
         {
             var res = db.Positions.Where(i => i.Id == id).Single();
             if (res is null)
@@ -243,7 +243,7 @@ namespace NetDream.Modules.AdSense.Repositories
             return OperationResult.Ok(res);
         }
 
-        public IOperationResult<PositionEntity> ManagePositionSave(PositionForm data)
+        public IOperationResult<PositionEntity> AdvancedPositionSave(PositionForm data)
         {
             var model = data.Id > 0 ? db.Positions.Where(i => i.Id == data.Id).Single() :
                 new PositionEntity();

@@ -101,7 +101,7 @@ namespace NetDream.Modules.MicroBlog.Repositories
             return items;
         }
 
-        public IOperationResult<BlogEntity> ManageChange(int id, byte status)
+        public IOperationResult<BlogEntity> AdvancedChange(int id, byte status)
         {
             var model = db.Blogs.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)

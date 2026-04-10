@@ -7,13 +7,15 @@ using NetDream.Modules.OnlineService.Models;
 using NetDream.Modules.OnlineService.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
-using NetDream.Shared.Repositories;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Api.Controllers.OnlineService
 {
     [Route("open/os")]
     [ApiController]
-    public class HomeController(ChatRepository repository, FileRepository fileStore) : JsonController
+    public class HomeController(ChatRepository repository, 
+        IStorageRepository fileStore,
+        IClientContext client) : JsonController
     {
 
         [HttpGet]
@@ -36,7 +38,7 @@ namespace NetDream.Api.Controllers.OnlineService
             MessageForm body;
             if (file is not null)
             {
-                var r = fileStore.UploadImage(new FormUploadFile(file));
+                var r = fileStore.UploadImage(client.UserId, new FormUploadFile(file));
                 if (!r.Succeeded)
                 {
                     return RenderFailure(r.Message);
@@ -87,7 +89,7 @@ namespace NetDream.Api.Controllers.OnlineService
             MessageForm body;
             if (file is not null)
             {
-                var r = fileStore.UploadImage(new FormUploadFile(file));
+                var r = fileStore.UploadImage(client.UserId, new FormUploadFile(file));
                 if (!r.Succeeded)
                 {
                     return RenderFailure(r.Message);

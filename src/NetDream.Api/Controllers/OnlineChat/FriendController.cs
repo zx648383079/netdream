@@ -6,7 +6,6 @@ using NetDream.Modules.Chat.Models;
 using NetDream.Modules.Chat.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
 using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.OnlineChat

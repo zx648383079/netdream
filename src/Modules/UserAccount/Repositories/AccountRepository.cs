@@ -75,7 +75,7 @@ namespace NetDream.Modules.UserAccount.Repositories
         public IOperationResult SelfCancel(string reason)
         {
             var model = db.Users.Where(i => i.Id == client.UserId).Single();
-            model.Status = UserRepository.STATUS_FROZEN;
+            model.Status = (byte)AccountStatus.Frozen;
             db.Users.Save(model, client.UserId);
             db.SaveChanges();
             mediator.Publish(BulletinRequest.ToAdministrator(client, "账户注销申请",

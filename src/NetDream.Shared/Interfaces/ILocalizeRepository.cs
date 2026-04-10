@@ -1,4 +1,6 @@
-﻿namespace NetDream.Shared.Interfaces
+﻿using System.Collections.Generic;
+
+namespace NetDream.Shared.Interfaces
 {
     public interface ILocalizeRepository
     {
@@ -18,5 +20,9 @@
         /// 所有语言包括名称
         /// </summary>
         public IOptionItem<string>[] Items { get; }
+
+        public string Translate(string message);
+        public string Translate(string message, IDictionary<string, object> parameteres);
+        public string Translate(string message, object[] parameteres);
     }
 }

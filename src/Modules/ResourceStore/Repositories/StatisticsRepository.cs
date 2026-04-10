@@ -1,11 +1,13 @@
 ﻿using NetDream.Modules.ResourceStore.Models;
 using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using System;
 using System.Linq;
 
 namespace NetDream.Modules.ResourceStore.Repositories
 {
-    public class StatisticsRepository(ResourceContext db)
+    public class StatisticsRepository(ResourceContext db, ICommentRepository comment)
     {
         public StatisticsResult Subtotal()
         {
@@ -20,7 +22,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
             res.CommentCount = db.Resources.Sum(i => i.CommentCount);
             if (res.CommentCount > 0)
             {
-                res.CommentCount = db.Comments.Where(i => i.CreatedAt >= todayStart).Count();
+                res.CommentCount = comment.Count(ModuleTargetType.ResourceStore, DateTime.Today);
             }
             return res;
         }

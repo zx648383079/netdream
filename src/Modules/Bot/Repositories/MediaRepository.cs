@@ -62,7 +62,7 @@ namespace NetDream.Modules.Bot.Repositories
                 .ToPage(form, i => i.SelectAs());
         }
 
-        public IPage<MediaListItem> ManageList(int bot_id, MediaQueryForm form)
+        public IPage<MediaListItem> AdvancedList(int bot_id, MediaQueryForm form)
         {
             return db.Medias.When(bot_id > 0, i => i.BotId == bot_id)
                 .When(form.Type, i => i.Type == form.Type)

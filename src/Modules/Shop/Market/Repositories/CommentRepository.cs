@@ -54,12 +54,12 @@ namespace NetDream.Modules.Shop.Market.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 获取好评率
-         * @param int item_id
-         * @param int item_type
-         * @return float %
-         */
+        /// <summary>
+        /// 获取好评率
+        /// </summary>
+        /// <param name="item_id"></param>
+        /// <param name="item_type"></param>
+        /// <returns></returns>
         public float FavorableRate(int item_id, int item_type = 0)
         {
             var total = db.Comments.Where(i => i.ItemType == item_type
@@ -74,44 +74,7 @@ namespace NetDream.Modules.Shop.Market.Repositories
             return good * 100 / total;
         }
 
-        /// <summary>
-        /// 获取评论的统计信息
-        /// </summary>
-        /// <param name="itemId"></param>
-        /// <param name="itemType"></param>
-        /// <returns></returns>
-        public ScoreSubtotal Count(int itemId, int itemType = 0)
-        {
-            var data = db.Comments.Where(i => i.ItemId == itemId && i.ItemType == itemType)
-                .GroupBy(i => i.Rank)
-                .Select(i => new ScoreCount()
-                {
-                    Score = i.Key,
-                    Count = i.Count()
-                }).ToArray();
-            var args = new ScoreSubtotal();
-            var total = 0;
-            foreach (var item in data)
-            {
-                total += item.Count * item.Score;
-                args.Total += item.Count;
-                if (item.Score > 7)
-                {
-                    args.Good += item.Count;
-                    continue;
-                }
-                if (item.Score < 3)
-                {
-                    args.Bad += item.Count;
-                    continue;
-                }
-                args.Middle += item.Count;
-            }
-            args.Avg = args.Total > 0 ? total / args.Total : 10;
-            args.FavorableRate = args.Total > 0 ?
-                (float)Math.Ceiling((double)(args.Good * 100 / args.Total)) : 100;
-            return args;
-        }
+        
 
         public CommentListItem[] Recommend(int limit = 6)
         {

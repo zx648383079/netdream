@@ -40,7 +40,7 @@ namespace NetDream.Modules.Bot.Repositories
             return GetList(bot_id);
         }
 
-        public IPage<MenuEntity> ManageList(int bot_id, QueryForm form)
+        public IPage<MenuEntity> AdvancedList(int bot_id, QueryForm form)
         {
             return db.Menus.When(bot_id > 0, i => i.BotId == bot_id)
                 .ToPage(form);

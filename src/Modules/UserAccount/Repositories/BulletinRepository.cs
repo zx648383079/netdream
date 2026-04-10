@@ -150,7 +150,7 @@ namespace NetDream.Modules.UserAccount.Repositories
                 {
                     Status = i.Status,
                 }).SingleOrDefault();
-            if (user is null || user.Status < UserRepository.STATUS_ACTIVE)
+            if (user is null || user.Status < (byte)AccountStatus.Active)
             {
                 return OperationResult.Fail<int>("操作错误");
             }

@@ -33,7 +33,7 @@ namespace NetDream.Modules.Forum.Repositories
             return zoneStore.IsZone(client.UserId, thread.ZoneId);
         }
 
-        public IPage<ThreadModel> ManageList(ThreadQueryForm form)
+        public IPage<ThreadModel> AdvancedList(ThreadQueryForm form)
         {
             var items = db.Threads.Search(form.Keywords, "title")
                 .When(form.Forum > 0, i => i.ForumId == form.Forum)
@@ -147,7 +147,7 @@ namespace NetDream.Modules.Forum.Repositories
             return OperationResult.Ok(model);
         }
 
-        public IOperationResult<ThreadEntity> ManageChange(int id, byte status)
+        public IOperationResult<ThreadEntity> AdvancedChange(int id, byte status)
         {
             var model = db.Threads.Where(i => i.Id == id).SingleOrDefault();
             if (model is null)
@@ -160,7 +160,7 @@ namespace NetDream.Modules.Forum.Repositories
             return OperationResult.Ok(model);
         }
 
-        public void ManageRemove(params int[] id)
+        public void AdvancedRemove(params int[] id)
         {
             db.Threads.Where(i => id.Contains(i.Id)).ExecuteDelete();
             db.ThreadPosts.Where(i => id.Contains(i.ThreadId)).ExecuteDelete();

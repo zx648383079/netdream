@@ -17,10 +17,10 @@ namespace NetDream.Modules.Bot.Repositories
             {
                 return new Page<HistoryListItem>();
             }
-            return ManageList(bot_id, form);
+            return AdvancedList(bot_id, form);
         }
 
-        public IPage<HistoryListItem> ManageList(int bot_id, LogQueryForm form)
+        public IPage<HistoryListItem> AdvancedList(int bot_id, LogQueryForm form)
         {
             var items = db.MessageHistories
                 .When(bot_id > 0, i => i.BotId == bot_id)

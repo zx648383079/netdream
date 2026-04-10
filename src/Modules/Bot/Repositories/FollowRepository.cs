@@ -28,7 +28,7 @@ namespace NetDream.Modules.Bot.Repositories
                 .ToPage(form, i => i.SelectAs());
         }
 
-        public IPage<UserListItem> ManageList(int bot_id, UserQueryForm form)
+        public IPage<UserListItem> AdvancedList(int bot_id, UserQueryForm form)
         {
             return db.Users.Where(i => i.BotId == bot_id)
                 .When(form.Blacklist > 0, i => i.IsBlack == 1)

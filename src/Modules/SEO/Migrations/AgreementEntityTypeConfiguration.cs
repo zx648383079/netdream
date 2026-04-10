@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.SEO.Entities;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.SEO.Migrations
 {
@@ -18,7 +19,8 @@ namespace NetDream.Modules.SEO.Migrations
 
             builder.Property(table => table.Description).HasColumnName("description").HasMaxLength(500).HasDefaultValue(string.Empty);
             builder.Property(table => table.Content).HasColumnName("content");
-            builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(1).HasDefaultValue(0);
+            builder.Property(table => table.Status).HasColumnName("status").HasMaxLength(1)
+                .HasDefaultValue(ReviewStatus.None);
             builder.Property(table => table.UpdatedAt).HasColumnName("updated_at");
             builder.Property(table => table.CreatedAt).HasColumnName("created_at");
         }

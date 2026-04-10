@@ -230,5 +230,15 @@ namespace NetDream.Modules.Storage.Repositories
         public void Reload(int[] idItems)
         {
         }
+
+        public IOperationResult<IDownloadFile> Output(string fileName)
+        {
+            var info = Folder.File(fileName);
+            if (info is null)
+            {
+                return OperationResult<IDownloadFile>.Fail("文件不存在");
+            }
+            return OperationResult<IDownloadFile>.Ok(new FileOutputResult(info));
+        }
     }
 }

@@ -2,13 +2,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Blog.Entities;
-using NetDream.Modules.Blog.Forms;
-using NetDream.Modules.Blog.Models;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Entities;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Models;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Modules.OpenPlatform;
-using NetDream.Shared.Models;
-using NetDream.Shared.Repositories;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Api.Controllers.Blog
 {
@@ -16,7 +15,8 @@ namespace NetDream.Api.Controllers.Blog
     [ApiController]
     public class MemberController(
         PublishRepository repository,
-        FileRepository fileStore) : JsonController
+        IClientContext client,
+        IStorageRepository fileStore) : JsonController
     {
         [Route("publish/page")]
         [Authorize]
@@ -27,7 +27,7 @@ namespace NetDream.Api.Controllers.Blog
 
         [HttpGet]
         [Route("publish/[action]")]
-        [ProducesResponseType(typeof(PageResponse<BlogModel>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ArticleModel>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Detail(int id, string language = "")
         {
@@ -42,9 +42,9 @@ namespace NetDream.Api.Controllers.Blog
 
         [HttpPost]
         [Route("publish")]
-        [ProducesResponseType(typeof(BlogEntity), 200)]
+        [ProducesResponseType(typeof(ArticleEntity), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Save([FromBody] BlogForm form)
+        public IActionResult Save([FromBody] ArticleForm form)
         {
             var res = repository.Save(form);
             if (res.Succeeded)
@@ -56,9 +56,9 @@ namespace NetDream.Api.Controllers.Blog
 
         [HttpPost]
         [Route("publish/[action]")]
-        [ProducesResponseType(typeof(BlogEntity), 200)]
+        [ProducesResponseType(typeof(ArticleEntity), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult SaveDraft([FromBody] BlogForm form)
+        public IActionResult SaveDraft([FromBody] ArticleForm form)
         {
             var res = repository.SaveDraft(form);
             if (res.Succeeded)
@@ -70,11 +70,11 @@ namespace NetDream.Api.Controllers.Blog
 
         [HttpPost]
         [Route("publish/[action]")]
-        [ProducesResponseType(typeof(FileUploadResult), 200)]
+        [ProducesResponseType(typeof(IFileListItem), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Upload(IFormFile file)
         {
-            var res = fileStore.UploadImage(new FormUploadFile(file));
+            var res = fileStore.UploadImage(client.UserId, new FormUploadFile(file));
             if (res.Succeeded)
             {
                 return Render(res.Result);

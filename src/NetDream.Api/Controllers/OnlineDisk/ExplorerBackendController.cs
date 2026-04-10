@@ -2,12 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
+using NetDream.Modules.Storage.Forms;
+using NetDream.Modules.Storage.Models;
+using NetDream.Modules.Storage.Repositories;
 using NetDream.Modules.UserIdentity.Repositories;
-using NetDream.Shared.Providers.Entities;
-using NetDream.Shared.Providers.Forms;
-using NetDream.Shared.Repositories;
-using NetDream.Shared.Repositories.Forms;
-using NetDream.Shared.Repositories.Models;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Api.Controllers.OnlineDisk
 {
@@ -48,7 +47,7 @@ namespace NetDream.Api.Controllers.OnlineDisk
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<FileEntity>), 200)]
+        [ProducesResponseType(typeof(PageResponse<IFileListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Storage([FromQuery] StorageQueryForm form)
         {

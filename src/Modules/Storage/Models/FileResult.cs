@@ -22,6 +22,12 @@ namespace NetDream.Modules.Storage.Models
             FullPath = fullPath;
         }
 
+        public FileOutputResult(FileInfo fileInfo)
+            : this(fileInfo.Name, fileInfo.FullName)
+        {
+            
+        }
+
         public Stream OpenRead()
         {
             return File.OpenRead(FullPath);

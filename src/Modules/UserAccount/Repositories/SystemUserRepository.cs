@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NetDream.Modules.UserAccount.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
@@ -14,7 +16,7 @@ namespace NetDream.Modules.UserAccount.Repositories
     /// 提供全局引用，不应该依赖其他类
     /// </summary>
     /// <param name="db"></param>
-    public class SystemUserRepository(UserContext db): IUserRepository, IZoneRepository
+    public class SystemUserRepository(UserContext db, IServiceProvider serviceProvider) : IUserRepository, IZoneRepository
     {
 
         const int PULSE_SPACE = 60000;
@@ -185,21 +187,12 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return;
             }
-            var data = db.Metas.Where(i => i.ItemId == user && i.Name == key).FirstOrDefault();
-            if (data != null)
+            var metaStore = serviceProvider.GetService<IMetaRepository>();
+            if (metaStore is null)
             {
-                data.Content = value;
-            } else
-            {
-                data = new Shared.Providers.Entities.MetaEntity()
-                {
-                    ItemId = user,
-                    Name = key,
-                    Content = value
-                };
+                return;
             }
-            db.Metas.Save(data);
-            db.SaveChanges();
+            metaStore.Update(ModuleTargetType.User, user, string.Empty, key, value);
         }
 
         public string? GetAttached(int user, string key)
@@ -208,7 +201,12 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return null;
             }
-            return db.Metas.Where(i => i.ItemId == user && i.Name == key).Value(i => i.Content);
+            var metaStore = serviceProvider.GetService<IMetaRepository>();
+            if (metaStore is null)
+            {
+                return null;
+            }
+            return metaStore.Get(ModuleTargetType.User, user, string.Empty, key);
         }
 
         public void Pulse(int user)
@@ -232,7 +230,12 @@ namespace NetDream.Modules.UserAccount.Repositories
             {
                 return false;
             }
-            return db.Metas.Where(i => i.ItemId == user && i.Name == "zone_id" && i.Content == zone.ToString()).Any();
+            var metaStore = serviceProvider.GetService<IMetaRepository>();
+            if (metaStore is null)
+            {
+                return false;
+            }
+            return metaStore.Get(ModuleTargetType.User, user, string.Empty, "zone_id") == zone.ToString();
         }
 
         public int GetZone(int user)

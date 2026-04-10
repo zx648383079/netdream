@@ -58,6 +58,11 @@ namespace NetDream.Shared.Models
         {
         }
 
+        public void Take(IEnumerable<T> items)
+        {
+            Items = [.. items.Skip(ItemsOffset).Take(ItemsPerPage)];
+        }
+
         public IPage<K> Cast<K>()
         {
             return new Page<K>(this)

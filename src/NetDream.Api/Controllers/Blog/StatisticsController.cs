@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Blog.Models;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Models;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
 

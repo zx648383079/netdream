@@ -169,7 +169,7 @@ namespace NetDream.Modules.Comment.Repositories
         /// <param name="name"></param>
         /// <param name="page"></param>
         /// <returns></returns>
-        public IPage<CommentListItem> AdvancedList(CommentQueryForm form)
+        public IPage<CommentListItem> AdvancedList(ModuleTargetType type, CommentQueryForm form)
         {
             var items = db.Comments.When(form.TargetId > 0, i => i.ItemId == form.TargetId && i.ItemType == form.TargetType)
                 .Search(form.Keywords, "content")
@@ -179,10 +179,11 @@ namespace NetDream.Modules.Comment.Repositories
             return items;
         }
 
-        public void AdvancedRemove(int id)
+        public IOperationResult AdvancedRemove(ModuleTargetType type, params int[] idItems)
         {
-            db.Comments.Where(i => i.Id == id).ExecuteDelete();
+            db.Comments.Where(i => idItems.Contains(i.Id)).ExecuteDelete();
             db.SaveChanges();
+            return OperationResult.Ok();
         }
 
 
@@ -517,6 +518,21 @@ namespace NetDream.Modules.Comment.Repositories
             db.Comments.Where(i => i.ItemType == (byte)type && i.ItemId == article).ExecuteDelete();
             db.SaveChanges();
             return OperationResult.Ok();
+        }
+
+        public bool Has(int user, ModuleTargetType type, int article)
+        {
+            throw new NotImplementedException();
+        }
+
+        public float Avg(ModuleTargetType type, int article)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IOperationResult Scoring(int user, ModuleTargetType type, int article, byte score)
+        {
+            throw new NotImplementedException();
         }
     }
 }

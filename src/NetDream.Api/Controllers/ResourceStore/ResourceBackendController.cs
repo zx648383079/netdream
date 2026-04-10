@@ -24,7 +24,7 @@ namespace NetDream.Api.Controllers.ResourceStore
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] ResourceQueryForm form)
         {
-            return RenderPage(repository.GetManageList(form));
+            return RenderPage(repository.AdvancedList(form));
         }
 
         [HttpPost]

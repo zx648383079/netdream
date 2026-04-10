@@ -30,16 +30,25 @@ namespace NetDream.Modules.Tag.Repositories
             return items.Select(i => i.Id).ToArray();
         }
 
-        public IPage<TagEntity> GetList(QueryForm form)
+        public IPage<TagEntity> AdvancedList(ModuleTargetType type, QueryForm form)
         {
             return db.Tags.Search(form.Keywords, "name")
                 .OrderBy(i => i.Id).ToPage(form);
         }
 
-        public TagEntity[] AllList()
+        public IOperationResult AdvancedRemove(ModuleTargetType type, params int[] idItems)
         {
-            return db.Tags.ToArray();
+            db.Tags.Where(i => idItems.Contains(i.Id)).ExecuteDelete();
+            db.TagLinks.Where(i => idItems.Contains(i.TagId)).ExecuteDelete();
+            db.SaveChanges();
+            return OperationResult.Ok();
         }
+
+        public IOperationResult AdvancedRemove(ModuleTargetType type, string[] items)
+        {
+            return AdvancedRemove(type, db.Tags.Where(i => items.Contains(i.Name)).Pluck(i => i.Id));
+        }
+
 
         public int[] Search(ModuleTargetType type, string keywords)
         {

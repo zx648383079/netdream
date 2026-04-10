@@ -1,4 +1,6 @@
-﻿using NetDream.Shared.Interfaces;
+﻿using NetDream.Modules.Storage.Models;
+using NetDream.Shared.Helpers;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using System.Collections.Generic;
@@ -7,8 +9,8 @@ using System.Linq;
 
 namespace NetDream.Modules.SEO.Repositories
 {
-    public class SEORepository(SEOContext db, 
-        ExplorerRepository explorer)
+    public class SEORepository(SEOContext db,
+        ISystemStorage storage)
     {
 
         public IList<OptionItem<string>> StoreItems()
@@ -21,15 +23,22 @@ namespace NetDream.Modules.SEO.Repositories
 
         public void ClearSql()
         {
-            explorer.RemoveBakFiles("sql_");
+            var folder = storage.Backup;
+            foreach (var item in folder.Files())
+            {
+                if (Path.GetFileName(item).StartsWith("sql_"))
+                {
+                    folder.Delete(item);
+                }
+            }
         }
 
         public IOperationResult BackUpSql(bool isZip = true)
         {
-            var root = explorer.BakPath();
-            if (Directory.Exists(root)) 
+            var folder = storage.Backup;
+            if (!folder.Exist())
             {
-                Directory.CreateDirectory(root);
+                folder.Create();
             }
             // TODO
             return OperationResult.Fail("未实现");
@@ -57,9 +66,27 @@ namespace NetDream.Modules.SEO.Repositories
             return OperationResult.Ok();
         }
 
-        public IList<FileItem> SqlFiles()
+        public IFileListItem[] SqlFiles()
         {
-            return explorer.BakFiles("sql_");
+            var folder = storage.Backup;
+            if (!folder.Exist())
+            {
+                return [];
+            }
+            var items = new List<IFileListItem>();
+            foreach (var item in folder.Files())
+            {
+                var info = folder.File(item);
+                if (info is not null && info.Name.StartsWith("sql_"))
+                {
+                    items.Add(new FileListItem(info.Name)
+                    {
+                        Size = info.Length,
+                        CreatedAt = TimeHelper.TimestampFrom(info.CreationTime)
+                    });
+                }
+            }
+            return [];
         }
 
         public void ClearCache(string[] store)

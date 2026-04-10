@@ -89,7 +89,7 @@ namespace NetDream.Modules.Book.Repositories
             };
         }
 
-        public IPage<BookEntity> GetManageList(BookQueryForm form)
+        public IPage<BookEntity> AdvancedList(BookQueryForm form)
         {
             return db.Books
                 .Search(form.Keywords, "name")
@@ -125,7 +125,7 @@ namespace NetDream.Modules.Book.Repositories
             return OperationResult.Ok(model);
         }
 
-        public IOperationResult<BookEntity> GetManage(int id)
+        public IOperationResult<BookEntity> AdvancedGet(int id)
         {
             var model = db.Books
                 .Where(i => i.Id == id).Single();

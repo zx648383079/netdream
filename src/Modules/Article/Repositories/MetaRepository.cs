@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
+using NetDream.Shared.Repositories;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 
 namespace NetDream.Modules.Article.Repositories
 {
@@ -26,42 +26,22 @@ namespace NetDream.Modules.Article.Repositories
         };
 
 
-        /// <summary>
-        /// 获取并合并默认的
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public IDictionary<string, string> GetOrDefault(int id)
-        {
-            return GetMap(id, ArticleDefaultItems);
-        }
 
-        /// <summary>
-        /// 获取全部
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public IDictionary<string, string> GetMap(int id)
+        public IDictionary<string, string> Get(ModuleTargetType type, int target, string language)
         {
-            return db.Metas.Where(i => i.ItemId == id)
+            return db.Metas.Where(i => i.ItemType == (byte)type && i.ItemId == target && i.Language == language)
                 .Select(i => new KeyValuePair<string, string>(i.Name, i.Content))
                 .ToDictionary();
         }
 
-        /// <summary>
-        /// 获取指定的
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="def"></param>
-        /// <returns></returns>
-        public IDictionary<string, string> GetMap(int id, IDictionary<string, string> def)
+        public IDictionary<string, string> Get(ModuleTargetType type, int target, string language, IDictionary<string, string> def)
         {
-            if (id < 1)
+            if (target < 1)
             {
                 return def;
             }
             var keys = def.Keys;
-            var items = db.Metas.Where(i => i.ItemId == id && keys.Contains(i.Name))
+            var items = db.Metas.Where(i => i.ItemType == (byte)type && i.ItemId == target && i.Language == language && keys.Contains(i.Name))
                 .Select(i => new KeyValuePair<string, string>(i.Name, i.Content))
                 .ToDictionary();
             foreach (var item in def)
@@ -71,87 +51,129 @@ namespace NetDream.Modules.Article.Repositories
             return items;
         }
 
-        public void SaveBatch(int id, IDictionary<string, string> data)
-        {
-            SaveBatch(id, data, new Dictionary<string, string>());
-        }
-        /// <summary>
-        /// 批量保存
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="data"></param>
-        /// <param name="defItems"></param>
-        public void SaveBatch(int id, IDictionary<string, string> data, IDictionary<string, string> defItems)
+        public IOperationResult Replace(ModuleTargetType type, int target, string language, IDictionary<string, string> data)
         {
             if (data.Count == 0)
             {
-                return;
+                db.Metas.Where(i => i.ItemType == (byte)type && i.ItemId == target && i.Language == language).ExecuteDelete();
+                db.SaveChanges();
+                return OperationResult.Ok();
             }
-            var metaKeys = defItems.Count == 0 ? ArticleDefaultItems.Keys : defItems.Keys;
-            var items = GetMap(id);
+            var items = db.Metas.Where(i => i.ItemType == (byte)type && i.ItemId == target
+            && i.Language == language).ToDictionary(i => i.Name);
+            var delKeys = items.Select(i => i.Key).Where(i => !data.ContainsKey(i)).ToList();
             foreach (var item in data)
             {
-                if (!metaKeys.Contains(item.Key))
+                if (items.TryGetValue(item.Key, out var entity))
                 {
-                    continue;
-                }
-                var content = item.Value;
-                if (item.Value is null)
-                {
-                    content = string.Empty;
-                }
-                else if (item.Value.GetType().IsClass)
-                {
-                    content = JsonSerializer.Serialize(item.Value);
-                }
-                if (!items.ContainsKey(item.Key))
-                {
-                    if (content is null)
+                    if (item.Value == entity.Content)
                     {
                         continue;
                     }
-                    db.Metas.Add(new()
-                    {
-                        ItemId = id,
-                        Name = item.Key,
-                        Content = content
-                    });
+                    db.Metas.Where(i => i.Id == entity.Id).ExecuteUpdate(setters => setters.SetProperty(i => i.Content, item.Value));
                     continue;
                 }
-                if (content == items[item.Key])
+                if (delKeys.Count > 0)
                 {
+                    entity = items[delKeys.First()];
+                    delKeys.RemoveAt(0);
+                    db.Metas.Where(i => i.Id == entity.Id)
+                        .ExecuteUpdate(setters => setters.SetProperty(i => i.Content, item.Value)
+                        .SetProperty(i => i.Name, item.Key));
                     continue;
                 }
-                db.Metas.Where(i => i.ItemId == id && i.Name == item.Key).ExecuteUpdate(setters => setters.SetProperty(i => i.Content, content));
+                db.Metas.Add(new()
+                {
+                    ItemId = target,
+                    ItemType = (byte)type,
+                    Language = language,
+                    Name = item.Key,
+                    Content = item.Value
+                });
+            }
+            foreach (var item in delKeys)
+            {
+                db.Metas.Remove(items[item]);
             }
             db.SaveChanges();
-        }
-
-
-        public IDictionary<string, string> Get(ModuleTargetType type, int target, string language)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public IDictionary<string, string> Get(ModuleTargetType type, int target, string language, IDictionary<string, string> def)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public IOperationResult Replace(ModuleTargetType type, int target, string language, IDictionary<string, string> data)
-        {
-            throw new System.NotImplementedException();
+            return OperationResult.Ok();
         }
 
         public IOperationResult Update(ModuleTargetType type, int target, string language, IDictionary<string, string> data)
         {
-            throw new System.NotImplementedException();
+            if (data.Count == 0)
+            {
+                return OperationResult.Ok();
+            }
+            var metaKeys = data.Keys;
+            var items = db.Metas.Where(i => i.ItemType == (byte)type && i.ItemId == target 
+            && i.Language == language && metaKeys.Contains(i.Name)).ToDictionary(i => i.Name);
+            foreach (var item in data)
+            {
+                if (!items.TryGetValue(item.Key, out var entity))
+                {
+                    db.Metas.Add(new()
+                    {
+                        ItemId = target,
+                        ItemType = (byte)type,
+                        Language = language,
+                        Name = item.Key,
+                        Content = item.Value
+                    });
+                    continue;
+                }
+                if (item.Value == entity.Content)
+                {
+                    continue;
+                }
+                db.Metas.Where(i => i.Id == entity.Id).ExecuteUpdate(setters => setters.SetProperty(i => i.Content, item.Value));
+            }
+            db.SaveChanges();
+            return OperationResult.Ok();
+        }
+
+        public IOperationResult Update(ModuleTargetType type, int target, string language, string name, string value)
+        {
+            var model = db.Metas.Where(i => i.ItemId == target && i.ItemType == (byte)type && i.Language == language && i.Name == name).SingleOrDefault();
+            if (model == null) 
+            {
+                db.Metas.Add(new()
+                {
+                    ItemId = target,
+                    ItemType = (byte)type,
+                    Language = language,
+                    Name = name,
+                    Content = value
+                });
+            } else
+            {
+                model.Content = value;
+            }
+            db.SaveChanges();
+            return OperationResult.Ok();
+        }
+
+        public void Remove(ModuleTargetType type, int target, string language)
+        {
+            db.Metas.Where(i => i.ItemId == target && i.ItemType == (byte)type && i.Language == language).ExecuteDelete();
+            db.SaveChanges();
+        }
+        public void Remove(ModuleTargetType type, int target, string language, string name)
+        {
+            db.Metas.Where(i => i.ItemId == target && i.ItemType == (byte)type && i.Language == language && i.Name == name).ExecuteDelete();
+            db.SaveChanges();
         }
 
         public void Remove(ModuleTargetType type, int target)
         {
             db.Metas.Where(i => i.ItemId == target && i.ItemType == (byte)type).ExecuteDelete();
             db.SaveChanges();
+        }
+
+        public string Get(ModuleTargetType type, int target, string language, string name)
+        {
+            return db.Metas.Where(i => i.ItemType == (byte)type && i.ItemId == target && i.Language == language && i.Name == name)
+                .Value(i => i.Content) ?? string.Empty;
         }
     }
 }

@@ -8,6 +8,7 @@ using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserAccount.Forms;
 using NetDream.Modules.UserAccount.Models;
 using NetDream.Modules.UserAccount.Repositories;
+using NetDream.Modules.Wallet.Models;
 
 namespace NetDream.Api.Controllers.Auth
 {

@@ -5,8 +5,6 @@ using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.ResourceStore.Models;
 using NetDream.Modules.ResourceStore.Repositories;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers.Forms;
-using NetDream.Shared.Providers.Models;
 
 namespace NetDream.Api.Controllers.ResourceStore
 {

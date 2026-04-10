@@ -22,7 +22,7 @@ namespace NetDream.Api.Controllers.Note
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] NoteQueryForm form)
         {
-            return RenderPage(repository.ManageList(form));
+            return RenderPage(repository.AdvancedList(form));
         }
 
         [HttpPost]

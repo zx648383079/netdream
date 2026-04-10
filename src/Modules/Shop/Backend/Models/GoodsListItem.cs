@@ -1,4 +1,5 @@
 ﻿using NetDream.Modules.Shop.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Shop.Backend.Models
@@ -35,8 +36,8 @@ namespace NetDream.Modules.Shop.Backend.Models
         public int UpdatedAt { get; set; }
 
         public int CreatedAt { get; set; }
-        public ListLabelItem? Category { get; set; }
-        public ListLabelItem? Brand { get; set; }
+        public IListLabelItem? Category { get; set; }
+        public IListLabelItem? Brand { get; set; }
         public ProductEntity[]? Products { get; internal set; }
     }
 }

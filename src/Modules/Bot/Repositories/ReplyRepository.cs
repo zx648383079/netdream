@@ -40,7 +40,7 @@ namespace NetDream.Modules.Bot.Repositories
                 .ThenByDescending(i => i.Id).ToPage(form);
         }
 
-        public IPage<ReplyEntity> ManageList(int bot_id, ReplyQueryForm form)
+        public IPage<ReplyEntity> AdvancedList(int bot_id, ReplyQueryForm form)
         {
             return db.Replies.When(bot_id > 0, i => i.BotId == bot_id)
                 .When(form.Event, i => i.Event == form.Event)

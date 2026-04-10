@@ -9,8 +9,21 @@ namespace NetDream.Modules.Storage.Repositories
 
         private bool TryCombine(string fileName, out string fullPath)
         {
+            if (fileName.StartsWith(folder))
+            {
+                fileName = fileName[folder.Length..];
+            }
             fullPath = Path.GetFullPath(Path.Combine(folder, fileName));
             return fullPath.StartsWith(folder);
+        }
+
+        public bool Exist()
+        {
+            return System.IO.Directory.Exists(folder);
+        }
+        public void Create()
+        {
+            System.IO.Directory.CreateDirectory(folder);
         }
 
         public void Create(string fileName, Stream data)

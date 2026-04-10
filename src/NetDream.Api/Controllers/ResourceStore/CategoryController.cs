@@ -4,7 +4,7 @@ using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.ResourceStore.Entities;
 using NetDream.Modules.ResourceStore.Models;
 using NetDream.Modules.ResourceStore.Repositories;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Api.Controllers.ResourceStore
 {

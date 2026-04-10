@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetDream.Modules.Wallet.Entities;
-using NetDream.Modules.Wallet.Forms;
 using NetDream.Modules.Wallet.Models;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Interfaces;
@@ -34,7 +33,7 @@ namespace NetDream.Modules.Wallet.Repositories
         public const byte STATUS_REFUND = 9;
 
 
-        public IPage<AccountLogListItem> LogList(LogQueryForm form)
+        public IPage<AccountLogListItem> LogList(ISourceQueryForm form)
         {
             var items = db.AccountLogs.Search(form.Keywords, "remark")
                 .When(form.User > 0, i => i.UserId == form.User)
@@ -45,7 +44,7 @@ namespace NetDream.Modules.Wallet.Repositories
             return items;
         }
 
-        public IPage<AccountLogListItem> SelfLogList(LogQueryForm form)
+        public IPage<AccountLogListItem> SelfLogList(ISourceQueryForm form)
         {
             return db.AccountLogs.Search(form.Keywords, "remark")
                 .Where(i => i.UserId == client.UserId)

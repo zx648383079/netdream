@@ -22,7 +22,7 @@ namespace NetDream.Api.Controllers.AdSense
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] AdQueryForm form)
         {
-            return RenderPage(repository.ManageList(form));
+            return RenderPage(repository.AdvancedList(form));
         }
 
         [HttpGet]
@@ -31,7 +31,7 @@ namespace NetDream.Api.Controllers.AdSense
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Detail(int id)
         {
-            var res = repository.ManageGet(id);
+            var res = repository.AdvancedGet(id);
             if (res.Succeeded)
             {
                 return Render(res.Result);
@@ -45,7 +45,7 @@ namespace NetDream.Api.Controllers.AdSense
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Save([FromBody] AdForm form)
         {
-            var res = repository.ManageSave(form);
+            var res = repository.AdvancedSave(form);
             if (res.Succeeded)
             {
                 return Render(res.Result);
@@ -59,7 +59,7 @@ namespace NetDream.Api.Controllers.AdSense
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            repository.ManageRemove(id);
+            repository.AdvancedRemove(id);
             return RenderData(true);
         }
 
@@ -78,7 +78,7 @@ namespace NetDream.Api.Controllers.AdSense
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Position([FromQuery] QueryForm form)
         {
-            return RenderPage(repository.ManagePositionList(form));
+            return RenderPage(repository.AdvancedPositionList(form));
         }
 
         [HttpGet]
@@ -87,7 +87,7 @@ namespace NetDream.Api.Controllers.AdSense
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult DetailPosition(int id)
         {
-            var res = repository.ManagePosition(id);
+            var res = repository.AdvancedPosition(id);
             if (res.Succeeded)
             {
                 return Render(res.Result);
@@ -101,7 +101,7 @@ namespace NetDream.Api.Controllers.AdSense
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult SavePosition([FromBody] PositionForm form)
         {
-            var res = repository.ManagePositionSave(form);
+            var res = repository.AdvancedPositionSave(form);
             if (res.Succeeded)
             {
                 return Render(res.Result);
@@ -115,7 +115,7 @@ namespace NetDream.Api.Controllers.AdSense
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult DeletePosition(int id)
         {
-            repository.ManagePositionRemove(id);
+            repository.AdvancedPositionRemove(id);
             return RenderData(true);
         }
     }

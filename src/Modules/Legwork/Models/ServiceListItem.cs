@@ -1,5 +1,4 @@
 ﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Legwork.Models
 {
@@ -15,6 +14,6 @@ namespace NetDream.Modules.Legwork.Models
 
         public int Status { get; set; }
         public IUser? User { get; set; }
-        public ListLabelItem? Category { get; set; }
+        public IListLabelItem? Category { get; set; }
     }
 }

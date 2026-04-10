@@ -19,7 +19,7 @@ namespace NetDream.Modules.Note.Repositories
         public const int STATUS_VISIBLE = 1;
         public const int STATUS_HIDE = 0;
 
-        public IPage<NoteListItem> ManageList(NoteQueryForm form)
+        public IPage<NoteListItem> AdvancedList(NoteQueryForm form)
         {
             var items = db.Notes.Search(form.Keywords, "content")
                 .When(form.User > 0, i => i.UserId == form.User)

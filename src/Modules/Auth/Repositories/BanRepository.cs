@@ -47,8 +47,8 @@ namespace NetDream.Modules.Auth.Repositories
                 Ban(item.Identity, type, item.PlatformId);
                 Ban(item.Unionid, type, item.PlatformId);
             }
-            userDB.Users.Where(i => i.Id == userId && i.Status >= UserRepository.STATUS_ACTIVE)
-                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, UserRepository.STATUS_FROZEN));
+            userDB.Users.Where(i => i.Id == userId && i.Status >= (byte)AccountStatus.Active)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, (byte)AccountStatus.Frozen));
             return OperationResult.Ok();
         }
 
@@ -149,8 +149,8 @@ namespace NetDream.Modules.Auth.Repositories
                 Unban(item.Identity, type, item.PlatformId);
                 Unban(item.Unionid, type, item.PlatformId);
             }
-            userDB.Users.Where(i => i.Id == userId && i.Status < UserRepository.STATUS_ACTIVE)
-                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, UserRepository.STATUS_ACTIVE));
+            userDB.Users.Where(i => i.Id == userId && i.Status < (byte)AccountStatus.Active)
+                .ExecuteUpdate(setters => setters.SetProperty(i => i.Status, (byte)AccountStatus.Active));
             db.SaveChanges();
         }
     }

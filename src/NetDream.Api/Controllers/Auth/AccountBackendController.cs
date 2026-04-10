@@ -2,17 +2,17 @@
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
-using NetDream.Modules.UserAccount.Forms;
-using NetDream.Modules.UserAccount.Models;
-using NetDream.Modules.UserAccount.Repositories;
+using NetDream.Modules.Wallet.Forms;
 using NetDream.Modules.UserIdentity.Repositories;
+using NetDream.Modules.Wallet.Models;
+using NetDream.Modules.Wallet.Repositories;
 
 namespace NetDream.Api.Controllers.Auth
 {
     [Route("open/auth/admin/[controller]")]
     [Authorize(Roles = IdentityRepository.Administrator)]
     [ApiController]
-    public class AccountBackendController(AccountRepository repository) : JsonController
+    public class AccountBackendController(WalletRepository repository) : JsonController
     {
         [HttpGet]
         [Route("")]

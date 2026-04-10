@@ -6,8 +6,8 @@ using NetDream.Modules.Forum.Forms;
 using NetDream.Modules.Forum.Models;
 using NetDream.Modules.Forum.Repositories;
 using NetDream.Modules.OpenPlatform;
+using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Models;
-using NetDream.Shared.Notifications;
 
 namespace NetDream.Api.Controllers.Forum
 {

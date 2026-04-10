@@ -5,7 +5,7 @@ using NetDream.Modules.Document.Entities;
 using NetDream.Modules.Document.Forms;
 using NetDream.Modules.Document.Repositories;
 using NetDream.Modules.OpenPlatform;
-using NetDream.Shared.Interfaces.Entities;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.Document

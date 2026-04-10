@@ -9,5 +9,7 @@ namespace NetDream.Modules.Storage.Repositories
         public IStorageFolder Secret => new StorageFolder(environment.OnlineDiskRoot);
 
         public IStorageFolder Temporary => new StorageFolder(environment.CacheRoot);
+
+        public IStorageFolder Backup => new StorageFolder(environment.BackupRoot);
     }
 }

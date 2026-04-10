@@ -120,5 +120,10 @@ namespace NetDream.Modules.Article.Repositories
                 }
             }
         }
+
+        public int Count()
+        {
+            return db.Authors.Count();
+        }
     }
 }

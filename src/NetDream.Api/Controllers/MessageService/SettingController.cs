@@ -5,7 +5,7 @@ using NetDream.Modules.MessageService.Forms;
 using NetDream.Modules.MessageService.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
-using NetDream.Shared.Interfaces.Forms;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Api.Controllers.MessageService
 {

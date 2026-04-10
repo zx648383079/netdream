@@ -17,11 +17,17 @@ namespace NetDream.Shared.Interfaces
         /// 临时目录
         /// </summary>
         public IStorageFolder Temporary { get; }
-        
+        /// <summary>
+        /// 备份目录
+        /// </summary>
+        public IStorageFolder Backup { get; }
+
     }
 
     public interface IStorageFolder
     {
+        public bool Exist();
+        public void Create();
         public bool Exist(string fileName);
         public Stream? OpenRead(string fileName);
         public Stream? Create(string fileName);
@@ -37,5 +43,6 @@ namespace NetDream.Shared.Interfaces
         public IEnumerable<string> Files();
         public IEnumerable<string> Files(string directory);
         public IEnumerable<string> Files(string directory, string pattern);
+
     }
 }

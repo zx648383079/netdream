@@ -202,14 +202,19 @@ namespace NetDream.Modules.Legwork.Repositories
                 .When(status > 0, i => i.Status == 1)
                 .Where(i => i.UserId == user_id)
                 .Select(i => new KeyValuePair<int, byte>(i.CatId, i.Status)).ToDictionary();
-            var res = categoryStore.Search(form.Keywords, "name")
-                .When(!all, i => links.Keys.Contains(i.Id))
-                .ToPage(form).CopyTo<CategoryEntity, CategoryListItem>();
+            var items = categoryStore.Get(ModuleTargetType.Legwork)
+                .Where(i => SearchHelper.IsMatch(i.Name, form.Keywords));
+            if (!all)
+            {
+                items = items.Where(i => links.Keys.Contains(i.Id));
+            }
+            var res = new Page<CategoryListItem>(items.Count(), form);
+            res.Take(items.Select(i => i.CopyTo<CategoryListItem>()));
             foreach (var item in res.Items)
             {
                 if (links.TryGetValue(item.Id, out var s))
                 {
-                    item.Status = s;
+                     item.Status = s;
                 }
             }
             return res;

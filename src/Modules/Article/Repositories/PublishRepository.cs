@@ -279,7 +279,7 @@ namespace NetDream.Modules.Article.Repositories
             {
                 db.Articles.Where(i => i.ParentId == id).ExecuteDelete();
             }
-            meta.Remove(ModuleTargetType.Article, id);
+            metaStore.Remove(ModuleTargetType.Article, id);
             // event(new BlogUpdate(model.Id, 2, time()));
             return OperationResult.Ok();
         }

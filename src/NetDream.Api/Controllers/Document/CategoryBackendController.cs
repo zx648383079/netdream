@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Document.Entities;
-using NetDream.Modules.Document.Forms;
-using NetDream.Modules.Document.Models;
-using NetDream.Modules.Document.Repositories;
+using NetDream.Modules.Article.Entities;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.Document
@@ -18,11 +18,11 @@ namespace NetDream.Api.Controllers.Document
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(DataResponse<CategoryTreeItem>), 200)]
+        [ProducesResponseType(typeof(DataResponse<ILevelItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index()
         {
-            return RenderData(repository.LevelTree([]));
+            return RenderData(repository.All(ModuleTargetType.Document));
         }
 
         [HttpPost]
@@ -31,7 +31,7 @@ namespace NetDream.Api.Controllers.Document
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Save([FromBody] CategoryForm form)
         {
-            var res = repository.Save(form);
+            var res = repository.AdvancedSave(ModuleTargetType.Document, form);
             if (res.Succeeded)
             {
                 return Render(res.Result);
@@ -45,17 +45,17 @@ namespace NetDream.Api.Controllers.Document
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            repository.Remove(id);
+            repository.AdvancedRemove(ModuleTargetType.Document, id);
             return RenderData(true);
         }
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(DataResponse<CategoryTreeItem>), 200)]
+        [ProducesResponseType(typeof(DataResponse<ILevelItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult All()
         {
-            return RenderData(repository.LevelTree([]));
+            return RenderData(repository.All(ModuleTargetType.Document));
         }
         [HttpGet]
         [Route("[action]")]
@@ -63,7 +63,7 @@ namespace NetDream.Api.Controllers.Document
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Search([FromQuery] QueryForm form, int[]? id = null)
         {
-            return RenderPage(repository.Search(form, id ?? []));
+            return RenderPage(repository.Search(ModuleTargetType.Document, form, id ?? []));
         }
     }
 }

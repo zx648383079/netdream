@@ -31,9 +31,31 @@ namespace NetDream.Shared.Interfaces
         public IOperationResult<IUser> LastCommentator(string email);
         public IOperationResult<AgreeResult> Toggle(int user, ModuleTargetType type, int comment, bool agree);
         public IOperationResult Report(int user, ModuleTargetType type, int comment);
+        /// <summary>
+        /// 是否评过分
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="type"></param>
+        /// <param name="article"></param>
+        /// <returns></returns>
+        public bool Has(int user, ModuleTargetType type, int article);
         public IScoreSubtotal Score(ModuleTargetType type, int article);
-
-
+        /// <summary>
+        /// 平均分
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="article"></param>
+        /// <returns></returns>
+        public float Avg(ModuleTargetType type, int article);
+        /// <summary>
+        /// 评分
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="type"></param>
+        /// <param name="article"></param>
+        /// <param name="score"></param>
+        /// <returns></returns>
+        public IOperationResult Scoring(int user, ModuleTargetType type, int article, byte score);
     }
 
     public interface ICommentForm

@@ -29,7 +29,7 @@ namespace NetDream.Modules.Legwork.Repositories
                 .When(status > 0, i => i.Status == LegworkRepository.STATUS_ALLOW)
                 .ToPage(form).CopyTo<ServiceEntity, ServiceListItem>();
             userStore.Include(res.Items);
-            CategoryRepository.Include(db, res.Items);
+            categoryStore.Include(ModuleTargetType.Legwork, res.Items);
             return res;
         }
 
@@ -38,7 +38,7 @@ namespace NetDream.Modules.Legwork.Repositories
             var res = db.Service.Search(form.Keywords, "name")
                 .Where(i => i.UserId == client.UserId)
                 .ToPage(form).CopyTo<ServiceEntity, ServiceListItem>();
-            CategoryRepository.Include(db, res.Items);
+            categoryStore.Include(ModuleTargetType.Legwork, res.Items);
             return res;
         }
 
@@ -70,9 +70,7 @@ namespace NetDream.Modules.Legwork.Repositories
                 return OperationResult<ServiceModel>.Fail("无权限操作");
             }
             var res = model.CopyTo<ServiceModel>();
-            res.Category = db.Categories.Where(i => i.Id == model.CatId)
-                .Select(i => new ListLabelItem(i.Id, i.Name))
-                .FirstOrDefault();
+            res.Category = categoryStore.Get(ModuleTargetType.Legwork, model.CatId).Result;
             var provider = db.Provider.Where(i => i.UserId == model.UserId)
                 .FirstOrDefault();
             if (provider is not null)

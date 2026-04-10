@@ -20,7 +20,7 @@ namespace NetDream.Api.Controllers.Contact
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] QueryForm form)
         {
-            return RenderPage(repository.ManageList(form));
+            return RenderPage(repository.AdvancedList(form));
         }
 
         [HttpGet]

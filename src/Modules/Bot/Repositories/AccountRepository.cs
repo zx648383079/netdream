@@ -19,7 +19,7 @@ namespace NetDream.Modules.Bot.Repositories
                 .ToPage(form, i => i.SelectAs());
         }
 
-        public IPage<BotListItem> ManageList(QueryForm form)
+        public IPage<BotListItem> AdvancedList(QueryForm form)
         {
             var items = db.Bots.Search(form.Keywords, "name", "account")
                 .OrderByDescending(i => i.Status)

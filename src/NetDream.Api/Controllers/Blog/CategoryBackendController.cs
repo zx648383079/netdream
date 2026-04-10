@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.Blog.Entities;
-using NetDream.Modules.Blog.Forms;
-using NetDream.Modules.Blog.Models;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Entities;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.Blog
 {
@@ -17,20 +18,20 @@ namespace NetDream.Api.Controllers.Blog
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(DataResponse<CategoryListItem>), 200)]
+        [ProducesResponseType(typeof(DataResponse<IListLabelItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index()
         {
-            return RenderData(repository.Get());
+            return RenderData(repository.Get(ModuleTargetType.Article));
         }
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<CategoryEntity>), 200)]
+        [ProducesResponseType(typeof(PageResponse<IListLabelItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Detail(int id)
         {
-            var res = repository.Get(id);
+            var res = repository.Get(ModuleTargetType.Article, id);
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
@@ -44,7 +45,7 @@ namespace NetDream.Api.Controllers.Blog
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Save([FromBody] CategoryForm form)
         {
-            var res = repository.Save(form);
+            var res = repository.AdvancedSave(ModuleTargetType.Article, form);
             if (res.Succeeded)
             {
                 return Render(res.Result);
@@ -58,7 +59,7 @@ namespace NetDream.Api.Controllers.Blog
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            repository.Remove(id);
+            repository.Remove(ModuleTargetType.Article, id);
             return RenderData(true);
         }
     }
