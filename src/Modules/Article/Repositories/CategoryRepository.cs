@@ -109,14 +109,63 @@ namespace NetDream.Modules.Article.Repositories
                 .Select(i => new ListLabelItem(i.Id, i.Name)).ToArray();
         }
 
+        public IListLabelItem[] Children(ModuleTargetType type, int parent)
+        {
+            return db.Categories.Where(i => i.Type == (byte)type && i.ParentId == parent)
+                .OrderBy(i => i.Id)
+                .Select(i => new CategoryTreeItem()
+                {
+                    Id = i.Id,
+                    ParentId = i.ParentId,
+                    Name = i.Name,
+                    Thumb = i.Thumb,
+                    Description = i.Description,
+                }).ToArray();
+        }
+
         public IOperationResult<IListLabelItem> Get(ModuleTargetType type, int id)
         {
             var res = db.Categories.Where(i => i.Id == id && i.Type == (byte)type)
-                .Select(i => new ListLabelItem(i.Id, i.Name)).SingleOrDefault();
+                .Select(i => new CategoryTreeItem()
+                {
+                    Id = i.Id,
+                    ParentId = i.ParentId,
+                    Name = i.Name,
+                    Thumb = i.Thumb,
+                    Description = i.Description,
+                }).SingleOrDefault();
             if (res is null)
             {
                 return OperationResult<IListLabelItem>.Fail("id is error");
             }
+            return OperationResult<IListLabelItem>.Ok(res);
+        }
+
+        public IOperationResult<IListLabelItem> Get(ModuleTargetType type, int id, bool children)
+        {
+            if (!children)
+            {
+                return Get(type, id);
+            }
+            var items = db.Categories.Where(i => i.Type == (byte)type && (i.Id == id || i.ParentId == id))
+                .Select(i => new CategoryTreeItem()
+                {
+                    Id = i.Id,
+                    ParentId = i.ParentId,
+                    Name = i.Name,
+                    Thumb = i.Thumb,
+                    Description = i.Description,
+                }).ToArray();
+            if (items.Length == 0)
+            {
+                return OperationResult<IListLabelItem>.Fail("id is error");
+            }
+            var res = items.Where(i => i.Id == id).FirstOrDefault();
+            if (res is null)
+            {
+                return OperationResult<IListLabelItem>.Fail("id is error");
+            }
+            res.Children = items.Where(i => i.ParentId == id).ToArray();
             return OperationResult<IListLabelItem>.Ok(res);
         }
 
