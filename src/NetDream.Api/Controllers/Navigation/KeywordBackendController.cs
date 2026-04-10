@@ -7,7 +7,6 @@ using NetDream.Modules.Navigation.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers.Entities;
 
 namespace NetDream.Api.Controllers.Navigation
 {
@@ -27,7 +26,7 @@ namespace NetDream.Api.Controllers.Navigation
 
         [HttpPost]
         [Route("[action]")]
-        [ProducesResponseType(typeof(TagEntity), 200)]
+        [ProducesResponseType(typeof(KeywordEntity), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Save([FromBody] KeywordForm form)
         {

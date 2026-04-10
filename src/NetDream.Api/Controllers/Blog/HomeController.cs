@@ -15,7 +15,7 @@ namespace NetDream.Api.Controllers.Blog
         [Route("")]
         [ProducesResponseType(typeof(PageResponse<ArticleListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Index([FromQuery] BlogQueryForm form)
+        public IActionResult Index([FromQuery] ArticleQueryForm form)
         {
             return RenderPage(repository.GetList(form));
         }

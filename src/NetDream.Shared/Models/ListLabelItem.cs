@@ -20,6 +20,20 @@ namespace NetDream.Shared.Models
         }
     }
 
+    public class ListStatisticsItem : ListLabelItem, IListStatisticsItem
+    {
+        public int Count { get; set; }
+
+        public ListStatisticsItem()
+        {
+            
+        }
+
+        public ListStatisticsItem(int id, string name): base(id, name)
+        {
+        }
+    }
+
     public class ListArticleItem : IListArticleItem
     {
         public int Id { get; set; }

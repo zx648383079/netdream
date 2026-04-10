@@ -12,6 +12,7 @@ using System;
 using NetDream.Shared.Models;
 using System.IO;
 using NetDream.Modules.Auth;
+using NetDream.Modules.Article;
 using NetDream.Modules.SEO;
 using NetDream.Razor.Base.Http;
 using NetDream.Shared.Events;

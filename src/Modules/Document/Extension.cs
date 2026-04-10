@@ -9,7 +9,6 @@ namespace NetDream.Modules.Document
         {
             service.AddScoped<PageRepository>();
             service.AddScoped<ApiRepository>();
-            service.AddScoped<CategoryRepository>();
             service.AddScoped<MockRepository>();
             service.AddScoped<ProjectRepository>();
         }

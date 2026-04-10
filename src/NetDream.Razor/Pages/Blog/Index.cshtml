@@ -27,16 +27,16 @@
                     <li>
                         <i class="fa fa-bookmark"></i>
                         <a href="" title="@item.Name">@item.Name</a>
-                        @if (item.BlogCount > 99)
+                        @if (item.Count > 99)
                         {
                             <span class="count">
                                 +99
                             </span>
                         }
-                        else if (item.BlogCount > 0)
+                        else if (item.Count > 0)
                         {
                             <span class="count">
-                                @item.BlogCount
+                                @item.Count
                             </span>
                         }
                     </li>
@@ -75,7 +75,7 @@
                     <p>@item.Description</p>
                     <a class="author" href=""><i class="fa fa-edit"></i><b></b></a>
                     <span class="comment"><i class="fa fa-comments"></i><b>@item.CommentCount</b></span>
-                    <span class="agree"><i class="fas fa-thumbs-up"></i><b>@item.RecommendCount</b></span>
+                    <span class="agree"><i class="fas fa-thumbs-up"></i><b>@item.LikeCount</b></span>
                     <span class="click"><i class="fa fa-eye"></i><b>@item.ClickCount</b></span>
                 </dd>
             </dl>

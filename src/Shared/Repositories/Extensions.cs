@@ -313,7 +313,7 @@ namespace NetDream.Shared.Repositories
             return res;
         }
 
-        public static IPage<TTarget> ToPage<TSource, TTarget>(this IQueryable<TSource> source, PaginationForm pagination, Func<IQueryable<TSource>, IQueryable<TTarget>> cb)
+        public static IPage<TTarget> ToPage<TSource, TTarget>(this IQueryable<TSource> source, IPaginationForm pagination, Func<IQueryable<TSource>, IQueryable<TTarget>> cb)
         {
             var res = new Page<TTarget>(source.Count(), pagination);
             if (!res.IsEmpty)

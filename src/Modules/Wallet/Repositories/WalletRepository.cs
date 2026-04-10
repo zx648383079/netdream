@@ -53,6 +53,18 @@ namespace NetDream.Modules.Wallet.Repositories
                 .ToPage(form, i => i.SelectAs()); ;
         }
 
+        public UserSubtotalResult SelfSubtotal()
+        {
+            var res = new UserSubtotalResult();
+            var model = db.Wallets.Where(i => i.Id == client.UserId).SingleOrDefault();
+            if (model is not null)
+            {
+                res.Money = model.Money;
+                res.Integral = model.Credits;
+            }
+            return res;
+        }
+
         public AccountLogEntity Log(int userId, byte type, int itemId, float money, float totalMoney,
             string remark, byte status = 0)
         {
@@ -145,6 +157,8 @@ namespace NetDream.Modules.Wallet.Repositories
             return db.AccountLogs.Where(i => i.UserId == user && i.ItemId == sourceId && i.Type == (byte)sourceType
             && i.Status != STATUS_PAID).Any();
         }
+
+        
     }
 
     public class FundOperation<T>(WalletContext db, T data) : IFundOperation<T>

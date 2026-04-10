@@ -1,4 +1,5 @@
-﻿@using NetDream.Modules.Blog.Models;
+﻿@using NetDream.Modules.Article.Models;
+@using NetDream.Shared.Interfaces;
 @using NetDream.Shared.Helpers;
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @addTagHelper *, NetDream.Web
@@ -6,7 +7,7 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var data = ViewData["data"] as BlogModel;
+    var data = ViewData["data"] as ArticleOpenModel;
 }
 
 @section Styles {
@@ -21,21 +22,21 @@
     <div class="book-sidebar">
         <div class="book-chapter">
             <ul>
-                @foreach (var item in ViewData["categories"] as List<CategoryLabelItem>)
+                @foreach (var item in ViewData["categories"] as IListStatisticsItem[])
                 {
                     <li>
                         <i class="fa fa-bookmark"></i>
                         <a href="" title="@item.Name">@item.Name</a>
-                        @if (item.BlogCount > 99)
+                        @if (item.Count > 99)
                         {
                             <span class="count">
                                 +99
                             </span>
                         }
-                        else if (item.BlogCount > 0)
+                        else if (item.Count > 0)
                         {
                             <span class="count">
-                                @item.BlogCount
+                                @item.Count
                             </span>
                         }
                     </li>
@@ -49,13 +50,8 @@
             <span>Fork Me On Github</span>
         </a>
         <div class="book-info">
-            @if (!string.IsNullOrEmpty(data.ProgrammingLanguage))
-            {
-                <a class="language" title="@data.ProgrammingLanguage"><i class="fa fa-code"></i><b>@data.ProgrammingLanguage</b></a>
-
-            }
             <span class="time" title="发布时间"><i class="fa fa-calendar-check"></i><b>@TimeHelper.FormatAgo(data.CreatedAt)</b></span>
-            @if (data.Type == 1)
+            @if (data.OriginalType == 1)
             {
                 <span class="type">
                     <a title="转载">
@@ -72,7 +68,7 @@
             </p>
         </article>
         <div class="toggle-open">
-            @if (data.Type == 1)
+            @if (data.OriginalType == 1)
             {
                 <a href="metaItems['source_url']" target="_blank" title="Reprint Tip">Click here to view source</a>
             } 
@@ -85,7 +81,7 @@
         <div class="tools">
             <span class="comment"><i class="fa fa-comments"></i><b>@data.CommentCount</b></span>
             <span class="click"><i class="fa fa-eye"></i><b>@data.ClickCount</b></span>
-            <span class="agree recommend-blog"><i class="fas fa-thumbs-up"></i><b>@data.RecommendCount</b></span>
+            <span class="agree recommend-blog"><i class="fas fa-thumbs-up"></i><b>@data.LikeCount</b></span>
         </div>
     </div>
 

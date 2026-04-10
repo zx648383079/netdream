@@ -1,7 +1,6 @@
 ﻿using NetDream.Modules.ResourceStore.Entities;
 using NetDream.Shared.Converters;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Models;
 using System.Collections.Generic;
 
 namespace NetDream.Modules.ResourceStore.Models
@@ -12,7 +11,7 @@ namespace NetDream.Modules.ResourceStore.Models
         public string[] Tags { get; set; }
         public ResourceFileEntity[] Files { get; set; }
         public IUser? User { get; internal set; }
-        public ListLabelItem? Category { get; internal set; }
+        public IListLabelItem? Category { get; internal set; }
         public bool IsGradable { get; internal set; }
 
         [JsonMeta]

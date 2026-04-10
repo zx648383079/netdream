@@ -21,7 +21,7 @@ namespace NetDream.Modules.Article.Repositories
         IMetaRepository metaStore)
     {
 
-        public IPage<ArticleListItem> GetList(BlogQueryForm form)
+        public IPage<ArticleListItem> GetList(ArticleQueryForm form)
         {
             var items = db.Articles.Search(form.Keywords, "title")
                 .When(form.Category > 0, i => i.CatId == form.Category)

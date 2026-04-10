@@ -6,12 +6,10 @@ namespace NetDream.Modules.ResourceStore;
 public class ResourceContext(DbContextOptions<ResourceContext> options) 
     : DbContext(options)
 {
-    public DbSet<CategoryEntity> Categories { get; set; }
     public DbSet<ResourceEntity> Resources { get; set; }
     public DbSet<ResourceFileEntity> ResourceFiles { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ResourceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ResourceFileEntityTypeConfiguration());
         base.OnModelCreating(modelBuilder);

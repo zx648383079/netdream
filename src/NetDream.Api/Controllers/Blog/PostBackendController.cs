@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Models;
 using NetDream.Modules.Article.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
@@ -14,20 +16,20 @@ namespace NetDream.Api.Controllers.Blog
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(PageResponse<BlogListItem>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ArticleListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Index([FromQuery] BlogQueryForm form)
+        public IActionResult Index([FromQuery] ArticleQueryForm form)
         {
             return RenderPage(repository. AdvancedList(form));
         }
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<BlogModel>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ArticleModel>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Detail(int id)
         {
-            var res = repository. AdvancedGet(id);
+            var res = repository.AdvancedGet(id);
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);

@@ -20,7 +20,7 @@ namespace NetDream.Api.Controllers.Blog
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] QueryForm form)
         {
-            return RenderData(repository.AdvancedList(form));
+            return RenderData(repository.AdvancedList(ModuleTargetType.Article, form));
         }
 
         [HttpDelete]
@@ -29,7 +29,7 @@ namespace NetDream.Api.Controllers.Blog
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            repository.AdvancedRemove(id);
+            repository.AdvancedRemove(ModuleTargetType.Article, id);
             return RenderData(true);
         }
     }

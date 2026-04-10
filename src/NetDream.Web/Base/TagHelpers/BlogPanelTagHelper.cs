@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Shared.Helpers;
-using NetDream.Modules.Blog.Repositories;
 using System.Text;
 
 namespace NetDream.Web.Base.TagHelpers

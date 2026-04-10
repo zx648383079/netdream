@@ -1,33 +1,27 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NetDream.Modules.Blog.Forms;
-using NetDream.Modules.Blog.Models;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Models;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Shared.Interfaces;
 
 namespace NetDream.Razor.Pages.Blog
 {
-    public class IndexModel : PageModel
+    public class IndexModel(BlogRepository repository) : PageModel
     {
-        private readonly BlogRepository _repository;
-        public IndexModel(BlogRepository repository)
-        {
-            _repository = repository;
-        }
-
-        public IPage<BlogListItem> Items;
-        public CategoryLabelItem[] Categories;
-        public BlogListItem[] NewItems;
+        public IPage<ArticleListItem> Items;
+        public IListStatisticsItem[] Categories;
+        public ArticleListItem[] NewItems;
         public string FullUrl;
         public int PageIndex;
 
-        public void OnGet([FromQuery] BlogQueryForm form)
+        public void OnGet([FromQuery] ArticleQueryForm form)
         {
             PageIndex = form.Page;
             FullUrl = $"{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
-            Items = _repository.GetList(form);
-            Categories = _repository.Categories();
-            NewItems = _repository.GetNewBlogs(5);
+            Items = repository.GetList(form);
+            Categories = repository.Categories();
+            NewItems = repository.GetNewBlogs(5);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace NetDream.Api.Controllers.Blog
     {
         [Route("publish/page")]
         [Authorize]
-        public IActionResult Index([FromQuery] BlogQueryForm form)
+        public IActionResult Index([FromQuery] ArticleQueryForm form)
         {
             return RenderPage(repository.GetList(form));
         }

@@ -8,8 +8,7 @@ using NetDream.Modules.ResourceStore.Forms;
 using NetDream.Modules.ResourceStore.Models;
 using NetDream.Modules.ResourceStore.Repositories;
 using NetDream.Modules.UserIdentity.Repositories;
-using NetDream.Shared.Models;
-using System.IO;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Api.Controllers.ResourceStore
 {
@@ -86,7 +85,7 @@ namespace NetDream.Api.Controllers.ResourceStore
 
         [HttpPost]
         [Route("[action]")]
-        [ProducesResponseType(typeof(FileUploadResult), 200)]
+        [ProducesResponseType(typeof(IFileListItem), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Upload(IFormFile file)
         {

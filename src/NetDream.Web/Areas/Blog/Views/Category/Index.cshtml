@@ -1,4 +1,5 @@
-﻿@using NetDream.Modules.Blog.Models;
+﻿@using NetDream.Modules.Article.Models;
+@using NetDream.Shared.Interfaces
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     ViewData["Title"] = "分类";
@@ -26,11 +27,11 @@
             <a asp-area="Blog" asp-controller="Tag" asp-action="Index">标签</a>
             <a asp-area="Blog" asp-controller="Archives" asp-action="Index">归档</a>
         </div>
-        @foreach (var item in ViewData["items"] as List<CategoryLabelItem>)
+        @foreach (var item in ViewData["items"] as IListStatisticsItem[])
         {
             <div class="cat-item">
                 <a >@item.Name</a>
-                <span class="count">(@item.BlogCount)</span>
+                <span class="count">(@item.Count)</span>
             </div>
         }
     </div>

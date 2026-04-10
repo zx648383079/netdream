@@ -1,34 +1,37 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
+using NetDream.Modules.Comment.Forms;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.ResourceStore.Models;
 using NetDream.Modules.ResourceStore.Repositories;
+using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.ResourceStore
 {
     [Route("open/res/[controller]")]
     [ApiController]
-    public class CommentController(ResourceRepository repository) : JsonController
+    public class CommentController(ResourceRepository repository, 
+        ICommentRepository comment, IClientContext client) : JsonController
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(PageResponse<CommentListItem>), 200)]
+        [ProducesResponseType(typeof(PageResponse<ICommentItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] CommentQueryForm form)
         {
-            return RenderPage(repository.Comment().Search(form));
+            return RenderPage(comment.Search(ModuleTargetType.ResourceStore, form.TargetId, form));
         }
 
         [HttpGet]
         [Route("[action]")]
         [Authorize]
-        [ProducesResponseType(typeof(PageResponse<CommentListItem>), 200)]
+        [ProducesResponseType(typeof(DataOneResponse<bool>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Save([FromBody] CommentForm form)
         {
-            var res = repository.Comment().Insert(form);
+            var res = comment.Create(client.UserId, ModuleTargetType.ResourceStore, form.TargetId, form);
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
@@ -43,7 +46,7 @@ namespace NetDream.Api.Controllers.ResourceStore
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            var res = repository.Comment().RemoveBySelf(id);
+            var res = comment.Remove(client.UserId, ModuleTargetType.ResourceStore, id);
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
@@ -58,7 +61,7 @@ namespace NetDream.Api.Controllers.ResourceStore
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Agree(int id)
         {
-            var res = repository.Comment().Agree(id);
+            var res = comment.Toggle(client.UserId, ModuleTargetType.ResourceStore, id, true);
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
@@ -72,7 +75,7 @@ namespace NetDream.Api.Controllers.ResourceStore
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Disagree(int id)
         {
-            var res = repository.Comment().Agree(id);
+            var res = comment.Toggle(client.UserId, ModuleTargetType.ResourceStore, id, false);
             if (!res.Succeeded)
             {
                 return RenderFailure(res.Message);
@@ -80,23 +83,15 @@ namespace NetDream.Api.Controllers.ResourceStore
             return Render(res.Result);
         }
 
-        [HttpGet]
-        [Route("[action]")]
-        [ProducesResponseType(typeof(PageResponse<ScoreListItem>), 200)]
-        [ProducesResponseType(typeof(FailureResponse), 404)]
-        public IActionResult Score([FromQuery] ScoreQueryForm form)
-        {
-            return RenderPage(repository.Score().Search(form));
-        }
 
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(ScoreSubtotal), 200)]
+        [ProducesResponseType(typeof(IScoreSubtotal), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult ScoreCount(int id)
         {
-            return Render(repository.Score().Count(id));
+            return Render(comment.Score(ModuleTargetType.ResourceStore, id));
         }
 
         [HttpGet]

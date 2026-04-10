@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using NetDream.Modules.Blog.Forms;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Repositories;
 
 namespace NetDream.Web.Areas.Blog.Controllers
 {
@@ -13,7 +13,7 @@ namespace NetDream.Web.Areas.Blog.Controllers
             _repository = repository;
         }
 
-        public IActionResult Index([FromQuery] BlogQueryForm form)
+        public IActionResult Index([FromQuery] ArticleQueryForm form)
         {
             ViewData["categories"] = _repository.Categories();
             ViewData["items"] = _repository.GetList(form);

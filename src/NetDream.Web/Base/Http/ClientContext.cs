@@ -6,7 +6,6 @@ using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Shared.Helpers;
 using NetDream.Shared.Http;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces.Entities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

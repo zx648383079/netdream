@@ -1,5 +1,5 @@
-﻿using NetDream.Modules.Blog.Models;
-using NetDream.Modules.UserAccount.Models;
+﻿using NetDream.Modules.UserAccount.Models;
+using NetDream.Shared.Interfaces;
 using System.Collections.Generic;
 
 namespace NetDream.Api.Models
@@ -15,6 +15,6 @@ namespace NetDream.Api.Models
     {
         public UserProfileModel? AuthProfile { get; set; }
         public IDictionary<string, object>? SeoConfigs { get; set; }
-        public CategoryLabelItem[]? BlogCategories { get; set; }
+        public IListLabelItem[]? BlogCategories { get; set; }
     }
 }

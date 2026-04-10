@@ -1,8 +1,8 @@
-﻿namespace NetDream.Modules.UserAccount.Models
+﻿namespace NetDream.Modules.Wallet.Models
 {
     public class UserSubtotalResult
     {
-        public decimal Money { get; set; }
+        public int Money { get; set; }
         public int Integral { get; set; }
         public int Bonus { get; set; }
         public int Coupon { get; set; }

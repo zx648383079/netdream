@@ -32,7 +32,7 @@ namespace NetDream.Modules.Article.Repositories
 
         public const byte ACTION_REAL_RULE = 3; // 是否能阅读
 
-        public IPage<ArticleListItem> SelfList(BlogQueryForm form)
+        public IPage<ArticleListItem> SelfList(ArticleQueryForm form)
         {
             form.User = client.UserId;
             return GetList(form);
@@ -61,7 +61,7 @@ namespace NetDream.Modules.Article.Repositories
             }
         }
 
-        public IPage<ArticleListItem> GetList(BlogQueryForm form)
+        public IPage<ArticleListItem> GetList(ArticleQueryForm form)
         {
             CheckSortOrder(form);
             var include = Array.Empty<int>();
@@ -88,7 +88,7 @@ namespace NetDream.Modules.Article.Repositories
             return items;
         }
 
-        public IPage<ArticleListItem> AdvancedList(BlogQueryForm form)
+        public IPage<ArticleListItem> AdvancedList(ArticleQueryForm form)
         {
             CheckSortOrder(form);
             var include = Array.Empty<int>();
@@ -159,9 +159,24 @@ namespace NetDream.Modules.Article.Repositories
             return tagStore.Get(ModuleTargetType.Article);
         }
 
-        public IListLabelItem[] Categories()
+        public IListStatisticsItem[] Categories()
         {
-            return db.Categories.SelectAsLabel().ToArray();
+            var res = db.Categories.Where(i => i.Type == (byte)ModuleTargetType.Article)
+                .Select(i => new ListStatisticsItem(i.Id, i.Name))
+                .ToArray();
+            var items = db.Articles.Where(i => i.Type == (byte)ModuleTargetType.Article 
+                && i.PublishStatus == (byte)PublishStatus.Posted)
+                .GroupBy(i => i.CatId)
+                .Select(i => new KeyValuePair<int, int>(i.Key, i.Count()))
+                .ToDictionary();
+            foreach (var item in res)
+            {
+                if (items.TryGetValue(item.Id, out var c))
+                {
+                    item.Count = c;
+                }
+            }
+            return res;
         }
 
         /// <summary>

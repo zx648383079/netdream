@@ -1,4 +1,4 @@
-﻿@using NetDream.Modules.Blog.Models;
+﻿@using NetDream.Modules.Article.Models;
 @using NetDream.Shared.Helpers;
 @using NetDream.Shared.Interfaces
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
@@ -6,7 +6,7 @@
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var items = ViewData["items"] as IPage<BlogModel>;
+    var items = ViewData["items"] as IPage<ArticleOpenModel>;
     var pageIndex = (int)ViewData["pageIndex"];
     var listViewMode = 0;
 }
@@ -30,21 +30,21 @@
     <div class="book-sidebar">
         <div class="book-chapter">
             <ul>
-                @foreach (var item in ViewData["categories"] as List<CategoryLabelItem>)
+                @foreach (var item in ViewData["categories"] as IListStatisticsItem[])
                 {
                     <li>
                         <i class="fa fa-bookmark"></i>
                         <a href="" title="@item.Name">@item.Name</a>
-                        @if (item.BlogCount > 99)
+                        @if (item.Count > 99)
                         {
                             <span class="count">
                                 +99
                             </span>
                         }
-                        else if (item.BlogCount > 0)
+                        else if (item.Count > 0)
                         {
                             <span class="count">
-                                @item.BlogCount
+                                @item.Count
                             </span>
                         }
                     </li>
@@ -54,7 +54,7 @@
         <div class="book-new">
             <h3>最新博客</h3>
             <ul>
-                @foreach (var item in ViewData["newItems"] as List<BlogModel>)
+                @foreach (var item in ViewData["newItems"] as ArticleListItem[])
                 {
                     <li>
                         <i class="fa fa-bookmark"></i><a href="">@item.Title</a>
@@ -95,7 +95,7 @@
                         <a class="author" href=""><i class="fa fa-edit"></i><b></b></a>
                         <a class="category" href=""><i class="fa fa-edit"></i><b></b></a>
                         <span class="comment"><i class="fa fa-comments"></i><b>@item.CommentCount</b></span>
-                        <span class="agree"><i class="fas fa-thumbs-up"></i><b>@item.RecommendCount</b></span>
+                        <span class="agree"><i class="fas fa-thumbs-up"></i><b>@item.LikeCount</b></span>
                         <span class="click"><i class="fa fa-eye"></i><b>@item.ClickCount</b></span>
                     </dd>
                 </dl>

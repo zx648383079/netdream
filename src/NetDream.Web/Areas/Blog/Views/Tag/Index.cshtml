@@ -1,4 +1,5 @@
-﻿@using NetDream.Modules.Blog.Models;
+﻿@using NetDream.Modules.Article.Models;
+@using NetDream.Shared.Models
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     ViewData["Title"] = "Tag";
@@ -26,9 +27,9 @@
             <a class="active">标签</a>
             <a asp-area="Blog" asp-controller="Archives" asp-action="Index">归档</a>
         </div>
-        @foreach (var item in ViewData["items"] as List<TagModel>)
+        @foreach (var item in ViewData["items"] as StatisticsItem[])
         {
-            <a class="tag-item" href="" style="font-size: @item.FontSize">@item.Name</a>
+            <a class="tag-item" href="" style="font-size: @(item.Count + 12)px">@item.Name</a>
         }
     </div>
 

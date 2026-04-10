@@ -6,9 +6,9 @@ using NetDream.Modules.Auth.Models;
 using NetDream.Modules.Auth.Repositories;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserAccount.Forms;
-using NetDream.Modules.UserAccount.Models;
 using NetDream.Modules.UserAccount.Repositories;
 using NetDream.Modules.Wallet.Models;
+using NetDream.Modules.Wallet.Repositories;
 
 namespace NetDream.Api.Controllers.Auth
 {
@@ -17,6 +17,7 @@ namespace NetDream.Api.Controllers.Auth
     [ApiController]
     public class AccountController(
         AccountRepository repository,
+        WalletRepository wallet,
         LogRepository logStore) : JsonController
     {
         [HttpGet]
@@ -25,7 +26,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Log([FromQuery] LogQueryForm form)
         {
-            return RenderPage(repository.SelfLogList(form));
+            return RenderPage(wallet.SelfLogList(form));
         }
 
         [HttpGet]
@@ -84,7 +85,7 @@ namespace NetDream.Api.Controllers.Auth
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Subtotal()
         {
-            return Render(repository.SelfSubtotal());
+            return Render(wallet.SelfSubtotal());
         }
 
         [HttpPost]

@@ -2,7 +2,7 @@
 
 namespace NetDream.Web.Base.Helpers
 {
-    public class Html
+    public class HtmlHelper
     {
         public static string ToUrl(string uri)
         {

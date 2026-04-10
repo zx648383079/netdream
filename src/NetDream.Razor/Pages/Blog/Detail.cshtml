@@ -26,16 +26,16 @@
                     <li>
                         <i class="fa fa-bookmark"></i>
                         <a href="" title="@item.Name">@item.Name</a>
-                        @if (item.BlogCount > 99)
+                        @if (item.Count > 99)
                         {
                             <span class="count">
                                 +99
                             </span>
                         }
-                        else if (item.BlogCount > 0)
+                        else if (item.Count > 0)
                         {
                             <span class="count">
-                                @item.BlogCount
+                                @item.Count
                             </span>
                         }
                     </li>
@@ -49,13 +49,8 @@
             <img src="~/assets/images/forkme.png" alt="Fork Me On Github">
         </a>
         <div class="info">
-            @if (!string.IsNullOrEmpty(Model.Data.ProgrammingLanguage))
-            {
-                <a class="language" title="@Model.Data.ProgrammingLanguage"><i class="fa fa-code"></i><b>@Model.Data.ProgrammingLanguage</b></a>
-
-            }
             <span class="time" title="发布时间"><i class="fa fa-calendar-check"></i><b>@TimeHelper.FormatAgo(Model.Data.CreatedAt)</b></span>
-            @if (Model.Data.Type == 1)
+            @if (Model.Data.OriginalType == 1)
             {
                 <span class="type">
                     <a title="转载">
@@ -74,7 +69,7 @@
         <div class="tools">
             <span class="comment"><i class="fa fa-comments"></i><b>@Model.Data.CommentCount</b></span>
             <span class="click"><i class="fa fa-eye"></i><b>@Model.Data.ClickCount</b></span>
-            <span class="agree recommend-blog"><i class="fas fa-thumbs-up"></i><b>@Model.Data.RecommendCount</b></span>
+            <span class="agree recommend-blog"><i class="fas fa-thumbs-up"></i><b>@Model.Data.LikeCount</b></span>
         </div>
     </div>
 

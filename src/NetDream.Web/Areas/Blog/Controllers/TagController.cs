@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using NetDream.Modules.Blog.Repositories;
+using NetDream.Modules.Article.Repositories;
 
 namespace NetDream.Web.Areas.Blog.Controllers
 {

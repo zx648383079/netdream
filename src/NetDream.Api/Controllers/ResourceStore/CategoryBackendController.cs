@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
-using NetDream.Modules.UserIdentity.Repositories;
-using NetDream.Modules.ResourceStore.Repositories;
-using NetDream.Modules.ResourceStore.Models;
-using NetDream.Modules.ResourceStore.Forms;
-using NetDream.Modules.ResourceStore.Entities;
-using NetDream.Shared.Models;
+using NetDream.Modules.Article.Entities;
+using NetDream.Modules.Article.Forms;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Modules.OpenPlatform;
+using NetDream.Modules.UserIdentity.Repositories;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 
 namespace NetDream.Api.Controllers.ResourceStore
 {
@@ -18,11 +18,11 @@ namespace NetDream.Api.Controllers.ResourceStore
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(DataResponse<CategoryTreeItem>), 200)]
+        [ProducesResponseType(typeof(DataResponse<ILevelItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index()
         {
-            return RenderData(repository.LevelTree([]));
+            return RenderData(repository.All(ModuleTargetType.ResourceStore));
         }
 
         [HttpPost]
@@ -31,7 +31,7 @@ namespace NetDream.Api.Controllers.ResourceStore
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Save([FromBody] CategoryForm form)
         {
-            var res = repository.Save(form);
+            var res = repository.AdvancedSave(ModuleTargetType.ResourceStore, form);
             if (res.Succeeded)
             {
                 return Render(res.Result);
@@ -45,17 +45,17 @@ namespace NetDream.Api.Controllers.ResourceStore
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            repository.Remove(id);
+            repository.AdvancedRemove(ModuleTargetType.ResourceStore, id);
             return RenderData(true);
         }
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(DataResponse<CategoryTreeItem>), 200)]
+        [ProducesResponseType(typeof(DataResponse<ILevelItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult All()
         {
-            return RenderData(repository.LevelTree([]));
+            return RenderData(repository.All(ModuleTargetType.ResourceStore));
         }
 
         [HttpGet]
@@ -64,7 +64,7 @@ namespace NetDream.Api.Controllers.ResourceStore
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Search(QueryBoundForm form)
         {
-            return RenderPage(repository.Search(form, form.Id));
+            return RenderPage(repository.Search(ModuleTargetType.ResourceStore, form, form.Id));
         }
     }
 }

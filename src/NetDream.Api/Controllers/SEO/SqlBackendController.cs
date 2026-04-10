@@ -4,7 +4,7 @@ using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.SEO.Repositories;
 using NetDream.Modules.UserIdentity.Repositories;
-using NetDream.Shared.Repositories.Models;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Api.Controllers.SEO
 {
@@ -15,7 +15,7 @@ namespace NetDream.Api.Controllers.SEO
     {
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(DataResponse<FileItem>), 200)]
+        [ProducesResponseType(typeof(DataResponse<IFileListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index()
         {

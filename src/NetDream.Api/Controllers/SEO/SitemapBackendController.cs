@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
-using NetDream.Shared.Notifications;
+using NetDream.Shared.Events.Notifications;
 using System.Threading.Tasks;
 
 namespace NetDream.Api.Controllers.SEO

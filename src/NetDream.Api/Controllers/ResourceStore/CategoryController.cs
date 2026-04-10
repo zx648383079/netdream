@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
-using NetDream.Modules.ResourceStore.Entities;
-using NetDream.Modules.ResourceStore.Models;
-using NetDream.Modules.ResourceStore.Repositories;
 using NetDream.Shared.Interfaces;
 
 namespace NetDream.Api.Controllers.ResourceStore

@@ -1,23 +1,16 @@
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NetDream.Modules.Article.Models;
 using NetDream.Modules.Article.Repositories;
+using NetDream.Shared.Interfaces;
 
 namespace NetDream.Razor.Pages.Blog
 {
-    public class CategoryModel : PageModel
+    public class CategoryModel(BlogRepository repository) : PageModel
     {
-        private readonly BlogRepository _repository;
-        public CategoryModel(BlogRepository repository)
-        {
-            _repository = repository;
-        }
-
-        public CategoryLabelItem[] Items;
+        public IListStatisticsItem[] Items;
 
         public void OnGet()
         {
-            Items = _repository.Categories();
+            Items = repository.Categories();
         }
     }
 }

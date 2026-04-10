@@ -15,6 +15,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
 {
     public class ResourceRepository(ResourceContext db, 
         IClientContext client, IUserRepository userStore,
+        ICategoryRepository categoryStore,
         ITagRepository tagStore,
         IMetaRepository metaStore,
         IInteractRepository interact,
@@ -42,7 +43,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
             }
             var res = query.ToPage(form);
             userStore.Include(res.Items);
-            CategoryRepository.Include(db, res.Items);
+            categoryStore.Include(ModuleTargetType.ResourceStore, res.Items);
             return res;
         }
 
@@ -50,7 +51,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
             int category = 0, int user = 0, string tag = "", 
             string sort = "created_at", string order = "desc")
         {
-            var categories = category > 0 ? new CategoryRepository(db).GetAllChildrenId(category) : [];
+            var categories = category > 0 ? categoryStore.Include(ModuleTargetType.ResourceStore, category) : [];
             var query = db.Resources.When(category > 0, i => categories.Contains(i.CatId))
             .When(user > 0, i => i.UserId == user)
             .Search(keywords, "title");
@@ -99,7 +100,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
             }
             var res = query.Take(count).ToArray();
             userStore.Include(res);
-            CategoryRepository.Include(db, res);
+            categoryStore.Include(ModuleTargetType.ResourceStore, res);
             return res;
         }
 
@@ -139,8 +140,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
             var res = model.CopyTo<ResourceModel>();
             res.Content = Markdig.Markdown.ToHtml(model.Content);
             res.User = userStore.Get(model.UserId);
-            res.Category = db.Categories.Where(i => i.Id == model.CatId)
-                .Select(i => new ListLabelItem(i.Id, i.Name)).SingleOrDefault();
+            res.Category = categoryStore.Get(ModuleTargetType.ResourceStore, res.CatId).Result;
             res.IsGradable = IsGradable(id);
             res.Tags = tagStore.Get(ModuleTargetType.ResourceStore, id);
             res.Files = db.ResourceFiles.Where(i => i.ResId == id).ToArray();
@@ -329,7 +329,7 @@ namespace NetDream.Modules.ResourceStore.Repositories
                 .When(form.User > 0, i => i.UserId == form.User).Search(form.Keywords, "title")
                 .OrderByDescending(i => i.Id).ToPage(form, i => i.SelectAs());
             userStore.Include(res.Items);
-            CategoryRepository.Include(db, res.Items);
+            categoryStore.Include(ModuleTargetType.ResourceStore, res.Items);
             return res;
         }
 

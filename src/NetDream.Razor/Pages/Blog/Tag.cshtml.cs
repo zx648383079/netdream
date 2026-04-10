@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NetDream.Modules.Article.Repositories;
+using NetDream.Shared.Models;
 
 namespace NetDream.Razor.Pages.Blog
 {
@@ -12,7 +13,7 @@ namespace NetDream.Razor.Pages.Blog
             _repository = repository;
         }
 
-        public TagListItem[] Items;
+        public StatisticsItem[] Items;
 
         public void OnGet()
         {

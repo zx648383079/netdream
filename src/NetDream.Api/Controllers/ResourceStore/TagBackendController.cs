@@ -2,17 +2,17 @@
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
-using NetDream.Modules.ResourceStore.Repositories;
+using NetDream.Modules.Tag.Entities;
+using NetDream.Modules.Tag.Repositories;
 using NetDream.Modules.UserIdentity.Repositories;
 using NetDream.Shared.Models;
-using NetDream.Shared.Providers.Entities;
 
 namespace NetDream.Api.Controllers.ResourceStore
 {
     [Route("open/res/admin/tag")]
     [Authorize(Roles = IdentityRepository.Administrator)]
     [ApiController]
-    public class TagBackendController(ResourceRepository repository) : JsonController
+    public class TagBackendController(TagRepository repository) : JsonController
     {
         [HttpGet]
         [Route("")]
@@ -20,7 +20,7 @@ namespace NetDream.Api.Controllers.ResourceStore
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Index([FromQuery] QueryForm form)
         {
-            return RenderPage(repository.Tag().GetList(form));
+            return RenderPage(repository.AdvancedList(ModuleTargetType.ResourceStore, form));
         }
 
 
@@ -30,17 +30,17 @@ namespace NetDream.Api.Controllers.ResourceStore
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Delete(int id)
         {
-            repository.Tag().Remove(id);
+            repository.AdvancedRemove(ModuleTargetType.ResourceStore, id);
             return RenderData(true);
         }
 
         [HttpGet]
         [Route("[action]")]
-        [ProducesResponseType(typeof(DataResponse<TagEntity>), 200)]
+        [ProducesResponseType(typeof(DataResponse<StatisticsItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult All()
         {
-            return RenderData(repository.Tag().All());
+            return RenderData(repository.Get(ModuleTargetType.ResourceStore));
         }
     }
 }

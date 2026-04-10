@@ -138,6 +138,14 @@ namespace NetDream.Modules.Article.Repositories
             return TreeHelper.Create(data);
         }
 
+        public int[] Include(ModuleTargetType type, int parent)
+        {
+            if (parent <= 0)
+            {
+                return [];
+            }
+            return [parent];
+        }
         public void Include(ModuleTargetType type, IEnumerable<IWithCategoryModel> items)
         {
             var idItems = items.Select(item => item.CatId).Where(i => i > 0)

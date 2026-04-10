@@ -1,8 +1,9 @@
-﻿using NetDream.Shared.Models;
+﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Article.Forms
 {
-    public class BlogQueryForm : QueryForm
+    public class ArticleQueryForm : QueryForm, ISourceQueryForm
     {
         public int Category { get; set; }
         public int User { get; set; }

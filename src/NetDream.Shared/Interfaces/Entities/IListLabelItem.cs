@@ -22,4 +22,9 @@
         public string Name { get; }
         public T Value { get; }
     }
+
+    public interface IListStatisticsItem : IListLabelItem
+    {
+        public int Count { get; }
+    }
 }

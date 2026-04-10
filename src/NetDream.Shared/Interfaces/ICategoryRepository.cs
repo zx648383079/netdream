@@ -17,6 +17,13 @@ namespace NetDream.Shared.Interfaces
         public ILevelItem[] Get(ModuleTargetType type, int[] excludes);
 
         public void Include(ModuleTargetType type, IEnumerable<IWithCategoryModel> items);
+        /// <summary>
+        /// 获取子孙后代ID
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public int[] Include(ModuleTargetType type, int parent);
     }
 
     public interface IWithCategoryModel

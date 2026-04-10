@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
-using NetDream.Modules.Wallet.Forms;
+using NetDream.Modules.UserAccount.Forms;
 using NetDream.Modules.UserIdentity.Repositories;
 using NetDream.Modules.Wallet.Models;
 using NetDream.Modules.Wallet.Repositories;
