@@ -1,9 +1,9 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDream.Api.Base.Http;
 using NetDream.Modules.OpenPlatform;
 using NetDream.Modules.UserIdentity.Repositories;
+using NetDream.Shared.Events;
 using NetDream.Shared.Events.Notifications;
 using System.Threading.Tasks;
 
@@ -12,7 +12,7 @@ namespace NetDream.Api.Controllers.SEO
     [Route("open/seo/admin/sitemap")]
     [Authorize(Roles = IdentityRepository.Administrator)]
     [ApiController]
-    public class SitemapBackendController(IMediator mediator) : JsonController
+    public class SitemapBackendController(IEventBus mediator) : JsonController
     {
         [HttpPost]
         [Route("")]

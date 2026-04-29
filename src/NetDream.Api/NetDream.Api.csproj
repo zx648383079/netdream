@@ -50,7 +50,6 @@
     <ProjectReference Include="..\Modules\Tag\Tag.csproj" />
     <ProjectReference Include="..\Modules\Team\Team.csproj" />
     <ProjectReference Include="..\Modules\TradeTracker\TradeTracker.csproj" />
-    <ProjectReference Include="..\Modules\Trade\Wallet.csproj" />
     <ProjectReference Include="..\Modules\UserAccount\UserAccount.csproj" />
     <ProjectReference Include="..\Modules\UserIdentity\UserIdentity.csproj" />
     <ProjectReference Include="..\Modules\UserProfile\UserProfile.csproj" />
@@ -58,7 +57,6 @@
     <ProjectReference Include="..\Modules\Wallet\Wallet.csproj" />
     <ProjectReference Include="..\NetDream.Shared\NetDream.Shared.csproj" />
     <ProjectReference Include="..\Modules\Auth\Auth.csproj" />
-    <ProjectReference Include="..\Modules\Blog\Blog.csproj" />
     <ProjectReference Include="..\Modules\Book\Book.csproj" />
     <ProjectReference Include="..\Modules\Chat\Chat.csproj" />
     <ProjectReference Include="..\Modules\Contact\Contact.csproj" />
