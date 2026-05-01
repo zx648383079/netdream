@@ -1,0 +1,61 @@
+<Solution>
+  <Folder Name="/Modules/">
+    <Project Path="Modules/AdSense/AdSense.csproj" />
+    <Project Path="Modules/Article/Article.csproj" />
+    <Project Path="Modules/Book/Book.csproj" />
+    <Project Path="Modules/Bot/Bot.csproj" />
+    <Project Path="Modules/Career/Career.csproj" />
+    <Project Path="Modules/Catering/Catering.csproj" />
+    <Project Path="Modules/Chat/Chat.csproj" />
+    <Project Path="Modules/Clan/Clan.csproj" />
+    <Project Path="Modules/CMS/CMS.csproj" />
+    <Project Path="Modules/Comment/Comment.csproj" />
+    <Project Path="Modules/Contact/Contact.csproj" />
+    <Project Path="Modules/Counter/Counter.csproj" />
+    <Project Path="Modules/Crowdfunding/Crowdfunding.csproj" />
+    <Project Path="Modules/Document/Document.csproj" />
+    <Project Path="Modules/Exam/Exam.csproj" />
+    <Project Path="Modules/Finance/Finance.csproj" />
+    <Project Path="Modules/Forum/Forum.csproj" />
+    <Project Path="Modules/Gzo/Gzo.csproj" />
+    <Project Path="Modules/Legwork/Legwork.csproj" />
+    <Project Path="Modules/Live/Live.csproj" />
+    <Project Path="Modules/MessageService/MessageService.csproj" />
+    <Project Path="Modules/MicroBlog/MicroBlog.csproj" />
+    <Project Path="Modules/Navigation/Navigation.csproj" />
+    <Project Path="Modules/Note/Note.csproj" />
+    <Project Path="Modules/OnlineDisk/OnlineDisk.csproj" />
+    <Project Path="Modules/OnlineMedia/OnlineMedia.csproj" />
+    <Project Path="Modules/OnlineService/OnlineService.csproj" />
+    <Project Path="Modules/OpenPlatform/OpenPlatform.csproj" />
+    <Project Path="Modules/Plan/Plan.csproj" />
+    <Project Path="Modules/Proxy/Proxy.csproj" />
+    <Project Path="Modules/ResourceStore/ResourceStore.csproj" />
+    <Project Path="Modules/SEO/SEO.csproj" />
+    <Project Path="Modules/Shop/Shop.csproj" />
+    <Project Path="Modules/Storage/Storage.csproj" />
+    <Project Path="Modules/Tag/Tag.csproj" />
+    <Project Path="Modules/Team/Team.csproj" />
+    <Project Path="Modules/TradeTracker/TradeTracker.csproj" />
+    <Project Path="Modules/VisualEditor/VisualEditor.csproj" />
+  </Folder>
+  <Folder Name="/Modules/User/">
+    <Project Path="Modules/Auth/Auth.csproj" />
+    <Project Path="Modules/UserAccount/UserAccount.csproj" />
+    <Project Path="Modules/UserIdentity/UserIdentity.csproj" />
+    <Project Path="Modules/UserProfile/UserProfile.csproj" />
+    <Project Path="Modules/Wallet/Wallet.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="Shared/Drawing/Drawing.csproj" />
+    <Project Path="Shared/Events/Events.csproj" />
+    <Project Path="Shared/Repositories/Repositories.csproj" />
+    <Project Path="Shared/Template/Template.csproj" />
+  </Folder>
+  <Project Path="NetDream.Api/NetDream.Api.csproj" />
+  <Project Path="NetDream.Cli/NetDream.Cli.csproj" />
+  <Project Path="NetDream.Razor/NetDream.Razor.csproj" />
+  <Project Path="NetDream.Shared/NetDream.Shared.csproj" />
+  <Project Path="NetDream.Tests/NetDream.Tests.csproj" />
+  <Project Path="NetDream.Web/NetDream.Web.csproj" />
+</Solution>

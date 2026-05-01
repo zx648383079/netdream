@@ -9,7 +9,7 @@ namespace NetDream.Web.Areas.Chat.WebSockets
 {
     public class WebSocketConnectionManager
     {
-        private readonly ConcurrentDictionary<string, WebSocketItem> _sockets = new ConcurrentDictionary<string, WebSocketItem>();
+        private readonly ConcurrentDictionary<string, WebSocketItem> _sockets = new();
         public WebSocketItem GetSocketById(string id)
         {
             return _sockets.FirstOrDefault(p => p.Key == id).Value;
