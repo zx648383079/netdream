@@ -79,12 +79,12 @@ namespace NetDream.Modules.OnlineService.Repositories
             return OperationResult.Ok(model);
         }
 
-        /**
-         * 设置自动回复
-         * @param int sessionId
-         * @param int user
-         * @throws \Exception
-         */
+        /// <summary>
+        /// 设置自动回复
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="word"></param>
+        /// <returns></returns>
         public IOperationResult<SessionEntity> Reply(int sessionId, int word)
         {
             var model = db.Sessions.Where(i => i.Id == sessionId).Single();
