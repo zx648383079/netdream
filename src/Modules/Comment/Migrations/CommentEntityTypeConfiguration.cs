@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetDream.Modules.Comment.Entities;
+using NetDream.Shared.Repositories.Converters;
 
 namespace NetDream.Modules.Comment.Migrations
 {
@@ -13,7 +14,8 @@ namespace NetDream.Modules.Comment.Migrations
             builder.Property(table => table.Id).HasColumnName("id");
             builder.Property(table => table.Content).HasColumnName("content");
             builder.Property(table => table.ExtraRule).HasColumnName("extra_rule").HasMaxLength(300).HasDefaultValue(string.Empty)
-                .HasComment("内容的一些附加规则");
+                .HasComment("内容的一些附加规则")
+                .HasConversion<ExtraRuleConverter>();
             builder.Property(table => table.ParentId).HasColumnName("parent_id");
             builder.Property(table => table.UserId).HasColumnName("user_id").HasDefaultValue(0);
             builder.Property(table => table.ItemId).HasColumnName("item_id");

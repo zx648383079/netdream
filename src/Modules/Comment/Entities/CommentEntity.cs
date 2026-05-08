@@ -1,4 +1,5 @@
 ﻿using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
 
 namespace NetDream.Modules.Comment.Entities
 {
@@ -6,7 +7,7 @@ namespace NetDream.Modules.Comment.Entities
     {
         public int Id { get; set; }
         public string Content { get; set; } = string.Empty;
-        public string ExtraRule { get; set; } = string.Empty;
+        public LinkExtraRule[]? ExtraRule { get; set; }
         public int ParentId { get; set; }
         public int UserId { get; set; }
         public int AgreeCount { get; set; }

@@ -11,7 +11,6 @@ using NetDream.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace NetDream.Modules.Comment.Repositories
@@ -79,7 +78,7 @@ namespace NetDream.Modules.Comment.Repositories
             ];
             if (extraRules.Length != 0)
             {
-                model.ExtraRule = JsonSerializer.Serialize(extraRules);
+                model.ExtraRule = extraRules;
                 db.Comments.Save(model);
                 db.SaveChanges();
             }
@@ -316,7 +315,7 @@ namespace NetDream.Modules.Comment.Repositories
                 .OrderByDescending(i => i.Position).SingleOrDefault();
             model.Position = last is null ? 1 : (last.Position + 1);
             model.Status = (byte)ReviewStatus.None;
-            model.ExtraRule = JsonSerializer.Serialize(rules);
+            model.ExtraRule = rules;
             db.Comments.Save(model);
             db.SaveChanges();
             return OperationResult.Ok(model);
@@ -356,7 +355,7 @@ namespace NetDream.Modules.Comment.Repositories
             ];
             if (extraRules.Length != 0)
             {
-                model.ExtraRule = JsonSerializer.Serialize(extraRules);
+                model.ExtraRule = extraRules;
                 db.Comments.Save(model);
                 db.SaveChanges();
             }

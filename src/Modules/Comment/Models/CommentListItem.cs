@@ -1,8 +1,6 @@
 ﻿using NetDream.Modules.Comment.Entities;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
-using System.Text.Json;
 
 namespace NetDream.Modules.Comment.Models
 {
@@ -34,10 +32,7 @@ namespace NetDream.Modules.Comment.Models
         {
             Id = entity.Id;
             Content = entity.Content;
-            if (string.IsNullOrWhiteSpace(entity.ExtraRule))
-            {
-                ExtraRule = JsonSerializer.Deserialize<LinkExtraRule[]>(entity.ExtraRule);
-            }
+            ExtraRule = entity.ExtraRule;
             UserId = entity.UserId;
             ParentId = entity.ParentId;
             AgreeCount = entity.AgreeCount;
