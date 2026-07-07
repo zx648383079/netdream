@@ -7,7 +7,6 @@ using NetDream.Modules.Finance.Forms;
 using NetDream.Modules.Finance.Models;
 using NetDream.Modules.Finance.Repositories;
 using NetDream.Modules.OpenPlatform;
-using NetDream.Shared.Models;
 using System.IO;
 
 namespace NetDream.Api.Controllers.Finance
@@ -145,7 +144,7 @@ namespace NetDream.Api.Controllers.Finance
         }
 
         [HttpGet]
-        [Route("[search]")]
+        [Route("[action]")]
         [ProducesResponseType(typeof(PageResponse<LogListItem>), 200)]
         [ProducesResponseType(typeof(FailureResponse), 404)]
         public IActionResult Search([FromQuery] LogSearchForm form)

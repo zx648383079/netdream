@@ -19,6 +19,8 @@ namespace NetDream.Modules.UserAccount
             service.AddScoped<UserRepository>();
             service.AddScoped<ISystemBulletin, SystemBulletinRepository>();
             service.AddScoped<BulletinRepository>();
+            service.AddScoped<IInteractRepository, InteractRepository>();
+            service.AddScoped<IApplyRepository, ApplyRepository>();
 
             service.AddTransient<INotificationHandler<CancelAccount>, CancelAccountListener>();
             service.AddTransient<INotificationHandler<ManageAction>, ManageActionListener>();

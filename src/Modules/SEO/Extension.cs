@@ -20,7 +20,7 @@ namespace NetDream.Modules.SEO
                 service.AddSingleton(typeof(IGlobeOption), option.LoadOption());
             }
             service.AddScoped<OptionRepository>();
-            service.AddScoped<LocalizeRepository>();
+            service.AddScoped<ILocalizeRepository, LocalizeRepository>();
             service.AddScoped<IDeeplink, Deeplink>();
             service.AddScoped<ILinkRuler, LinkRuler>();
             service.AddScoped<AgreementRepository>();

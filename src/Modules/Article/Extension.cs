@@ -2,6 +2,7 @@
 using NetDream.Modules.Article.Entities;
 using NetDream.Modules.Article.Listeners;
 using NetDream.Modules.Article.Models;
+using NetDream.Modules.Article.Repositories;
 using NetDream.Shared.Events;
 using NetDream.Shared.Events.Notifications;
 using NetDream.Shared.Interfaces;
@@ -14,7 +15,7 @@ namespace NetDream.Modules.Article
     {
         public static void ProvideArticleRepositories(this IServiceCollection service)
         {
-
+            service.AddScoped<IMetaRepository, MetaRepository>();
             service.AddTransient<INotificationHandler<UserStatisticsRequest>, UserStatisticsHandler>();
             service.AddTransient<INotificationHandler<UserOpenStatisticsRequest>, UserOpenStatisticsHandler>();
         }

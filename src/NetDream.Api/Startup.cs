@@ -17,10 +17,12 @@ using NetDream.Modules.Article;
 using NetDream.Modules.Auth;
 using NetDream.Modules.Chat;
 using NetDream.Modules.Contact;
+using NetDream.Modules.Comment;
 using NetDream.Modules.Counter;
 using NetDream.Modules.Document;
 using NetDream.Modules.Finance;
 using NetDream.Modules.Forum;
+using NetDream.Modules.Storage;
 using NetDream.Modules.Gzo;
 using NetDream.Modules.MessageService;
 using NetDream.Modules.MicroBlog;
@@ -203,6 +205,8 @@ namespace NetDream.Api
             AddContext<MessageServiceContext>(services, connectString, serverVersion);
             AddContext<OnlineServiceContext>(services, connectString, serverVersion);
             AddContext<PlanContext>(services, connectString, serverVersion);
+            AddContext<CommentContext>(services, connectString, serverVersion);
+            AddContext<StorageContext>(services, connectString, serverVersion);
             var contextOptions = new DbContextOptionsBuilder<SEOContext>().UseMySql(connectString, serverVersion)
                 .Options;
             RegisterGlobeRepositories(services, contextOptions);
@@ -237,6 +241,7 @@ namespace NetDream.Api
         {
             services.ProvideAuthRepositories();
             services.ProvideUserRepositories();
+            services.ProvideCommentRepositories();
             services.ProvideIdentityRepositories();
             services.ProvideProfileRepositories();
             services.ProvideOpenRepositories();
@@ -252,6 +257,7 @@ namespace NetDream.Api
             services.ProvideChatRepositories();
             services.ProvideTeamRepositories();
             services.ProvideMessageRepositories();
+            services.ProvideStorageRepositories();
         }
     }
 }
