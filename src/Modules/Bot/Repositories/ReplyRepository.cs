@@ -95,11 +95,15 @@ namespace NetDream.Modules.Bot.Repositories
             {
                 return OperationResult.Fail<ReplyEntity>("数据错误");
             }
+            model.Title = data.Title;
             model.Event = data.Event;
             model.BotId = bot_id;
             model.Content = data.Content;
             model.Keywords = data.Keywords;
             model.Match = data.Match;
+            model.Status = data.Status;
+            model.StartAt = data.StartAt;
+            model.EndAt = data.EndAt;
             if (model.Event != AdapterEvent.Message.ToEventName())
             {
                 model.Keywords = string.Empty;

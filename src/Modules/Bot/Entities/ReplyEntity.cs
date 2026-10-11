@@ -9,12 +9,15 @@ namespace NetDream.Modules.Bot.Entities
         public int Id { get; set; }
         
         public int BotId { get; set; }
+        public string Title { get; set; } = string.Empty;
         public string Event { get; set; } = string.Empty;
         public string Keywords { get; set; } = string.Empty;
         public byte Match { get; set; }
         public string Content { get; set; } = string.Empty;
         public byte Type { get; set; }
-        
+        public string StartAt { get; set; } = string.Empty;
+        public string EndAt { get; set; } = string.Empty;
+
         public int UpdatedAt { get; set; }
         
         public int CreatedAt { get; set; }

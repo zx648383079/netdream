@@ -1,5 +1,4 @@
 ﻿using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces;
 
 namespace NetDream.Modules.Bot.Adapters
 {
