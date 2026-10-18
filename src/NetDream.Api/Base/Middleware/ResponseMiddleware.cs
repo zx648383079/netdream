@@ -3,11 +3,11 @@ using NetDream.Shared.Http;
 using NetDream.Modules.OpenPlatform.Http;
 using NetDream.Modules.OpenPlatform.Models;
 using NetDream.Modules.OpenPlatform.Repositories;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System;
+using System.Text.Json;
 
 namespace NetDream.Api.Base.Middleware
 {
@@ -68,7 +68,7 @@ namespace NetDream.Api.Base.Middleware
         public Task JsonAsync(HttpContext context, object data)
         {
             context.Response.ContentType = "application/json";
-            return context.Response.WriteAsync(JsonConvert.SerializeObject(data), Encoding.UTF8);
+            return context.Response.WriteAsync(JsonSerializer.Serialize(data), Encoding.UTF8);
         }
 
         public bool VerifyRest(PlatformModel model, HttpContext context)

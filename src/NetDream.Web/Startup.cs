@@ -4,30 +4,30 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using NetDream.Shared.Interfaces;
-using NetDream.Modules.Auth;
-using NetDream.Modules.Article;
-using NetDream.Shared.Events;
-using NetDream.Modules.Contact;
-using NetDream.Modules.Gzo;
-using NetDream.Modules.OpenPlatform;
-using NetDream.Modules.SEO;
-using NetDream.Modules.Note;
-using NetDream.Web.Base.Http;
-using NetDream.Web.Base.Middleware;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
-using System.IO;
-using NetDream.Shared.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
+using NetDream.Modules.Article;
+using NetDream.Modules.Auth;
+using NetDream.Modules.Contact;
+using NetDream.Modules.Gzo;
+using NetDream.Modules.Note;
+using NetDream.Modules.OpenPlatform;
+using NetDream.Modules.SEO;
+using NetDream.Shared.Converters;
+using NetDream.Shared.Events;
+using NetDream.Shared.Interfaces;
+using NetDream.Shared.Models;
+using NetDream.Web.Base.Http;
+using NetDream.Web.Base.Middleware;
+using System;
 using System.Data.Common;
+using System.IO;
+using System.Text.Json;
 
 namespace NetDream.Web
 {
@@ -90,16 +90,11 @@ namespace NetDream.Web
             
             services.AddMvc()
                 .AddViewLocalization()
-                .AddNewtonsoftJson(options =>
+                .AddJsonOptions(options => 
                 {
-                    // 循环引用
-                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
-                    // 不使用驼峰
-                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                    // 设置时间格式
-                    options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
-                    // 如字段为 null值，该字段不会返回到前端
-                    // options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+                    options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
+                    options.JsonSerializerOptions.Converters.Add(new MetaConverter<MetaResponse>());
                 });
             services.AddSingleton(Configuration);
             services.AddMemoryCache();

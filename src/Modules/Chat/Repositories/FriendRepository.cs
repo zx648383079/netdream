@@ -3,7 +3,6 @@ using NetDream.Modules.Chat.Entities;
 using NetDream.Modules.Chat.Forms;
 using NetDream.Modules.Chat.Models;
 using NetDream.Shared.Interfaces;
-using NetDream.Shared.Interfaces;
 using NetDream.Shared.Models;
 using NetDream.Shared.Repositories;
 using System;

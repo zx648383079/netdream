@@ -32,7 +32,9 @@ namespace NetDream.Web.Areas.Chat.WebSockets
 
         public void AddSocket(WebSocketItem socket)
         {
-            string sId = CreateConnectionId();
+            // 限制同一IP连接数量
+            // 限制同一账号连接数量
+            var sId = CreateConnectionId();
             while (!_sockets.TryAdd(sId, socket))
             {
                 sId = CreateConnectionId();

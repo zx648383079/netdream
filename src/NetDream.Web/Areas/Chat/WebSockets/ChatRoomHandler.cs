@@ -1,24 +1,33 @@
-﻿using Newtonsoft.Json;
-using System.Net.WebSockets;
+﻿using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NetDream.Web.Areas.Chat.WebSockets
 {
-    public class ChatRoomHandler : WebSocketHandler
+    public class ChatRoomHandler(WebSocketConnectionManager connectionManager) 
+        : WebSocketHandler(connectionManager)
     {
         const string MESSAGE_PREFIX = "ws-message:";
         const string MESSAGE_SEPARATOR = ";";
 
-        public ChatRoomHandler(WebSocketConnectionManager webSocketConnectionManager) : base(webSocketConnectionManager)
-        {
-
-        }
 
         public override async Task ReceiveAsync(WebSocketItem socket, WebSocketReceiveResult result, byte[] buffer)
         {
-            string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            await SendMessageToAllAsync(message);
+            var message = DecdoeMessage(Encoding.UTF8.GetString(buffer, 0, result.Count));
+            switch (message.Event)
+            {
+                case "chat/message":
+
+                    break;
+                case "chat/message/ping":
+                    break;
+                case "chat/message/send_text":
+                    break;
+                default:
+                    break;
+            }
+            // await SendMessageToAllAsync(message);
         }
 
         private static string EncdoeMessage(string even, string data)
@@ -38,7 +47,7 @@ namespace NetDream.Web.Areas.Chat.WebSockets
 
         private static string EncdoeMessage(string even, object data)
         {
-            return EncdoeMessage(even, WsMessageType.JSON, JsonConvert.SerializeObject(data));
+            return EncdoeMessage(even, WsMessageType.JSON, JsonSerializer.Serialize(data));
         }
 
         private static string EncdoeMessage(string even, WsMessageType type, string data)
@@ -62,7 +71,7 @@ namespace NetDream.Web.Areas.Chat.WebSockets
             start += MESSAGE_SEPARATOR.Length + msg.Event.Length;
             msg.Type = (WsMessageType)int.Parse(data[start..data.IndexOf(MESSAGE_SEPARATOR, start)]);
             start += MESSAGE_SEPARATOR.Length + msg.Type.ToString().Length;
-            msg.Event = data[start..data.IndexOf(MESSAGE_SEPARATOR, start)];
+            msg.Content = data[start..data.IndexOf(MESSAGE_SEPARATOR, start)];
             return msg;
         }
     }
@@ -71,9 +80,9 @@ namespace NetDream.Web.Areas.Chat.WebSockets
     {
         public WsMessageType Type { get; set; }
 
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
 
-        public string Event { get; set; }
+        public string Event { get; set; } = string.Empty;
     }
 
     enum WsMessageType
